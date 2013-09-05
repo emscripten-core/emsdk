@@ -13,14 +13,19 @@ Windows:
 * [emsdk-1.5.6-full.exe](http://clb.demon.fi/emscripten/releases/emsdk-1.5.6-full.exe): Emscripten SDK 1.5.6 Offline Installer is a NSIS installer that bundles together the Emscripten 1.5.6 toolchain as an offline-installable package.
 * [emsdk-portable.zip](http://clb.demon.fi/emscripten/releases/emsdk-portable.zip): Portable Emscripten SDK is a portable version of the Emscripten SDK that does not require system installation privileges.
 
-Note: Currently the Emscripten SDK is Windows-only, but it is being developed with the goal in mind of extending it to OSX and possibly Linux as well.
+Mac OS X:
+1. Download [emsdk](http://clb.demon.fi/emscripten/emsdk) (.py script) and place it to a directory you want to locate the Emscripten SDK into.
+2. In command line, make the emsdk script executable by typing `chmod +x emsdk` in the directory you placed the script into.
+3. Run `emsdk update`. This will fetch the latest registry of available tools.
+4. Run `emsdk install latest`. This will download and install the latest SDK tools.
+5. Run `emsdk activate latest`. This will set up ~/.emscripten to point to the SDK.
 
-Installing using the NSIS Installer
+Windows: Installing using the NSIS Installer
 -----------------------------------
 
 The NSIS installers register the Emscripten SDK as a 'standard' Windows application. To install the SDK, download a NSIS .exe file above, double-click on it, and run through the installer to perform the installation. After the installer finishes, the full Emscripten toolchain will be available in the directory that was chosen during the installation, and no other steps are necessary. If your system has Visual Studio 2010 installed, the vs-tool MSBuild plugin will be automatically installed as well.
 
-Installing the Portable SDK
+Windows: Installing the Portable SDK
 ---------------------------
 
 The Portable Emscripten SDK is a no-installer version of the SDK package. It is identical to the NSIS installer, except that it does not interact with the Windows registry, which allows Emscripten to be used on a computer without administrative privileges, and the ability to migrate the installation from one location (directory or computer) to another by just copying/zipping up the directory contents.
