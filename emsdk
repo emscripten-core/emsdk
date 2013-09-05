@@ -35,6 +35,24 @@ def sdk_path(path): return to_unix_path(os.path.join(os.path.dirname(os.path.rea
 
 def emsdk_path(): return to_unix_path(os.path.dirname(os.path.realpath(__file__)))
 
+# Modifies the given file in-place to contain '\r\n' line endings.
+def file_to_crlf(filename):
+  text = open(filename, 'r').read()
+  text = text.replace('\r\n', '\n').replace('\n', '\r\n')
+  open(filename, 'w').write(text)
+
+# Modifies the given file in-place to contain '\n' line endings.
+def file_to_lf(filename):
+  text = open(filename, 'r').read()
+  text = text.replace('\r\n', '\n')
+  open(filename, 'w').write(text)
+
+def fix_lineendings(filename):
+  if WINDOWS:
+    file_to_crlf(filename)
+  else:
+    file_to_lf(filename)
+
 # http://stackoverflow.com/questions/600268/mkdir-p-functionality-in-python
 def mkdir_p(path):
     if os.path.exists(path):
@@ -145,6 +163,10 @@ def download_file(url, dstpath, download_even_if_exists=False):
     print "HTTP error with URL '" + url + "': " + str(e)
     return False
   return True
+
+def download_text_file(url, dstpath, download_even_if_exists=False):
+  download_file(url, dstpath, download_even_if_exists)
+  fix_lineendings(os.path.join(emsdk_path(), os.path.split(url)[1]))
 
 def run_get_output(cmd, cwd=None):
   process = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE, env=os.environ.copy())
@@ -544,10 +566,10 @@ def find_latest_sdk():
   return sdks[-1] # Newest SDK is always at the end of the list.
 
 def update_emsdk():
-  download_file(emsdk_master_server + 'emsdk_manifest.json', emsdk_path(), download_even_if_exists=True)
+  download_text_file(emsdk_master_server + 'emsdk_manifest.json', emsdk_path(), download_even_if_exists=True)
   if not EMSDK_DEV:
-    download_file(emsdk_master_server + 'emsdk', emsdk_path(), download_even_if_exists=True)
-  download_file(emsdk_master_server + 'README.md', emsdk_path(), download_even_if_exists=True)
+    download_text_file(emsdk_master_server + 'emsdk', emsdk_path(), download_even_if_exists=True)
+  download_text_file(emsdk_master_server + 'README.md', emsdk_path(), download_even_if_exists=True)
   print 'Update complete.'
   
 def load_sdk_manifest():
