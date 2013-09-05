@@ -39,13 +39,13 @@ def emsdk_path(): return to_unix_path(os.path.dirname(os.path.realpath(__file__)
 def file_to_crlf(filename):
   text = open(filename, 'r').read()
   text = text.replace('\r\n', '\n').replace('\n', '\r\n')
-  open(filename, 'w').write(text)
+  open(filename, 'wb').write(text)
 
 # Modifies the given file in-place to contain '\n' line endings.
 def file_to_lf(filename):
   text = open(filename, 'r').read()
   text = text.replace('\r\n', '\n')
-  open(filename, 'w').write(text)
+  open(filename, 'wb').write(text)
 
 def fix_lineendings(filename):
   if WINDOWS:
