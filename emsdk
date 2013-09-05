@@ -2,7 +2,12 @@
 
 import sys, optparse, subprocess, urllib2, os, os.path, errno, zipfile, string, json, platform, shutil, tarfile
 
+# EMSDK_DEV is a developer mode flag, which, if true, the SDK is downloaded from a 'staging' online source,
+# instead of the public source. New releases are first deployed to the staging source for testing, before 
+# being published to the public. Don't enable this unless you develop EMSDK itself and need to access the
+# staging source repository instead.
 EMSDK_DEV = bool(os.getenv('EMSDK_DEV')) if os.getenv('EMSDK_DEV') != None else False
+
 if EMSDK_DEV and not 'active_path' in sys.argv:
   print 'EMSDK_DEV active.'
   emsdk_master_server = 'http://clb.demon.fi/emscripten_dev/'
