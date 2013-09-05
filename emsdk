@@ -547,7 +547,7 @@ def update_emsdk():
   download_file(emsdk_master_server + 'emsdk_manifest.json', emsdk_path(), download_even_if_exists=True)
   if not EMSDK_DEV:
     download_file(emsdk_master_server + 'emsdk', emsdk_path(), download_even_if_exists=True)
-  download_file(emsdk_master_server + 'README.txt', emsdk_path(), download_even_if_exists=True)
+  download_file(emsdk_master_server + 'README.md', emsdk_path(), download_even_if_exists=True)
   print 'Update complete.'
   
 def load_sdk_manifest():
