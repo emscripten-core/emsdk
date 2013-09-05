@@ -114,27 +114,31 @@ def download_file(url, dstpath, download_even_if_exists=False):
   if os.path.exists(file_name) and not download_even_if_exists:
     print "File '" + file_name + "' already downloaded, skipping."
     return True
-  u = urllib2.urlopen(url)
-  mkdir_p(os.path.dirname(file_name))
-  f = open(file_name, 'wb')
-  meta = u.info()
-  file_size = int(meta.getheaders("Content-Length")[0])
-  print "Downloading: %s from %s Bytes: %s" % (file_name, url, file_size)
+  try:
+    u = urllib2.urlopen(url)
+    mkdir_p(os.path.dirname(file_name))
+    f = open(file_name, 'wb')
+    meta = u.info()
+    file_size = int(meta.getheaders("Content-Length")[0])
+    print "Downloading: %s from %s Bytes: %s" % (file_name, url, file_size)
 
-  file_size_dl = 0
-  block_sz = 8192
-  while True:
-      buffer = u.read(block_sz)
-      if not buffer:
-          break
+    file_size_dl = 0
+    block_sz = 8192
+    while True:
+        buffer = u.read(block_sz)
+        if not buffer:
+            break
 
-      file_size_dl += len(buffer)
-      f.write(buffer)
-      status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
-      status = status + chr(8)*(len(status)+1)
-      print status,
+        file_size_dl += len(buffer)
+        f.write(buffer)
+        status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
+        status = status + chr(8)*(len(status)+1)
+        print status,
 
-  f.close()
+    f.close()
+  except urllib2.HTTPError, e:
+    print "HTTP error with URL '" + url + "': " + str(e)
+    return False
   return True
 
 def run_get_output(cmd, cwd=None):
