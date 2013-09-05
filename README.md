@@ -17,9 +17,9 @@ Mac OS X:
 
 1. Download [emsdk](http://clb.demon.fi/emscripten/emsdk) (.py script) and place it to a directory you want to locate the Emscripten SDK into.
 2. In command line, make the emsdk script executable by typing `chmod +x emsdk` in the directory you placed the script into.
-3. Run `emsdk update`. This will fetch the latest registry of available tools.
-4. Run `emsdk install latest`. This will download and install the latest SDK tools.
-5. Run `emsdk activate latest`. This will set up ~/.emscripten to point to the SDK.
+3. Run `./emsdk update`. This will fetch the latest registry of available tools.
+4. Run `./emsdk install latest`. This will download and install the latest SDK tools.
+5. Run `./emsdk activate latest`. This will set up ~/.emscripten to point to the SDK.
 
 Windows: Installing using the NSIS Installer
 -----------------------------------
