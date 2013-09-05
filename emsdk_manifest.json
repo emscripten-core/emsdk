@@ -9,6 +9,14 @@
     "activated_cfg": "LLVM_ROOT='%installation_dir%'"
   },
   {
+    "id": "clang",
+    "version": "3.2",
+    "bitness": 64,
+    "osx_url": "clang+llvm-3.2-x86_64-apple-darwin11.tar.gz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/bin'"
+  },
+  {
     "id": "node",
     "version": "0.10.17",
     "bitness": 32,
@@ -16,6 +24,14 @@
     "windows_install_path": "node/0.10.17_32bit/node.exe",
     "activated_path": "%installation_dir%",
     "activated_cfg": "NODE_JS='%installation_dir%/node.exe'"
+  },
+  {
+    "id": "node",
+    "version": "0.10.18",
+    "bitness": 64,
+    "osx_url": "node-v0.10.18-darwin-x64.tar.gz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node'"
   },
   {
     "id": "python",
@@ -36,6 +52,7 @@
     "id": "emscripten",
     "version": "1.5.6",
     "windows_url": "emscripten_1.5.6.zip",
+    "unix_url": "emscripten_1.5.6.tar.gz",
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%",
     "activated_env": "EMSCRIPTEN=%installation_dir%"
@@ -80,7 +97,14 @@
   {
     "version": "1.5.6",
     "bitness": 32,
-    "uses": ["clang-3.2-32bit", "node-0.10.17-32bit", "python-2.7.5.1-32bit", "emscripten-1.5.6"]
+    "uses": ["clang-3.2-32bit", "node-0.10.17-32bit", "python-2.7.5.1-32bit", "emscripten-1.5.6"],
+    "os": "win"
+  },
+  {
+    "version": "1.5.6",
+    "bitness": 64,
+    "uses": ["clang-3.2-64bit", "node-0.10.18-64bit", "emscripten-1.5.6"],
+    "os": "osx"
   }
   ]
 }
