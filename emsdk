@@ -1,21 +1,34 @@
 #!/usr/bin/env python
 
-import sys, optparse, subprocess, urllib2, os, os.path, errno, zipfile, string, json, platform, shutil
+import sys, optparse, subprocess, urllib2, os, os.path, errno, zipfile, string, json, platform, shutil, tarfile
 
-emsdk_master_server = 'http://clb.demon.fi/emscripten/'
+EMSDK_DEV = bool(os.getenv('EMSDK_DEV')) if os.getenv('EMSDK_DEV') != None else False
+if EMSDK_DEV and not 'active_path' in sys.argv:
+  print 'EMSDK_DEV active.'
+  emsdk_master_server = 'http://clb.demon.fi/emscripten_dev/'
+else:
+  emsdk_master_server = 'http://clb.demon.fi/emscripten/'
 emscripten_git_repo = 'git@github.com:kripken/emscripten.git'
 
 WINDOWS = False
 if os.name == 'nt':
   WINDOWS = True
+  ENVPATH_SEPARATOR = ';'
 
 LINUX = False
 if platform.system() == 'Linux':
   LINUX = True
+  ENVPATH_SEPARATOR = ':'
 
 OSX = False
 if platform.mac_ver()[0] != '':
   OSX = True
+  ENVPATH_SEPARATOR = ':'
+
+# Returns the absolute pathname to the given path inside the Emscripten SDK.
+def sdk_path(path): return to_unix_path(os.path.join(os.path.dirname(os.path.realpath(__file__)), path))
+
+def emsdk_path(): return to_unix_path(os.path.dirname(os.path.realpath(__file__)))
 
 # http://stackoverflow.com/questions/600268/mkdir-p-functionality-in-python
 def mkdir_p(path):
@@ -31,7 +44,26 @@ def mkdir_p(path):
 def num_files_in_directory(path):
   if not os.path.isdir(path):
     return 0
-  return len([name for name in os.listdir(path) if os.path.isfile(os.path.join(path, name))])
+  return len([name for name in os.listdir(path) if os.path.exists(os.path.join(path, name))])
+
+def run(cmd, cwd=None):
+  process = subprocess.Popen(cmd, cwd=cwd, env=os.environ.copy())
+  process.communicate()
+  if process.returncode != 0:
+    print str(cmd) + ' failed with error code ' + str(process.returncode) + '!'
+  return process.returncode
+
+# http://pythonicprose.blogspot.fi/2009/10/python-extract-targz-archive.html
+def untargz(source_filename, dest_dir):
+  if num_files_in_directory(dest_dir) > 0:
+    print "File '" + source_filename + "' has already been unpacked, skipping."
+    return True
+  print "Unpacking '" + source_filename + "' to '" + dest_dir + "'"
+  mkdir_p(dest_dir)
+  run(['tar', '-xvf', sdk_path(source_filename), '--strip', '1'], cwd=dest_dir)
+  #tfile = tarfile.open(source_filename, 'r:gz')
+  #tfile.extractall(dest_dir)
+  return True
 
 # http://stackoverflow.com/questions/12886768/simple-way-to-unzip-file-in-python-on-all-oses
 def unzip(source_filename, dest_dir):
@@ -105,13 +137,6 @@ def download_file(url, dstpath, download_even_if_exists=False):
   f.close()
   return True
 
-def run(cmd, cwd=None):
-  process = subprocess.Popen(cmd, cwd=cwd, env=os.environ.copy())
-  process.communicate()
-  if process.returncode != 0:
-    print str(cmd) + ' failed with error code ' + str(process.returncode) + '!'
-  return process.returncode
-
 def run_get_output(cmd, cwd=None):
   process = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE, env=os.environ.copy())
   (stdout, stderr) = process.communicate()
@@ -137,8 +162,12 @@ def GIT():
   except:
     pass
   if not warnonce_git_not_found:
-    print "Warning: git executable was not found. Either install git manually and add it to PATH, or install the git tool via 'emsdk install git-1.8.3'"
+    if WINDOWS:
+      print "ERROR: git executable was not found. Either install git manually and add it to PATH, or install the git tool via 'emsdk install git-1.8.3'"
+    else:
+      print "ERROR: git executable was not found. Please install git for this operation! This can be done from http://git-scm.com/ , or by installing XCode and then the XCode Command Line Tools (see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools )"
     warnonce_git_not_found = True
+    sys.exit(1)
   return 'git'
 
 def git_repo_version(repo_path):
@@ -181,15 +210,13 @@ def download_and_unzip(zipfile, dst):
   success = download_file(emsdk_master_server + zipfile, 'zips/')
   if not success:
     return False
-  return unzip('zips/'+zipfile, dst)
+  if zipfile.endswith('.zip'):
+    return unzip('zips/'+zipfile, dst)
+  else:
+    return untargz('zips/'+zipfile, dst)
 
 def to_unix_path(p):
   return p.replace('\\', '/')
-
-# Returns the absolute pathname to the given path inside the Emscripten SDK.
-def sdk_path(path): return to_unix_path(os.path.join(os.path.dirname(os.path.realpath(__file__)), path))
-
-def emsdk_path(): return to_unix_path(os.path.dirname(os.path.realpath(__file__)))
 
 # Finds and returns a list of the directories that need to be added to PATH for the given set of tools.
 def get_required_path(active_tools):
@@ -279,12 +306,9 @@ JS_ENGINES = [NODE_JS]
   print cfg
   
   path_add = get_required_path(active_tools)
-  print "To conveniently access the selected set of tools from the command line, consider adding the following directories to PATH, or call '" + os.path.relpath(sdk_path('emsdk_add_path')) + "' to do this for you."
+  print "To conveniently access the selected set of tools from the command line, consider adding the following directories to PATH, or call '" + ('' if WINDOWS else 'source ') + os.path.relpath(sdk_path('emsdk_add_path')) + "' to do this for you."
   print ''
-  if WINDOWS:
-    print '   ' + ';'.join(path_add)
-  else:
-    print '   ' + ':'.join(path_add)
+  print '   ' + ENVPATH_SEPARATOR.join(path_add)
 
 MSBUILD_DIR = "C:/Program Files (x86)/MSBuild/Microsoft.Cpp/v4.0/Platforms"
 
@@ -333,6 +357,24 @@ class Tool:
     else:
       return ''
   
+  def compatible_with_this_os(self):
+    if hasattr(self, 'os'):
+      if (WINDOWS and 'win' in self.os) or (LINUX and 'linux' in self.os) or (OSX and 'osx' in self.os):
+        return True
+      else:
+        return False
+
+    if OSX and hasattr(self, 'osx_url'):
+      return True
+
+    if WINDOWS and (hasattr(self, 'windows_url') or hasattr(self, 'windows_install_path')):
+      return True
+
+    if LINUX or OSX and hasattr(self, 'unix_url'):
+      return True
+
+    return hasattr(self, 'url')
+
   def is_installed(self):
     # If this tool/sdk depends on other tools, require that all dependencies are installed for this tool to count as being installed.
     if hasattr(self, 'uses'):
@@ -393,6 +435,10 @@ class Tool:
   def download_url(self):
     if WINDOWS and hasattr(self, 'windows_url'):
       return self.windows_url
+    elif OSX and hasattr(self, 'osx_url'):
+      return self.osx_url
+    elif (OSX or LINUX) and hasattr(self, 'unix_url'):
+      return self.unix_url
     elif hasattr(self, 'url'):
       return self.url
     else:
@@ -416,7 +462,7 @@ class Tool:
       url = self.download_url()
       if hasattr(self, 'git_branch'):
         success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch)
-      elif url.endswith('zip'):
+      elif url.endswith('zip') or url.endswith('.tar') or url.endswith('.gz'):
         success = download_and_unzip(url, self.installation_path())
       else:
         success = download_file(emsdk_master_server + self.download_url(), self.installation_path())
@@ -490,20 +536,27 @@ def find_latest_sdk():
 
 def update_emsdk():
   download_file(emsdk_master_server + 'emsdk_manifest.json', emsdk_path(), download_even_if_exists=True)
-  download_file(emsdk_master_server + 'emsdk', emsdk_path(), download_even_if_exists=True)
+  if not EMSDK_DEV:
+    download_file(emsdk_master_server + 'emsdk', emsdk_path(), download_even_if_exists=True)
   download_file(emsdk_master_server + 'README.txt', emsdk_path(), download_even_if_exists=True)
   print 'Update complete.'
   
 def load_sdk_manifest():
   global tools
-  manifest = json.loads(open(sdk_path("emsdk_manifest.json"), "r").read())
+  try:
+    manifest = json.loads(open(sdk_path("emsdk_manifest.json"), "r").read())
+  except:
+    return
   for tool in manifest['tools']:
-    tools.append(Tool(tool))
+    t = Tool(tool)
+    if t.compatible_with_this_os():
+      tools.append(t)
 
   for sdk_str in manifest['sdks']:
     sdk = Tool(sdk_str)
     sdk.id = "sdk"
-    sdks.append(sdk)
+    if sdk.compatible_with_this_os():
+      sdks.append(sdk)
 
 def install(): # TODO: Add parameter to choose which SDK to install.
   download_and_unzip('clang_3.2_32bit.zip', 'clang/3.2_32bit/')
@@ -513,11 +566,14 @@ def install(): # TODO: Add parameter to choose which SDK to install.
   #git_clone_checkout_and_pull(emscripten_git_repo, 'emscripten/', 'incoming')
   download_and_unzip('emscripten_1.5.6.zip', 'emscripten/1.5.6/')
 
-def activate(sdk): # TODO: Add parameter to choose which SDK to activate.
-  if not sdk.is_installed():
-    print "The SDK/tool '" + str(sdk) + "' cannot be activated since it is not installed!"
-    return
-  tools_to_activate = [sdk] + sdk.recursive_dependencies()
+def activate(tools_to_activate): # TODO: Add parameter to choose which SDK to activate.
+  deps = []
+  for tool in tools_to_activate:
+    if not tool.is_installed():
+      print "The SDK/tool '" + str(tool) + "' cannot be activated since it is not installed!"
+      return
+    deps += tool.recursive_dependencies()
+  tools_to_activate += deps
   generate_dot_emscripten(tools_to_activate, temp_dir='temp')
 
 def currently_active_sdk():
@@ -567,23 +623,29 @@ def main():
   cmd = sys.argv[1]
   if cmd == 'list':
     print ''
-    print 'The following individual tools exist:'
-    for tool in tools:
-      if tool.can_be_installed() == True:
-        installed = '\tINSTALLED' if tool.is_installed() else ''
-      else:
-        installed = '\tNot available: ' + tool.can_be_installed()
-      active = '*' if tool.is_active() else ' '
-      print '    ' + active + '    {0: <25}'.format(str(tool)) + installed
+    if len(tools) > 0:
+      print 'The following individual tools exist:'
+      for tool in tools:
+        if tool.can_be_installed() == True:
+          installed = '\tINSTALLED' if tool.is_installed() else ''
+        else:
+          installed = '\tNot available: ' + tool.can_be_installed()
+        active = '*' if tool.is_active() else ' '
+        print '    ' + active + '    {0: <25}'.format(str(tool)) + installed
+      print ''
+    else:
+      print "There are no tools available. Run 'emsdk update' to fetch the latest set of tools."
     print ''
-    print ''
-    print 'The following Emscripten SDK versions are available:'
-    for sdk in sdks:
-      installed = '\tINSTALLED' if sdk.is_installed() else ''
-      active = '*' if sdk.is_active() else ' '
-      print '    ' + active + '    {0: <25}'.format(str(sdk)) + installed
-    print ''
-    print 'The items marked with * are activated for the current user.'
+
+    if len(sdks) > 0:
+      print 'The following Emscripten SDK versions are available:'
+      for sdk in sdks:
+        installed = '\tINSTALLED' if sdk.is_installed() else ''
+        active = '*' if sdk.is_active() else ' '
+        print '    ' + active + '    {0: <25}'.format(str(sdk)) + installed
+      print ''
+      print 'The items marked with * are activated for the current user.'
+
     return 0
   elif cmd == 'active_path':
     if len(sys.argv) <= 2:
@@ -605,14 +667,15 @@ def main():
     # These directories should be added to PATH
     path_add = get_required_path(tools_to_activate)
     # These already exist.
-    existing_path = os.environ['PATH'].replace('\\', '/').split(';')
+    existing_path = os.environ['PATH'].replace('\\', '/').split(ENVPATH_SEPARATOR)
+    #print str(existing_path)
     new_path = [item for item in path_add if item not in existing_path]
 #    print existing_path
  #   print set(path_add)
     #uniq = list(set(existing_path) - set(path_add))
     #print uniq
     #new_path = path_add + 
-    print ';'.join(new_path)
+    print ENVPATH_SEPARATOR.join(new_path)
     
     return 0
   elif cmd == 'update':
@@ -624,13 +687,16 @@ def main():
       return 1
     if sys.argv[2] == 'latest':
       sys.argv[2] = str(find_latest_sdk())
-    tool = find_tool(sys.argv[2])
-    if tool == None:
-      tool = find_sdk(sys.argv[2])
-    if tool == None:
-      print "Error: No tool or SDK found by name '" + sys.argv[2] + "'."
-      return 1
-    activate(tool)
+    tools_to_activate = []
+    for i in range(2, len(sys.argv)):
+      tool = find_tool(sys.argv[i])
+      if tool == None:
+        tool = find_sdk(sys.argv[i])
+      if tool == None:
+        print "Error: No tool or SDK found by name '" + sys.argv[i] + "'."
+        return 1
+      tools_to_activate += [tool]
+    activate(tools_to_activate)
     return 0
   elif cmd == 'install':
     if len(sys.argv) <= 2:
