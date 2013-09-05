@@ -9,9 +9,9 @@ Get the SDK
 To get started with Emscripten development quickly and hassle-free, grab one of the packages below:
 
 Windows:
-* Emscripten SDK Web Installer (.exe): A NSIS installer that always gets you the latest Emscripten SDK from the web.
-* Emscripten SDK 1.5.6 Offline Installer (.exe): A NSIS installer that bundles together the Emscripten 1.5.6 toolchain as an offline-installable package.
-* Portable Emscripten SDK Web Installer (.zip): Portable version of the Emscripten SDK that does not require system installation privileges.
+* [emsdk-webinstall.exe](http://clb.demon.fi/emscripten/releases/emsdk-webinstall.exe): Emscripten SDK Web Installer is a NSIS installer that always gets you the latest Emscripten SDK from the web.
+* [emsdk-1.5.6-full.exe](http://clb.demon.fi/emscripten/releases/emsdk-1.5.6-full.exe): Emscripten SDK 1.5.6 Offline Installer is a NSIS installer that bundles together the Emscripten 1.5.6 toolchain as an offline-installable package.
+* [emsdk-portable.zip](http://clb.demon.fi/emscripten/releases/emsdk-portable.zip): Portable Emscripten SDK is a portable version of the Emscripten SDK that does not require system installation privileges.
 
 Note: Currently the Emscripten SDK is Windows-only, but it is being developed with the goal in mind of extending it to OSX and possibly Linux as well.
 
