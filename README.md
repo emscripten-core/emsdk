@@ -14,6 +14,7 @@ Windows:
 * [emsdk-portable.zip](http://clb.demon.fi/emscripten/releases/emsdk-portable.zip): Portable Emscripten SDK is a portable version of the Emscripten SDK that does not require system installation privileges.
 
 Mac OS X:
+
 1. Download [emsdk](http://clb.demon.fi/emscripten/emsdk) (.py script) and place it to a directory you want to locate the Emscripten SDK into.
 2. In command line, make the emsdk script executable by typing `chmod +x emsdk` in the directory you placed the script into.
 3. Run `emsdk update`. This will fetch the latest registry of available tools.
