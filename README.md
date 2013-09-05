@@ -101,3 +101,20 @@ If you installed the SDK using a NSIS installer, launch 'Control Panel' -> 'Unin
 
 If you want to remove a Portable SDK, just delete the directory where you put the Portable SDK into.
 
+Platform-Specific Notes
+-----------------------
+
+##### Mac OS X
+
+* On OSX, the git tool will not be installed automatically. Git is not a required core component, and is only needed if you want to use one of the development branches emscripten-incoming or emscripten-master directly, instead of the fixed releases. To install git on OSX, you can
+
+	1. Install XCode, and in XCode, install XCode Command Line Tools. This will provide git to the system PATH. For more help on this step, see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools
+	2. Install git directly from http://git-scm.com/
+
+* Also, on OSX, java is not bundled with the Emscripten SDK. After installing emscripten via emsdk, typing 'emcc --help' should pop up a OSX dialog "Java is not installed. To open java, you need a Java SE 6 runtime. Would you like to install one now?" that will automatically download a Java runtime to the system.
+
+* Emscripten requires the command line tool 'python2' to be present on OSX. On default OSX installations, this does not exist. To manually work around this issue, see step 10 at https://github.com/kripken/emscripten/wiki/Getting-started-on-Mac-OS-X
+
+##### Windows
+
+* Whereas OSX and Linux tools only ship 64-bit executables of the toolchain, on Windows the 32-bit version of the toolchain is available. This is due to a detected incompatibility with Visual Studio 2010 and 64-bit tools.
