@@ -618,6 +618,49 @@ def currently_active_sdk():
       return sdk
   return None
 
+def currently_active_tools():
+  active_tools = []
+  for tool in tools:
+    if tool.is_active():
+      active_tools += [tool]
+  return active_tools
+
+# Returns a string that should be added to PATH to get the given tools.
+def path_additions(tools_to_activate):
+  # These directories should be added to PATH
+  path_add = get_required_path(tools_to_activate)
+  # These already exist.
+  existing_path = os.environ['PATH'].replace('\\', '/').split(ENVPATH_SEPARATOR)
+  new_path = [item for item in path_add if item not in existing_path]
+  return ENVPATH_SEPARATOR.join(new_path)
+
+def construct_env_windows(tools_to_activate, permanent):
+  add_to_path = path_additions(tools_to_activate)
+  if len(add_to_path) > 0:
+    add_to_path = add_to_path + ';'
+  newpath = add_to_path + '%PATH%'
+  
+# Dont permanently add to PATH, since this will break the whole system if there are more than 1024 chars in PATH.
+# (SETX truncates to set only 1024 chars)
+#  if permanent:
+#    print 'SETX PATH "' + newpath + '"'
+#  else:
+
+  print 'SET PATH=' + newpath
+  print ''
+  for tool in tools_to_activate:
+    if hasattr(tool, 'activated_env'):
+      (key, value) = parse_key_value(tool.activated_env)
+      value = value.replace('%installation_dir%', sdk_path(tool.installation_dir()))
+      if permanent:
+        print 'SETX ' + key + ' "' + value + '"'
+      else:
+        print 'SET ' + key + '=' + value
+
+def construct_env(tools_to_activate, permanent):
+  if WINDOWS:
+    construct_env_windows(tools_to_activate, permanent)
+
 def main():
   load_dot_emscripten()
   load_sdk_manifest()
@@ -699,20 +742,14 @@ def main():
     if tool == None:
       print "Error: No tool or SDK found by name '" + sys.argv[2] + "'."
       return 1
+
     tools_to_activate = [tool] + tool.recursive_dependencies()
-    # These directories should be added to PATH
-    path_add = get_required_path(tools_to_activate)
-    # These already exist.
-    existing_path = os.environ['PATH'].replace('\\', '/').split(ENVPATH_SEPARATOR)
-    #print str(existing_path)
-    new_path = [item for item in path_add if item not in existing_path]
-#    print existing_path
- #   print set(path_add)
-    #uniq = list(set(existing_path) - set(path_add))
-    #print uniq
-    #new_path = path_add + 
-    print ENVPATH_SEPARATOR.join(new_path)
-    
+    print path_additions(tools_to_activate)
+
+    return 0
+  elif cmd == 'construct_env':
+    tools_to_activate = currently_active_tools()
+    construct_env(tools_to_activate, len(sys.argv) >= 3 and 'perm' in sys.argv[2])
     return 0
   elif cmd == 'update':
     update_emsdk()
