@@ -573,6 +573,7 @@ def update_emsdk():
   if WINDOWS:
     download_text_file(emsdk_master_server + 'emsdk_add_path.bat', emsdk_path(), download_even_if_exists=True)
     download_text_file(emsdk_master_server + 'emcmdprompt.bat', emsdk_path(), download_even_if_exists=True)
+    download_text_file(emsdk_master_server + 'emsdk.bat', emsdk_path(), download_even_if_exists=True)
   else:
     download_text_file(emsdk_master_server + 'emsdk_add_path', emsdk_path(), download_even_if_exists=True)
   print 'Update complete.'
