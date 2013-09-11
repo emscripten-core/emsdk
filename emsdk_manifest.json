@@ -80,6 +80,12 @@
     "version": "0.9.0",
     "windows_url": "vs-tool_0.9.0.zip",
     "windows_install_path": "%MSBuildPlatformsDir%/Emscripten"
+  },
+  {
+    "id": "vs-tool",
+    "version": "0.9.1",
+    "windows_url": "vs-tool_0.9.1.zip",
+    "windows_install_path": "%MSBuildPlatformsDir%/Emscripten"
   }
   ],
 
