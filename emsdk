@@ -12,7 +12,7 @@ if EMSDK_DEV and not 'active_path' in sys.argv:
   print 'EMSDK_DEV active.'
   emsdk_master_server = 'http://clb.demon.fi/emscripten_dev/'
 else:
-  emsdk_master_server = 'http://clb.demon.fi/emscripten/'
+  emsdk_master_server = 'https://s3.amazonaws.com/mozilla-games/emscripten/'
 emscripten_git_repo = 'git@github.com:kripken/emscripten.git'
 
 WINDOWS = False
