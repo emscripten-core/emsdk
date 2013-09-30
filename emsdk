@@ -92,7 +92,7 @@ def untargz(source_filename, dest_dir, unpack_even_if_exists=False):
   return True
 
 # http://stackoverflow.com/questions/12886768/simple-way-to-unzip-file-in-python-on-all-oses
-def unzip(source_filename, dest_dir):
+def unzip(source_filename, dest_dir, unpack_even_if_exists=False):
   if not unpack_even_if_exists and num_files_in_directory(dest_dir) > 0:
     print "File '" + source_filename + "' has already been unpacked, skipping."
     return True
@@ -131,15 +131,18 @@ def path_points_to_directory(path):
   else:
     return True
 
+# On success, returns the filename on the disk pointing to the destination file that was produced
+# On failure, returns None.
 def download_file(url, dstpath, download_even_if_exists=False):
   file_name = url.split('/')[-1]
   if path_points_to_directory(dstpath):
     file_name = os.path.join(dstpath, file_name)
   else:
     file_name = dstpath
+
   if os.path.exists(file_name) and not download_even_if_exists:
     print "File '" + file_name + "' already downloaded, skipping."
-    return True
+    return file_name
   try:
     u = urllib2.urlopen(url)
     mkdir_p(os.path.dirname(file_name))
@@ -164,12 +167,12 @@ def download_file(url, dstpath, download_even_if_exists=False):
     f.close()
   except urllib2.HTTPError, e:
     print "HTTP error with URL '" + url + "': " + str(e)
-    return False
-  return True
+    return None
+  return file_name
 
 def download_text_file(url, dstpath, download_even_if_exists=False):
-  download_file(url, dstpath, download_even_if_exists)
-  fix_lineendings(os.path.join(emsdk_path(), os.path.split(url)[1]))
+  filename = download_file(url, dstpath, download_even_if_exists)
+  fix_lineendings(os.path.join(emsdk_path(), filename))
 
 def run_get_output(cmd, cwd=None):
   process = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE, env=os.environ.copy())
@@ -244,13 +247,13 @@ def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False):
   if not download_even_if_exists and num_files_in_directory(dest_dir) > 0:
     print "The contents of file '" + zipfile + "' already exist in destination '" + dest_dir + "', skipping."
     return True
-  success = download_file(urlparse.urljoin(emsdk_packages_url, zipfile), 'zips/', download_even_if_exists)
-  if not success:
+  dst_file = download_file(urlparse.urljoin(emsdk_packages_url, zipfile), 'zips/', download_even_if_exists)
+  if not dst_file:
     return False
   if zipfile.endswith('.zip'):
-    return unzip('zips/'+zipfile, dest_dir, unpack_even_if_exists=download_even_if_exists)
+    return unzip(dst_file, dest_dir, unpack_even_if_exists=download_even_if_exists)
   else:
-    return untargz('zips/'+zipfile, dest_dir, unpack_even_if_exists=download_even_if_exists)
+    return untargz(dst_file, dest_dir, unpack_even_if_exists=download_even_if_exists)
 
 def to_unix_path(p):
   return p.replace('\\', '/')
@@ -502,7 +505,11 @@ class Tool:
       elif url.endswith('zip') or url.endswith('.tar') or url.endswith('.gz'):
         success = download_and_unzip(url, self.installation_path())
       else:
-        success = download_file(urlparse.urljoin(emsdk_packages_url, self.download_url()), self.installation_path())
+        dst_file = download_file(urlparse.urljoin(emsdk_packages_url, self.download_url()), self.installation_path())
+        if dst_file:
+          success = True
+        else:
+          success = False
       if not success:
         print "Installation failed!"
         return False
