@@ -53,7 +53,6 @@ If you do not want to use the SDK, there exists guides for setting up Emscripten
 #### Linux
 
 The SDK is not available for Linux at the moment. To get started on Linux, see one of the following guides for a manual setup:
-* See the [Tutorial](https://github.com/kripken/emscripten/wiki/Tutorial) page for Linux requirements.
 * For help on Ubuntu, you can follow the [Getting Started on Ubuntu 12.10](https://github.com/kripken/emscripten/wiki/Getting-Started-on-Ubuntu-12.10) guide for instructions on how to obtain the prerequisites and build Clang manually using CMake.
 * For help on Debian, see this [guide by EarthServer](https://earthserver.com/Setting_up_emscripten_development_environment_on_Linux).
 * rhelmer has provided a Vagrant VM for Emscripten, see [emscripten-vagrant](https://github.com/rhelmer/emscripten-vagrant).
