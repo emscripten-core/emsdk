@@ -12,7 +12,7 @@
     "id": "clang",
     "version": "3.2",
     "bitness": 64,
-    "osx_url": "clang+llvm-3.2-x86_64-apple-darwin11.tar.gz",
+    "osx_url": "clang%2Bllvm-3.2-x86_64-apple-darwin11.tar.gz",
     "activated_path": "%installation_dir%/bin",
     "activated_cfg": "LLVM_ROOT='%installation_dir%/bin'"
   },
