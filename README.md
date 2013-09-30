@@ -9,9 +9,9 @@ Get the SDK
 To get started with Emscripten development quickly and hassle-free, grab one of the packages below:
 
 Windows:
-* [emsdk-webinstall.exe](http://clb.demon.fi/emscripten/releases/emsdk-webinstall.exe): Emscripten SDK Web Installer is a NSIS installer that always gets you the latest Emscripten SDK from the web.
-* [emsdk-1.5.6.1-full.exe](http://clb.demon.fi/emscripten/releases/emsdk-1.5.6.1-full.exe): Emscripten SDK 1.5.6.1 Offline Installer is a NSIS installer that bundles together the Emscripten 1.5.6 toolchain as an offline-installable package.
-* [emsdk-portable.zip](http://clb.demon.fi/emscripten/releases/emsdk-portable.zip): Portable Emscripten SDK is a portable version of the Emscripten SDK that does not require system installation privileges.
+* [emsdk-webinstall.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-webinstall.exe): Emscripten SDK Web Installer is a NSIS installer that always gets you the latest Emscripten SDK from the web.
+* [emsdk-1.5.6.1-full.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.5.6.1-full.exe): Emscripten SDK 1.5.6.1 Offline Installer is a NSIS installer that bundles together the Emscripten 1.5.6 toolchain as an offline-installable package.
+* [emsdk-portable.zip](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.zip): Portable Emscripten SDK is a portable version of the Emscripten SDK that does not require system installation privileges.
 
 Mac OS X:
 
@@ -81,7 +81,7 @@ Run `emsdk help` or just `emsdk` to get information about all available commands
 
 To get a list of all currently installed tools and SDK versions, and all available tools, run `emsdk list`.
 * A line will be printed for each tool/SDK that is available for installation.
-* The text `INSTALLED` will be shown for each tool that is available for install.
+* The text `INSTALLED` will be shown for each tool that has already been installed.
 * If a tool/SDK is currently active, a star (*) will be shown next to it.
 
 ##### How do I install a tool/SDK version?
