@@ -61,22 +61,15 @@ The SDK is not available for Linux at the moment. To get started on Linux, see o
 
 <b>Important!</b> Emscripten is very specific about the versions of Clang it supports! Currently Clang 3.2 is being used, building a newer version can have some issues!
 
-## SDK Concepts
+## Getting Started with Emscripten
 
-The Emscripten SDK is effectively a small package manager for tools that are used in conjunction with Emscripten. The following glossary highlights the important concepts to help understanding the internals of the SDK:
-
-* <b>Tool</b>: The basic unit of software bundled in the SDK. A Tool has a name and a version. For example, 'clang-3.2-32bit' is a Tool that contains the 32-bit version of the Clang v3.2 compiler.
-* <b>SDK</b>: A set of tools. For example, 'sdk-1.5.6-32bit' is an SDK consisting of the tools clang-3.2-32bit, node-0.10.17-32bit, python-2.7.5.1-32bit and emscripten-1.5.6.
-* <b>Active Tool/SDK</b>: Emscripten stores compiler configuration in a user-specific file <b>~/.emscripten</b>. This file points to paths for Emscripten, Python, Clang and so on. If the file ~/.emscripten is configured to point to a Tool in a specific directory, then that tool is denoted as being <b>active</b>. The Emscripten Command Prompt always gives access to the currently active Tools. This mechanism allows switching between different SDK versions easily.
-* <b>emsdk</b>: This is the name of the manager script that Emscripten SDK is accessed through. Most operations are of the form `emsdk command`. To access the emsdk script, launch the Emscripten Command Prompt.
-
-## Using the SDK
-
-The tools in the Emscripten SDK can be accessed in various ways. Which one you use depends on your preference. See the Emscripten [Tutorial](https://github.com/kripken/emscripten/wiki/Tutorial) page for help on 
+The tools in the Emscripten toolchain can be accessed in various ways. Which one you use depends on your preference.
 
 ##### Command line usage
 
-The Emscripten compiler is available on  the command line in the folder `emsdk/emscripten/<version>/` by invoking `emcc` or `em++`. You can add this directory to PATH to get an easy access to the toolchain.
+The Emscripten compiler is available on the command line by invoking `emcc` or `em++`. They are located in the folder `emsdk/emscripten/<version>/` in the SDK. You can add this directory to PATH to get an easy access to the toolchain.
+
+<b>Check out the tutorial!</b> See the Emscripten [Tutorial](https://github.com/kripken/emscripten/wiki/Tutorial) page for help on how to get going with the tools from command line.
 
 ##### Windows: Emscripten Command Prompt
 
@@ -85,6 +78,15 @@ Start the Emscripten Command Prompt from Start Menu -> All Programs -> Emscripte
 ##### Windows: Use Visual Studio 2010
 
 After installing the vs-tool plugin, a new 'Emscripten' configuration will appear to the list of all Solution Configurations in Visual Studio. Activating that configuration for a solution/project will make Visual Studio run the project build through Emscripten, producing .html or .js output, depending on the project properties you set up.
+
+## SDK Concepts
+
+The Emscripten SDK is effectively a small package manager for tools that are used in conjunction with Emscripten. The following glossary highlights the important concepts to help understanding the internals of the SDK:
+
+* <b>Tool</b>: The basic unit of software bundled in the SDK. A Tool has a name and a version. For example, 'clang-3.2-32bit' is a Tool that contains the 32-bit version of the Clang v3.2 compiler.
+* <b>SDK</b>: A set of tools. For example, 'sdk-1.5.6-32bit' is an SDK consisting of the tools clang-3.2-32bit, node-0.10.17-32bit, python-2.7.5.1-32bit and emscripten-1.5.6.
+* <b>Active Tool/SDK</b>: Emscripten stores compiler configuration in a user-specific file <b>~/.emscripten</b>. This file points to paths for Emscripten, Python, Clang and so on. If the file ~/.emscripten is configured to point to a Tool in a specific directory, then that tool is denoted as being <b>active</b>. The Emscripten Command Prompt always gives access to the currently active Tools. This mechanism allows switching between different SDK versions easily.
+* <b>emsdk</b>: This is the name of the manager script that Emscripten SDK is accessed through. Most operations are of the form `emsdk command`. To access the emsdk script, launch the Emscripten Command Prompt.
 
 ## SDK Maintenance
 
@@ -119,7 +121,7 @@ You can toggle between different tools and SDK versions by running `emsdk activa
 
 ## Uninstalling the Emscripten SDK
 
-If you installed the SDK using a NSIS installer, launch 'Control Panel' -> 'Uninstall a program' -> 'Emscripten SDK'.
+If you installed the SDK using a NSIS installer on Windows, launch 'Control Panel' -> 'Uninstall a program' -> 'Emscripten SDK'.
 
 If you want to remove a Portable SDK, just delete the directory where you put the Portable SDK into.
 
