@@ -1,7 +1,7 @@
 Emscripten SDK
 ==============
 
-To make it quick and easy to set up and maintain an Emscripten development environment, the whole Emscripten toolchain is available as a standalone Emscripten SDK. The SDK provides all the required tools, such as Clang, python node.js and Visual Studio integration along with an update mechanism that makes it simple to migrate to newer Emscripten versions as they are released.
+To make it quick and easy to set up and maintain an Emscripten development environment, the whole Emscripten toolchain is available as a standalone Emscripten SDK. The SDK provides all the required tools, such as Clang, Python, Node.js and Visual Studio integration along with an update mechanism that makes it simple to migrate to newer Emscripten versions as they are released.
 
 Get the SDK
 -----------
