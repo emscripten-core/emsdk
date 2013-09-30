@@ -1,39 +1,37 @@
-Emscripten SDK
-==============
+# Emscripten SDK
 
-To make it quick and easy to set up and maintain an Emscripten development environment, the whole Emscripten toolchain is available as a standalone Emscripten SDK. The SDK provides all the required tools, such as Clang, Python, Node.js and Visual Studio integration along with an update mechanism that makes it simple to migrate to newer Emscripten versions as they are released.
+The whole Emscripten toolchain is distributed as a standalone Emscripten SDK. The SDK provides all the required tools, such as Clang, Python, Node.js and Visual Studio integration along with an update mechanism that enables migrating to newer Emscripten versions as they are released.
 
-Get the SDK
------------
+## Downloads
 
-To get started with Emscripten development quickly and hassle-free, grab one of the packages below:
+To get started with Emscripten development, grab one of the packages below:
 
 Windows:
 * [emsdk-webinstall.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-webinstall.exe): Emscripten SDK Web Installer is a NSIS installer that always gets you the latest Emscripten SDK from the web.
-* [emsdk-1.5.6.1-full.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.5.6.1-full.exe): Emscripten SDK 1.5.6.1 Offline Installer is a NSIS installer that bundles together the Emscripten 1.5.6 toolchain as an offline-installable package.
-* [emsdk-portable.zip](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.zip): Portable Emscripten SDK is a portable version of the Emscripten SDK that does not require system installation privileges.
+* [emsdk-1.5.6.1-full.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.5.6.1-full.exe): Emscripten SDK 1.5.6.1 Offline Installer is a NSIS installer that bundles together the Emscripten toolchain as an offline-installable package.
+* [emsdk-portable.zip](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.zip): Portable Emscripten SDK is a web-install version of the Emscripten SDK that does not require system installation privileges.
 
 Mac OS X:
+* [emsdk-portable.tar.gz](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz): Emscripten SDK is available as a portable web-installer for OS X.
 
-1. Download [emsdk](http://clb.demon.fi/emscripten/emsdk) (.py script) and place it to a directory you want to locate the Emscripten SDK into.
-2. In command line, make the emsdk script executable by typing `chmod +x emsdk` in the directory you placed the script into.
-3. Run `./emsdk update`. This will fetch the latest registry of available tools.
-4. Run `./emsdk install latest`. This will download and install the latest SDK tools.
-5. Run `./emsdk activate latest`. This will set up ~/.emscripten to point to the SDK.
+Linux:
+* See the instructions section below.
 
-Windows: Installing using the NSIS Installer
------------------------------------
+## Installation Instructions
+
+Check one of the topics below for what to do with the package you just downloaded.
+
+#### Windows: Installing using a NSIS Installer
 
 The NSIS installers register the Emscripten SDK as a 'standard' Windows application. To install the SDK, download a NSIS .exe file above, double-click on it, and run through the installer to perform the installation. After the installer finishes, the full Emscripten toolchain will be available in the directory that was chosen during the installation, and no other steps are necessary. If your system has Visual Studio 2010 installed, the vs-tool MSBuild plugin will be automatically installed as well.
 
-Windows: Installing the Portable SDK
----------------------------
+#### Windows and OSX: Installing the Portable SDK
 
-The Portable Emscripten SDK is a no-installer version of the SDK package. It is identical to the NSIS installer, except that it does not interact with the Windows registry, which allows Emscripten to be used on a computer without administrative privileges, and the ability to migrate the installation from one location (directory or computer) to another by just copying/zipping up the directory contents.
+The Portable Emscripten SDK is a no-installer version of the SDK package. It is identical to the NSIS installer, except that it does not interact with the Windows registry, which allows Emscripten to be used on a computer without administrative privileges, and gives the ability to migrate the installation from one location (directory or computer) to another by just copying/zipping up the directory contents.
 
 If you want to use the Portable Emscripten SDK, the initial setup process is as follows:
 
-1. Unzip the SDK to a directory of your choice. This directory will contain the Emscripten SDK.
+1. Download and unzip the portable SDK package to a directory of your choice. This directory will contain the Emscripten SDK.
 2. Open a command prompt to the directory of the SDK.
 3. Run `emsdk update`. This will fetch the latest registry of available tools.
 4. Run `emsdk install latest`. This will download and install the latest SDK tools.
@@ -41,8 +39,26 @@ If you want to use the Portable Emscripten SDK, the initial setup process is as 
 
 Whenever you change the location of the Portable SDK (e.g. take it to another computer), re-run step 5.
 
-SDK Concepts
-------------
+Note: On OSX, type `./emsdk` instead of `emsdk` above.
+
+#### Windows and OSX: Build the Emscripten toolchain manually
+
+If you do not want to use the SDK, there exists guides for setting up Emscripten and its prerequisites manually, see
+
+* [Build Clang on Mac OS X](https://github.com/kripken/emscripten/wiki/Getting-started-on-Mac-OS-X).
+* [Download a prebuilt Clang on Mac OS X](https://gist.github.com/dweekly/5873953).
+* [Manual Emscripten setup on Windows](https://github.com/kripken/emscripten/wiki/Using-Emscripten-on-Windows).
+
+#### Linux
+
+The SDK is not available for Linux at the moment. To get started on Linux, see one of the following guides for a manual setup:
+* See the [Tutorial](https://github.com/kripken/emscripten/wiki/Tutorial) page for Linux requirements.
+* For help on Ubuntu, you can follow the [Getting Started on Ubuntu 12.10](https://github.com/kripken/emscripten/wiki/Getting-Started-on-Ubuntu-12.10) guide for instructions on how to obtain the prerequisites and build Clang manually using CMake.
+* For help on Debian, see this [guide by EarthServer](https://earthserver.com/Setting_up_emscripten_development_environment_on_Linux).
+* rhelmer has provided a Vagrant VM for Emscripten, see [emscripten-vagrant](https://github.com/rhelmer/emscripten-vagrant).
+* Dirk Krause created an [Amazon EC2 image](https://groups.google.com/forum/?fromgroups=#!topic/emscripten-discuss/H8kG0kP1eDE) for Emscripten.
+
+## SDK Concepts
 
 The Emscripten SDK is effectively a small package manager for tools that are used in conjunction with Emscripten. The following glossary highlights the important concepts to help understanding the internals of the SDK:
 
@@ -51,25 +67,23 @@ The Emscripten SDK is effectively a small package manager for tools that are use
 * <b>Active Tool/SDK</b>: Emscripten stores compiler configuration in a user-specific file <b>~/.emscripten</b>. This file points to paths for Emscripten, Python, Clang and so on. If the file ~/.emscripten is configured to point to a Tool in a specific directory, then that tool is denoted as being <b>active</b>. The Emscripten Command Prompt always gives access to the currently active Tools. This mechanism allows switching between different SDK versions easily.
 * <b>emsdk</b>: This is the name of the manager script that Emscripten SDK is accessed through. Most operations are of the form `emsdk command`. To access the emsdk script, launch the Emscripten Command Prompt.
 
-Using the SDK
--------------
+## Using the SDK
 
-The tools in the Emscripten SDK can be accessed in various ways. Which one you use depends only on your preference.
+The tools in the Emscripten SDK can be accessed in various ways. Which one you use depends on your preference. See the Emscripten [Tutorial](https://github.com/kripken/emscripten/wiki/Tutorial) page for help on 
 
-##### Emscripten Command Prompt
+##### Command line usage
+
+The Emscripten compiler is available on  the command line in the folder `emsdk/emscripten/<version>/` by invoking `emcc` or `em++`. You can add this directory to PATH to get an easy access to the toolchain.
+
+##### Windows: Emscripten Command Prompt
 
 Start the Emscripten Command Prompt from Start Menu -> All Programs -> Emscripten -> Emscripten Command Prompt. This will spawn a new command prompt that has all the tools for the currently activated SDK version set to PATH. The Emscripten Command Prompt is analogous to the Visual Studio Command Prompt that ships with installations of Visual Studio.
 
-##### Global PATH Setup
-
-If you would prefer that all command prompts in the system should have the Emscripten SDK tools in PATH, you can of course add them manually. Start the Emscripten Command Prompt to display an info line of all paths that should be added.
-
-##### Use Visual Studio 2010
+##### Windows: Use Visual Studio 2010
 
 After installing the vs-tool plugin, a new 'Emscripten' configuration will appear to the list of all Solution Configurations in Visual Studio. Activating that configuration for a solution/project will make Visual Studio run the project build through Emscripten, producing .html or .js output, depending on the project properties you set up.
 
-SDK Maintenance
----------------
+## SDK Maintenance
 
 The following tasks are common with the Emscripten SDK:
 
@@ -100,15 +114,13 @@ The command `emsdk update` will fetch package information for all new tools and 
 
 You can toggle between different tools and SDK versions by running `emsdk activate <tool/sdk name>`.
 
-Uninstalling the Emscripten SDK
--------------------------------
+## Uninstalling the Emscripten SDK
 
 If you installed the SDK using a NSIS installer, launch 'Control Panel' -> 'Uninstall a program' -> 'Emscripten SDK'.
 
 If you want to remove a Portable SDK, just delete the directory where you put the Portable SDK into.
 
-Platform-Specific Notes
------------------------
+## Platform-Specific Notes
 
 ##### Mac OS X
 
@@ -123,4 +135,4 @@ Platform-Specific Notes
 
 ##### Windows
 
-* Whereas OSX and Linux tools only ship 64-bit executables of the toolchain, on Windows the 32-bit version of the toolchain is available. This is due to a detected incompatibility with Visual Studio 2010 and 64-bit tools.
+* Whereas OSX only ships 64-bit executables of the toolchain, on Windows the 32-bit version of the toolchain is available. This is due to a detected incompatibility with Visual Studio 2010 and 64-bit tools.
