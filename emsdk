@@ -80,8 +80,8 @@ def run(cmd, cwd=None):
   return process.returncode
 
 # http://pythonicprose.blogspot.fi/2009/10/python-extract-targz-archive.html
-def untargz(source_filename, dest_dir):
-  if num_files_in_directory(dest_dir) > 0:
+def untargz(source_filename, dest_dir, unpack_even_if_exists=False):
+  if not unpack_even_if_exists and num_files_in_directory(dest_dir) > 0:
     print "File '" + source_filename + "' has already been unpacked, skipping."
     return True
   print "Unpacking '" + source_filename + "' to '" + dest_dir + "'"
@@ -93,7 +93,7 @@ def untargz(source_filename, dest_dir):
 
 # http://stackoverflow.com/questions/12886768/simple-way-to-unzip-file-in-python-on-all-oses
 def unzip(source_filename, dest_dir):
-  if num_files_in_directory(dest_dir) > 0:
+  if not unpack_even_if_exists and num_files_in_directory(dest_dir) > 0:
     print "File '" + source_filename + "' has already been unpacked, skipping."
     return True
   print "Unpacking '" + source_filename + "' to '" + dest_dir + "'"
@@ -248,9 +248,9 @@ def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False):
   if not success:
     return False
   if zipfile.endswith('.zip'):
-    return unzip('zips/'+zipfile, dest_dir)
+    return unzip('zips/'+zipfile, dest_dir, unpack_even_if_exists=download_even_if_exists)
   else:
-    return untargz('zips/'+zipfile, dest_dir)
+    return untargz('zips/'+zipfile, dest_dir, unpack_even_if_exists=download_even_if_exists)
 
 def to_unix_path(p):
   return p.replace('\\', '/')
