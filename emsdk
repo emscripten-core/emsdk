@@ -13,6 +13,9 @@ if EMSDK_DEV and not 'active_path' in sys.argv:
   emsdk_master_server = 'http://clb.demon.fi/emscripten_dev/'
 else:
   emsdk_master_server = 'https://s3.amazonaws.com/mozilla-games/emscripten/'
+
+emsdk_packages_url = urlparse.urljoin(emsdk_master_server, 'packages')
+
 emscripten_git_repo = 'git@github.com:kripken/emscripten.git'
 
 WINDOWS = False
@@ -237,14 +240,17 @@ def git_clone_checkout_and_pull(url, dstpath, branch):
   success = git_checkout_and_pull(dstpath, branch)
   return success
 
-def download_and_unzip(zipfile, dst):
-  success = download_file(urlparse.urljoin(emsdk_master_server, zipfile), 'zips/')
+def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False):
+  if not download_even_if_exists and num_files_in_directory(dest_dir) > 0:
+    print "The contents of file '" + zipfile + "' already exist in destination '" + dest_dir + "', skipping."
+    return True
+  success = download_file(urlparse.urljoin(emsdk_packages_url, zipfile), 'zips/', download_even_if_exists)
   if not success:
     return False
   if zipfile.endswith('.zip'):
-    return unzip('zips/'+zipfile, dst)
+    return unzip('zips/'+zipfile, dest_dir)
   else:
-    return untargz('zips/'+zipfile, dst)
+    return untargz('zips/'+zipfile, dest_dir)
 
 def to_unix_path(p):
   return p.replace('\\', '/')
@@ -496,7 +502,7 @@ class Tool:
       elif url.endswith('zip') or url.endswith('.tar') or url.endswith('.gz'):
         success = download_and_unzip(url, self.installation_path())
       else:
-        success = download_file(urlparse.urljoin(emsdk_master_server, self.download_url()), self.installation_path())
+        success = download_file(urlparse.urljoin(emsdk_packages_url, self.download_url()), self.installation_path())
       if not success:
         print "Installation failed!"
         return False
@@ -566,18 +572,13 @@ def find_latest_sdk():
   return sdks[-1] # Newest SDK is always at the end of the list.
 
 def update_emsdk():
-  download_text_file(urlparse.urljoin(emsdk_master_server, 'emsdk_manifest.json'), emsdk_path(), download_even_if_exists=True)
-  if not EMSDK_DEV:
-    download_text_file(urlparse.urljoin(emsdk_master_server, 'emsdk'), emsdk_path(), download_even_if_exists=True)
-  download_text_file(urlparse.urljoin(emsdk_master_server, 'README.md'), emsdk_path(), download_even_if_exists=True)
   if WINDOWS:
-    download_text_file(urlparse.urljoin(emsdk_master_server, 'emsdk_add_path.bat'), emsdk_path(), download_even_if_exists=True)
-    download_text_file(urlparse.urljoin(emsdk_master_server, 'emcmdprompt.bat'), emsdk_path(), download_even_if_exists=True)
-    download_text_file(urlparse.urljoin(emsdk_master_server, 'emsdk.bat'), emsdk_path(), download_even_if_exists=True)
+    download_and_unzip(urlparse.urljoin(emsdk_packages_url, 'emsdk_windows_update.zip'), emsdk_path(), download_even_if_exists=True)
+  elif OSX:
+    download_and_unzip(urlparse.urljoin(emsdk_packages_url, 'emsdk_osx_update.tar.gz'), emsdk_path(), download_even_if_exists=True)
   else:
-    download_text_file(urlparse.urljoin(emsdk_master_server, 'emsdk_add_path'), emsdk_path(), download_even_if_exists=True)
-  print 'Update complete.'
-  
+    print 'Unsupported OS, cannot update!'
+
 def load_sdk_manifest():
   global tools
   try:
