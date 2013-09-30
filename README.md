@@ -47,6 +47,7 @@ If you do not want to use the SDK, there exists guides for setting up Emscripten
 
 * [Build Clang on Mac OS X](https://github.com/kripken/emscripten/wiki/Getting-started-on-Mac-OS-X).
 * [Download a prebuilt Clang on Mac OS X](https://gist.github.com/dweekly/5873953).
+* [Get Emscripten and Clang via brew](https://gist.github.com/nathanhammond/1974955) by nathanhammond.
 * [Manual Emscripten setup on Windows](https://github.com/kripken/emscripten/wiki/Using-Emscripten-on-Windows).
 
 #### Linux
@@ -57,6 +58,8 @@ The SDK is not available for Linux at the moment. To get started on Linux, see o
 * For help on Debian, see this [guide by EarthServer](https://earthserver.com/Setting_up_emscripten_development_environment_on_Linux).
 * rhelmer has provided a Vagrant VM for Emscripten, see [emscripten-vagrant](https://github.com/rhelmer/emscripten-vagrant).
 * Dirk Krause created an [Amazon EC2 image](https://groups.google.com/forum/?fromgroups=#!topic/emscripten-discuss/H8kG0kP1eDE) for Emscripten.
+
+<b>Important!</b> Emscripten is very specific about the versions of Clang it supports! Currently Clang 3.2 is being used, building a newer version can have some issues!
 
 ## SDK Concepts
 
