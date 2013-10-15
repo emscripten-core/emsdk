@@ -12,6 +12,14 @@
     "id": "clang",
     "version": "3.2",
     "bitness": 64,
+    "windows_url": "clang_3.2_64bit.zip",
+    "activated_path": "%installation_dir%/bin",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/bin'"
+  },
+  {
+    "id": "clang",
+    "version": "3.2",
+    "bitness": 64,
     "osx_url": "clang%2Bllvm-3.2-x86_64-apple-darwin11.tar.gz",
     "activated_path": "%installation_dir%/bin",
     "activated_cfg": "LLVM_ROOT='%installation_dir%/bin'"
@@ -22,6 +30,15 @@
     "bitness": 32,
     "windows_url": "node_0.10.17_32bit.exe",
     "windows_install_path": "node/0.10.17_32bit/node.exe",
+    "activated_path": "%installation_dir%",
+    "activated_cfg": "NODE_JS='%installation_dir%/node.exe'"
+  },
+  {
+    "id": "node",
+    "version": "0.10.17",
+    "bitness": 64,
+    "windows_url": "node_0.10.17_64bit.exe",
+    "windows_install_path": "node/0.10.17_64bit/node.exe",
     "activated_path": "%installation_dir%",
     "activated_cfg": "NODE_JS='%installation_dir%/node.exe'"
   },
@@ -38,6 +55,14 @@
     "version": "2.7.5.1",
     "bitness": 32,
     "windows_url": "python_2.7.5.1_32bit.zip",
+    "activated_path": "%installation_dir%",
+    "activated_cfg": "PYTHON='%installation_dir%/python%.exe%'"
+  },
+  {
+    "id": "python",
+    "version": "2.7.5",
+    "bitness": 64,
+    "windows_url": "python_2.7.5_64bit.zip",
     "activated_path": "%installation_dir%",
     "activated_cfg": "PYTHON='%installation_dir%/python%.exe%'"
   },
@@ -104,6 +129,22 @@
     "version": "1.5.6",
     "bitness": 32,
     "uses": ["clang-3.2-32bit", "node-0.10.17-32bit", "python-2.7.5.1-32bit", "emscripten-1.5.6"],
+    "os": "win"
+  },
+  {
+    "version": "incoming",
+    "bitness": 64,
+    "uses": ["clang-3.2-64bit", "node-0.10.17-64bit", "python-2.7.5-64bit", "git-1.8.3", "emscripten-incoming"]
+  },
+  {
+    "version": "master",
+    "bitness": 64,
+    "uses": ["clang-3.2-64bit", "node-0.10.17-64bit", "python-2.7.5-64bit", "git-1.8.3", "emscripten-master"]
+  },
+  {
+    "version": "1.5.6",
+    "bitness": 64,
+    "uses": ["clang-3.2-64bit", "node-0.10.17-64bit", "python-2.7.5-64bit", "emscripten-1.5.6"],
     "os": "win"
   },
   {
