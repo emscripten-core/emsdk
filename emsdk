@@ -575,8 +575,26 @@ def find_sdk(name):
       return sdk
   return None
 
+def is_os_64bit(): # http://stackoverflow.com/questions/2208828/detect-64bit-os-windows-in-python
+  return platform.machine().endswith('64')
+
+def find_latest_32bit_sdk():
+  for sdk in reversed(sdks): # Newest SDK is always at the end of the list.
+    if not hasattr(sdk, 'bitness') or sdk.bitness == 32: # If no 'bitness' field, it means the SDK is universal.
+      return sdk
+  return None
+
+def find_latest_64bit_sdk():
+  for sdk in reversed(sdks): # Newest SDK is always at the end of the list.
+    if not hasattr(sdk, 'bitness') or sdk.bitness == 64: # If no 'bitness' field, it means the SDK is universal.
+      return sdk
+  return None
+
 def find_latest_sdk():
-  return sdks[-1] # Newest SDK is always at the end of the list.
+  if is_os_64bit():
+    return find_latest_64bit_sdk()
+  else:
+    return find_latest_32bit_sdk()
 
 def update_emsdk():
   if WINDOWS:
@@ -745,6 +763,10 @@ def main():
         sys.argv += [str(sdk)]
     if sys.argv[2] == 'latest':
       sys.argv[2] = str(find_latest_sdk())
+    elif sys.argv[2] == 'latest-32bit':
+      sys.argv[2] = str(find_latest_32bit_sdk())
+    elif sys.argv[2] == 'latest-64bit':
+      sys.argv[2] = str(find_latest_64bit_sdk())
     tool = find_tool(sys.argv[2])
     if tool == None:
       tool = find_sdk(sys.argv[2])
