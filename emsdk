@@ -727,6 +727,15 @@ def main():
                                   added to PATH. '''
     return 1
   cmd = sys.argv[1]
+
+  if (cmd == 'active_path' or cmd == 'update' or cmd == 'install') and len(sys.argv) >= 3:
+    if sys.argv[2] == 'latest':
+      sys.argv[2] = str(find_latest_sdk())
+    elif sys.argv[2] == 'latest-32bit':
+      sys.argv[2] = str(find_latest_32bit_sdk())
+    elif sys.argv[2] == 'latest-64bit':
+      sys.argv[2] = str(find_latest_64bit_sdk())
+
   if cmd == 'list':
     print ''
     if len(tools) > 0:
@@ -761,12 +770,6 @@ def main():
         return 1
       else:
         sys.argv += [str(sdk)]
-    if sys.argv[2] == 'latest':
-      sys.argv[2] = str(find_latest_sdk())
-    elif sys.argv[2] == 'latest-32bit':
-      sys.argv[2] = str(find_latest_32bit_sdk())
-    elif sys.argv[2] == 'latest-64bit':
-      sys.argv[2] = str(find_latest_64bit_sdk())
     tool = find_tool(sys.argv[2])
     if tool == None:
       tool = find_sdk(sys.argv[2])
@@ -789,8 +792,6 @@ def main():
     if len(sys.argv) <= 2:
       print "Missing parameter. Type 'emsdk activate <tool name>' to install a tool or an SDK. Type 'emsdk list' to obtain a list of available tools. Type 'emsdk install latest' to automatically install the newest version of the SDK."
       return 1
-    if sys.argv[2] == 'latest':
-      sys.argv[2] = str(find_latest_sdk())
     tools_to_activate = []
     for i in range(2, len(sys.argv)):
       tool = find_tool(sys.argv[i])
@@ -806,8 +807,6 @@ def main():
     if len(sys.argv) <= 2:
       print "Missing parameter. Type 'emsdk install <tool name>' to install a tool or an SDK. Type 'emsdk list' to obtain a list of available tools. Type 'emsdk install latest' to automatically install the newest version of the SDK."
       return 1
-    if sys.argv[2] == 'latest':
-      sys.argv[2] = str(find_latest_sdk())
     tool = find_tool(sys.argv[2])
     if tool == None:
       tool = find_sdk(sys.argv[2])
