@@ -728,7 +728,7 @@ def main():
     return 1
   cmd = sys.argv[1]
 
-  if (cmd == 'active_path' or cmd == 'update' or cmd == 'install') and len(sys.argv) >= 3:
+  if (cmd == 'active_path' or cmd == 'update' or cmd == 'install' or cmd == 'activate') and len(sys.argv) >= 3:
     if sys.argv[2] == 'latest':
       sys.argv[2] = str(find_latest_sdk())
     elif sys.argv[2] == 'latest-32bit':
