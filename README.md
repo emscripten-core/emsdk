@@ -8,7 +8,8 @@ To get started with Emscripten development, grab one of the packages below:
 
 Windows:
 * [emsdk-webinstall.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-webinstall.exe): Emscripten SDK Web Installer is a NSIS installer that always gets you the latest Emscripten SDK from the web.
-* [emsdk-1.5.6.1-full.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.5.6.1-full.exe): Emscripten SDK 1.5.6.1 Offline Installer is a NSIS installer that bundles together the Emscripten toolchain as an offline-installable package.
+* [emsdk-1.5.6.2-full-32bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.5.6.2-full-32bit.exe): Emscripten SDK 1.5.6.2 32-bit Offline Installer is a NSIS installer that bundles together the Emscripten toolchain as an offline-installable package.
+* [emsdk-1.5.6.2-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.5.6.2-full-64bit.exe): Emscripten SDK 1.5.6.2 64-bit Offline Installer.
 * [emsdk-portable.zip](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.zip): Portable Emscripten SDK is a web-install version of the Emscripten SDK that does not require system installation privileges.
 
 Mac OS X:
