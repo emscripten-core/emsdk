@@ -190,8 +190,7 @@ warnonce_git_not_found = False
 
 def GIT():
   global warnonce_git_not_found
-#  git = 'git/1.8.3/bin/bin/git.exe'
-  git = 'git/1.8.3/cmd/git.exe'
+  git = 'git/1.8.3/bin/git.exe'
   try:
     (ret, stdout, stderr) = run_get_output([git, '--version'])
     if ret == 0:
