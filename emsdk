@@ -105,13 +105,29 @@ def unzip(source_filename, dest_dir, unpack_even_if_exists=False):
     return True
   print "Unpacking '" + source_filename + "' to '" + dest_dir + "'"
   mkdir_p(dest_dir)
+  common_subdir = None
   with zipfile.ZipFile(source_filename) as zf:
+    # Implement '--strip 1' behavior to unzipping by testing if all the files in the zip reside in a common subdirectory, and if so,
+    # we move the output tree at the end of uncompression step.
+    for member in zf.infolist():
+      words = member.filename.split('/')
+      if common_subdir == None:
+        common_subdir = words[0]
+      elif common_subdir != words[0]:
+        common_subdir = ''
+        break
+
+    unzip_to_dir = dest_dir
+    if common_subdir:
+      unzip_to_dir = os.path.join('/'.join(dest_dir.split('/')[:-1]), 'unzip_temp')
+
+    # Now do the actual decompress.
     for member in zf.infolist():
       # Path traversal defense copied from
       # http://hg.python.org/cpython/file/tip/Lib/http/server.py#l789
       words = member.filename.split('/')
 #      print "words: " + str(words)
-      path = dest_dir
+      path = unzip_to_dir
       for word in words[:-1]:
         drive, word = os.path.splitdrive(word)
         head, word = os.path.split(word)
@@ -119,7 +135,21 @@ def unzip(source_filename, dest_dir, unpack_even_if_exists=False):
         path = os.path.join(path, word)
 #      print "Extracting " + member.filename + " to " + path
 #      zf.extract(member, path)
-      zf.extract(member, dest_dir)
+#      print "Extracting " + member.filename + " to " + unzip_to_dir
+      zf.extract(member, unzip_to_dir)
+
+    if common_subdir:
+      try:
+        if os.path.exists(dest_dir):
+          shutil.rmtree(dest_dir)
+      except:
+        pass
+      shutil.copytree(os.path.join(unzip_to_dir, common_subdir), dest_dir)
+      try:
+        shutil.rmtree(unzip_to_dir)
+      except:
+        pass
+
   return True
 
 # This function interprets whether the given string looks like a path to a directory instead of a file, without looking at the actual filesystem.
