@@ -50,6 +50,13 @@ def file_to_lf(filename):
   text = text.replace('\r\n', '\n')
   open(filename, 'wb').write(text)
 
+# Removes a single file, suppressing exceptions on failure.
+def rmfile(filename):
+  try:
+    os.remove(filename)
+  except:
+    pass
+
 def fix_lineendings(filename):
   if WINDOWS:
     file_to_crlf(filename)
@@ -498,6 +505,8 @@ class Tool:
         success = tool.install()
         if not success:
           return False
+        print "Done."
+        return True
     else:
       url = self.download_url()
       if hasattr(self, 'git_branch'):
@@ -515,10 +524,19 @@ class Tool:
         return False
     print "Done."
 
-    # Sanity check that the installation succeeded.
-    if not self.is_installed():
+    # Sanity check that the installation succeeded, and if so, remove unneeded leftover installation files.
+    if self.is_installed():
+      self.cleanup_temp_install_files()
+    else:
       print "Warning: The installation of '" + str(self) + "' seems to have failed, but no error was detected. Either something went wrong with the installation, or this may indicate an internal emsdk error."
     return True
+
+  def cleanup_temp_install_files(self):
+    url = self.download_url()
+    if url.endswith('zip') or url.endswith('.tar') or url.endswith('.gz'):
+      file_name = url.split('/')[-1]
+      tempzipfile = os.path.join('zips/', file_name)
+      rmfile(tempzipfile)
 
   def uninstall(self):
     if  not self.is_installed():
