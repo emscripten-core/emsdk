@@ -386,7 +386,21 @@ JS_ENGINES = [NODE_JS]
   print ''
   print '   ' + ENVPATH_SEPARATOR.join(path_add)
 
-MSBUILD_DIR = "C:/Program Files (x86)/MSBuild/Microsoft.Cpp/v4.0/Platforms"
+def find_msbuild_dir():
+  program_files = os.environ['ProgramFiles']
+  if not program_files:
+    program_files = 'C:/Program Files'
+  program_files_x86 = os.environ['ProgramFiles(x86)']
+  if not program_files_x86:
+    program_files_x86 = 'C:/Program Files (x86)'
+  MSBUILDX86_DIR = os.path.join(program_files_x86, "MSBuild/Microsoft.Cpp/v4.0/Platforms")
+  MSBUILD_DIR = os.path.join(program_files, "MSBuild/Microsoft.Cpp/v4.0/Platforms")
+  if os.path.exists(MSBUILDX86_DIR):
+    return MSBUILDX86_DIR
+  elif os.path.exists(MSBUILD_DIR):
+    return MSBUILD_DIR
+  else:
+    return '' # No MSbuild installed.
 
 def get_installed_vstool_version(installed_path):
   try:
@@ -409,7 +423,7 @@ class Tool:
   # Specifies the target path where this tool will be installed to. This could either be a directory or a filename (e.g. in case of node.js)
   def installation_path(self):
     if WINDOWS and hasattr(self, 'windows_install_path'):
-      pth = self.windows_install_path.replace("%MSBuildPlatformsDir%", MSBUILD_DIR)
+      pth = self.windows_install_path.replace("%MSBuildPlatformsDir%", find_msbuild_dir())
       return pth
     p = self.version
     if hasattr(self, 'bitness'):
@@ -506,10 +520,11 @@ class Tool:
   # Otherwise, this function returns a string that describes the reason why this tool is not available.
   def can_be_installed(self):
     if self.id == 'vs-tool':
-      if os.path.exists(MSBUILD_DIR):
+      msbuild_dir = find_msbuild_dir()
+      if len(msbuild_dir) > 0:
         return True
       else:
-        return "VS2010 was not found!"
+        return "Visual Studio was not found!"
     else:
       return True
 
