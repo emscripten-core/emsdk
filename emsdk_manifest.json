@@ -67,6 +67,22 @@
     "activated_cfg": "PYTHON='%installation_dir%/python%.exe%'"
   },
   {
+    "id": "java",
+    "version": "7.45",
+    "bitness": 32,
+    "windows_url": "portable_jre_7_update_45_32bit.zip",
+    "activated_path": "%installation_dir%/bin",
+    "activated_env": "JAVA_HOME=%installation_dir%"
+  },
+  {
+    "id": "java",
+    "version": "7.45",
+    "bitness": 64,
+    "windows_url": "portable_jre_7_update_45_64bit.zip",
+    "activated_path": "%installation_dir%/bin",
+    "activated_env": "JAVA_HOME=%installation_dir%"
+  },
+  {
     "id": "git",
     "version": "1.8.3",
     "windows_url": "git_1.8.3.zip",
