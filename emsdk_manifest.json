@@ -155,18 +155,6 @@
     "os": "win"
   },
   {
-    "version": "incoming",
-    "bitness": 32,
-    "uses": ["clang-3.2-32bit", "node-0.10.17-32bit", "python-2.7.5.1-32bit", "git-1.8.3", "emscripten-incoming"],
-    "os": "osx"
-  },
-  {
-    "version": "master",
-    "bitness": 32,
-    "uses": ["clang-3.2-32bit", "node-0.10.17-32bit", "python-2.7.5.1-32bit", "git-1.8.3", "emscripten-master"],
-    "os": "osx"
-  },
-  {
     "version": "1.5.6",
     "bitness": 32,
     "uses": ["clang-3.2-32bit", "node-0.10.17-32bit", "python-2.7.5.1-32bit", "java-7.45-32bit", "emscripten-1.5.6"],
