@@ -34,7 +34,11 @@ if platform.mac_ver()[0] != '':
   ENVPATH_SEPARATOR = ':'
 
 # Returns the absolute pathname to the given path inside the Emscripten SDK.
-def sdk_path(path): return to_unix_path(os.path.join(os.path.dirname(os.path.realpath(__file__)), path))
+def sdk_path(path):
+  if os.path.isabs(path):
+    return path
+  else:
+    return to_unix_path(os.path.join(os.path.dirname(os.path.realpath(__file__)), path))
 
 def emsdk_path(): return to_unix_path(os.path.dirname(os.path.realpath(__file__)))
 
@@ -176,6 +180,9 @@ def download_file(url, dstpath, download_even_if_exists=False):
     file_name = os.path.join(dstpath, file_name)
   else:
     file_name = dstpath
+
+  # Treat all relative destination paths as relative to the SDK root directory, not the current working directory.
+  file_name = sdk_path(file_name)
 
   if os.path.exists(file_name) and not download_even_if_exists:
     print "File '" + file_name + "' already downloaded, skipping."
@@ -410,11 +417,11 @@ class Tool:
   def installation_path(self):
     if WINDOWS and hasattr(self, 'windows_install_path'):
       pth = self.windows_install_path.replace("%MSBuildPlatformsDir%", find_msbuild_dir())
-      return pth
+      return sdk_path(pth)
     p = self.version
     if hasattr(self, 'bitness'):
       p += '_' + str(self.bitness) + 'bit'
-    return os.path.join(self.id, p)
+    return sdk_path(os.path.join(self.id, p))
 
   # Specifies the target directory this tool will be installed to.
   def installation_dir(self):
