@@ -337,21 +337,7 @@ def load_dot_emscripten():
       pass
 
 def generate_dot_emscripten(active_tools, temp_dir):
-#EMSCRIPTEN_ROOT = '$emscripten_root'
-#LLVM_ROOT = '$llvm_root'
-#PYTHON = '$python'
-#NODE_JS = '$node_js'
-  template = string.Template(
-  '''import os
-SPIDERMONKEY_ENGINE = ''
-V8_ENGINE = ''
-TEMP_DIR = '$temp_dir'
-COMPILER_ENGINE = NODE_JS
-JS_ENGINES = [NODE_JS]
-''')
-
-  # Make sure we have a working temp directory for the emscripten compiler to use.
-  mkdir_p(sdk_path(temp_dir))
+  temp_dir = tempfile.gettempdir().replace('\\', '/')
 
   cfg = 'import os\n'
 
@@ -362,7 +348,7 @@ JS_ENGINES = [NODE_JS]
 
   cfg += '''SPIDERMONKEY_ENGINE = ''
 V8_ENGINE = ''
-TEMP_DIR = ''' + "'" + tempfile.gettempdir().replace('\\', '/') + "'" + '''
+TEMP_DIR = ''' + "'" + temp_dir + "'" + '''
 COMPILER_ENGINE = NODE_JS
 JS_ENGINES = [NODE_JS]
 '''
