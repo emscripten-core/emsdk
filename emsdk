@@ -343,7 +343,7 @@ def load_dot_emscripten():
     except:
       pass
 
-def generate_dot_emscripten(active_tools, temp_dir):
+def generate_dot_emscripten(active_tools):
   temp_dir = tempfile.gettempdir().replace('\\', '/')
 
   cfg = 'import os\n'
@@ -691,15 +691,47 @@ def install(): # TODO: Add parameter to choose which SDK to install.
   #git_clone_checkout_and_pull(emscripten_git_repo, 'emscripten/', 'incoming')
   download_and_unzip('emscripten_1.5.6.zip', 'emscripten/1.5.6/')
 
-def activate(tools_to_activate): # TODO: Add parameter to choose which SDK to activate.
-  deps = []
-  for tool in tools_to_activate:
+# Tests if the two given tools can be active at the same time.
+# Currently only a simple check for name for same tool with different versions,
+# possibly adds more logic in the future.
+def can_simultaneously_activate(tool1, tool2):
+  return tool1.id != tool2.id
+
+# Reconfigure .emscripten to choose the currently activated toolset.
+def set_active_tools(tools_to_activate):
+  i = 0
+  # Gather dependencies for each tool
+  while i < len(tools_to_activate):
+    tool = tools_to_activate[i]
+    deps = tool.recursive_dependencies()
+    tools_to_activate = tools_to_activate[:i] + deps + tools_to_activate[i:]
+    i += len(deps)+1
+
+  # Remove nonexisting tools
+  i = 0
+  while i < len(tools_to_activate):
+    tool = tools_to_activate[i]
     if not tool.is_installed():
-      print "The SDK/tool '" + str(tool) + "' cannot be activated since it is not installed!"
-      return
-    deps += tool.recursive_dependencies()
-  tools_to_activate += deps
-  generate_dot_emscripten(tools_to_activate, temp_dir='temp')
+      print "The SDK/tool '" + str(tool) + "' cannot be activated since it is not installed! Skipping this tool..."
+      tools_to_activate.pop(i)
+      continue
+    i += 1
+
+  # Remove conflicting tools
+  i = 0
+  while i < len(tools_to_activate):
+    j = 0
+    while j < i:
+      secondary_tool = tools_to_activate[j]
+      primary_tool = tools_to_activate[i]
+      if not can_simultaneously_activate(primary_tool, secondary_tool):
+        tools_to_activate.pop(j)
+        j -= 1
+        i -= 1
+      j += 1
+    i += 1
+
+  generate_dot_emscripten(tools_to_activate)
 
 def currently_active_sdk():
   for sdk in reversed(sdks):
@@ -854,7 +886,7 @@ def main():
     if len(sys.argv) <= 2:
       print "Missing parameter. Type 'emsdk activate <tool name>' to install a tool or an SDK. Type 'emsdk list' to obtain a list of available tools. Type 'emsdk install latest' to automatically install the newest version of the SDK."
       return 1
-    tools_to_activate = []
+    tools_to_activate = currently_active_tools()
     for i in range(2, len(sys.argv)):
       tool = find_tool(sys.argv[i])
       if tool == None:
@@ -863,7 +895,7 @@ def main():
         print "Error: No tool or SDK found by name '" + sys.argv[i] + "'."
         return 1
       tools_to_activate += [tool]
-    activate(tools_to_activate)
+    set_active_tools(tools_to_activate)
     return 0
   elif cmd == 'install':
     if len(sys.argv) <= 2:
