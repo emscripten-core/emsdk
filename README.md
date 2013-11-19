@@ -2,6 +2,8 @@
 
 The whole Emscripten toolchain is distributed as a standalone Emscripten SDK. The SDK provides all the required tools, such as Clang, Python, Node.js and Visual Studio integration along with an update mechanism that enables migrating to newer Emscripten versions as they are released.
 
+You can also set up Emscripten from source, without the pre-built SDK, see "Installing from Source" below. If you contribute to Emscripten then that is probably what you want to do; otherwise, the SDK is generally simplest.
+
 ## Downloads
 
 To get started with Emscripten development, grab one of the packages below:
@@ -59,7 +61,29 @@ The SDK is not available for Linux at the moment. To get started on Linux, see o
 * rhelmer has provided a Vagrant VM for Emscripten, see [emscripten-vagrant](https://github.com/rhelmer/emscripten-vagrant).
 * Dirk Krause created an [Amazon EC2 image](https://groups.google.com/forum/?fromgroups=#!topic/emscripten-discuss/H8kG0kP1eDE) for Emscripten.
 
-<b>Important!</b> Emscripten is very specific about the versions of Clang it supports! Currently Clang 3.2 is being used, building a newer version can have some issues!
+Or see installing from source, next.
+
+### Installing from Source
+
+Instead of using the SDK, you can grab the code and dependencies yourself. This is a little more technical but lets you use the very latest development code.
+
+Get the following:
+
+ * The Emscripten code, from github (git clone git://github.com/kripken/emscripten.git. The master branch is fine, it is guaranteed to always be stable. We merge to master only after all tests pass.)
+ * LLVM with Clang. Version 3.2 is the officially supported version, others may not work. There are official clang binaries that include LLVM for some platforms, if yours is not there then you should get the LLVM and Clang sources and build them.
+ * Node.js (0.8 or above; 0.10.17 or above to run websocket-using servers in node)
+ * Python 2.7.3
+ * Optionally, if you want to use Closure Compiler to minify your code as much as possible, you will also need Java.
+
+Operating system notes:
+
+ * If you are on OS X, homebrew should be able to get you LLVM and Clang. They will probably show up in /usr/bin or /usr/local/bin.
+ * A complete OS X guide for getting Emscripten and all the dependencies the test suite needs is at https://gist.github.com/1974955 (note that you don't need everything there just to run this tutorial)
+
+Additional Notes:
+
+ * Python is probably already installed if you are on Linux or OS X.
+ * Node.js and LLVM should have convenient binaries for your OS, but installing them from source is easy, just compile them in their directories, you don't need to bother with installing them systemwide (you will point Emscripten to them in the next step, where you set up directories).
 
 ## Getting Started with Emscripten
 
