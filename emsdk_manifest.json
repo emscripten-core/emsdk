@@ -186,6 +186,14 @@
     "windows_url": "crunch_1.03.zip",
     "activated_cfg": "CRUNCH='%installation_dir%/crunch.exe'",
     "activated_path": "%installation_dir%"
+  },
+  {
+    "id": "mingw",
+    "version": "4.6.2",
+    "bitness": 32,
+    "windows_url": "mingw_4.6.2_32bit.zip",
+    "activated_cfg": "MINGW_ROOT='%installation_dir%'",
+    "activated_path": "%installation_dir%"
   }
   ],
 
