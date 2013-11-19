@@ -18,6 +18,22 @@
   },
   {
     "id": "clang",
+    "version": "3.3",
+    "bitness": 32,
+    "windows_url": "clang_3.3_32bit.zip",
+    "activated_path": "%installation_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%'"
+  },
+  {
+    "id": "clang",
+    "version": "3.3",
+    "bitness": 64,
+    "windows_url": "clang_3.3_64bit.zip",
+    "activated_path": "%installation_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%'"
+  },
+  {
+    "id": "clang",
     "version": "3.2",
     "bitness": 64,
     "osx_url": "clang%2Bllvm-3.2-x86_64-apple-darwin11.tar.gz",
@@ -67,6 +83,22 @@
     "activated_cfg": "PYTHON='%installation_dir%/python%.exe%'"
   },
   {
+    "id": "python",
+    "version": "2.7.5.3",
+    "bitness": 32,
+    "windows_url": "python_2.7.5.3_32bit.zip",
+    "activated_path": "%installation_dir%",
+    "activated_cfg": "PYTHON='%installation_dir%/python%.exe%'"
+  },
+  {
+    "id": "python",
+    "version": "2.7.5.3",
+    "bitness": 64,
+    "windows_url": "python_2.7.5.3_64bit.zip",
+    "activated_path": "%installation_dir%",
+    "activated_cfg": "PYTHON='%installation_dir%/python%.exe%'"
+  },
+  {
     "id": "java",
     "version": "7.45",
     "bitness": 32,
@@ -105,6 +137,15 @@
     "version": "1.7.1",
     "windows_url": "emscripten-1.7.1.zip",
     "unix_url": "emscripten-1.7.1.tar.gz",
+    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
+    "activated_path": "%installation_dir%",
+    "activated_env": "EMSCRIPTEN=%installation_dir%"
+  },
+  {
+    "id": "emscripten",
+    "version": "1.7.8",
+    "windows_url": "emscripten-1.7.8.zip",
+    "unix_url": "emscripten-1.7.8.tar.gz",
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%",
     "activated_env": "EMSCRIPTEN=%installation_dir%"
@@ -174,6 +215,12 @@
     "os": "win"
   },
   {
+    "version": "1.7.8",
+    "bitness": 32,
+    "uses": ["clang-3.3-32bit", "node-0.10.17-32bit", "python-2.7.5.3-32bit", "java-7.45-32bit", "emscripten-1.7.8"],
+    "os": "win"
+  },
+  {
     "version": "incoming",
     "bitness": 64,
     "uses": ["clang-3.2-64bit", "node-0.10.17-64bit", "python-2.7.5-64bit", "java-7.45-64bit", "git-1.8.3", "emscripten-incoming"],
@@ -213,6 +260,12 @@
     "version": "1.7.1",
     "bitness": 64,
     "uses": ["clang-3.2-64bit", "node-0.10.17-64bit", "python-2.7.5-64bit", "java-7.45-64bit", "emscripten-1.7.1"],
+    "os": "win"
+  },
+  {
+    "version": "1.7.8",
+    "bitness": 64,
+    "uses": ["clang-3.3-64bit", "node-0.10.17-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-1.7.8"],
     "os": "win"
   },
   {
