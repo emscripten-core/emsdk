@@ -891,18 +891,19 @@ def main():
     update_emsdk()
     return 0
   elif cmd == 'activate':
+    # If called without arguments, activate latest versions of all tools
     if len(sys.argv) <= 2:
-      print "Missing parameter. Type 'emsdk activate <tool name>' to install a tool or an SDK. Type 'emsdk list' to obtain a list of available tools. Type 'emsdk install latest' to automatically install the newest version of the SDK."
-      return 1
-    tools_to_activate = currently_active_tools()
-    for i in range(2, len(sys.argv)):
-      tool = find_tool(sys.argv[i])
-      if tool == None:
-        tool = find_sdk(sys.argv[i])
-      if tool == None:
-        print "Error: No tool or SDK found by name '" + sys.argv[i] + "'."
-        return 1
-      tools_to_activate += [tool]
+      tools_to_activate = list(tools)
+    else:
+      tools_to_activate = currently_active_tools()
+      for i in range(2, len(sys.argv)):
+        tool = find_tool(sys.argv[i])
+        if tool == None:
+          tool = find_sdk(sys.argv[i])
+        if tool == None:
+          print "Error: No tool or SDK found by name '" + sys.argv[i] + "'."
+          return 1
+        tools_to_activate += [tool]
     set_active_tools(tools_to_activate)
     return 0
   elif cmd == 'install':
