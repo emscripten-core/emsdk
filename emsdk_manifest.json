@@ -41,6 +41,14 @@
     "activated_cfg": "LLVM_ROOT='%installation_dir%/bin'"
   },
   {
+    "id": "clang",
+    "version": "3.3",
+    "bitness": 64,
+    "osx_url": "clang%2Bllvm-3.3-x86_64-apple-darwin12.tar.gz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/bin'"
+  },
+  {
     "id": "node",
     "version": "0.10.17",
     "bitness": 32,
@@ -287,6 +295,12 @@
     "bitness": 64,
     "uses": ["clang-3.2-64bit", "node-0.10.17-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-1.7.8"],
     "os": "win"
+  },
+  {
+    "version": "1.7.8",
+    "bitness": 64,
+    "uses": ["clang-3.2-64bit", "node-0.10.18-64bit", "emscripten-1.7.8"],
+    "os": "osx"
   }
   ]
 }
