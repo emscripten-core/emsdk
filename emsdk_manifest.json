@@ -279,13 +279,13 @@
   {
     "version": "1.7.8",
     "bitness": 32,
-    "uses": ["clang-3.3-32bit", "node-0.10.17-32bit", "python-2.7.5.3-32bit", "java-7.45-32bit", "emscripten-1.7.8"],
+    "uses": ["clang-3.2-32bit", "node-0.10.17-32bit", "python-2.7.5.3-32bit", "java-7.45-32bit", "emscripten-1.7.8"],
     "os": "win"
   },
   {
     "version": "1.7.8",
     "bitness": 64,
-    "uses": ["clang-3.3-64bit", "node-0.10.17-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-1.7.8"],
+    "uses": ["clang-3.2-64bit", "node-0.10.17-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-1.7.8"],
     "os": "win"
   }
   ]
