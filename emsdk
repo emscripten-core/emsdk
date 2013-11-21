@@ -866,21 +866,11 @@ def main():
 
     return 0
   elif cmd == 'active_path':
-    if len(sys.argv) <= 2:
-      sdk = currently_active_sdk()
-      if sdk == None:
-        print "Missing tool/SDK name and no active SDK detected. Type 'emsdk active_path <tool/sdk name>' to query a list of directories that should be added to PATH to use the specified tool or SDK."
-        return 1
-      else:
-        sys.argv += [str(sdk)]
-    tool = find_tool(sys.argv[2])
-    if tool == None:
-      tool = find_sdk(sys.argv[2])
-    if tool == None:
-      print "Error: No tool or SDK found by name '" + sys.argv[2] + "'."
-      return 1
+    tools_to_activate = currently_active_tools()
+    for i in range(2, len(sys.argv)):
+      tool = find_tool(sys.argv[i])
+      tools_to_activate += [tool]
 
-    tools_to_activate = [tool] + tool.recursive_dependencies()
     print path_additions(tools_to_activate)
 
     return 0
