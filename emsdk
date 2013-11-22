@@ -388,11 +388,13 @@ JS_ENGINES = [NODE_JS]
   print '   ' + ENVPATH_SEPARATOR.join(path_add)
 
 def find_msbuild_dir():
-  program_files = os.environ['ProgramFiles']
-  if not program_files:
+  if 'ProgramFiles' in os.environ and os.environ['ProgramFiles']:
+    program_files = os.environ['ProgramFiles']
+  else:
     program_files = 'C:/Program Files'
-  program_files_x86 = os.environ['ProgramFiles(x86)']
-  if not program_files_x86:
+  if 'ProgramFiles(x86)' in os.environ and os.environ['ProgramFiles(x86)']:
+    program_files_x86 = os.environ['ProgramFiles(x86)']
+  else:
     program_files_x86 = 'C:/Program Files (x86)'
   MSBUILDX86_DIR = os.path.join(program_files_x86, "MSBuild/Microsoft.Cpp/v4.0/Platforms")
   MSBUILD_DIR = os.path.join(program_files, "MSBuild/Microsoft.Cpp/v4.0/Platforms")
