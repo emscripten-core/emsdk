@@ -169,4 +169,4 @@ If you want to remove a Portable SDK, just delete the directory where you put th
 
 ##### Windows
 
-* Whereas OSX only ships 64-bit executables of the toolchain, on Windows the 32-bit version of the toolchain is available. This is due to a detected incompatibility with Visual Studio 2010 and 64-bit tools.
+* The Visual Studio integration with the vs-tool package only supports Visual Studio 2010 at the moment, and requires the 32-bit version of emsdk to be used.
