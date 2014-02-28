@@ -169,6 +169,24 @@
   },
   {
     "id": "emscripten",
+    "version": "1.9.5",
+    "windows_url": "emscripten-1.9.5.zip",
+    "unix_url": "emscripten-1.9.5.tar.gz",
+    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
+    "activated_path": "%installation_dir%",
+    "activated_env": "EMSCRIPTEN=%installation_dir%"
+  },
+  {
+    "id": "emscripten",
+    "version": "1.10.4",
+    "windows_url": "emscripten-1.10.4.zip",
+    "unix_url": "emscripten-1.10.4.tar.gz",
+    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
+    "activated_path": "%installation_dir%",
+    "activated_env": "EMSCRIPTEN=%installation_dir%"
+  },
+  {
+    "id": "emscripten",
     "version": "1.12.0",
     "windows_url": "emscripten-1.12.0.zip",
     "unix_url": "emscripten-1.12.0.tar.gz",
@@ -336,6 +354,42 @@
     "version": "1.8.2",
     "bitness": 64,
     "uses": ["clang-3.2-64bit", "node-0.10.18-64bit", "emscripten-1.8.2"],
+    "os": "osx"
+  },
+  {
+    "version": "1.9.5",
+    "bitness": 32,
+    "uses": ["clang-3.2-32bit", "node-0.10.17-32bit", "python-2.7.5.3-32bit", "emscripten-1.9.5"],
+    "os": "win"
+  },
+  {
+    "version": "1.9.5",
+    "bitness": 64,
+    "uses": ["clang-3.2-64bit", "node-0.10.17-64bit", "python-2.7.5.3-64bit", "emscripten-1.9.5"],
+    "os": "win"
+  },
+  {
+    "version": "1.9.5",
+    "bitness": 64,
+    "uses": ["clang-3.2-64bit", "node-0.10.18-64bit", "emscripten-1.9.5"],
+    "os": "osx"
+  },
+  {
+    "version": "1.10.4",
+    "bitness": 32,
+    "uses": ["clang-3.2-32bit", "node-0.10.17-32bit", "python-2.7.5.3-32bit", "emscripten-1.10.4"],
+    "os": "win"
+  },
+  {
+    "version": "1.10.4",
+    "bitness": 64,
+    "uses": ["clang-3.2-64bit", "node-0.10.17-64bit", "python-2.7.5.3-64bit", "emscripten-1.10.4"],
+    "os": "win"
+  },
+  {
+    "version": "1.10.4",
+    "bitness": 64,
+    "uses": ["clang-3.2-64bit", "node-0.10.18-64bit", "emscripten-1.10.4"],
     "os": "osx"
   },
   {
