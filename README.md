@@ -2,7 +2,7 @@
 
 The whole Emscripten toolchain is distributed as a standalone Emscripten SDK. The SDK provides all the required tools, such as Clang, Python, Node.js and Visual Studio integration along with an update mechanism that enables migrating to newer Emscripten versions as they are released.
 
-You can also set up Emscripten from source, without the pre-built SDK, see "Installing from Source" below. If you contribute to Emscripten then that is probably what you want to do; otherwise, the SDK is generally simplest.
+You can also set up Emscripten from source, without the pre-built SDK, see "Installing from Source" below.
 
 ## Downloads
 
@@ -10,14 +10,14 @@ To get started with Emscripten development, grab one of the packages below:
 
 Windows:
 * Emscripten SDK Web Installer is a NSIS installer that always gets you the latest Emscripten SDK from the web: Downloads:
-  * [emsdk-1.8.2-web-32bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.8.2-web-32bit.exe) 
-  * [emsdk-1.8.2-web-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.8.2-web-64bit.exe)
+  * [emsdk-1.12.0-web-32bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.12.0-web-32bit.exe) 
+  * [emsdk-1.12.0-web-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.12.0-web-64bit.exe)
 * Emscripten SDK Offline Installer is a NSIS installer that bundles together the Emscripten toolchain as an offline-installable package. Downloads:
-  * [emsdk-1.8.2-full-32bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.8.2-full-32bit.exe) 
-  * [emsdk-1.8.2-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.8.2-full-64bit.exe)
+  * [emsdk-1.12.0-full-32bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.12.0-full-32bit.exe) 
+  * [emsdk-1.12.0-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.12.0-full-64bit.exe)
 * Portable Emscripten SDK is a zipped package of the Emscripten SDK that does not require system installation privileges. Just unzip and go:
-  * [emsdk-1.8.2-portable-32bit.zip](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.8.2-portable-32bit.zip) 
-  * [emsdk-1.8.2-portable-64bit.zip](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.8.2-portable-64bit.zip)
+  * [emsdk-1.12.0-portable-32bit.zip](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.12.0-portable-32bit.zip) 
+  * [emsdk-1.12.0-portable-64bit.zip](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.12.0-portable-64bit.zip)
 
 Mac OS X:
 * [emsdk-portable.tar.gz](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz): Emscripten SDK is available as a portable web-installer for OS X.
@@ -70,7 +70,7 @@ Or see installing from source, next.
 
 ### Installing from Source
 
-Instead of using the SDK, you can grab the code and dependencies yourself. This is a little more technical but lets you use the very latest development code.
+Instead of using the SDK, you can grab the code and dependencies yourself. This is the preferred path on Linux, where the Emscripten SDK is currently not available.
 
 Get the following:
 
@@ -147,6 +147,30 @@ The command `emsdk update` will fetch package information for all new tools and 
 ##### How do I change the currently active SDK version?
 
 You can toggle between different tools and SDK versions by running `emsdk activate <tool/sdk name>`.
+
+##### How do I track the latest Emscripten development with the SDK?
+
+A common and supported use case of the Emscripten SDK is to enable the workflow where you directly interact with the github repositories. This allows you to obtain new features and latest fixes immediately as they are pushed to the github repository, without having to wait for release to be tagged. You do not need a github account or a fork of Emscripten to do this. To switch to using the latest upstream git development branch `incoming`, run the following:
+
+    emsdk install git-1.8.3 # Install git. Skip if the system already has it.
+    emsdk install sdk-incoming-64bit # Clone+pull the latest kripken/emscripten/incoming.
+    emsdk activate sdk-incoming-64bit # Set the incoming SDK as the currently active one.
+
+If you want to use the upstream stable branch `master`, then replace `-incoming-` with `-master-` above.
+
+##### How do I use my own Emscripten github fork with the SDK?
+
+It is also possible to use your own fork of the Emscripten repository via the SDK. This is achieved with standard git machinery, so there if you are already acquainted with working on multiple remotes in a git clone, these steps should be familiar to you. This is useful in the case when you want to make your own modifications to the Emscripten toolchain, but still keep using the SDK environment and tools. To set up your own fork as the currently active Emscripten toolchain, first install the `sdk-incoming` SDK like shown in the previous section, and then run the following commands in the emsdk directory:
+
+    cd emscripten/incoming
+    # Add a git remote link to your own repository.
+    git remote add myremote https://github.com/mygituseraccount/emscripten.git
+    # Obtain the changes in your link.
+    git fetch myremote
+    # Switch the emscripten-incoming tool to use your fork.
+    git checkout -b myincoming --track myremote/incoming
+
+In this way you can utilize the Emscripten SDK tools while using your own git fork. You can switch back and forth between remotes via the `git checkout` command as usual.
 
 ## Uninstalling the Emscripten SDK
 
