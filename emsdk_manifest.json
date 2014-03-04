@@ -53,7 +53,7 @@
     "version": "e1.13.0",
     "bitness": 64,
     "windows_url": "emscripten-clang_e1.13.0.zip",
-    "osx_url": "emscripten-clang_e1.13.10.tar.gz",
+    "osx_url": "emscripten-clang_e1.13.0.tar.gz",
     "activated_path": "%installation_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%'"
   },
