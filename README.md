@@ -25,6 +25,18 @@ Mac OS X:
 Linux:
 * See the instructions section below.
 
+### Emscripten Clang Backend Prerelease
+
+As a prerelease version, you can also download the emsdk-1.13.0 package, which is the first release to migrate Emscripten to a new Clang backend. Note that this version might still be a bit rough on the edges.
+ 
+Windows:
+* Web Installer: [emsdk-1.13.0-web-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.13.0-web-64bit.exe)
+* Offline Installer: [emsdk-1.13.0-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.13.0-full-64bit.exe)
+* Portable zip: [emsdk-1.13.0-portable-64bit.zip](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.13.0-portable-64bit.zip)
+
+Mac OS X:
+* Download the emsdk-portable.tar.gz above, unzip it, and execute `./emsdk update` followed by `./emsdk install sdk-1.13.0-64bit` to get the new backend version.
+
 ## Installation Instructions
 
 Check one of the topics below for what to do with the package you just downloaded.
