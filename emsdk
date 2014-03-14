@@ -355,14 +355,14 @@ def generate_dot_emscripten(active_tools):
   temp_dir = tempfile.gettempdir().replace('\\', '/')
 
   cfg = 'import os\n'
+  cfg += "SPIDERMONKEY_ENGINE = ''\n"
 
   for tool in active_tools:
     tool_cfg = tool.activated_config()
     if tool_cfg:
       cfg += tool_cfg + '\n'
 
-  cfg += '''SPIDERMONKEY_ENGINE = ''
-V8_ENGINE = ''
+  cfg += '''V8_ENGINE = ''
 TEMP_DIR = ''' + "'" + temp_dir + "'" + '''
 COMPILER_ENGINE = NODE_JS
 JS_ENGINES = [NODE_JS]
