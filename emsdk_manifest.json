@@ -303,6 +303,12 @@
     "windows_install_path": "%MSBuildPlatformsDir%/Emscripten"
   },
   {
+    "id": "vs-tool",
+    "version": "0.9.3",
+    "windows_url": "vs-tool_0.9.3.zip",
+    "windows_install_path": "%MSBuildPlatformsDir%/Emscripten"
+  },
+  {
     "id": "crunch",
     "version": "1.03",
     "windows_url": "crunch_1.03.zip",
