@@ -9,33 +9,18 @@ You can also set up Emscripten from source, without the pre-built SDK, see "Inst
 To get started with Emscripten development, grab one of the packages below:
 
 Windows:
-* Emscripten SDK Web Installer is a NSIS installer that always gets you the latest Emscripten SDK from the web: Downloads:
-  * [emsdk-1.12.0-web-32bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.12.0-web-32bit.exe) 
-  * [emsdk-1.12.0-web-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.12.0-web-64bit.exe)
-* Emscripten SDK Offline Installer is a NSIS installer that bundles together the Emscripten toolchain as an offline-installable package. Downloads:
-  * [emsdk-1.12.0-full-32bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.12.0-full-32bit.exe) 
-  * [emsdk-1.12.0-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.12.0-full-64bit.exe)
+* Emscripten SDK Web Installer is a NSIS installer that always gets you the latest Emscripten SDK from the web:
+  * [emsdk-1.16.0-web-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.16.0-web-64bit.exe)
+* Emscripten SDK Offline Installer is a NSIS installer that bundles together the Emscripten toolchain as an offline-installable package:
+  * [emsdk-1.16.0-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.16.0-full-64bit.exe)
 * Portable Emscripten SDK is a zipped package of the Emscripten SDK that does not require system installation privileges. Just unzip and go:
-  * [emsdk-1.12.0-portable-32bit.zip](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.12.0-portable-32bit.zip) 
-  * [emsdk-1.12.0-portable-64bit.zip](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.12.0-portable-64bit.zip)
+  * [emsdk-1.16.0-portable-64bit.zip](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.16.0-portable-64bit.zip)
 
 Mac OS X:
 * [emsdk-portable.tar.gz](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz): Emscripten SDK is available as a portable web-installer for OS X.
 
 Linux:
 * See the instructions section below.
-
-### Emscripten Clang Backend Prerelease
-
-As a prerelease version, you can also download the emsdk-1.13.0 package, which is the first release to migrate Emscripten to a new Clang backend. Note that this version might still be a bit rough on the edges.
- 
-Windows:
-* Web Installer: [emsdk-1.13.0-web-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.13.0-web-64bit.exe)
-* Offline Installer: [emsdk-1.13.0-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.13.0-full-64bit.exe)
-* Portable zip: [emsdk-1.13.0-portable-64bit.zip](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.13.0-portable-64bit.zip)
-
-Mac OS X:
-* Download the emsdk-portable.tar.gz above, unzip it, and execute `./emsdk update` followed by `./emsdk install sdk-1.13.0-64bit` to get the new backend version.
 
 ## Installation Instructions
 
