@@ -57,13 +57,12 @@ If you do not want to use the SDK, there exists guides for setting up Emscripten
 
 #### Linux
 
-The SDK is not available for Linux at the moment. To get started on Linux, see one of the following guides for a manual setup:
+The SDK is not available for Linux at the moment. To get started on Linux, see "Installing from Source" in the next section. The following links may also be useful (but might be out of date):
 * For help on Ubuntu, you can follow the [Getting Started on Ubuntu 12.10](https://github.com/kripken/emscripten/wiki/Getting-Started-on-Ubuntu-12.10) guide for instructions on how to obtain the prerequisites and build Clang manually using CMake.
 * For help on Debian, see this [guide by EarthServer](https://earthserver.com/Setting_up_emscripten_development_environment_on_Linux).
+* Debian Jessie includes a [emscripten package](https://packages.debian.org/jessie/emscripten).
 * rhelmer has provided a Vagrant VM for Emscripten, see [emscripten-vagrant](https://github.com/rhelmer/emscripten-vagrant).
 * Dirk Krause created an [Amazon EC2 image](https://groups.google.com/forum/?fromgroups=#!topic/emscripten-discuss/H8kG0kP1eDE) for Emscripten.
-
-Or see installing from source, next.
 
 ### Installing from Source
 
@@ -72,10 +71,12 @@ Instead of using the SDK, you can grab the code and dependencies yourself. This 
 Get the following:
 
  * The Emscripten code, from github (git clone git://github.com/kripken/emscripten.git. The master branch is fine, it is guaranteed to always be stable. We merge to master only after all tests pass.)
- * LLVM with Clang. Version 3.2 is the officially supported version, others may not work. There are official clang binaries that include LLVM for some platforms, if yours is not there then you should get the LLVM and Clang sources and build them.
+ * Emscripten's LLVM and Clang. Emscripten now has an LLVM backend ("fastcomp"), which means you need to use our LLVM+Clang. See "Getting Fastcomp" in the [LLVM Backend](https://github.com/kripken/emscripten/wiki/LLVM-Backend) page. (See also notes on that link about how to disable fastcomp and use a stock version of LLVM, if you want, although that is not recommended.)
  * Node.js (0.8 or above; 0.10.17 or above to run websocket-using servers in node)
  * Python 2.7.3
  * Optionally, if you want to use Closure Compiler to minify your code as much as possible, you will also need Java.
+
+The [LLVM Backend](https://github.com/kripken/emscripten/wiki/LLVM-Backend) page has instructions for building Emscripten's LLVM+Clang. After you build it, run `emcc -v`, which should print out the version number as well as run some basic tests.
 
 Operating system notes:
 
