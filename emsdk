@@ -33,6 +33,64 @@ if platform.mac_ver()[0] != '':
   OSX = True
   ENVPATH_SEPARATOR = ':'
 
+def win_get_environment_variable(key, system=True):
+  import win32api, win32con
+  try:
+    if system: # Read globally from ALL USERS section.
+      folder = win32api.RegOpenKey(win32con.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment')
+    else: # Register locally from CURRENT USER section.
+      folder = win32api.RegOpenKey(win32con.HKEY_CURRENT_USER, 'Environment')
+    value = str(win32api.RegQueryValueEx(folder, key)[0])
+  except Exception, e:
+    if e[0] != 2: # 'The system cannot find the file specified.'
+      print >> sys.stderr, 'Failed to read environment variable ' + key + ':'
+      print >> sys.stderr, str(e)
+    win32api.RegCloseKey(folder)
+    return None
+  win32api.RegCloseKey(folder)
+  return value
+
+def win_environment_variable_exists(key, system=True):
+  value = win_get_environment_variable(key, system)
+  return value != None and len(value) > 0
+
+def win_get_active_environment_variable(key):
+  value = win_get_environment_variable(key, False)
+  if value != None:
+    return value
+  return win_get_environment_variable(key, True)
+
+def win_set_environment_variable(key, value, system=True):
+  previous_value = win_get_environment_variable(key, system)
+  if previous_value == value:
+    return # No need to elevate UAC for nothing to set the same value, skip.
+
+  if not value:
+    try:
+      if system:
+        value = subprocess.call(['REG', 'DELETE', 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment', '/V', key, '/f'], stdout=subprocess.PIPE)
+      else:
+        value = subprocess.call(['REG', 'DELETE', 'HKCU\\Environment', '/V', key, '/f'], stdout=subprocess.PIPE)
+    except Exception, e:
+      return
+    return
+
+  try:
+    if system:
+      cmd = ['bin/elevate.exe', 'SETX', '/M']
+    else:
+      cmd = ['SETX']
+    retcode = subprocess.call(cmd + [key, value], stdout=subprocess.PIPE)
+    if retcode is not 0:
+      print >> sys.stderr, 'ERROR! Failed to set environment variable ' + key + '=' + value + '. You may need to set it manually.'
+  except Exception, e:
+    print >> sys.stderr, 'ERROR! Failed to set environment variable ' + key + '=' + value + ':'
+    print >> sys.stderr, str(e)
+    print >> sys.stderr, 'You may need to set it manually.'
+
+def win_delete_environment_variable(key, system=True):
+  win_set_environment_variable(key, None, system)
+
 # Returns the absolute pathname to the given path inside the Emscripten SDK.
 def sdk_path(path):
   if os.path.isabs(path):
@@ -314,7 +372,7 @@ def get_required_path(active_tools):
   path_add = [emsdk_path()]
   for tool in active_tools:
     if hasattr(tool, 'activated_path'):
-      path_add += [tool.activated_path.replace('%installation_dir%', sdk_path(tool.installation_dir()))]
+      path_add += [tool.expand_vars(tool.activated_path)]
   return path_add
 
 # Returns the absolute path to the file '.emscripten' for the current user on this system.
@@ -423,10 +481,18 @@ class Tool:
       s += '-' + str(self.bitness) + 'bit'
     return s
 
+  def expand_vars(self, str):
+    if WINDOWS and '%MSBuildPlatformsDir%' in str:
+      str = str.replace('%MSBuildPlatformsDir%', find_msbuild_dir())
+    if '%installation_dir%' in str:
+      str = str.replace('%installation_dir%', sdk_path(self.installation_dir()))
+    str = str.replace('%.exe%', '.exe' if WINDOWS else '')
+    return str
+
   # Specifies the target path where this tool will be installed to. This could either be a directory or a filename (e.g. in case of node.js)
   def installation_path(self):
     if WINDOWS and hasattr(self, 'windows_install_path'):
-      pth = self.windows_install_path.replace("%MSBuildPlatformsDir%", find_msbuild_dir())
+      pth = self.expand_vars(self.windows_install_path)
       return sdk_path(pth)
     p = self.version
     if hasattr(self, 'bitness'):
@@ -444,9 +510,13 @@ class Tool:
   # Returns the configuration item that needs to be added to .emscripten to make this Tool active for the current user.
   def activated_config(self):
     if hasattr(self, 'activated_cfg'):
-      tool_cfg = self.activated_cfg.replace('%installation_dir%', sdk_path(self.installation_dir()))
-      tool_cfg = tool_cfg.replace('%.exe%', '.exe' if WINDOWS else '')
-      return tool_cfg
+      return self.expand_vars(self.activated_cfg)
+    else:
+      return ''
+
+  def activated_environment(self):
+    if hasattr(self, 'activated_env'):
+      return self.expand_vars(self.activated_env)
     else:
       return ''
   
@@ -507,10 +577,16 @@ class Tool:
       if not tool.is_active():
         return False
 
+    if WINDOWS and hasattr(self, 'activated_env'):
+      (key, value) = parse_key_value(self.activated_environment())
+      env_var = win_get_active_environment_variable(key)
+      if env_var != value:
+        return False
+
     activated_cfg = self.activated_config()
     if activated_cfg == '':
       return len(deps) > 0
-    
+
     (key, value) = parse_key_value(activated_cfg)
 #    print 'activated cfg ' + key + ', value: ' + value
 #    if dot_emscripten.has_key(key):
@@ -519,6 +595,14 @@ class Tool:
       return True
     return False
 
+  def win_activate_env_vars(self, system=True):
+    if WINDOWS and hasattr(self, 'activated_env'):
+      (key, value) = parse_key_value(self.activated_environment())
+      if system:
+        win_delete_environment_variable(key, False) # If there is an env var for the LOCAL USER with same name, it will hide the system var, so must remove that first.
+
+      win_set_environment_variable(key, value, system)
+    
   # If this tool can be installed on this system, this function returns True.
   # Otherwise, this function returns a string that describes the reason why this tool is not available.
   def can_be_installed(self):
@@ -744,6 +828,11 @@ def set_active_tools(tools_to_activate):
 
   generate_dot_emscripten(tools_to_activate)
 
+  # Apply environment variables.
+  if WINDOWS:
+    for tool in tools_to_activate:
+      tool.win_activate_env_vars(True)
+
 def currently_active_sdk():
   for sdk in reversed(sdks):
     if sdk.is_active():
@@ -783,7 +872,7 @@ def construct_env_windows(tools_to_activate, permanent):
   for tool in tools_to_activate:
     if hasattr(tool, 'activated_env'):
       (key, value) = parse_key_value(tool.activated_env)
-      value = value.replace('%installation_dir%', sdk_path(tool.installation_dir()))
+      value = tool.expand_vars(value)
       if permanent:
         print 'SETX ' + key + ' "' + value + '"'
       else:
@@ -797,6 +886,7 @@ def main():
   load_dot_emscripten()
   load_sdk_manifest()
   usage_str = "usage: %prog --param1 .. --paramn <projectrootdir>"
+
 #  parser = optparse.OptionParser(usage=usage_str)
 #  parser.add_option('update', dest='update', action='store_true', default=False, help='Downloads and installs the latest Emscripten SDK components.')
 #  (options, args) = parser.parse_args(sys.argv)
