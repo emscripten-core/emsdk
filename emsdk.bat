@@ -30,3 +30,11 @@
 @set EMSDK_PY=
 @set PATH=%PREVPATH%
 @set PREVPATH=
+
+:: python is not able to set environment variables to the parent calling process, so
+:: therefore have it craft a .bat file, which we invoke after finishing python execution,
+:: to set up the environment variables
+@IF EXIST emsdk_set_env.bat (
+  @CALL emsdk_set_env.bat > NUL
+  @DEL /F /Q emsdk_set_env.bat
+)

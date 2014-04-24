@@ -61,6 +61,7 @@ def win_get_active_environment_variable(key):
   return win_get_environment_variable(key, True)
 
 def win_set_environment_variable(key, value, system=True):
+#  print >> sys.stderr, 'set ' + str(key) + '=' + str(value) + ', in system=' + str(system)
   previous_value = win_get_environment_variable(key, system)
   if previous_value == value:
     return # No need to elevate UAC for nothing to set the same value, skip.
@@ -441,9 +442,12 @@ JS_ENGINES = [NODE_JS]
   print cfg
   
   path_add = get_required_path(active_tools)
-  print "To conveniently access the selected set of tools from the command line, consider adding the following directories to PATH, or call '" + ('' if WINDOWS else 'source ') + os.path.relpath(sdk_path('emsdk_add_path')) + "' to do this for you."
-  print ''
-  print '   ' + ENVPATH_SEPARATOR.join(path_add)
+  if WINDOWS:
+    print 'The appropriate environment variables have also been set in registry.'
+  else:
+    print "To conveniently access the selected set of tools from the command line, consider adding the following directories to PATH, or call '" + ('' if WINDOWS else 'source ') + os.path.relpath(sdk_path('emsdk_add_path')) + "' to do this for you."
+    print ''
+    print '   ' + ENVPATH_SEPARATOR.join(path_add)
 
 def find_msbuild_dir():
   if 'ProgramFiles' in os.environ and os.environ['ProgramFiles']:
@@ -770,12 +774,16 @@ def load_sdk_manifest():
   for tool in manifest['tools']:
     t = Tool(tool)
     if t.compatible_with_this_os():
+      if not hasattr(t, 'is_old'):
+        t.is_old = False
       tools.append(t)
 
   for sdk_str in manifest['sdks']:
     sdk = Tool(sdk_str)
     sdk.id = "sdk"
     if sdk.compatible_with_this_os():
+      if not hasattr(sdk, 'is_old'):
+        sdk.is_old = False
       sdks.append(sdk)
 
 def install(): # TODO: Add parameter to choose which SDK to install.
@@ -828,10 +836,18 @@ def set_active_tools(tools_to_activate):
 
   generate_dot_emscripten(tools_to_activate)
 
-  # Apply environment variables.
+  # Apply environment variables to global all users section.
   if WINDOWS:
+    # Individual env. vars
     for tool in tools_to_activate:
       tool.win_activate_env_vars(True)
+
+    # PATH variable
+    newpath = adjusted_path(tools_to_activate)
+    if len(newpath) < 1024:
+      win_set_environment_variable('PATH', newpath, system=True)
+    else:
+      print >> sys.stderr, 'ERROR! The current PATH is too large (more than 1024 characters), unable to add Emscripten environment to PATH via command-line! Please do this via the system user interface.'
 
 def currently_active_sdk():
   for sdk in reversed(sdks):
@@ -846,20 +862,27 @@ def currently_active_tools():
       active_tools += [tool]
   return active_tools
 
-# Returns a string that should be added to PATH to get the given tools.
-def path_additions(tools_to_activate):
+# http://stackoverflow.com/questions/480214/how-do-you-remove-duplicates-from-a-list-in-python-whilst-preserving-order
+def unique_items(seq):
+  seen = set()
+  seen_add = seen.add
+  return [ x for x in seq if x not in seen and not seen_add(x)]
+
+# Looks at the current PATH and adds and removes entries so that the PATH reflects
+# the set of given active tools.
+def adjusted_path(tools_to_activate):
   # These directories should be added to PATH
   path_add = get_required_path(tools_to_activate)
   # These already exist.
   existing_path = os.environ['PATH'].replace('\\', '/').split(ENVPATH_SEPARATOR)
+  emsdk_root_path = emsdk_path()
+  existing_path = [item for item in existing_path if not item.startswith(emsdk_root_path)]
   new_path = [item for item in path_add if item not in existing_path]
-  return ENVPATH_SEPARATOR.join(new_path)
+  return ENVPATH_SEPARATOR.join(unique_items(existing_path + new_path))
 
 def construct_env_windows(tools_to_activate, permanent):
-  add_to_path = path_additions(tools_to_activate)
-  if len(add_to_path) > 0:
-    add_to_path = add_to_path + ';'
-  newpath = add_to_path + '%PATH%'
+  env_string = ''
+  newpath = adjusted_path(tools_to_activate)
   
 # Dont permanently add to PATH, since this will break the whole system if there are more than 1024 chars in PATH.
 # (SETX truncates to set only 1024 chars)
@@ -867,20 +890,20 @@ def construct_env_windows(tools_to_activate, permanent):
 #    print 'SETX PATH "' + newpath + '"'
 #  else:
 
-  print 'SET PATH=' + newpath
-  print ''
+  env_string += 'SET PATH=' + newpath + '\n'
   for tool in tools_to_activate:
     if hasattr(tool, 'activated_env'):
       (key, value) = parse_key_value(tool.activated_env)
       value = tool.expand_vars(value)
       if permanent:
-        print 'SETX ' + key + ' "' + value + '"'
+        env_string += 'SETX ' + key + ' "' + value + '"\n'
       else:
-        print 'SET ' + key + '=' + value
+        env_string += 'SET ' + key + '=' + value + '\n'
+  return env_string
 
 def construct_env(tools_to_activate, permanent):
   if WINDOWS:
-    construct_env_windows(tools_to_activate, permanent)
+    return construct_env_windows(tools_to_activate, permanent)
 
 def main():
   load_dot_emscripten()
@@ -897,8 +920,9 @@ def main():
       print ' emsdk: Available commands:'
 
     print '''
-   emsdk list                   - Lists all available SDKs and tools and their
-                                  current installation status.
+   emsdk list [--old]           - Lists all available SDKs and tools and their
+                                  current installation status. With the --old
+                                  parameter, also historical versions are shown.
 
    emsdk update                 - Fetches a list of updates from the net (but
                                   does not install them)
@@ -906,20 +930,14 @@ def main():
    emsdk install <tool/sdk>     - Downloads and installs the given tool or SDK.
    emsdk uninstall <tool/sdk>   - Removes the given tool or SDK from disk.
         
-   emsdk activate <tool/sdk>    - Activates the given tool or SDK as the
-                                  default tool for the current user.
-    
-   emsdk active_path [tool/sdk] - A helper command to report the directories
-                                  that should be added to PATH to use the 
-                                  given tool or SDK. If no tool/sdk is
-                                  specified, reports the directive for the 
-                                  currently active SDK. '''
+   emsdk activate <tool/sdk>    - Permanently activates the given tool or SDK as
+                                  the default tool in the system environment.'''
 
     if WINDOWS:
       print '''
-   emcmdprompt.bat              - Spawns a new command prompt that has the tool
-                                  directories of all currently active tools
-                                  added to PATH. '''
+   emcmdprompt.bat              - Spawns a new command prompt window with the
+                                  Emscripten environment active.'''
+
     return 1
   cmd = sys.argv[1]
 
@@ -933,9 +951,12 @@ def main():
 
   if cmd == 'list':
     print ''
+    show_old = len(sys.argv) >= 3 and sys.argv[2] == '--old'
     if len(tools) > 0:
       print 'The following individual tools exist:'
       for tool in tools:
+        if tool.is_old and not show_old:
+          continue
         if tool.can_be_installed() == True:
           installed = '\tINSTALLED' if tool.is_installed() else ''
         else:
@@ -963,7 +984,7 @@ def main():
       tool = find_tool(sys.argv[i])
       tools_to_activate += [tool]
 
-    print path_additions(tools_to_activate)
+    print adjusted_path(tools_to_activate)
 
     return 0
   elif cmd == 'construct_env':
@@ -988,6 +1009,10 @@ def main():
           return 1
         tools_to_activate += [tool]
     set_active_tools(tools_to_activate)
+    
+    if WINDOWS:
+      env_string = construct_env(tools_to_activate, False)
+      open('emsdk_set_env.bat', 'w').write(env_string)
     return 0
   elif cmd == 'install':
     if len(sys.argv) <= 2:
@@ -1010,7 +1035,7 @@ def main():
       return 1
     tool.uninstall()
   else:
-    print "Unknown command '" + cmd + "' given!"
+    print "Unknown command '" + cmd + "' given! Type 'emsdk help' to get a list of commands."
     return 1
 
 if __name__ == '__main__':

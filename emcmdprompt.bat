@@ -1,1 +1,1 @@
-@cmd /k call emsdk_add_path.bat
+@cmd /k call emsdk_env.bat
