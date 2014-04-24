@@ -971,11 +971,16 @@ def main():
     if len(sdks) > 0:
       print 'The following Emscripten SDK versions are available:'
       for sdk in sdks:
+        if sdk.is_old and not show_old:
+          continue
         installed = '\tINSTALLED' if sdk.is_installed() else ''
         active = '*' if sdk.is_active() else ' '
         print '    ' + active + '    {0: <25}'.format(str(sdk)) + installed
       print ''
       print 'The items marked with * are activated for the current user.'
+      if not show_old:
+        print ''
+        print "To access the historical archived versions, type 'emsdk list --old'"
 
     return 0
   elif cmd == 'active_path':

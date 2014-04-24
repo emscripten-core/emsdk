@@ -22,7 +22,8 @@
     "bitness": 32,
     "windows_url": "clang_3.3_32bit.zip",
     "activated_path": "%installation_dir%",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%'"
+    "activated_cfg": "LLVM_ROOT='%installation_dir%'",
+    "is_old": true
   },
   {
     "id": "clang",
@@ -30,7 +31,8 @@
     "bitness": 64,
     "windows_url": "clang_3.3_64bit.zip",
     "activated_path": "%installation_dir%",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%'"
+    "activated_cfg": "LLVM_ROOT='%installation_dir%'",
+    "is_old": true
   },
   {
     "id": "clang",
@@ -55,7 +57,8 @@
     "windows_url": "emscripten-clang_e1.13.0.zip",
     "osx_url": "emscripten-clang_e1.13.0.tar.gz",
     "activated_path": "%installation_dir%",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%'"
+    "activated_cfg": "LLVM_ROOT='%installation_dir%'",
+    "is_old": true
   },
   {
     "id": "clang",
@@ -64,7 +67,8 @@
     "windows_url": "emscripten-clang_e1.13.1.zip",
     "osx_url": "emscripten-clang_e1.13.1.tar.gz",
     "activated_path": "%installation_dir%",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%'"
+    "activated_cfg": "LLVM_ROOT='%installation_dir%'",
+    "is_old": true
   },
   {
     "id": "clang",
@@ -107,7 +111,8 @@
     "bitness": 32,
     "windows_url": "python_2.7.5.1_32bit.zip",
     "activated_path": "%installation_dir%",
-    "activated_cfg": "PYTHON='%installation_dir%/python%.exe%'"
+    "activated_cfg": "PYTHON='%installation_dir%/python%.exe%'",
+    "is_old": true
   },
   {
     "id": "python",
@@ -115,7 +120,8 @@
     "bitness": 64,
     "windows_url": "python_2.7.5_64bit.zip",
     "activated_path": "%installation_dir%",
-    "activated_cfg": "PYTHON='%installation_dir%/python%.exe%'"
+    "activated_cfg": "PYTHON='%installation_dir%/python%.exe%'",
+    "is_old": true
   },
   {
     "id": "python",
@@ -183,7 +189,8 @@
     "unix_url": "emscripten_1.5.6.tar.gz",
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%",
-    "activated_env": "EMSCRIPTEN=%installation_dir%"
+    "activated_env": "EMSCRIPTEN=%installation_dir%",
+    "is_old": true
   },
   {
     "id": "emscripten",
@@ -192,7 +199,8 @@
     "unix_url": "emscripten-1.7.1.tar.gz",
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%",
-    "activated_env": "EMSCRIPTEN=%installation_dir%"
+    "activated_env": "EMSCRIPTEN=%installation_dir%",
+    "is_old": true
   },
   {
     "id": "emscripten",
@@ -201,7 +209,8 @@
     "unix_url": "emscripten-1.7.8.tar.gz",
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%",
-    "activated_env": "EMSCRIPTEN=%installation_dir%"
+    "activated_env": "EMSCRIPTEN=%installation_dir%",
+    "is_old": true
   },
   {
     "id": "emscripten",
@@ -210,7 +219,8 @@
     "unix_url": "emscripten-1.8.2.tar.gz",
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%",
-    "activated_env": "EMSCRIPTEN=%installation_dir%"
+    "activated_env": "EMSCRIPTEN=%installation_dir%",
+    "is_old": true
   },
   {
     "id": "emscripten",
@@ -219,7 +229,8 @@
     "unix_url": "emscripten-1.9.5.tar.gz",
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%",
-    "activated_env": "EMSCRIPTEN=%installation_dir%"
+    "activated_env": "EMSCRIPTEN=%installation_dir%",
+    "is_old": true
   },
   {
     "id": "emscripten",
@@ -228,7 +239,8 @@
     "unix_url": "emscripten-1.10.4.tar.gz",
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%",
-    "activated_env": "EMSCRIPTEN=%installation_dir%"
+    "activated_env": "EMSCRIPTEN=%installation_dir%",
+    "is_old": true
   },
   {
     "id": "emscripten",
@@ -246,7 +258,8 @@
     "unix_url": "emscripten-1.13.0.tar.gz",
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%",
-    "activated_env": "EMSCRIPTEN=%installation_dir%"
+    "activated_env": "EMSCRIPTEN=%installation_dir%",
+    "is_old": true
   },
   {
     "id": "emscripten",
@@ -255,7 +268,8 @@
     "unix_url": "emscripten-1.13.1.tar.gz",
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%",
-    "activated_env": "EMSCRIPTEN=%installation_dir%"
+    "activated_env": "EMSCRIPTEN=%installation_dir%",
+    "is_old": true
   },
   {
     "id": "emscripten",
@@ -288,19 +302,22 @@
     "id": "vs-tool",
     "version": "0.9.0",
     "windows_url": "vs-tool_0.9.0.zip",
-    "windows_install_path": "%MSBuildPlatformsDir%/Emscripten"
+    "windows_install_path": "%MSBuildPlatformsDir%/Emscripten",
+    "is_old": true
   },
   {
     "id": "vs-tool",
     "version": "0.9.1",
     "windows_url": "vs-tool_0.9.1.zip",
-    "windows_install_path": "%MSBuildPlatformsDir%/Emscripten"
+    "windows_install_path": "%MSBuildPlatformsDir%/Emscripten",
+    "is_old": true
   },
   {
     "id": "vs-tool",
     "version": "0.9.2",
     "windows_url": "vs-tool_0.9.2.zip",
-    "windows_install_path": "%MSBuildPlatformsDir%/Emscripten"
+    "windows_install_path": "%MSBuildPlatformsDir%/Emscripten",
+    "is_old": true
   },
   {
     "id": "vs-tool",
@@ -366,109 +383,127 @@
     "version": "1.5.6",
     "bitness": 32,
     "uses": ["clang-3.2-32bit", "node-0.10.17-32bit", "python-2.7.5.1-32bit", "java-7.45-32bit", "emscripten-1.5.6"],
-    "os": "win"
+    "os": "win",
+    "is_old": true
   },
   {
     "version": "1.5.6",
     "bitness": 64,
     "uses": ["clang-3.2-64bit", "node-0.10.17-64bit", "python-2.7.5-64bit", "java-7.45-64bit", "emscripten-1.5.6"],
-    "os": "win"
+    "os": "win",
+    "is_old": true
   },
   {
     "version": "1.5.6",
     "bitness": 64,
     "uses": ["clang-3.2-64bit", "node-0.10.18-64bit", "emscripten-1.5.6"],
-    "os": "osx"
+    "os": "osx",
+    "is_old": true
   },
   {
     "version": "1.7.1",
     "bitness": 32,
     "uses": ["clang-3.2-32bit", "node-0.10.17-32bit", "python-2.7.5.1-32bit", "java-7.45-32bit", "emscripten-1.7.1"],
-    "os": "win"
+    "os": "win",
+    "is_old": true
   },
   {
     "version": "1.7.1",
     "bitness": 64,
     "uses": ["clang-3.2-64bit", "node-0.10.17-64bit", "python-2.7.5-64bit", "java-7.45-64bit", "emscripten-1.7.1"],
-    "os": "win"
+    "os": "win",
+    "is_old": true
   },
   {
     "version": "1.7.1",
     "bitness": 64,
     "uses": ["clang-3.2-64bit", "node-0.10.18-64bit", "emscripten-1.7.1"],
-    "os": "osx"
+    "os": "osx",
+    "is_old": true
   },
   {
     "version": "1.7.8",
     "bitness": 32,
     "uses": ["clang-3.2-32bit", "node-0.10.17-32bit", "python-2.7.5.3-32bit", "java-7.45-32bit", "emscripten-1.7.8"],
-    "os": "win"
+    "os": "win",
+    "is_old": true
   },
   {
     "version": "1.7.8",
     "bitness": 64,
     "uses": ["clang-3.2-64bit", "node-0.10.17-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-1.7.8"],
-    "os": "win"
+    "os": "win",
+    "is_old": true
   },
   {
     "version": "1.7.8",
     "bitness": 64,
     "uses": ["clang-3.2-64bit", "node-0.10.18-64bit", "emscripten-1.7.8"],
-    "os": "osx"
+    "os": "osx",
+    "is_old": true
   },
   {
     "version": "1.8.2",
     "bitness": 32,
     "uses": ["clang-3.2-32bit", "node-0.10.17-32bit", "python-2.7.5.3-32bit", "emscripten-1.8.2"],
-    "os": "win"
+    "os": "win",
+    "is_old": true
   },
   {
     "version": "1.8.2",
     "bitness": 64,
     "uses": ["clang-3.2-64bit", "node-0.10.17-64bit", "python-2.7.5.3-64bit", "emscripten-1.8.2"],
-    "os": "win"
+    "os": "win",
+    "is_old": true
   },
   {
     "version": "1.8.2",
     "bitness": 64,
     "uses": ["clang-3.2-64bit", "node-0.10.18-64bit", "emscripten-1.8.2"],
-    "os": "osx"
+    "os": "osx",
+    "is_old": true
   },
   {
     "version": "1.9.5",
     "bitness": 32,
     "uses": ["clang-3.2-32bit", "node-0.10.17-32bit", "python-2.7.5.3-32bit", "emscripten-1.9.5"],
-    "os": "win"
+    "os": "win",
+    "is_old": true
   },
   {
     "version": "1.9.5",
     "bitness": 64,
     "uses": ["clang-3.2-64bit", "node-0.10.17-64bit", "python-2.7.5.3-64bit", "emscripten-1.9.5"],
-    "os": "win"
+    "os": "win",
+    "is_old": true
   },
   {
     "version": "1.9.5",
     "bitness": 64,
     "uses": ["clang-3.2-64bit", "node-0.10.18-64bit", "emscripten-1.9.5"],
-    "os": "osx"
+    "os": "osx",
+    "is_old": true
   },
   {
     "version": "1.10.4",
     "bitness": 32,
     "uses": ["clang-3.2-32bit", "node-0.10.17-32bit", "python-2.7.5.3-32bit", "emscripten-1.10.4"],
-    "os": "win"
+    "os": "win",
+    "is_old": true
   },
   {
     "version": "1.10.4",
     "bitness": 64,
     "uses": ["clang-3.2-64bit", "node-0.10.17-64bit", "python-2.7.5.3-64bit", "emscripten-1.10.4"],
-    "os": "win"
+    "os": "win",
+    "is_old": true
   },
   {
     "version": "1.10.4",
     "bitness": 64,
     "uses": ["clang-3.2-64bit", "node-0.10.18-64bit", "emscripten-1.10.4"],
-    "os": "osx"
+    "os": "osx",
+    "is_old": true
   },
   {
     "version": "1.12.0",
@@ -492,25 +527,29 @@
     "version": "1.13.0",
     "bitness": 64,
     "uses": ["clang-e1.13.0-64bit", "node-0.10.17-64bit", "python-2.7.5.3-64bit", "emscripten-1.13.0"],
-    "os": "win"
+    "os": "win",
+    "is_old": true
   },
   {
     "version": "1.13.0",
     "bitness": 64,
     "uses": ["clang-e1.13.0-64bit", "node-0.10.18-64bit", "emscripten-1.13.0"],
-    "os": "osx"
+    "os": "osx",
+    "is_old": true
   },
   {
     "version": "1.13.1",
     "bitness": 64,
     "uses": ["clang-e1.13.1-64bit", "node-0.10.17-64bit", "python-2.7.5.3-64bit", "emscripten-1.13.1"],
-    "os": "win"
+    "os": "win",
+    "is_old": true
   },
   {
     "version": "1.13.1",
     "bitness": 64,
     "uses": ["clang-e1.13.1-64bit", "node-0.10.18-64bit", "emscripten-1.13.1"],
-    "os": "osx"
+    "os": "osx",
+    "is_old": true
   },
   {
     "version": "1.16.0",
