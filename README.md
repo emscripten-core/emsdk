@@ -57,12 +57,21 @@ If you do not want to use the SDK, there exists guides for setting up Emscripten
 
 #### Linux
 
-The SDK is not available for Linux at the moment. To get started on Linux, see "Installing from Source" in the next section. The following links may also be useful (but might be out of date):
+The SDK is not available for Linux at the moment. The best way to get started on Linux is to build Emscripten manually. See the "Installing from Source" section below. This ensures that you will get the most up-to-date configuration.
+
+The following links may also be useful, but might be out of date:
+
 * For help on Ubuntu, you can follow the [Getting Started on Ubuntu 12.10](https://github.com/kripken/emscripten/wiki/Getting-Started-on-Ubuntu-12.10) guide for instructions on how to obtain the prerequisites and build Clang manually using CMake.
 * For help on Debian, see this [guide by EarthServer](https://earthserver.com/Setting_up_emscripten_development_environment_on_Linux).
-* Debian Jessie includes a [emscripten package](https://packages.debian.org/jessie/emscripten).
 * rhelmer has provided a Vagrant VM for Emscripten, see [emscripten-vagrant](https://github.com/rhelmer/emscripten-vagrant).
 * Dirk Krause created an [Amazon EC2 image](https://groups.google.com/forum/?fromgroups=#!topic/emscripten-discuss/H8kG0kP1eDE) for Emscripten.
+
+Note that some distributions provide Emscripten in their package repositories. Please make note of the version number they are offering, since these will most certainly be very out of date!
+
+* Ubuntu 13.10 and later (via the Universe repository) [[more](http://packages.ubuntu.com/search?keywords=emscripten)]
+* Debian sid (unstable) and jessie (testing) [[more](https://packages.debian.org/search?keywords=emscripten)]
+* Arch Linux (via AUR) [[more](https://aur.archlinux.org/packages/emscripten-git/)]
+* etc.
 
 ### Installing from Source
 
