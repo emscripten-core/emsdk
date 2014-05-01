@@ -113,7 +113,9 @@ Start the Emscripten Command Prompt from Start Menu -> All Programs -> Emscripte
 
 ##### Windows: Use Visual Studio 2010
 
-After installing the vs-tool plugin, a new 'Emscripten' configuration will appear to the list of all Solution Configurations in Visual Studio. Activating that configuration for a solution/project will make Visual Studio run the project build through Emscripten, producing .html or .js output, depending on the project properties you set up.
+After installing the vs-tool plugin, a new 'Emscripten' platform will appear to the list of all Solution Platforms in Visual Studio. To activate the Emscripten platform, right-click on the solution in the Solution Explorer, choose Configuration Manager... -> Active solution platform... -> New... -> Emscripten. After that, activating the Emscripten platform for the solution will make Visual Studio run the project build through Emscripten, producing .html or .js output, depending on the project properties you set up.
+
+Note: If you copied the Emscripten platform properties from the Win32 platform, be sure to go and clean up any leftover Win32-specific #defines and other configuration from the Emscripten platform!
 
 ## SDK Concepts
 
