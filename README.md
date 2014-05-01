@@ -197,7 +197,3 @@ If you want to remove a Portable SDK, just delete the directory where you put th
 * Also, on OSX, java is not bundled with the Emscripten SDK. After installing emscripten via emsdk, typing 'emcc --help' should pop up a OSX dialog "Java is not installed. To open java, you need a Java SE 6 runtime. Would you like to install one now?" that will automatically download a Java runtime to the system.
 
 * Emscripten requires the command line tool 'python2' to be present on OSX. On default OSX installations, this does not exist. To manually work around this issue, see step 10 at https://github.com/kripken/emscripten/wiki/Getting-started-on-Mac-OS-X
-
-##### Windows
-
-* The Visual Studio integration with the vs-tool package only supports Visual Studio 2010 at the moment, and requires the 32-bit version of emsdk to be used.
