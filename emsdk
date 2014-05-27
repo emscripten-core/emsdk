@@ -994,7 +994,10 @@ def main():
     return 0
   elif cmd == 'construct_env':
     tools_to_activate = currently_active_tools()
-    construct_env(tools_to_activate, len(sys.argv) >= 3 and 'perm' in sys.argv[2])
+    env_string = construct_env(tools_to_activate, len(sys.argv) >= 3 and 'perm' in sys.argv[2])
+    if WINDOWS:
+      open('emsdk_set_env.bat', 'w').write(env_string)
+	  
     return 0
   elif cmd == 'update':
     update_emsdk()
