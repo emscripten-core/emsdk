@@ -8,7 +8,7 @@ import sys, optparse, subprocess, urllib2, os, os.path, errno, zipfile, string, 
 # staging source repository instead.
 EMSDK_DEV = bool(os.getenv('EMSDK_DEV')) if os.getenv('EMSDK_DEV') != None else False
 
-if EMSDK_DEV and not 'active_path' in sys.argv:
+if EMSDK_DEV:
   print 'EMSDK_DEV active.'
   emsdk_master_server = 'http://clb.demon.fi/emscripten_dev/'
 else:
@@ -437,14 +437,13 @@ JS_ENGINES = [NODE_JS]
   except:
     pass
 
-  print "The following tool directories have been set for you in " + dot_emscripten_path() + ":"
+  print "The Emscripten configuration file " + os.path.normpath(dot_emscripten_path()) + " has been rewritten with the following contents:"
   print ''
-  print cfg
+  print cfg.strip()
+  print ''
   
   path_add = get_required_path(active_tools)
-  if WINDOWS:
-    print 'The appropriate environment variables have also been set in registry.'
-  else:
+  if not WINDOWS:
     print "To conveniently access the selected set of tools from the command line, consider adding the following directories to PATH, or call '" + ('' if WINDOWS else 'source ') + os.path.relpath(sdk_path('emsdk_add_path')) + "' to do this for you."
     print ''
     print '   ' + ENVPATH_SEPARATOR.join(path_add)
@@ -599,13 +598,13 @@ class Tool:
       return True
     return False
 
-  def win_activate_env_vars(self, system=True):
+  def win_activate_env_vars(self, permanently_activate):
     if WINDOWS and hasattr(self, 'activated_env'):
       (key, value) = parse_key_value(self.activated_environment())
-      if system:
+      if permanently_activate:
         win_delete_environment_variable(key, False) # If there is an env var for the LOCAL USER with same name, it will hide the system var, so must remove that first.
 
-      win_set_environment_variable(key, value, system)
+      win_set_environment_variable(key, value, permanently_activate)
     
   # If this tool can be installed on this system, this function returns True.
   # Otherwise, this function returns a string that describes the reason why this tool is not available.
@@ -800,8 +799,20 @@ def install(): # TODO: Add parameter to choose which SDK to install.
 def can_simultaneously_activate(tool1, tool2):
   return tool1.id != tool2.id
 
-# Reconfigure .emscripten to choose the currently activated toolset.
-def set_active_tools(tools_to_activate):
+def remove_nonexisting_tools(tool_list, log_errors=True):
+  i = 0
+  while i < len(tool_list):
+    tool = tool_list[i]
+    if not tool.is_installed():
+      if log_errors:
+        print "The SDK/tool '" + str(tool) + "' cannot be activated since it is not installed! Skipping this tool..."
+      tool_list.pop(i)
+      continue
+    i += 1
+  return tool_list
+
+# Reconfigure .emscripten to choose the currently activated toolset, set PATH and other environment variables.
+def set_active_tools(tools_to_activate, permanently_activate):
   i = 0
   # Gather dependencies for each tool
   while i < len(tools_to_activate):
@@ -810,15 +821,7 @@ def set_active_tools(tools_to_activate):
     tools_to_activate = tools_to_activate[:i] + deps + tools_to_activate[i:]
     i += len(deps)+1
 
-  # Remove nonexisting tools
-  i = 0
-  while i < len(tools_to_activate):
-    tool = tools_to_activate[i]
-    if not tool.is_installed():
-      print "The SDK/tool '" + str(tool) + "' cannot be activated since it is not installed! Skipping this tool..."
-      tools_to_activate.pop(i)
-      continue
-    i += 1
+  tools_to_activate = remove_nonexisting_tools(tools_to_activate, log_errors=True)
 
   # Remove conflicting tools
   i = 0
@@ -837,17 +840,18 @@ def set_active_tools(tools_to_activate):
   generate_dot_emscripten(tools_to_activate)
 
   # Apply environment variables to global all users section.
-  if WINDOWS:
+  if WINDOWS and permanently_activate:
     # Individual env. vars
     for tool in tools_to_activate:
-      tool.win_activate_env_vars(True)
+      tool.win_activate_env_vars(permanently_activate=True)
 
     # PATH variable
-    newpath = adjusted_path(tools_to_activate)
-    if len(newpath) < 1024:
-      win_set_environment_variable('PATH', newpath, system=True)
-    else:
-      print >> sys.stderr, 'ERROR! The current PATH is too large (more than 1024 characters), unable to add Emscripten environment to PATH via command-line! Please do this via the system user interface.'
+    newpath, added_items = adjusted_path(tools_to_activate)
+    if newpath != os.environ['PATH']: # Are there any actual changes?
+      if len(newpath) < 1024:
+        win_set_environment_variable('PATH', newpath, system=True)
+      else:
+        print >> sys.stderr, 'ERROR! The current PATH is too large (more than 1024 characters), unable to add Emscripten environment to PATH via command-line! Please do this via the system user interface.'
 
 def currently_active_sdk():
   for sdk in reversed(sdks):
@@ -870,19 +874,22 @@ def unique_items(seq):
 
 # Looks at the current PATH and adds and removes entries so that the PATH reflects
 # the set of given active tools.
-def adjusted_path(tools_to_activate):
+def adjusted_path(tools_to_activate, log_additions=False):
   # These directories should be added to PATH
   path_add = get_required_path(tools_to_activate)
   # These already exist.
   existing_path = os.environ['PATH'].replace('\\', '/').split(ENVPATH_SEPARATOR)
   emsdk_root_path = emsdk_path()
+  existing_emsdk_tools = [item for item in existing_path if item.startswith(emsdk_root_path)]
+  new_emsdk_tools = [item for item in path_add if item not in existing_emsdk_tools]
+  # Existing non-emsdk tools
   existing_path = [item for item in existing_path if not item.startswith(emsdk_root_path)]
   new_path = [item for item in path_add if item not in existing_path]
-  return ENVPATH_SEPARATOR.join(unique_items(existing_path + new_path))
+  return (ENVPATH_SEPARATOR.join(unique_items(existing_path + new_path)), new_emsdk_tools)
 
 def construct_env_windows(tools_to_activate, permanent):
   env_string = ''
-  newpath = adjusted_path(tools_to_activate)
+  newpath, added_path = adjusted_path(tools_to_activate)
   
 # Dont permanently add to PATH, since this will break the whole system if there are more than 1024 chars in PATH.
 # (SETX truncates to set only 1024 chars)
@@ -890,15 +897,30 @@ def construct_env_windows(tools_to_activate, permanent):
 #    print 'SETX PATH "' + newpath + '"'
 #  else:
 
-  env_string += 'SET PATH=' + newpath + '\n'
+  if os.environ['PATH'] != newpath: # Don't bother setting the path if there are no changes.
+    env_string += 'SET PATH=' + newpath + '\n'
+    if len(added_path) > 0:
+      print 'The following directories have been added to PATH:'
+      for item in added_path:
+        print 'PATH += ' + item
+      print ''
+
+  env_vars_to_add = []
   for tool in tools_to_activate:
     if hasattr(tool, 'activated_env'):
       (key, value) = parse_key_value(tool.activated_env)
       value = tool.expand_vars(value)
+      if not key in os.environ or os.environ[key] != value: # Don't set env. vars which are already set to the correct value.
+        env_vars_to_add += [(key, value)]
+
+  if len(env_vars_to_add) > 0:
+    print 'The following environment variables have been set:'
+    for key, value in env_vars_to_add:
       if permanent:
         env_string += 'SETX ' + key + ' "' + value + '"\n'
       else:
         env_string += 'SET ' + key + '=' + value + '\n'
+      print key + ' = ' + value
   return env_string
 
 def construct_env(tools_to_activate, permanent):
@@ -941,7 +963,7 @@ def main():
     return 1
   cmd = sys.argv[1]
 
-  if (cmd == 'active_path' or cmd == 'update' or cmd == 'install' or cmd == 'activate') and len(sys.argv) >= 3:
+  if (cmd == 'update' or cmd == 'install' or cmd == 'activate') and len(sys.argv) >= 3:
     if sys.argv[2] == 'latest':
       sys.argv[2] = str(find_latest_sdk())
     elif sys.argv[2] == 'latest-32bit':
@@ -983,26 +1005,25 @@ def main():
         print "To access the historical archived versions, type 'emsdk list --old'"
 
     return 0
-  elif cmd == 'active_path':
-    tools_to_activate = currently_active_tools()
-    for i in range(2, len(sys.argv)):
-      tool = find_tool(sys.argv[i])
-      tools_to_activate += [tool]
-
-    print adjusted_path(tools_to_activate)
-
-    return 0
   elif cmd == 'construct_env':
     tools_to_activate = currently_active_tools()
-    construct_env(tools_to_activate, len(sys.argv) >= 3 and 'perm' in sys.argv[2])
+    env_string = construct_env(tools_to_activate, len(sys.argv) >= 3 and 'perm' in sys.argv[2])
+    if WINDOWS:
+      open('emsdk_set_env.bat', 'w').write(env_string)
     return 0
   elif cmd == 'update':
     update_emsdk()
     return 0
   elif cmd == 'activate':
+    permanently_activate = '--global' in sys.argv
+    if permanently_activate:
+      print 'Registering active Emscripten environment globally for all users.'
+      print ''
+    sys.argv = filter(lambda x: not x.startswith('--'), sys.argv)
     # If called without arguments, activate latest versions of all tools
     if len(sys.argv) <= 2:
       tools_to_activate = list(tools)
+      tools_to_activate = remove_nonexisting_tools(tools_to_activate, log_errors=False)
     else:
       tools_to_activate = currently_active_tools()
       for i in range(2, len(sys.argv)):
@@ -1013,7 +1034,7 @@ def main():
           print "Error: No tool or SDK found by name '" + sys.argv[i] + "'."
           return 1
         tools_to_activate += [tool]
-    set_active_tools(tools_to_activate)
+    set_active_tools(tools_to_activate, permanently_activate=permanently_activate)
     
     if WINDOWS:
       env_string = construct_env(tools_to_activate, False)
