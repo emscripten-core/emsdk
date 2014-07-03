@@ -602,7 +602,7 @@ class Tool:
   def is_env_active(self):
     if hasattr(self, 'activated_env'):
       (key, value) = parse_key_value(self.activated_environment())
-      if not key in os.environ or os.environ[key] != value:
+      if not key in os.environ or to_unix_path(os.environ[key]) != to_unix_path(value):
         return False
 #      if WINDOWS:
 #        env_var = win_get_active_environment_variable(key)
@@ -610,9 +610,11 @@ class Tool:
 #          return False
     if hasattr(self, 'activated_path'):
       path = self.expand_vars(self.activated_path).replace('\\', '/')
-      path_items = os.environ['PATH'].replace('\\', '/').split(ENVPATH_SEPARATOR)
-      if not path in path_items:
-        return False
+      path = path.split(ENVPATH_SEPARATOR)
+      for p in path:
+        path_items = os.environ['PATH'].replace('\\', '/').split(ENVPATH_SEPARATOR)
+        if not normalized_contains(path_items, p):
+          return False
     return True
 
   def win_activate_env_vars(self, permanently_activate):
@@ -894,6 +896,14 @@ def unique_items(seq):
   seen_add = seen.add
   return [ x for x in seq if x not in seen and not seen_add(x)]
 
+# Tests if a path is contained in the given list, but with separators normalized.
+def normalized_contains(lst, elem):
+  elem = to_unix_path(elem)
+  for e in lst:
+    if elem == to_unix_path(e):
+      return True
+  return False
+
 # Looks at the current PATH and adds and removes entries so that the PATH reflects
 # the set of given active tools.
 def adjusted_path(tools_to_activate, log_additions=False):
@@ -902,13 +912,6 @@ def adjusted_path(tools_to_activate, log_additions=False):
   # These already exist.
   existing_path = os.environ['PATH'].split(ENVPATH_SEPARATOR)
   emsdk_root_path = to_unix_path(emsdk_path())
-  # Tests if a path is contained in the given list, but with separators normalized.
-  def normalized_contains(lst, elem):
-    elem = to_unix_path(elem)
-    for e in lst:
-      if elem == to_unix_path(e):
-        return True
-    return False
 
   existing_emsdk_tools = [item for item in existing_path if to_unix_path(item).startswith(emsdk_root_path)]
   new_emsdk_tools = [item for item in path_add if not normalized_contains(existing_emsdk_tools, item)]
