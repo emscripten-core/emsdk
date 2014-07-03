@@ -802,14 +802,6 @@ def load_sdk_manifest():
         sdk.is_old = False
       sdks.append(sdk)
 
-def install(): # TODO: Add parameter to choose which SDK to install.
-  download_and_unzip('clang_3.2_32bit.zip', 'clang/3.2_32bit/')
-  download_file(urlparse.urljoin(emsdk_master_server, 'node_0.10.17_32bit.exe'), 'node/0.10.17_32bit/node.exe')  
-  download_and_unzip('python_2.7.5.1_32bit.zip', 'python/2.7.5.1_32bit/')
-  download_and_unzip('git_1.8.3.zip', 'git/1.8.3/')
-  #git_clone_checkout_and_pull(emscripten_git_repo, 'emscripten/', 'incoming')
-  download_and_unzip('emscripten_1.5.6.zip', 'emscripten/1.5.6/')
-
 # Tests if the two given tools can be active at the same time.
 # Currently only a simple check for name for same tool with different versions,
 # possibly adds more logic in the future.
