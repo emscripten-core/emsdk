@@ -368,12 +368,18 @@ def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False):
 def to_unix_path(p):
   return p.replace('\\', '/')
 
+def to_native_path(p):
+  if WINDOWS:
+    return to_unix_path(p).replace('/', '\\')
+  else:
+    return to_unix_path(p)
+
 # Finds and returns a list of the directories that need to be added to PATH for the given set of tools.
 def get_required_path(active_tools):
-  path_add = [emsdk_path()]
+  path_add = [to_native_path(emsdk_path())]
   for tool in active_tools:
     if hasattr(tool, 'activated_path'):
-      path_add += [tool.expand_vars(tool.activated_path)]
+      path_add += [to_native_path(tool.expand_vars(tool.activated_path))]
   return path_add
 
 # Returns the absolute path to the file '.emscripten' for the current user on this system.
@@ -902,13 +908,21 @@ def adjusted_path(tools_to_activate, log_additions=False):
   # These directories should be added to PATH
   path_add = get_required_path(tools_to_activate)
   # These already exist.
-  existing_path = os.environ['PATH'].replace('\\', '/').split(ENVPATH_SEPARATOR)
-  emsdk_root_path = emsdk_path()
-  existing_emsdk_tools = [item for item in existing_path if item.startswith(emsdk_root_path)]
-  new_emsdk_tools = [item for item in path_add if item not in existing_emsdk_tools]
+  existing_path = os.environ['PATH'].split(ENVPATH_SEPARATOR)
+  emsdk_root_path = to_unix_path(emsdk_path())
+  # Tests if a path is contained in the given list, but with separators normalized.
+  def normalized_contains(lst, elem):
+    elem = to_unix_path(elem)
+    for e in lst:
+      if elem == to_unix_path(e):
+        return True
+    return False
+
+  existing_emsdk_tools = [item for item in existing_path if to_unix_path(item).startswith(emsdk_root_path)]
+  new_emsdk_tools = [item for item in path_add if not normalized_contains(existing_emsdk_tools, item)]
   # Existing non-emsdk tools
-  existing_path = [item for item in existing_path if not item.startswith(emsdk_root_path)]
-  new_path = [item for item in path_add if item not in existing_path]
+  existing_path = [item for item in existing_path if not to_unix_path(item).startswith(emsdk_root_path)]
+  new_path = [item for item in path_add if not normalized_contains(existing_path, item)]
   return (ENVPATH_SEPARATOR.join(unique_items(existing_path + new_path)), new_emsdk_tools)
 
 def construct_env_windows(tools_to_activate, permanent):
@@ -933,8 +947,8 @@ def construct_env_windows(tools_to_activate, permanent):
   for tool in tools_to_activate:
     if hasattr(tool, 'activated_env'):
       (key, value) = parse_key_value(tool.activated_env)
-      value = tool.expand_vars(value)
-      if not key in os.environ or os.environ[key] != value: # Don't set env. vars which are already set to the correct value.
+      value = to_native_path(tool.expand_vars(value))
+      if not key in os.environ or to_unix_path(os.environ[key]) != to_unix_path(value): # Don't set env. vars which are already set to the correct value.
         env_vars_to_add += [(key, value)]
 
   if len(env_vars_to_add) > 0:
