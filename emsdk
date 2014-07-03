@@ -977,9 +977,40 @@ def construct_env_windows(tools_to_activate, permanent):
     print ''
   return env_string
 
+def construct_env_unix(tools_to_activate):
+  env_string = ''
+  newpath, added_path = adjusted_path(tools_to_activate)
+
+  if os.environ['PATH'] != newpath: # Don't bother setting the path if there are no changes.
+    env_string += 'export PATH=' + newpath + '\n'
+    if len(added_path) > 0:
+      print 'Adding directories to PATH:'
+      for item in added_path:
+        print 'PATH += ' + item
+      print ''
+
+  env_vars_to_add = []
+  for tool in tools_to_activate:
+    if hasattr(tool, 'activated_env'):
+      (key, value) = parse_key_value(tool.activated_env)
+      value = to_native_path(tool.expand_vars(value))
+      if not key in os.environ or to_unix_path(os.environ[key]) != to_unix_path(value): # Don't set env. vars which are already set to the correct value.
+        env_vars_to_add += [(key, value)]
+
+  if len(env_vars_to_add) > 0:
+    print 'Setting environment variables:'
+    for key, value in env_vars_to_add:
+      env_string += 'export ' + key + '=' + value + '\n'
+      print key + ' = ' + value
+    print ''
+  return env_string
+
+
 def construct_env(tools_to_activate, permanent):
   if WINDOWS:
     return construct_env_windows(tools_to_activate, permanent)
+  else:
+    return construct_env_unix(tools_to_activate)
 
 def main():
   load_dot_emscripten()
@@ -1062,7 +1093,8 @@ def main():
       print ''
       print 'Items marked with * are activated for the current user.'
       if has_partially_active_tools:
-        print 'Items marked with (*) are selected for use, but your current shell environment is not configured to use them. Type "emsdk_env.bat" to set up your current shell to use them, or call "emsdk activate --global <name_of_sdk>" to permanently activate them.'
+        env_cmd = 'emsdk_env.bat' if WINDOWS else 'source ./emsdk_env.sh'
+        print 'Items marked with (*) are selected for use, but your current shell environment is not configured to use them. Type "' + env_cmd + '" to set up your current shell to use them, or call "emsdk activate --global <name_of_sdk>" to permanently activate them.'
       if not show_old:
         print ''
         print "To access the historical archived versions, type 'emsdk list --old'"
@@ -1074,6 +1106,9 @@ def main():
     env_string = construct_env(tools_to_activate, len(sys.argv) >= 3 and 'perm' in sys.argv[2])
     if WINDOWS:
       open('emsdk_set_env.bat', 'w').write(env_string)
+    else:
+      open('emsdk_set_env.sh', 'w').write(env_string)
+      os.chmod('emsdk_set_env.sh', 0755)
     return 0
   elif cmd == 'update':
     update_emsdk()

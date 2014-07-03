@@ -1,3 +1,0 @@
-NEW_PATH="$(./emsdk active_path)"
-export PATH=$NEW_PATH:$PATH
-
