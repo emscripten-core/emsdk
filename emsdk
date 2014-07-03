@@ -811,8 +811,8 @@ def remove_nonexisting_tools(tool_list, log_errors=True):
     i += 1
   return tool_list
 
-# Reconfigure .emscripten to choose the currently activated toolset, set PATH and other environment variables.
-def set_active_tools(tools_to_activate, permanently_activate):
+# Expands dependencies for each tool, and removes ones that don't exist.
+def process_tool_list(tools_to_activate, log_errors=True):
   i = 0
   # Gather dependencies for each tool
   while i < len(tools_to_activate):
@@ -821,7 +821,7 @@ def set_active_tools(tools_to_activate, permanently_activate):
     tools_to_activate = tools_to_activate[:i] + deps + tools_to_activate[i:]
     i += len(deps)+1
 
-  tools_to_activate = remove_nonexisting_tools(tools_to_activate, log_errors=True)
+  tools_to_activate = remove_nonexisting_tools(tools_to_activate, log_errors=log_errors)
 
   # Remove conflicting tools
   i = 0
@@ -836,8 +836,19 @@ def set_active_tools(tools_to_activate, permanently_activate):
         i -= 1
       j += 1
     i += 1
+  return tools_to_activate
+
+# Reconfigure .emscripten to choose the currently activated toolset, set PATH and other environment variables.
+# Returns the full list of deduced tools that are now active.
+def set_active_tools(tools_to_activate, permanently_activate):
+  tools_to_activate = process_tool_list(tools_to_activate, log_errors=True)
 
   generate_dot_emscripten(tools_to_activate)
+
+  # Construct a .bat script that will be invoked to set env. vars and PATH
+  if WINDOWS:
+    env_string = construct_env(tools_to_activate, False)
+    open('emsdk_set_env.bat', 'w').write(env_string)
 
   # Apply environment variables to global all users section.
   if WINDOWS and permanently_activate:
@@ -851,7 +862,9 @@ def set_active_tools(tools_to_activate, permanently_activate):
       if len(newpath) < 1024:
         win_set_environment_variable('PATH', newpath, system=True)
       else:
-        print >> sys.stderr, 'ERROR! The current PATH is too large (more than 1024 characters), unable to add Emscripten environment to PATH via command-line! Please do this via the system user interface.'
+        print >> sys.stderr, 'ERROR! The new PATH is more than 1024 characters long! A PATH this long cannot be set via command line: please add the PATHs specified above to system PATH manually via Control Panel.'
+
+  return tools_to_activate
 
 def currently_active_sdk():
   for sdk in reversed(sdks):
@@ -890,7 +903,7 @@ def adjusted_path(tools_to_activate, log_additions=False):
 def construct_env_windows(tools_to_activate, permanent):
   env_string = ''
   newpath, added_path = adjusted_path(tools_to_activate)
-  
+
 # Dont permanently add to PATH, since this will break the whole system if there are more than 1024 chars in PATH.
 # (SETX truncates to set only 1024 chars)
 #  if permanent:
@@ -900,7 +913,7 @@ def construct_env_windows(tools_to_activate, permanent):
   if os.environ['PATH'] != newpath: # Don't bother setting the path if there are no changes.
     env_string += 'SET PATH=' + newpath + '\n'
     if len(added_path) > 0:
-      print 'The following directories have been added to PATH:'
+      print 'Adding directories to PATH:'
       for item in added_path:
         print 'PATH += ' + item
       print ''
@@ -914,13 +927,14 @@ def construct_env_windows(tools_to_activate, permanent):
         env_vars_to_add += [(key, value)]
 
   if len(env_vars_to_add) > 0:
-    print 'The following environment variables have been set:'
+    print 'Setting environment variables:'
     for key, value in env_vars_to_add:
       if permanent:
         env_string += 'SETX ' + key + ' "' + value + '"\n'
       else:
         env_string += 'SET ' + key + '=' + value + '\n'
       print key + ' = ' + value
+    print ''
   return env_string
 
 def construct_env(tools_to_activate, permanent):
@@ -1034,11 +1048,7 @@ def main():
           print "Error: No tool or SDK found by name '" + sys.argv[i] + "'."
           return 1
         tools_to_activate += [tool]
-    set_active_tools(tools_to_activate, permanently_activate=permanently_activate)
-    
-    if WINDOWS:
-      env_string = construct_env(tools_to_activate, False)
-      open('emsdk_set_env.bat', 'w').write(env_string)
+    tools_to_activate = set_active_tools(tools_to_activate, permanently_activate=permanently_activate)
     return 0
   elif cmd == 'install':
     if len(sys.argv) <= 2:
