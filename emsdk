@@ -580,12 +580,6 @@ class Tool:
       if not tool.is_active():
         return False
 
-    if WINDOWS and hasattr(self, 'activated_env'):
-      (key, value) = parse_key_value(self.activated_environment())
-      env_var = win_get_active_environment_variable(key)
-      if env_var != value:
-        return False
-
     activated_cfg = self.activated_config()
     if activated_cfg == '':
       return len(deps) > 0
@@ -597,6 +591,23 @@ class Tool:
     if dot_emscripten.has_key(key) and dot_emscripten[key] == value:
       return True
     return False
+
+  # Returns true if the system environment variables requires by this tool are currently active.
+  def is_env_active(self):
+    if hasattr(self, 'activated_env'):
+      (key, value) = parse_key_value(self.activated_environment())
+      if not key in os.environ or os.environ[key] != value:
+        return False
+#      if WINDOWS:
+#        env_var = win_get_active_environment_variable(key)
+#        if env_var != value:
+#          return False
+    if hasattr(self, 'activated_path'):
+      path = self.expand_vars(self.activated_path).replace('\\', '/')
+      path_items = os.environ['PATH'].replace('\\', '/').split(ENVPATH_SEPARATOR)
+      if not path in path_items:
+        return False
+    return True
 
   def win_activate_env_vars(self, permanently_activate):
     if WINDOWS and hasattr(self, 'activated_env'):
@@ -988,6 +999,7 @@ def main():
   if cmd == 'list':
     print ''
     show_old = len(sys.argv) >= 3 and sys.argv[2] == '--old'
+    has_partially_active_tools = False
     if len(tools) > 0:
       print 'The following individual tools exist:'
       for tool in tools:
@@ -997,7 +1009,13 @@ def main():
           installed = '\tINSTALLED' if tool.is_installed() else ''
         else:
           installed = '\tNot available: ' + tool.can_be_installed()
-        active = '*' if tool.is_active() else ' '
+        tool_is_active = tool.is_active()
+        tool_is_env_active = tool_is_active and tool.is_env_active()
+        if tool_is_env_active: active = ' * '
+        elif tool_is_active:
+          active = '(*)'
+          has_partially_active_tools = True
+        else: active = '   '
         print '    ' + active + '    {0: <25}'.format(str(tool)) + installed
       print ''
     else:
@@ -1013,7 +1031,9 @@ def main():
         active = '*' if sdk.is_active() else ' '
         print '    ' + active + '    {0: <25}'.format(str(sdk)) + installed
       print ''
-      print 'The items marked with * are activated for the current user.'
+      print 'Items marked with * are activated for the current user.'
+      if has_partially_active_tools:
+        print 'Items marked with (*) are selected for use, but your current shell environment is not configured to use them. Type "emsdk_env.bat" to set up your current shell to use them, or call "emsdk activate --global <name_of_sdk>" to permanently activate them.'
       if not show_old:
         print ''
         print "To access the historical archived versions, type 'emsdk list --old'"
@@ -1021,6 +1041,7 @@ def main():
     return 0
   elif cmd == 'construct_env':
     tools_to_activate = currently_active_tools()
+    tools_to_activate = process_tool_list(tools_to_activate, log_errors=True)
     env_string = construct_env(tools_to_activate, len(sys.argv) >= 3 and 'perm' in sys.argv[2])
     if WINDOWS:
       open('emsdk_set_env.bat', 'w').write(env_string)
