@@ -360,6 +360,88 @@ def git_clone_checkout_and_pull(url, dstpath, branch):
   success = git_checkout_and_pull(dstpath, branch)
   return success
 
+# The root directory of the build.
+def fastcomp_build_dir(tool):
+  build_dir = 'build_' + tool.git_branch
+  build_with_vs2010 = True
+  if WINDOWS:
+    if build_with_vs2010:
+      build_dir += '_vs2010'
+    else:
+      build_dir += '_mingw'
+
+  if tool.bitness == 32:
+    build_dir += '_32'
+  else:
+    build_dir += '_64'
+  return build_dir
+
+# The directory where the binaries are produced.
+def fastcomp_build_bin_dir(tool):
+  build_dir = fastcomp_build_dir(tool)
+  build_with_vs2010 = True
+  if WINDOWS and build_with_vs2010:
+    return os.path.join(build_dir, 'bin\\RelWithDebInfo')
+  else:
+    return os.path.join(build_dir, 'bin')
+
+def build_fastcomp_tool(tool):
+  fastcomp_root = tool.installation_path()
+  fastcomp_src_root = os.path.join(fastcomp_root, 'src')
+  git_clone_checkout_and_pull(tool.url, fastcomp_src_root, tool.git_branch)
+  clang_root = os.path.join(fastcomp_src_root, 'tools/clang')
+  git_clone_checkout_and_pull(tool.clang_url, clang_root, tool.git_branch)
+  build_dir = fastcomp_build_dir(tool)
+  build_with_vs2010 = True
+  if WINDOWS:
+    if build_with_vs2010:
+      if tool.bitness == 64:
+        generator = 'Visual Studio 10 Win64'
+      else:
+        generator = 'Visual Studio 10'
+      make = ['C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319\\MSBuild.exe', '/t:Build', '/p:Configuration=RelWithDebInfo', '/nologo', '/verbosity:minimal', 'LLVM.sln']
+    else:
+      generator = 'MinGW Makefiles'
+      make = ['mingw32-make']
+  else:
+    generator = 'Unix Makefiles'
+    make = ['make']
+
+  build_root = os.path.join(fastcomp_root, build_dir)
+
+  # Configure
+  if not os.path.isdir(build_root): os.mkdir(build_root) # Create build output directory if it doesn't yet exist.
+  try:
+    cmdline = ['cmake', '-G', generator, '-DCMAKE_BUILD_TYPE=RelWithDebInfo', '-DLLVM_TARGETS_TO_BUILD=X86;JSBackend', 
+        '-DLLVM_INCLUDE_EXAMPLES=OFF', '-DLLVM_INCLUDE_TESTS=OFF', '-DCLANG_INCLUDE_EXAMPLES=OFF', '-DCLANG_INCLUDE_TESTS=OFF', fastcomp_src_root]
+    print 'Running CMake: ' + str(cmdline)
+    ret = subprocess.check_call(cmdline, cwd=build_root)
+    if ret != 0:
+      print >> sys.stderr, 'CMake invocation failed with exit code ' + ret + '!'
+      print >> sys.stderr, 'Working directory: ' + build_root
+      return False
+  except Exception, e:
+    print >> sys.stderr, 'CMake invocation failed due to exception!'
+    print >> sys.stderr, 'Working directory: ' + build_root
+    print >> sys.stderr, str(e)
+    return False
+
+  # Build
+  try:
+    print 'Running build: ' + str(make)
+    ret = subprocess.check_call(make, cwd=build_root)
+    if ret != 0:
+      print >> sys.stderr, 'Build failed with exit code ' + ret + '!'
+      print >> sys.stderr, 'Working directory: ' + build_root
+      return False
+  except Exception, e:
+    print >> sys.stderr, 'Build failed due to exception!'
+    print >> sys.stderr, 'Working directory: ' + build_root
+    print >> sys.stderr, str(e)
+    return False
+  return True
+
+
 def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False):
   if not download_even_if_exists and num_files_in_directory(dest_dir) > 0:
     print "The contents of file '" + zipfile + "' already exist in destination '" + dest_dir + "', skipping."
@@ -503,12 +585,19 @@ class Tool:
     if '%installation_dir%' in str:
       str = str.replace('%installation_dir%', sdk_path(self.installation_dir()))
     str = str.replace('%.exe%', '.exe' if WINDOWS else '')
+    if '%fastcomp_build_dir%' in str:
+      str = str.replace('%fastcomp_build_dir%', fastcomp_build_dir(self))
+    if '%fastcomp_build_bin_dir%' in str:
+      str = str.replace('%fastcomp_build_bin_dir%', fastcomp_build_bin_dir(self))
     return str
 
   # Specifies the target path where this tool will be installed to. This could either be a directory or a filename (e.g. in case of node.js)
   def installation_path(self):
     if WINDOWS and hasattr(self, 'windows_install_path'):
       pth = self.expand_vars(self.windows_install_path)
+      return sdk_path(pth)
+    if hasattr(self, 'install_path'):
+      pth = self.expand_vars(self.install_path)
       return sdk_path(pth)
     p = self.version
     if hasattr(self, 'bitness'):
@@ -526,7 +615,7 @@ class Tool:
   # Returns the configuration item that needs to be added to .emscripten to make this Tool active for the current user.
   def activated_config(self):
     if hasattr(self, 'activated_cfg'):
-      return self.expand_vars(self.activated_cfg)
+      return to_unix_path(self.expand_vars(self.activated_cfg))
     else:
       return ''
 
@@ -674,7 +763,9 @@ class Tool:
       return True
     else:
       url = self.download_url()
-      if hasattr(self, 'git_branch'):
+      if hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_fastcomp':
+        success = build_fastcomp_tool(self)
+      elif hasattr(self, 'git_branch'):
         success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch)
       elif url.endswith('zip') or url.endswith('.tar') or url.endswith('.gz'):
         download_even_if_exists = (self.id == 'vs-tool')
@@ -807,7 +898,9 @@ def load_sdk_manifest():
   global tools
   try:
     manifest = json.loads(open(sdk_path("emsdk_manifest.json"), "r").read())
-  except:
+  except Exception, e:
+    print 'Error parsing emsdk_manifest.json!'
+    print str(e)
     return
   for tool in manifest['tools']:
     t = Tool(tool)
