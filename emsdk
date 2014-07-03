@@ -34,8 +34,13 @@ if platform.mac_ver()[0] != '':
   ENVPATH_SEPARATOR = ':'
 
 def win_get_environment_variable(key, system=True):
-  import win32api, win32con
+  prev_path = os.environ['PATH']
   try:
+    py = find_used_python()
+    if py:
+      py_path = to_native_path(py.expand_vars(py.activated_path))
+      os.environ['PATH'] = os.environ['PATH'] + ';' + py_path
+    import win32api, win32con
     if system: # Read globally from ALL USERS section.
       folder = win32api.RegOpenKey(win32con.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment')
     else: # Register locally from CURRENT USER section.
@@ -46,8 +51,10 @@ def win_get_environment_variable(key, system=True):
       print >> sys.stderr, 'Failed to read environment variable ' + key + ':'
       print >> sys.stderr, str(e)
     win32api.RegCloseKey(folder)
+    os.environ['PATH'] = prev_path
     return None
   win32api.RegCloseKey(folder)
+  os.environ['PATH'] = prev_path
   return value
 
 def win_environment_variable_exists(key, system=True):
@@ -772,6 +779,19 @@ def find_latest_sdk():
     return find_latest_64bit_sdk()
   else:
     return find_latest_32bit_sdk()
+
+# Finds the best-matching python tool for use.
+def find_used_python():
+  for t in reversed(tools): # Find newest tool first - those are always at the end of the list.
+    if t.id == 'python' and t.is_installed() and t.is_active() and t.is_env_active():
+      return t
+  for t in reversed(tools):
+    if t.id == 'python' and t.is_installed() and t.is_active():
+      return t
+  for t in reversed(tools):
+    if t.id == 'python' and t.is_installed():
+      return t
+  return None
 
 def update_emsdk():
   if WINDOWS:
