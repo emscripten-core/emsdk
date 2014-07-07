@@ -6,7 +6,8 @@
     "bitness": 32,
     "windows_url": "clang_3.2_32bit.zip",
     "activated_path": "%installation_dir%",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%'"
+    "activated_cfg": "LLVM_ROOT='%installation_dir%'",
+    "is_old": true
   },
   {
     "id": "clang",
@@ -14,7 +15,8 @@
     "bitness": 64,
     "windows_url": "clang_3.2_64bit.zip",
     "activated_path": "%installation_dir%/bin",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%/bin'"
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/bin'",
+    "is_old": true
   },
   {
     "id": "clang",
@@ -40,7 +42,8 @@
     "bitness": 64,
     "osx_url": "clang%2Bllvm-3.2-x86_64-apple-darwin11.tar.gz",
     "activated_path": "%installation_dir%/bin",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%/bin'"
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/bin'",
+    "is_old": true
   },
   {
     "id": "clang",
@@ -48,7 +51,8 @@
     "bitness": 64,
     "osx_url": "clang%2Bllvm-3.3-x86_64-apple-darwin12.tar.gz",
     "activated_path": "%installation_dir%/bin",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%/bin'"
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/bin'",
+    "is_old": true
   },
   {
     "id": "clang",
@@ -125,7 +129,8 @@
     "windows_url": "emscripten-clang_e1.16.0.zip",
     "osx_url": "emscripten-clang_e1.16.0.tar.gz",
     "activated_path": "%installation_dir%",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%'"
+    "activated_cfg": "LLVM_ROOT='%installation_dir%'",
+    "is_old": true
   },
   {
     "id": "clang",
@@ -306,7 +311,8 @@
     "unix_url": "emscripten-1.12.0.tar.gz",
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%",
-    "activated_env": "EMSCRIPTEN=%installation_dir%"
+    "activated_env": "EMSCRIPTEN=%installation_dir%",
+    "is_old": true
   },
   {
     "id": "emscripten",
@@ -335,7 +341,8 @@
     "unix_url": "emscripten-1.16.0.tar.gz",
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%",
-    "activated_env": "EMSCRIPTEN=%installation_dir%"
+    "activated_env": "EMSCRIPTEN=%installation_dir%",
+    "is_old": true
   },
   {
     "id": "emscripten",
