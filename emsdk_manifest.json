@@ -589,19 +589,22 @@
     "version": "1.12.0",
     "bitness": 32,
     "uses": ["clang-3.2-32bit", "node-0.10.17-32bit", "python-2.7.5.3-32bit", "emscripten-1.12.0"],
-    "os": "win"
+    "os": "win",
+    "is_old": true
   },
   {
     "version": "1.12.0",
     "bitness": 64,
     "uses": ["clang-3.2-64bit", "node-0.10.17-64bit", "python-2.7.5.3-64bit", "emscripten-1.12.0"],
-    "os": "win"
+    "os": "win",
+    "is_old": true
   },
   {
     "version": "1.12.0",
     "bitness": 64,
     "uses": ["clang-3.2-64bit", "node-0.10.18-64bit", "emscripten-1.12.0"],
-    "os": "osx"
+    "os": "osx",
+    "is_old": true
   },
   {
     "version": "1.13.0",
@@ -635,13 +638,15 @@
     "version": "1.16.0",
     "bitness": 64,
     "uses": ["clang-e1.16.0-64bit", "node-0.10.17-64bit", "python-2.7.5.3-64bit", "emscripten-1.16.0"],
-    "os": "win"
+    "os": "win",
+    "is_old": true
   },
   {
     "version": "1.16.0",
     "bitness": 64,
     "uses": ["clang-e1.16.0-64bit", "node-0.10.18-64bit", "emscripten-1.16.0"],
-    "os": "osx"
+    "os": "osx",
+    "is_old": true
   },
   {
     "version": "1.21.0",
