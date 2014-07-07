@@ -226,7 +226,8 @@
     "windows_url": "spidermonkey-27.0.1.zip",
     "osx_url": "spidermonkey-27.0.1.tar.gz",
     "activated_path": "%installation_dir%",
-    "activated_cfg": "SPIDERMONKEY_ENGINE='%installation_dir%/js%.exe%'"
+    "activated_cfg": "SPIDERMONKEY_ENGINE='%installation_dir%/js%.exe%'",
+    "is_old": true
   },
   {
     "id": "spidermonkey",
@@ -235,7 +236,8 @@
     "windows_url": "spidermonkey-nightly-2014-03-13.zip",
     "osx_url": "spidermonkey-nightly-2014-03-13.tar.gz",
     "activated_path": "%installation_dir%",
-    "activated_cfg": "SPIDERMONKEY_ENGINE='%installation_dir%/js%.exe%'"
+    "activated_cfg": "SPIDERMONKEY_ENGINE='%installation_dir%/js%.exe%'",
+    "is_old": true
   },
   {
     "id": "spidermonkey",
