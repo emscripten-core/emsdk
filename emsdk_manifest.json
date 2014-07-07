@@ -453,6 +453,12 @@
     "os": "osx"
   },
   {
+    "version": "incoming",
+    "bitness": 64,
+    "uses": ["clang-incoming-64bit", "emscripten-incoming"],
+    "os": "linux"
+  },
+  {
     "version": "master",
     "bitness": 32,
     "uses": ["git-1.8.3", "clang-master-32bit", "node-0.10.17-32bit", "python-2.7.5.3-32bit", "java-7.45-32bit", "emscripten-master"],
@@ -469,6 +475,12 @@
     "bitness": 64,
     "uses": ["clang-master-64bit", "node-0.10.18-64bit", "emscripten-master"],
     "os": "osx"
+  },
+  {
+    "version": "master",
+    "bitness": 64,
+    "uses": ["clang-master-64bit", "emscripten-master"],
+    "os": "linux"
   },
   {
     "version": "1.5.6",
