@@ -238,6 +238,15 @@
     "activated_cfg": "SPIDERMONKEY_ENGINE='%installation_dir%/js%.exe%'"
   },
   {
+    "id": "spidermonkey",
+    "version": "30.0.0",
+    "bitness": 64,
+    "windows_url": "spidermonkey-30.0.0.zip",
+    "osx_url": "spidermonkey-30.0.0.tar.gz",
+    "activated_path": "%installation_dir%",
+    "activated_cfg": "SPIDERMONKEY_ENGINE='%installation_dir%/js%.exe%'"
+  },
+  {
     "id": "git",
     "version": "1.8.3",
     "windows_url": "git_1.8.3.zip",
