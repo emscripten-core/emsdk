@@ -893,9 +893,9 @@ def update_emsdk():
   if WINDOWS:
     download_and_unzip(urlparse.urljoin(emsdk_packages_url, 'emsdk_windows_update.zip'), emsdk_path(), download_even_if_exists=True)
     rmfile('zips/emsdk_windows_update.zip')
-  elif OSX:
-    download_and_unzip(urlparse.urljoin(emsdk_packages_url, 'emsdk_osx_update.tar.gz'), emsdk_path(), download_even_if_exists=True)
-    rmfile('zips/emsdk_windows_update.tar.gz')
+  elif OSX or LINUX:
+    download_and_unzip(urlparse.urljoin(emsdk_packages_url, 'emsdk_unix_update.tar.gz'), emsdk_path(), download_even_if_exists=True)
+    rmfile('zips/emsdk_unix_update.tar.gz')
   else:
     print 'Unsupported OS, cannot update!'
 
