@@ -1,5 +1,6 @@
 clang
 emscripten
+git
 node
 python
 temp
