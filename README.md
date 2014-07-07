@@ -50,7 +50,7 @@ If you want to build Emscripten Clang backend and the dependencies yourself, fol
 Get the following:
 
  * The Emscripten code, from github (git clone git://github.com/kripken/emscripten.git. The master branch is fine, it is guaranteed to always be stable. We merge to master only after all tests pass.)
- * Emscripten's LLVM and Clang. Emscripten now has an LLVM backend ("fastcomp"), which means you need to use our LLVM+Clang. See "Getting Fastcomp" in the [LLVM Backend](https://github.com/kripken/emscripten/wiki/LLVM-Backend) page. (See also notes on that link about how to disable fastcomp and use a stock version of LLVM, if you want, although that is not recommended.)
+ * Emscripten's LLVM and Clang. Emscripten now has an LLVM backend ("fastcomp"), which means you need to use our LLVM+Clang. See "[Getting Fastcomp](https://github.com/kripken/emscripten/wiki/LLVM-Backend#getting-fastcomp)" in the [LLVM Backend](https://github.com/kripken/emscripten/wiki/LLVM-Backend) page. (See also notes on that link about how to disable fastcomp and use a stock version of LLVM, if you want, although that is not recommended.)
  * Node.js (0.8 or above; 0.10.17 or above to run websocket-using servers in node)
  * Python 2.7.3
  * Optionally, if you want to use Closure Compiler to minify your code as much as possible, you will also need Java.
