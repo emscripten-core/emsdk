@@ -541,7 +541,10 @@ JS_ENGINES = [NODE_JS]
   
   path_add = get_required_path(active_tools)
   if not WINDOWS:
-    print "To conveniently access the selected set of tools from the command line, consider adding the following directories to PATH, or call '" + ('' if WINDOWS else 'source ') + os.path.relpath(sdk_path('emsdk_env')) + "' to do this for you."
+    emsdk_env = os.path.relpath(sdk_path('emsdk_env.sh'))
+    if not '/' in emsdk_env:
+      emsdk_env = './emsdk_env.sh'
+    print "To conveniently access the selected set of tools from the command line, consider adding the following directories to PATH, or call 'source " + emsdk_env + "' to do this for you."
     print ''
     print '   ' + ENVPATH_SEPARATOR.join(path_add)
 
