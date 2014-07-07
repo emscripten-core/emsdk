@@ -10,17 +10,14 @@ To get started with Emscripten development, grab one of the packages below:
 
 Windows:
 * Emscripten SDK Web Installer is a NSIS installer that always gets you the latest Emscripten SDK from the web:
-  * [emsdk-1.16.0-web-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.16.0-web-64bit.exe)
+  * [emsdk-1.21.0-web-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.21.0-web-64bit.exe)
 * Emscripten SDK Offline Installer is a NSIS installer that bundles together the Emscripten toolchain as an offline-installable package:
-  * [emsdk-1.16.0-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.16.0-full-64bit.exe)
+  * [emsdk-1.21.0-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.21.0-full-64bit.exe)
 * Portable Emscripten SDK is a zipped package of the Emscripten SDK that does not require system installation privileges. Just unzip and go:
-  * [emsdk-1.16.0-portable-64bit.zip](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.16.0-portable-64bit.zip)
+  * [emsdk-1.21.0-portable-64bit.zip](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.21.0-portable-64bit.zip)
 
-Mac OS X:
-* [emsdk-portable.tar.gz](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz): Emscripten SDK is available as a portable web-installer for OS X.
-
-Linux:
-* See the instructions section below.
+Linux and Mac OS X:
+* [emsdk-portable.tar.gz](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz): Emscripten SDK is available as a portable web-installer for Linux and OS X.
 
 ## Installation Instructions
 
@@ -30,7 +27,7 @@ Check one of the topics below for what to do with the package you just downloade
 
 The NSIS installers register the Emscripten SDK as a 'standard' Windows application. To install the SDK, download a NSIS .exe file above, double-click on it, and run through the installer to perform the installation. After the installer finishes, the full Emscripten toolchain will be available in the directory that was chosen during the installation, and no other steps are necessary. If your system has Visual Studio 2010 installed, the vs-tool MSBuild plugin will be automatically installed as well.
 
-#### Windows and OSX: Installing the Portable SDK
+#### Windows, OSX and Linux: Installing the Portable SDK
 
 The Portable Emscripten SDK is a no-installer version of the SDK package. It is identical to the NSIS installer, except that it does not interact with the Windows registry, which allows Emscripten to be used on a computer without administrative privileges, and gives the ability to migrate the installation from one location (directory or computer) to another by just copying/zipping up the directory contents.
 
@@ -44,38 +41,11 @@ If you want to use the Portable Emscripten SDK, the initial setup process is as 
 
 Whenever you change the location of the Portable SDK (e.g. take it to another computer), re-run step 5.
 
-Note: On OSX, type `./emsdk` instead of `emsdk` above.
-
-#### Windows and OSX: Build the Emscripten toolchain manually
-
-If you do not want to use the SDK, there exists guides for setting up Emscripten and its prerequisites manually, see
-
-* [Build Clang on Mac OS X](https://github.com/kripken/emscripten/wiki/Getting-started-on-Mac-OS-X).
-* [Download a prebuilt Clang on Mac OS X](https://gist.github.com/dweekly/5873953).
-* [Get Emscripten and Clang via brew](https://gist.github.com/nathanhammond/1974955) by nathanhammond.
-* [Manual Emscripten setup on Windows](https://github.com/kripken/emscripten/wiki/Using-Emscripten-on-Windows).
-
-#### Linux
-
-The SDK is not available for Linux at the moment. The best way to get started on Linux is to build Emscripten manually. See the "Installing from Source" section below. This ensures that you will get the most up-to-date configuration.
-
-The following links may also be useful, but might be out of date:
-
-* For help on Ubuntu, you can follow the [Getting Started on Ubuntu 12.10](https://github.com/kripken/emscripten/wiki/Getting-Started-on-Ubuntu-12.10) guide for instructions on how to obtain the prerequisites and build Clang manually using CMake.
-* For help on Debian, see this [guide by EarthServer](https://earthserver.com/Setting_up_emscripten_development_environment_on_Linux).
-* rhelmer has provided a Vagrant VM for Emscripten, see [emscripten-vagrant](https://github.com/rhelmer/emscripten-vagrant).
-* Dirk Krause created an [Amazon EC2 image](https://groups.google.com/forum/?fromgroups=#!topic/emscripten-discuss/H8kG0kP1eDE) for Emscripten.
-
-Note that some distributions provide Emscripten in their package repositories. Please make note of the version number they are offering, since these will most certainly be very out of date!
-
-* Ubuntu 13.10 and later (via the Universe repository) [[more](http://packages.ubuntu.com/search?keywords=emscripten)]
-* Debian sid (unstable) and jessie (testing) [[more](https://packages.debian.org/search?keywords=emscripten)]
-* Arch Linux (via AUR) [[more](https://aur.archlinux.org/packages/emscripten-git/)]
-* etc.
+Note: On Linux and OSX, type `./emsdk` instead of `emsdk` above.
 
 ### Installing from Source
 
-Instead of using the SDK, you can grab the code and dependencies yourself. This is the preferred path on Linux, where the Emscripten SDK is currently not available.
+If you want to build Emscripten Clang backend and the dependencies yourself, follow the instructions in this section.
 
 Get the following:
 
@@ -87,15 +57,10 @@ Get the following:
 
 The [LLVM Backend](https://github.com/kripken/emscripten/wiki/LLVM-Backend) page has instructions for building Emscripten's LLVM+Clang. After you build it, run `emcc -v`, which should print out the version number as well as run some basic tests.
 
-Operating system notes:
-
- * If you are on OS X, homebrew should be able to get you LLVM and Clang. They will probably show up in /usr/bin or /usr/local/bin.
- * A complete OS X guide for getting Emscripten and all the dependencies the test suite needs is at https://gist.github.com/1974955 (note that you don't need everything there just to run this tutorial)
-
 Additional Notes:
 
  * Python is probably already installed if you are on Linux or OS X.
- * Node.js and LLVM should have convenient binaries for your OS, but installing them from source is easy, just compile them in their directories, you don't need to bother with installing them systemwide (you will point Emscripten to them in the next step, where you set up directories).
+ * Node.js and LLVM should have convenient binaries for your OS, but installing them from source is easy, just compile them in their directories, you don't need to bother with installing them systemwide.
 
 ## Getting Started with Emscripten
 
@@ -103,7 +68,9 @@ The tools in the Emscripten toolchain can be accessed in various ways. Which one
 
 ##### Command line usage
 
-The Emscripten compiler is available on the command line by invoking `emcc` or `em++`. They are located in the folder `emsdk/emscripten/<version>/` in the SDK. You can add this directory to PATH to get an easy access to the toolchain.
+The Emscripten compiler is available on the command line by invoking `emcc` or `em++`. They are located in the folder `emsdk/emscripten/<version>/` in the SDK.
+
+The root directory of the Emscripten SDK contains scripts `emsdk_env.bat` (Windows) and `emsdk_env.sh` (Linux, OSX) which set up `PATH` and other environment variables for the current terminal. After calling these scripts, `emcc`, `clang`, etc. are all accessible from the command line.
 
 <b>Check out the tutorial!</b> See the Emscripten [Tutorial](https://github.com/kripken/emscripten/wiki/Tutorial) page for help on how to get going with the tools from command line.
 
@@ -139,7 +106,8 @@ Run `emsdk help` or just `emsdk` to get information about all available commands
 To get a list of all currently installed tools and SDK versions, and all available tools, run `emsdk list`.
 * A line will be printed for each tool/SDK that is available for installation.
 * The text `INSTALLED` will be shown for each tool that has already been installed.
-* If a tool/SDK is currently active, a star (*) will be shown next to it.
+* If a tool/SDK is currently active, a star * will be shown next to it.
+* If a tool/SDK is currently active, but the terminal your are calling emsdk from does not have `PATH` and environment set up to utilize that tool, a star in parentheses (*) will be shown next to it. Run `emsdk_env.bat` (Windows) or `source ./emsdk_env.sh` (Linux and OSX) to set up the environment for the calling terminal.
 
 ##### How do I install a tool/SDK version?
 
@@ -155,7 +123,7 @@ The command `emsdk update` will fetch package information for all new tools and 
 
 ##### How do I change the currently active SDK version?
 
-You can toggle between different tools and SDK versions by running `emsdk activate <tool/sdk name>`.
+You can toggle between different tools and SDK versions by running `emsdk activate <tool/sdk name>`. Activating a tool will set up `~/.emscripten` to point to that particular tool.
 
 ##### How do I track the latest Emscripten development with the SDK?
 
@@ -191,11 +159,19 @@ If you want to remove a Portable SDK, just delete the directory where you put th
 
 ##### Mac OS X
 
-* On OSX, the git tool will not be installed automatically. Git is not a required core component, and is only needed if you want to use one of the development branches emscripten-incoming or emscripten-master directly, instead of the fixed releases. To install git on OSX, you can
+* On OSX (and Linux), the git tool will not be installed automatically. Git is not a required core component, and is only needed if you want to use one of the development branches emscripten-incoming or emscripten-master directly, instead of the fixed releases. To install git on OSX, you can
 
 	1. Install XCode, and in XCode, install XCode Command Line Tools. This will provide git to the system PATH. For more help on this step, see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools
 	2. Install git directly from http://git-scm.com/
 
-* Also, on OSX, java is not bundled with the Emscripten SDK. After installing emscripten via emsdk, typing 'emcc --help' should pop up a OSX dialog "Java is not installed. To open java, you need a Java SE 6 runtime. Would you like to install one now?" that will automatically download a Java runtime to the system.
+* Also, on OSX, `java` is not bundled with the Emscripten SDK. After installing emscripten via emsdk, typing 'emcc --help' should pop up a OSX dialog "Java is not installed. To open java, you need a Java SE 6 runtime. Would you like to install one now?" that will automatically download a Java runtime to the system.
 
 * Emscripten requires the command line tool 'python2' to be present on OSX. On default OSX installations, this does not exist. To manually work around this issue, see step 10 at https://github.com/kripken/emscripten/wiki/Getting-started-on-Mac-OS-X
+
+##### Linux
+
+* On Linux, prebuilt binaries of tools are not available. Installing a tool will automatically clone and build that tool from the sources inside emsdk directory. Emsdk does not interact with Linux package managers on the behalf of the user, nor does it install any tools to the system. All file changes are done inside the `emsdk/` directory.
+
+* Because emsdk builds software from the source on Linux, the system must have a working compiler environment available.
+
+* Emsdk does not provide `python`, `node` or `java` on Linux. The user is expected to install these beforehand with the system package manager.
