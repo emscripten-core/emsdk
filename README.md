@@ -19,6 +19,8 @@ Windows:
 Linux and Mac OS X:
 * [emsdk-portable.tar.gz](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz): Emscripten SDK is available as a portable web-installer for Linux and OS X.
 
+**Old Releases** are available in the **Archived Releases** section below. 
+
 ## Installation Instructions
 
 Check one of the topics below for what to do with the package you just downloaded.
@@ -121,6 +123,12 @@ Run the command `emsdk uninstall <tool/sdk name>` to delete the given tool or SD
 
 The command `emsdk update` will fetch package information for all new tools and SDK versions. After that, run `emsdk install <tool/sdk name>` to install a new version.
 
+##### How do I install an old Emscripten compiler version?
+
+Emsdk contains a history of old compiler versions that you can use to maintain your migration path. Type `emsdk list --old` to get a list of archived tool and SDK versions, and `emsdk install <name_of_tool>` to install it.
+
+On Windows, you can directly install an old SDK version by using one of the archived offline NSIS installers. See the **Archived Releases** section down below.
+
 ##### How do I change the currently active SDK version?
 
 You can toggle between different tools and SDK versions by running `emsdk activate <tool/sdk name>`. Activating a tool will set up `~/.emscripten` to point to that particular tool.
@@ -161,8 +169,8 @@ If you want to remove a Portable SDK, just delete the directory where you put th
 
 * On OSX (and Linux), the git tool will not be installed automatically. Git is not a required core component, and is only needed if you want to use one of the development branches emscripten-incoming or emscripten-master directly, instead of the fixed releases. To install git on OSX, you can
 
-	1. Install XCode, and in XCode, install XCode Command Line Tools. This will provide git to the system PATH. For more help on this step, see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools
-	2. Install git directly from http://git-scm.com/
+  1. Install XCode, and in XCode, install XCode Command Line Tools. This will provide git to the system PATH. For more help on this step, see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools
+  2. Install git directly from http://git-scm.com/
 
 * Also, on OSX, `java` is not bundled with the Emscripten SDK. After installing emscripten via emsdk, typing 'emcc --help' should pop up a OSX dialog "Java is not installed. To open java, you need a Java SE 6 runtime. Would you like to install one now?" that will automatically download a Java runtime to the system.
 
@@ -175,3 +183,21 @@ If you want to remove a Portable SDK, just delete the directory where you put th
 * Because emsdk builds software from the source on Linux, the system must have a working compiler environment available.
 
 * Emsdk does not provide `python`, `node` or `java` on Linux. The user is expected to install these beforehand with the system package manager.
+
+### Archived Releases
+
+You can always install old SDK and compiler toolchains via the latest emsdk. If you need to fall back to an old version, download the Portable SDK version and use that to install a previous version of a tool. All old tool versions are available by typing `emsdk list --old`.
+
+On Windows, you can install one of the **old versions** via an offline NSIS installer:
+
+ - [emsdk-1.5.6.1-full.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.5.6.1-full.exe) (32-bit, first emsdk release)
+ - [emsdk-1.5.6.2-full-32bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.5.6.2-full-32bit.exe)
+ - [emsdk-1.5.6.2-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.5.6.2-full-64bit.exe)
+ - [emsdk-1.7.8-full-32bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.7.8-full-32bit.exe)
+ - [emsdk-1.7.8-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.7.8-full-64bit.exe)
+ - [emsdk-1.8.2-full-32bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.8.2-full-32bit.exe)
+ - [emsdk-1.8.2-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.8.2-full-64bit.exe)
+ - [emsdk-1.12.0-full-32bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.12.0-full-32bit.exe)
+ - [emsdk-1.12.0-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.12.0-full-64bit.exe) (the last non-fastcomp version with Clang 3.2)
+ - [emsdk-1.13.0-full-32bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.13.0-full-64bit.exe) (a unstable first fastcomp release with Clang 3.3)
+ - [emsdk-1.16.0-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.16.0-full-64bit.exe) (first stable fastcomp release)
