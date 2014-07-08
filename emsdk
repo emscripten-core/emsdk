@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys, optparse, subprocess, urllib2, os, os.path, errno, zipfile, string, json, platform, shutil, tarfile, urlparse, tempfile
+import sys, optparse, subprocess, urllib2, os, os.path, errno, zipfile, string, json, platform, shutil, tarfile, urlparse, tempfile, multiprocessing
 
 # EMSDK_DEV is a developer mode flag, which, if true, the SDK is downloaded from a 'staging' online source,
 # instead of the public source. New releases are first deployed to the staging source for testing, before 
@@ -393,19 +393,24 @@ def build_fastcomp_tool(tool):
   git_clone_checkout_and_pull(tool.clang_url, clang_root, tool.git_branch)
   build_dir = fastcomp_build_dir(tool)
   build_with_vs2010 = True
+  cpu_cores = max(multiprocessing.cpu_count()-1, 1) # Don't saturate all cores to not steal the whole system, but be aggressive.
+  if cpu_cores > 1:
+    print 'Performing a parallel build with ' + str(cpu_cores) + ' cores.'
+  else:
+    print 'Performing a singlethreaded build.'
   if WINDOWS:
     if build_with_vs2010:
       if tool.bitness == 64:
         generator = 'Visual Studio 10 Win64'
       else:
         generator = 'Visual Studio 10'
-      make = ['C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319\\MSBuild.exe', '/t:Build', '/p:Configuration=RelWithDebInfo', '/nologo', '/verbosity:minimal', 'LLVM.sln']
+      make = ['C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319\\MSBuild.exe', '/maxcpucount:' + cpu_cores, '/t:Build', '/p:Configuration=RelWithDebInfo', '/nologo', '/verbosity:minimal', 'LLVM.sln']
     else:
       generator = 'MinGW Makefiles'
-      make = ['mingw32-make']
+      make = ['mingw32-make', '-j' + cpu_cores]
   else:
     generator = 'Unix Makefiles'
-    make = ['make']
+    make = ['make', '-j' + cpu_cores]
 
   build_root = os.path.join(fastcomp_root, build_dir)
 
