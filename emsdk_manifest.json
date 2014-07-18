@@ -454,6 +454,12 @@
   },
   {
     "version": "incoming",
+    "bitness": 32,
+    "uses": ["clang-incoming-32bit", "emscripten-incoming"],
+    "os": "linux"
+  },
+  {
+    "version": "incoming",
     "bitness": 64,
     "uses": ["clang-incoming-64bit", "emscripten-incoming"],
     "os": "linux"
@@ -475,6 +481,12 @@
     "bitness": 64,
     "uses": ["clang-master-64bit", "node-0.10.18-64bit", "emscripten-master"],
     "os": "osx"
+  },
+  {
+    "version": "master",
+    "bitness": 32,
+    "uses": ["clang-master-32bit", "emscripten-master"],
+    "os": "linux"
   },
   {
     "version": "master",
