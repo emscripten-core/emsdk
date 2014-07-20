@@ -404,13 +404,13 @@ def build_fastcomp_tool(tool):
         generator = 'Visual Studio 10 Win64'
       else:
         generator = 'Visual Studio 10'
-      make = ['C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319\\MSBuild.exe', '/maxcpucount:' + cpu_cores, '/t:Build', '/p:Configuration=RelWithDebInfo', '/nologo', '/verbosity:minimal', 'LLVM.sln']
+      make = ['C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319\\MSBuild.exe', '/maxcpucount:' + str(cpu_cores), '/t:Build', '/p:Configuration=RelWithDebInfo', '/nologo', '/verbosity:minimal', 'LLVM.sln']
     else:
       generator = 'MinGW Makefiles'
-      make = ['mingw32-make', '-j' + cpu_cores]
+      make = ['mingw32-make', '-j' + str(cpu_cores)]
   else:
     generator = 'Unix Makefiles'
-    make = ['make', '-j' + cpu_cores]
+    make = ['make', '-j' + str(cpu_cores)]
 
   build_root = os.path.join(fastcomp_root, build_dir)
 
