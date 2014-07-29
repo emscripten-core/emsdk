@@ -424,6 +424,13 @@
     "activated_path": "%installation_dir%"
   },
   {
+    "id": "crunch",
+    "version": "1.04",
+    "osx_url": "crunch_osx_1.04.tar.gz",
+    "activated_cfg": "CRUNCH='%installation_dir%/crunch'",
+    "activated_path": "%installation_dir%"
+  },
+  {
     "id": "mingw",
     "version": "4.6.2",
     "bitness": 32,
