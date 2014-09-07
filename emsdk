@@ -323,32 +323,30 @@ def which(program):
 
   return None
 
-warnonce_git_not_found = False
-
-def GIT():
-  global warnonce_git_not_found
-  git = 'git/1.8.3/bin/git.exe'
-  try:
-    (ret, stdout, stderr) = run_get_output([git, '--version'])
-    if ret == 0:
-      return git
-  except:
-    pass
-  git = which('git')
-  try:
-    (ret, stdout, stderr) = run_get_output([git, '--version'])
-    if ret == 0:
-      return git
-  except:
-    pass
-  if not warnonce_git_not_found:
+# must_succeed: If false, the search is performed silently without printing out errors if not found. Empty string is returned if git is not found.
+#               If true, the search is required to succeed, and the execution will terminate with sys.exit(1) if not found.
+def GIT(must_succeed=True):
+  # The order in the following is important, and specifies the preferred order of using the git tools.
+  # Primarily use git from emsdk if installed. If not, use system git.
+  gits = ['git/1.9.4/bin/git.exe', which('git')]
+  for git in gits:
+    try:
+      (ret, stdout, stderr) = run_get_output([git, '--version'])
+      if ret == 0:
+        return git
+    except:
+      pass
+  if must_succeed:
     if WINDOWS:
-      print "ERROR: git executable was not found. Either install git manually and add it to PATH, or install the git tool via 'emsdk install git-1.8.3'"
-    else:
+      print "ERROR: git executable was not found. Please install it by typing 'emsdk install git-1.9.4', or alternatively by installing it manually from http://git-scm.com/downloads . If you install git manually, remember to add it to PATH"
+    elif OSX:
       print "ERROR: git executable was not found. Please install git for this operation! This can be done from http://git-scm.com/ , or by installing XCode and then the XCode Command Line Tools (see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools )"
-    warnonce_git_not_found = True
+    elif LINUX:
+      print "ERROR: git executable was not found. Please install git for this operation! This can be probably be done using your package manager, see http://git-scm.com/book/en/Getting-Started-Installing-Git"
+    else:
+      print "ERROR: git executable was not found. Please install git for this operation!"
     sys.exit(1)
-  return 'git'
+  return '' # Not found
 
 def git_repo_version(repo_path):
   (returncode, stdout, stderr) = run_get_output([GIT(), 'log', '-n', '1', '--pretty="%aD %H"'], cwd=repo_path)

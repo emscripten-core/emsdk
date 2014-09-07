@@ -262,6 +262,14 @@
     "version": "1.8.3",
     "windows_url": "git_1.8.3.zip",
     "activated_path": "%installation_dir%/bin;%installation_dir%/cmd",
+    "activated_cfg": "EMSDK_GIT='%installation_dir%'",
+    "is_old": true
+  },
+  {
+    "id": "git",
+    "version": "1.9.4",
+    "windows_url": "git_1.9.4.zip",
+    "activated_path": "%installation_dir%/bin;%installation_dir%/cmd",
     "activated_cfg": "EMSDK_GIT='%installation_dir%'"
   },
   {
@@ -462,13 +470,13 @@
   {
     "version": "incoming",
     "bitness": 32,
-    "uses": ["git-1.8.3", "clang-incoming-32bit", "node-0.10.17-32bit", "python-2.7.5.3-32bit", "java-7.45-32bit", "emscripten-incoming"],
+    "uses": ["clang-incoming-32bit", "node-0.10.17-32bit", "python-2.7.5.3-32bit", "java-7.45-32bit", "emscripten-incoming"],
     "os": "win"
   },
   {
     "version": "incoming",
     "bitness": 64,
-    "uses": ["git-1.8.3", "clang-incoming-64bit", "node-0.10.17-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-incoming"],
+    "uses": ["clang-incoming-64bit", "node-0.10.17-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-incoming"],
     "os": "win"
   },
   {
@@ -492,13 +500,13 @@
   {
     "version": "master",
     "bitness": 32,
-    "uses": ["git-1.8.3", "clang-master-32bit", "node-0.10.17-32bit", "python-2.7.5.3-32bit", "java-7.45-32bit", "emscripten-master"],
+    "uses": ["clang-master-32bit", "node-0.10.17-32bit", "python-2.7.5.3-32bit", "java-7.45-32bit", "emscripten-master"],
     "os": "win"
   },
   {
     "version": "master",
     "bitness": 64,
-    "uses": ["git-1.8.3", "clang-master-64bit", "node-0.10.17-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-master"],
+    "uses": ["clang-master-64bit", "node-0.10.17-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-master"],
     "os": "win"
   },
   {
