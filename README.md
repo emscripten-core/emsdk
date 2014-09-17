@@ -131,7 +131,7 @@ On Windows, you can directly install an old SDK version by using one of the arch
 
 ##### How do I change the currently active SDK version?
 
-You can toggle between different tools and SDK versions by running `emsdk activate <tool/sdk name>`. Activating a tool will set up `~/.emscripten` to point to that particular tool.
+You can toggle between different tools and SDK versions by running `emsdk activate <tool/sdk name>`. Activating a tool will set up `~/.emscripten` to point to that particular tool. On Windows, you can pass the option `--global` to the `activate` command to register the environment permanently to the system registry for all users.
 
 ##### How do I track the latest Emscripten development with the SDK?
 

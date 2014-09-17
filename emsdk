@@ -1163,14 +1163,25 @@ def main():
 
    emsdk install <tool/sdk>     - Downloads and installs the given tool or SDK.
    emsdk uninstall <tool/sdk>   - Removes the given tool or SDK from disk.
-        
-   emsdk activate <tool/sdk>    - Permanently activates the given tool or SDK as
-                                  the default tool in the system environment.'''
+
+   emsdk activate <tool/sdk>    - Activates the given tool or SDK in the
+                                  environment of the current shell.'''
 
     if WINDOWS:
       print '''
+   emsdk activate [--global] <tool/sdk>  - Activates the given tool or SDK in
+                                           the environment of the current
+                                           shell. If the --global option is
+                                           passed, the registration is done
+                                           globally to all users in the system
+                                           environment.
+
    emcmdprompt.bat              - Spawns a new command prompt window with the
                                   Emscripten environment active.'''
+    else:
+      print '''
+   emsdk activate <tool/sdk>    - Activates the given tool or SDK in the
+                                  environment of the current shell.'''
 
     return 1
   cmd = sys.argv[1]
@@ -1261,6 +1272,8 @@ def main():
           return 1
         tools_to_activate += [tool]
     tools_to_activate = set_active_tools(tools_to_activate, permanently_activate=permanently_activate)
+    if WINDOWS and not permanently_activate:
+      print 'To permanently register this environment globally to all users in Windows Registry, rerun the command with the option --global.'
     return 0
   elif cmd == 'install':
     if len(sys.argv) <= 2:
