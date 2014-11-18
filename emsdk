@@ -33,6 +33,8 @@ if platform.mac_ver()[0] != '':
   OSX = True
   ENVPATH_SEPARATOR = ':'
 
+EMSDK_SET_ENV = 'emsdk_set_env.bat' if WINDOWS else 'emsdk_set_env.sh'
+
 def win_get_environment_variable(key, system=True):
   prev_path = os.environ['PATH']
   try:
@@ -1006,7 +1008,7 @@ def set_active_tools(tools_to_activate, permanently_activate):
   # Construct a .bat script that will be invoked to set env. vars and PATH
   if WINDOWS:
     env_string = construct_env(tools_to_activate, False)
-    open('emsdk_set_env.bat', 'w').write(env_string)
+    open(EMSDK_SET_ENV, 'w').write(env_string)
 
   # Apply environment variables to global all users section.
   if WINDOWS and permanently_activate:
@@ -1139,6 +1141,12 @@ def construct_env(tools_to_activate, permanent):
   else:
     return construct_env_unix(tools_to_activate)
 
+def silentremove(filename):
+  try:
+    os.remove(filename)
+  except OSError, e:
+    if e.errno != errno.ENOENT: raise
+
 def main():
   load_dot_emscripten()
   load_sdk_manifest()
@@ -1239,17 +1247,16 @@ def main():
 
     return 0
   elif cmd == 'construct_env':
+    silentremove(EMSDK_SET_ENV) # Clean up old temp file up front, in case of failure later before we get to write out the new one.
     tools_to_activate = currently_active_tools()
     tools_to_activate = process_tool_list(tools_to_activate, log_errors=True)
     env_string = construct_env(tools_to_activate, len(sys.argv) >= 3 and 'perm' in sys.argv[2])
-    if WINDOWS:
-      open('emsdk_set_env.bat', 'w').write(env_string)
-    else:
-      open('emsdk_set_env.sh', 'w').write(env_string)
-      os.chmod('emsdk_set_env.sh', 0755)
+    open(EMSDK_SET_ENV, 'w').write(env_string)
+    if LINUX or OSX: os.chmod(EMSDK_SET_ENV, 0755)
     return 0
   elif cmd == 'update':
     update_emsdk()
+    silentremove(sdk_path(EMSDK_SET_ENV)) # Clean up litter after old emsdk update which may have left this temp file around.
     return 0
   elif cmd == 'activate':
     permanently_activate = '--global' in sys.argv
