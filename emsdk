@@ -1120,7 +1120,7 @@ def construct_env_unix(tools_to_activate):
   newpath, added_path = adjusted_path(tools_to_activate)
 
   if os.environ['PATH'] != newpath: # Don't bother setting the path if there are no changes.
-    env_string += 'export PATH=' + newpath + '\n'
+    env_string += 'export PATH="' + newpath + '"\n'
     if len(added_path) > 0:
       print 'Adding directories to PATH:'
       for item in added_path:
