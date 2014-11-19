@@ -1138,7 +1138,7 @@ def construct_env_unix(tools_to_activate):
   if len(env_vars_to_add) > 0:
     print 'Setting environment variables:'
     for key, value in env_vars_to_add:
-      env_string += 'export ' + key + '=' + value + '\n'
+      env_string += 'export ' + key + '="' + value + '"\n'
       print key + ' = ' + value
     print ''
   return env_string
