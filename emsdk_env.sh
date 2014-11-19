@@ -1,6 +1,14 @@
-#!/bin/bash
+# This script is sourced by the user and uses
+# their shell. Try not to use bashisms.
 
-pushd `dirname "$_"` > /dev/null
+SRC="$BASH_SOURCE"
+if [ "$SRC" = "" ]; then
+  SRC="$_"
+fi
+pushd `dirname "$SRC"` > /dev/null
+unset SRC
+
 ./emsdk construct_env
-source ./emsdk_set_env.sh
+. ./emsdk_set_env.sh
+
 popd > /dev/null
