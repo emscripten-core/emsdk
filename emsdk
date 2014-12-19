@@ -411,7 +411,25 @@ def fastcomp_build_bin_dir(tool):
   else:
     return os.path.join(build_dir, 'bin')
 
-def make_build(build_root):
+make_env = os.environ.copy()
+
+def find_msbuild(sln_file):
+  search_paths_vs2013 = [os.path.join(os.environ['ProgramFiles'], 'MSBuild/12.0/Bin/amd64'),
+                        os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/12.0/Bin/amd64'),
+                        os.path.join(os.environ['ProgramFiles'], 'MSBuild/12.0/Bin'),
+                        os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/12.0/Bin'),]
+  search_paths_old = [os.path.join(os.environ["WINDIR"], 'Microsoft.NET/Framework/v4.0.30319')]
+  contents = open(sln_file, 'r').read()
+  if '# Visual Studio Express 2013' in contents or '# Visual Studio 2013' in contents:
+    search_paths = search_paths_vs2013 + search_paths_old
+    make_env['VCTargetsPath'] = os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/Microsoft.Cpp/v4.0/V120')
+  else:
+    search_paths = search_paths_old + search_paths_vs2013
+  for path in search_paths:
+    p = os.path.join(path, 'MSBuild.exe')
+    if os.path.isfile(p): return p
+
+def make_build(build_root, build_type):
   build_with_vs2010 = True
   cpu_cores = max(multiprocessing.cpu_count()-1, 1) # Don't saturate all cores to not steal the whole system, but be aggressive.
   if cpu_cores > 1:
@@ -420,7 +438,8 @@ def make_build(build_root):
     print 'Performing a singlethreaded build.'
   if WINDOWS:
     if build_with_vs2010:
-      make = ['C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319\\MSBuild.exe', '/maxcpucount:' + str(cpu_cores), '/t:Build', '/p:Configuration=RelWithDebInfo', '/nologo', '/verbosity:minimal', 'LLVM.sln']
+      solution_name = subprocess.check_output(['dir', '/b', '*.sln'], shell=True, cwd=build_root).strip()
+      make = [find_msbuild(os.path.join(build_root, solution_name)), '/maxcpucount:' + str(cpu_cores), '/t:Build', '/p:Configuration='+build_type, '/nologo', '/verbosity:minimal', solution_name]
     else:
       make = ['mingw32-make', '-j' + str(cpu_cores)]
   else:
@@ -429,7 +448,7 @@ def make_build(build_root):
   # Build
   try:
     print 'Running build: ' + str(make)
-    ret = subprocess.check_call(make, cwd=build_root)
+    ret = subprocess.check_call(make, cwd=build_root, env=make_env)
     if ret != 0:
       print >> sys.stderr, 'Build failed with exit code ' + ret + '!'
       print >> sys.stderr, 'Working directory: ' + build_root
@@ -442,11 +461,13 @@ def make_build(build_root):
 
   return True
 
-def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_args):
+def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_args = []):
   # Configure
   if not os.path.isdir(build_root): os.mkdir(build_root) # Create build output directory if it doesn't yet exist.
   try:
-    cmdline = ['cmake', '-G', generator, '-DCMAKE_BUILD_TYPE='+build_type] + extra_cmake_args + [src_root]
+    if generator: generator = ['-G', generator]
+    else: generator = []
+    cmdline = ['cmake'] + generator +  ['-DCMAKE_BUILD_TYPE='+build_type] + extra_cmake_args + [src_root]
     print 'Running CMake: ' + str(cmdline)
     ret = subprocess.check_call(cmdline, cwd=build_root)
     if ret != 0:
@@ -467,7 +488,7 @@ def build_fastcomp_tool(tool):
   git_clone_checkout_and_pull(tool.url, fastcomp_src_root, tool.git_branch)
   clang_root = os.path.join(fastcomp_src_root, 'tools/clang')
   git_clone_checkout_and_pull(tool.clang_url, clang_root, tool.git_branch)
-  build_with_vs2010 = True
+  build_with_vs2010 = True  
   if WINDOWS:
     if build_with_vs2010:
       if tool.bitness == 64:
@@ -482,12 +503,29 @@ def build_fastcomp_tool(tool):
   build_dir = fastcomp_build_dir(tool)
   build_root = os.path.join(fastcomp_root, build_dir)
 
+  build_type = tool.cmake_build_type
+
   # Configure
-  success = cmake_configure(generator, build_root, fastcomp_src_root, 'RelWithDebInfo', ['-DLLVM_TARGETS_TO_BUILD=X86;JSBackend', 
+  success = cmake_configure(generator, build_root, fastcomp_src_root, build_type, ['-DLLVM_TARGETS_TO_BUILD=X86;JSBackend', 
         '-DLLVM_INCLUDE_EXAMPLES=OFF', '-DLLVM_INCLUDE_TESTS=OFF', '-DCLANG_INCLUDE_EXAMPLES=OFF', '-DCLANG_INCLUDE_TESTS=OFF'])
   if not success: return False
 
-  success = make_build(build_root)
+  # Make
+  success = make_build(build_root, build_type)
+  return success
+
+def build_optimizer_tool(tool):
+  src_root = os.path.join(tool.installation_path(), 'tools', 'optimizer')
+  build_root = os.path.join(tool.installation_path(), 'tools', 'optimizer_build')
+
+  build_type = tool.cmake_build_type
+
+  # Configure
+  success = cmake_configure(None, build_root, src_root, build_type)
+  if not success: return False
+
+  # Make
+  success = make_build(build_root, build_type)
   return success
 
 def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False):
@@ -564,6 +602,7 @@ NODE_JS = 'node'
   for tool in active_tools:
     tool_cfg = tool.activated_config()
     if tool_cfg:
+      tool_cfg = tool_cfg.replace(';', '\n')
       cfg += tool_cfg + '\n'
 
   cfg += '''V8_ENGINE = ''
@@ -748,13 +787,16 @@ class Tool:
     if activated_cfg == '':
       return len(deps) > 0
 
-    (key, value) = parse_key_value(activated_cfg)
-#    print 'activated cfg ' + key + ', value: ' + value
-#    if dot_emscripten.has_key(key):
-#      print 'dot_emscripten ' + dot_emscripten[key]
-    if dot_emscripten.has_key(key) and dot_emscripten[key] == value:
-      return True
-    return False
+    activated_cfg = activated_cfg.split(';')
+    for cfg in activated_cfg:
+      cfg = cfg.strip()
+      (key, value) = parse_key_value(cfg)
+#      print 'activated cfg ' + key + ', value: ' + value
+#      if dot_emscripten.has_key(key):
+#        print 'dot_emscripten ' + dot_emscripten[key]
+      if dot_emscripten.has_key(key) and dot_emscripten[key] != value:
+        return False
+    return True
 
   # Returns true if the system environment variables requires by this tool are currently active.
   def is_env_active(self):
@@ -829,6 +871,9 @@ class Tool:
         success = build_fastcomp_tool(self)
       elif hasattr(self, 'git_branch'):
         success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch)
+        if success:
+          if hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_optimizer':
+            success = build_optimizer_tool(self)
       elif url.endswith('zip') or url.endswith('.tar') or url.endswith('.gz'):
         download_even_if_exists = (self.id == 'vs-tool')
         success = download_and_unzip(url, self.installation_path(), download_even_if_exists)

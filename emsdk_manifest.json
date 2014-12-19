@@ -64,7 +64,8 @@
     "git_branch": "incoming",
     "custom_install_script": "build_fastcomp",
     "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'"
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "cmake_build_type": "RelWithDebInfo"
   },
   {
     "id": "clang",
@@ -76,7 +77,8 @@
     "clang_url": "https://github.com/kripken/emscripten-fastcomp-clang",
     "custom_install_script": "build_fastcomp",
     "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'"
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "cmake_build_type": "RelWithDebInfo"
   },
   {
     "id": "clang",
@@ -88,7 +90,8 @@
     "git_branch": "master",
     "custom_install_script": "build_fastcomp",
     "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'"
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "cmake_build_type": "Release"
   },
   {
     "id": "clang",
@@ -100,7 +103,8 @@
     "clang_url": "https://github.com/kripken/emscripten-fastcomp-clang",
     "custom_install_script": "build_fastcomp",
     "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'"
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "cmake_build_type": "Release"
   },
   {
     "id": "clang",
@@ -435,18 +439,22 @@
     "version": "incoming",
     "url": "git://github.com/kripken/emscripten.git",
     "git_branch": "incoming",
-    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
+    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/tools/optimizer_build/RelWithDebInfo/optimizer%.exe%'",
     "activated_path": "%installation_dir%",
-    "activated_env": "EMSCRIPTEN=%installation_dir%"
+    "activated_env": "EMSCRIPTEN=%installation_dir%",
+    "cmake_build_type": "RelWithDebInfo",
+    "custom_install_script": "build_optimizer"
   },
   {
     "id": "emscripten",
     "version": "master",
     "url": "git://github.com/kripken/emscripten.git",
     "git_branch": "master",
-    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
+    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/tools/optimizer_build/Release/optimizer%.exe%'",
     "activated_path": "%installation_dir%",
-    "activated_env": "EMSCRIPTEN=%installation_dir%"
+    "activated_env": "EMSCRIPTEN=%installation_dir%",
+    "cmake_build_type": "Release",
+    "custom_install_script": "build_optimizer"
   },
   {
     "id": "vs-tool",
