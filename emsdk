@@ -411,13 +411,7 @@ def fastcomp_build_bin_dir(tool):
   else:
     return os.path.join(build_dir, 'bin')
 
-def build_fastcomp_tool(tool):
-  fastcomp_root = tool.installation_path()
-  fastcomp_src_root = os.path.join(fastcomp_root, 'src')
-  git_clone_checkout_and_pull(tool.url, fastcomp_src_root, tool.git_branch)
-  clang_root = os.path.join(fastcomp_src_root, 'tools/clang')
-  git_clone_checkout_and_pull(tool.clang_url, clang_root, tool.git_branch)
-  build_dir = fastcomp_build_dir(tool)
+def make_build(build_root):
   build_with_vs2010 = True
   cpu_cores = max(multiprocessing.cpu_count()-1, 1) # Don't saturate all cores to not steal the whole system, but be aggressive.
   if cpu_cores > 1:
@@ -426,36 +420,11 @@ def build_fastcomp_tool(tool):
     print 'Performing a singlethreaded build.'
   if WINDOWS:
     if build_with_vs2010:
-      if tool.bitness == 64:
-        generator = 'Visual Studio 10 Win64'
-      else:
-        generator = 'Visual Studio 10'
       make = ['C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319\\MSBuild.exe', '/maxcpucount:' + str(cpu_cores), '/t:Build', '/p:Configuration=RelWithDebInfo', '/nologo', '/verbosity:minimal', 'LLVM.sln']
     else:
-      generator = 'MinGW Makefiles'
       make = ['mingw32-make', '-j' + str(cpu_cores)]
   else:
-    generator = 'Unix Makefiles'
     make = ['make', '-j' + str(cpu_cores)]
-
-  build_root = os.path.join(fastcomp_root, build_dir)
-
-  # Configure
-  if not os.path.isdir(build_root): os.mkdir(build_root) # Create build output directory if it doesn't yet exist.
-  try:
-    cmdline = ['cmake', '-G', generator, '-DCMAKE_BUILD_TYPE=RelWithDebInfo', '-DLLVM_TARGETS_TO_BUILD=X86;JSBackend', 
-        '-DLLVM_INCLUDE_EXAMPLES=OFF', '-DLLVM_INCLUDE_TESTS=OFF', '-DCLANG_INCLUDE_EXAMPLES=OFF', '-DCLANG_INCLUDE_TESTS=OFF', fastcomp_src_root]
-    print 'Running CMake: ' + str(cmdline)
-    ret = subprocess.check_call(cmdline, cwd=build_root)
-    if ret != 0:
-      print >> sys.stderr, 'CMake invocation failed with exit code ' + ret + '!'
-      print >> sys.stderr, 'Working directory: ' + build_root
-      return False
-  except Exception, e:
-    print >> sys.stderr, 'CMake invocation failed due to exception!'
-    print >> sys.stderr, 'Working directory: ' + build_root
-    print >> sys.stderr, str(e)
-    return False
 
   # Build
   try:
@@ -470,8 +439,56 @@ def build_fastcomp_tool(tool):
     print >> sys.stderr, 'Working directory: ' + build_root
     print >> sys.stderr, str(e)
     return False
+
   return True
 
+def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_args):
+  # Configure
+  if not os.path.isdir(build_root): os.mkdir(build_root) # Create build output directory if it doesn't yet exist.
+  try:
+    cmdline = ['cmake', '-G', generator, '-DCMAKE_BUILD_TYPE='+build_type] + extra_cmake_args + [src_root]
+    print 'Running CMake: ' + str(cmdline)
+    ret = subprocess.check_call(cmdline, cwd=build_root)
+    if ret != 0:
+      print >> sys.stderr, 'CMake invocation failed with exit code ' + ret + '!'
+      print >> sys.stderr, 'Working directory: ' + build_root
+      return False
+  except Exception, e:
+    print >> sys.stderr, 'CMake invocation failed due to exception!'
+    print >> sys.stderr, 'Working directory: ' + build_root
+    print >> sys.stderr, str(e)
+    return False
+
+  return True
+
+def build_fastcomp_tool(tool):
+  fastcomp_root = tool.installation_path()
+  fastcomp_src_root = os.path.join(fastcomp_root, 'src')
+  git_clone_checkout_and_pull(tool.url, fastcomp_src_root, tool.git_branch)
+  clang_root = os.path.join(fastcomp_src_root, 'tools/clang')
+  git_clone_checkout_and_pull(tool.clang_url, clang_root, tool.git_branch)
+  build_with_vs2010 = True
+  if WINDOWS:
+    if build_with_vs2010:
+      if tool.bitness == 64:
+        generator = 'Visual Studio 10 Win64'
+      else:
+        generator = 'Visual Studio 10'
+    else:
+      generator = 'MinGW Makefiles'
+  else:
+    generator = 'Unix Makefiles'
+
+  build_dir = fastcomp_build_dir(tool)
+  build_root = os.path.join(fastcomp_root, build_dir)
+
+  # Configure
+  success = cmake_configure(generator, build_root, fastcomp_src_root, 'RelWithDebInfo', ['-DLLVM_TARGETS_TO_BUILD=X86;JSBackend', 
+        '-DLLVM_INCLUDE_EXAMPLES=OFF', '-DLLVM_INCLUDE_TESTS=OFF', '-DCLANG_INCLUDE_EXAMPLES=OFF', '-DCLANG_INCLUDE_TESTS=OFF'])
+  if not success: return False
+
+  success = make_build(build_root)
+  return success
 
 def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False):
   if not download_even_if_exists and num_files_in_directory(dest_dir) > 0:
