@@ -35,6 +35,14 @@ if platform.mac_ver()[0] != '':
 
 EMSDK_SET_ENV = 'emsdk_set_env.bat' if WINDOWS else 'emsdk_set_env.sh'
 
+CMAKE_GENERATOR = 'Unix Makefiles'
+if WINDOWS:
+  build_with_visualstudio = True
+  if build_with_visualstudio:
+    CMAKE_GENERATOR = 'Visual Studio 12'
+  else:
+    CMAKE_GENERATOR += 'MinGW Makefiles'
+
 def win_get_environment_variable(key, system=True):
   prev_path = os.environ['PATH']
   try:
@@ -388,25 +396,21 @@ def git_clone_checkout_and_pull(url, dstpath, branch):
 
 # The root directory of the build.
 def fastcomp_build_dir(tool):
-  build_dir = 'build_' + tool.git_branch
-  build_with_vs2010 = True
-  if WINDOWS:
-    if build_with_vs2010:
-      build_dir += '_vs2010'
-    else:
-      build_dir += '_mingw'
+  generator_suffix = ''
+  if CMAKE_GENERATOR == 'Visual Studio 10': generator_suffix = '_vs2010'
+  elif CMAKE_GENERATOR == 'Visual Studio 11': generator_suffix = '_vs2012'
+  elif CMAKE_GENERATOR == 'Visual Studio 12': generator_suffix = '_vs2013'
+  elif CMAKE_GENERATOR == 'MinGW Makefiles': generator_suffix = '_mingw'
 
-  if tool.bitness == 32:
-    build_dir += '_32'
-  else:
-    build_dir += '_64'
+  bitness_suffix = '_32' if tool.bitness == 32 else '_64'
+
+  build_dir = 'build_' + tool.git_branch + generator_suffix + bitness_suffix
   return build_dir
 
 # The directory where the binaries are produced.
 def fastcomp_build_bin_dir(tool):
   build_dir = fastcomp_build_dir(tool)
-  build_with_vs2010 = True
-  if WINDOWS and build_with_vs2010:
+  if WINDOWS and 'Visual Studio' in CMAKE_GENERATOR:
     return os.path.join(build_dir, 'bin\\RelWithDebInfo')
   else:
     return os.path.join(build_dir, 'bin')
@@ -430,14 +434,13 @@ def find_msbuild(sln_file):
     if os.path.isfile(p): return p
 
 def make_build(build_root, build_type):
-  build_with_vs2010 = True
   cpu_cores = max(multiprocessing.cpu_count()-1, 1) # Don't saturate all cores to not steal the whole system, but be aggressive.
   if cpu_cores > 1:
     print 'Performing a parallel build with ' + str(cpu_cores) + ' cores.'
   else:
     print 'Performing a singlethreaded build.'
   if WINDOWS:
-    if build_with_vs2010:
+    if 'Visual Studio' in CMAKE_GENERATOR:
       solution_name = subprocess.check_output(['dir', '/b', '*.sln'], shell=True, cwd=build_root).strip()
       make = [find_msbuild(os.path.join(build_root, solution_name)), '/maxcpucount:' + str(cpu_cores), '/t:Build', '/p:Configuration='+build_type, '/nologo', '/verbosity:minimal', solution_name]
     else:
@@ -488,17 +491,9 @@ def build_fastcomp_tool(tool):
   git_clone_checkout_and_pull(tool.url, fastcomp_src_root, tool.git_branch)
   clang_root = os.path.join(fastcomp_src_root, 'tools/clang')
   git_clone_checkout_and_pull(tool.clang_url, clang_root, tool.git_branch)
-  build_with_vs2010 = True  
-  if WINDOWS:
-    if build_with_vs2010:
-      if tool.bitness == 64:
-        generator = 'Visual Studio 10 Win64'
-      else:
-        generator = 'Visual Studio 10'
-    else:
-      generator = 'MinGW Makefiles'
-  else:
-    generator = 'Unix Makefiles'
+  cmake_generator = CMAKE_GENERATOR
+  if 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
+    cmake_generator += ' Win64'
 
   build_dir = fastcomp_build_dir(tool)
   build_root = os.path.join(fastcomp_root, build_dir)
@@ -506,7 +501,7 @@ def build_fastcomp_tool(tool):
   build_type = tool.cmake_build_type
 
   # Configure
-  success = cmake_configure(generator, build_root, fastcomp_src_root, build_type, ['-DLLVM_TARGETS_TO_BUILD=X86;JSBackend', 
+  success = cmake_configure(cmake_generator, build_root, fastcomp_src_root, build_type, ['-DLLVM_TARGETS_TO_BUILD=X86;JSBackend', 
         '-DLLVM_INCLUDE_EXAMPLES=OFF', '-DLLVM_INCLUDE_TESTS=OFF', '-DCLANG_INCLUDE_EXAMPLES=OFF', '-DCLANG_INCLUDE_TESTS=OFF'])
   if not success: return False
 
