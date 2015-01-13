@@ -411,7 +411,12 @@ def fastcomp_build_dir(tool):
 def fastcomp_build_bin_dir(tool):
   build_dir = fastcomp_build_dir(tool)
   if WINDOWS and 'Visual Studio' in CMAKE_GENERATOR:
-    return os.path.join(build_dir, 'bin\\RelWithDebInfo')
+    old_llvm_bin_dir = os.path.join(build_dir, 'bin\\RelWithDebInfo')
+    new_llvm_bin_dir = os.path.join(build_dir, 'RelWithDebInfo\\bin')
+    if os.path.exists(os.path.join(tool.install_path, new_llvm_bin_dir)):
+      return new_llvm_bin_dir
+    if os.path.exists(os.path.join(tool.install_path, old_llvm_bin_dir)): return old_llvm_bin_dir
+    return new_llvm_bin_dir
   else:
     return os.path.join(build_dir, 'bin')
 
