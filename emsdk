@@ -674,6 +674,8 @@ class Tool:
   def expand_vars(self, str):
     if WINDOWS and '%MSBuildPlatformsDir%' in str:
       str = str.replace('%MSBuildPlatformsDir%', find_msbuild_dir())
+    if '%cmake_build_type%' in str:
+      str = str.replace('%cmake_build_type%', (self.cmake_build_type + '/') if WINDOWS else '')
     if '%installation_dir%' in str:
       str = str.replace('%installation_dir%', sdk_path(self.installation_dir()))
     str = str.replace('%.exe%', '.exe' if WINDOWS else '')
