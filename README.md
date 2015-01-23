@@ -133,6 +133,10 @@ On Windows, you can directly install an old SDK version by using one of the arch
 
 You can toggle between different tools and SDK versions by running `emsdk activate <tool/sdk name>`. Activating a tool will set up `~/.emscripten` to point to that particular tool. On Windows, you can pass the option `--global` to the `activate` command to register the environment permanently to the system registry for all users.
 
+##### How do I build multiple projects with different SDK versions in parallel?
+
+By default, Emscripten locates all configuration files in the home directory of the user. This may be a problem if you need to simultaneously build with multiple Emscripten compiler versions, since the user home directory can only be configured to point to one compiler at a time. This can be overcome by specifying the '--embedded' option as a parameter to 'emsdk activate', which will signal emsdk to generate the compiler configuration files inside the emsdk root directory instead of the user home directory. Use this option also when it is desirable to run emsdk in a fully portable mode that does not touch any files outside the emsdk directory.
+
 ##### How do I track the latest Emscripten development with the SDK?
 
 A common and supported use case of the Emscripten SDK is to enable the workflow where you directly interact with the github repositories. This allows you to obtain new features and latest fixes immediately as they are pushed to the github repository, without having to wait for release to be tagged. You do not need a github account or a fork of Emscripten to do this. To switch to using the latest upstream git development branch `incoming`, run the following:
