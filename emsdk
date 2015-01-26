@@ -670,7 +670,10 @@ class Tool:
   def __init__(self, data):
     # Convert the dictionary representation of the tool in 'data' to members of this class for convenience.
     for key in data:
-      setattr(self, key, data[key])
+      if isinstance(data[key], unicode):
+        setattr(self, key, data[key].encode('Latin-1'))
+      else:
+        setattr(self, key, data[key])
 
   def __str__(self):
     s = self.id + '-' + self.version
