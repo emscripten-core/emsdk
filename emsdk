@@ -294,8 +294,8 @@ def download_file(url, dstpath, download_even_if_exists=False):
     print "HTTP error with URL '" + url + "': " + str(e)
     rmfile(file_name)
     return None
-  except:
-    print "Error downloading URL '" + url + "'!"
+  except Exception, e:
+    print "Error downloading URL '" + url + "': " + str(e)
     rmfile(file_name)
     return None
   return file_name
