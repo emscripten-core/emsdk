@@ -163,7 +163,8 @@
     "windows_url": "emscripten-clang_e1.25.0.zip",
     "osx_url": "emscripten-clang_e1.25.0.tar.gz",
     "activated_path": "%installation_dir%",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%'"
+    "activated_cfg": "LLVM_ROOT='%installation_dir%'",
+    "is_old": true
   },
   {
     "id": "clang",
@@ -432,7 +433,8 @@
     "unix_url": "emscripten-1.25.0.tar.gz",
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%",
-    "activated_env": "EMSCRIPTEN=%installation_dir%"
+    "activated_env": "EMSCRIPTEN=%installation_dir%",
+    "is_old": true
   },
   {
     "id": "emscripten",
@@ -814,13 +816,15 @@
     "version": "1.25.0",
     "bitness": 64,
     "uses": ["clang-e1.25.0-64bit", "node-0.10.17-64bit", "python-2.7.5.3-64bit", "emscripten-1.25.0"],
-    "os": "win"
+    "os": "win",
+    "is_old": true
   },
   {
     "version": "1.25.0",
     "bitness": 64,
     "uses": ["clang-e1.25.0-64bit", "node-0.10.18-64bit", "emscripten-1.25.0"],
-    "os": "osx"
+    "os": "osx",
+    "is_old": true
   },
   {
     "version": "1.27.0",
