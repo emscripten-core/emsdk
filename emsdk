@@ -845,7 +845,7 @@ class Tool:
       if len(msbuild_dir) > 0:
         return True
       else:
-        return "Visual Studio was not found!"
+        return "Visual Studio 2010 was not found!"
     else:
       return True
 
