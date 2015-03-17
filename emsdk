@@ -483,7 +483,19 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
     if ret != 0:
       print >> sys.stderr, 'CMake invocation failed with exit code ' + ret + '!'
       print >> sys.stderr, 'Working directory: ' + build_root
+      return False  
+  except OSError, e:
+    if e.errno == errno.ENOENT:
+      print >> sys.stderr, str(e)
+      print >> sys.stderr, 'Could not run CMake, perhaps it has not been installed?'
+      if WINDOWS:
+        print >> sys.stderr, 'Installing this package requires CMake. Get it from http://www.cmake.org/'
+      elif LINUX:
+        print >> sys.stderr, 'Installing this package requires CMake. Get it via your system package manager (e.g. sudo apt-get install cmake), or from http://www.cmake.org/'
+      elif OSX:
+        print >> sys.stderr, 'Installing this package requires CMake. Get it via a OSX package manager (Homebrew: "brew install cmake", or MacPorts: "sudo port install cmake"), or from http://www.cmake.org/'        
       return False
+    raise
   except Exception, e:
     print >> sys.stderr, 'CMake invocation failed due to exception!'
     print >> sys.stderr, 'Working directory: ' + build_root
