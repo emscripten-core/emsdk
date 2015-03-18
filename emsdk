@@ -1428,7 +1428,9 @@ def main():
     if tool == None:
       print "Error: No tool or SDK found by name '" + sys.argv[2] + "'."
       return 1
-    tool.install()
+    success = tool.install()
+    if not success:
+      return 1
   elif cmd == 'uninstall':
     if len(sys.argv) <= 2:
       print "Syntax error. Call 'emsdk uninstall <tool name>'. Call 'emsdk list' to obtain a list of available tools."
