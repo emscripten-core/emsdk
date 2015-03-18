@@ -507,9 +507,11 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
 def build_fastcomp_tool(tool):
   fastcomp_root = tool.installation_path()
   fastcomp_src_root = os.path.join(fastcomp_root, 'src')
-  git_clone_checkout_and_pull(tool.url, fastcomp_src_root, tool.git_branch)
+  success = git_clone_checkout_and_pull(tool.url, fastcomp_src_root, tool.git_branch)
+  if not success: return False
   clang_root = os.path.join(fastcomp_src_root, 'tools/clang')
-  git_clone_checkout_and_pull(tool.clang_url, clang_root, tool.git_branch)
+  success = git_clone_checkout_and_pull(tool.clang_url, clang_root, tool.git_branch)
+  if not success: return False
   cmake_generator = CMAKE_GENERATOR
   if 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
     cmake_generator += ' Win64'
