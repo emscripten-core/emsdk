@@ -313,7 +313,7 @@ def download_text_file(url, dstpath, download_even_if_exists=False):
   fix_lineendings(os.path.join(emsdk_path(), filename))
 
 def run_get_output(cmd, cwd=None):
-  process = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE, env=os.environ.copy())
+  process = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE, env=os.environ.copy(), universal_newlines=True)
   (stdout, stderr) = process.communicate()
   return (process.returncode, stdout, stderr)
 
@@ -692,7 +692,7 @@ class Tool:
   def __init__(self, data):
     # Convert the dictionary representation of the tool in 'data' to members of this class for convenience.
     for key in data:
-      if isinstance(data[key], str):
+      if sys.version_info < (3,) and isinstance(data[key], str):
         setattr(self, key, data[key].encode('Latin-1'))
       else:
         setattr(self, key, data[key])
