@@ -1446,7 +1446,7 @@ def main():
         else:
           print("Invalid command line parameter " + sys.argv[i] + ' specified!', file=sys.stderr)
           return 1
-    sys.argv = filter(lambda x: not len(x) == 0, sys.argv)
+    sys.argv = [x for x in sys.argv if not len(x) == 0]
     if len(sys.argv) <= 2:
       print("Missing parameter. Type 'emsdk install <tool name>' to install a tool or an SDK. Type 'emsdk list' to obtain a list of available tools. Type 'emsdk install latest' to automatically install the newest version of the SDK.")
       return 1
