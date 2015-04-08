@@ -90,7 +90,7 @@ def win_get_active_environment_variable(key):
   return win_get_environment_variable(key, True)
 
 def win_set_environment_variable(key, value, system=True):
-#  print >> sys.stderr, 'set ' + str(key) + '=' + str(value) + ', in system=' + str(system)
+#  print('set ' + str(key) + '=' + str(value) + ', in system=' + str(system), file=sys.stderr)
   previous_value = win_get_environment_variable(key, system)
   if previous_value == value:
     return # No need to elevate UAC for nothing to set the same value, skip.
@@ -453,7 +453,7 @@ def find_msbuild(sln_file):
 def make_build(build_root, build_type):
   global CPU_CORES
   if CPU_CORES > 1:
-    print('Performing a parallel build with ' + str(cpu_cores) + ' cores.')
+    print('Performing a parallel build with ' + str(CPU_CORES) + ' cores.')
   else:
     print('Performing a singlethreaded build.')
   if WINDOWS:
@@ -613,7 +613,7 @@ def load_dot_emscripten():
       (key, value) = parse_key_value(line)
       if value != '':
         dot_emscripten[key] = value
-#        print "Got '" + key + "' = '" + value + "'"
+#        print("Got '" + key + "' = '" + value + "'")
     except:
       pass
 
@@ -827,9 +827,9 @@ class Tool:
     for cfg in activated_cfg:
       cfg = cfg.strip()
       (key, value) = parse_key_value(cfg)
-#      print 'activated cfg ' + key + ', value: ' + value
+#      print('activated cfg ' + key + ', value: ' + value)
 #      if dot_emscripten.has_key(key):
-#        print 'dot_emscripten ' + dot_emscripten[key]
+#        print('dot_emscripten ' + dot_emscripten[key])
       if key in dot_emscripten and dot_emscripten[key] != value:
         return False
     return True
@@ -1184,7 +1184,7 @@ def construct_env_windows(tools_to_activate, permanent):
 # Dont permanently add to PATH, since this will break the whole system if there are more than 1024 chars in PATH.
 # (SETX truncates to set only 1024 chars)
 #  if permanent:
-#    print 'SETX PATH "' + newpath + '"'
+#    print('SETX PATH "' + newpath + '"')
 #  else:
 
   if os.environ['PATH'] != newpath: # Don't bother setting the path if there are no changes.
@@ -1444,7 +1444,7 @@ def main():
           CPU_CORES = int(multicore.group(1))
           sys.argv[i] = ''
         else:
-          print >> sys.stderr, "Invalid command line parameter " + sys.argv[i] + ' specified!'
+          print("Invalid command line parameter " + sys.argv[i] + ' specified!', file=sys.stderr)
           return 1
     sys.argv = filter(lambda x: not len(x) == 0, sys.argv)
     if len(sys.argv) <= 2:
