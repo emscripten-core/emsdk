@@ -1258,11 +1258,7 @@ def main():
   global emscripten_config_directory
   load_dot_emscripten()
   load_sdk_manifest()
-  usage_str = "usage: %prog --param1 .. --paramn <projectrootdir>"
 
-#  parser = optparse.OptionParser(usage=usage_str)
-#  parser.add_option('update', dest='update', action='store_true', default=False, help='Downloads and installs the latest Emscripten SDK components.')
-#  (options, args) = parser.parse_args(sys.argv)
   if len(sys.argv) <= 1 or sys.argv[1] == 'help':
     if len(sys.argv) <= 1:
       print ' emsdk: No command given. Please call one of the following:'
