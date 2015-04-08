@@ -43,6 +43,8 @@ if platform.mac_ver()[0] != '':
 
 CPU_CORES = max(multiprocessing.cpu_count()-1, 1) # Don't saturate all cores to not steal the whole system, but be aggressive.
 
+CMAKE_BUILD_TYPE_OVERRIDE = None
+
 emscripten_config_directory = os.path.expanduser("~/")
 
 EMSDK_SET_ENV = 'emsdk_set_env.bat' if WINDOWS else 'emsdk_set_env.sh'
@@ -406,6 +408,14 @@ def git_clone_checkout_and_pull(url, dstpath, branch):
   success = git_checkout_and_pull(dstpath, branch)
   return success
 
+# Each tool can have its own build type, or it can be overridden on the command line.
+def decide_cmake_build_type(tool):
+  global CMAKE_BUILD_TYPE_OVERRIDE
+  if CMAKE_BUILD_TYPE_OVERRIDE:
+    return CMAKE_BUILD_TYPE_OVERRIDE
+  else:
+    return tool.cmake_build_type
+
 # The root directory of the build.
 def fastcomp_build_dir(tool):
   generator_suffix = ''
@@ -423,8 +433,8 @@ def fastcomp_build_dir(tool):
 def fastcomp_build_bin_dir(tool):
   build_dir = fastcomp_build_dir(tool)
   if WINDOWS and 'Visual Studio' in CMAKE_GENERATOR:
-    old_llvm_bin_dir = os.path.join(build_dir, 'bin\\' + tool.cmake_build_type)
-    new_llvm_bin_dir = os.path.join(build_dir, tool.cmake_build_type + '\\bin')
+    old_llvm_bin_dir = os.path.join(build_dir, 'bin\\' + decide_cmake_build_type(tool))
+    new_llvm_bin_dir = os.path.join(build_dir, decide_cmake_build_type(tool) + '\\bin')
     if os.path.exists(os.path.join(tool.install_path, new_llvm_bin_dir)):
       return new_llvm_bin_dir
     if os.path.exists(os.path.join(tool.install_path, old_llvm_bin_dir)): return old_llvm_bin_dir
@@ -529,7 +539,7 @@ def build_fastcomp_tool(tool):
   build_dir = fastcomp_build_dir(tool)
   build_root = os.path.join(fastcomp_root, build_dir)
 
-  build_type = tool.cmake_build_type
+  build_type = decide_cmake_build_type(tool)
 
   # Configure
   success = cmake_configure(cmake_generator, build_root, fastcomp_src_root, build_type, ['-DLLVM_TARGETS_TO_BUILD=X86;JSBackend', 
@@ -544,7 +554,7 @@ def build_optimizer_tool(tool):
   src_root = os.path.join(tool.installation_path(), 'tools', 'optimizer')
   build_root = os.path.join(tool.installation_path(), 'tools', 'optimizer_build')
 
-  build_type = tool.cmake_build_type
+  build_type = decide_cmake_build_type(tool)
 
   # Configure
   success = cmake_configure(None, build_root, src_root, build_type)
@@ -708,8 +718,8 @@ class Tool:
   def expand_vars(self, str):
     if WINDOWS and '%MSBuildPlatformsDir%' in str:
       str = str.replace('%MSBuildPlatformsDir%', find_msbuild_dir())
-    if '%cmake_build_type%' in str:
-      str = str.replace('%cmake_build_type%', (self.cmake_build_type + '/') if WINDOWS else '')
+    if '%cmake_build_type_on_win%' in str:
+      str = str.replace('%cmake_build_type_on_win%', (decide_cmake_build_type(self) + '/') if WINDOWS else '')
     if '%installation_dir%' in str:
       str = str.replace('%installation_dir%', sdk_path(self.installation_dir()))
     str = str.replace('%.exe%', '.exe' if WINDOWS else '')
@@ -1278,43 +1288,40 @@ def main():
     print('''
    emsdk list [--old]           - Lists all available SDKs and tools and their
                                   current installation status. With the --old
-                                  parameter, also historical versions are shown.
+                                  parameter, also historical versions are
+                                  shown.
 
    emsdk update                 - Fetches a list of updates from the net (but
                                   does not install them)
 
-   emsdk install [-j<num>] <tool/sdk>
+   emsdk install [-j<num>] [--build=type] <tool/sdk>
                                 - Downloads and installs the given tool or SDK.
                                   An optional -j<num> specifier can be used to
                                   specify the number of cores to use when
                                   building the tool. (default: use one less
                                   than the # of detected cores)
 
-   emsdk uninstall <tool/sdk>   - Removes the given tool or SDK from disk.
-
-   emsdk activate <tool/sdk>    - Activates the given tool or SDK in the
-                                  environment of the current shell.''')
+   emsdk uninstall <tool/sdk>   - Removes the given tool or SDK from disk.''')
 
     if WINDOWS:
       print('''
-   emsdk activate [--global] [--embedded] <tool/sdk> 
+   emsdk activate [--global] [--embedded] [--build=type] <tool/sdk> 
 
-                                - Activates the given tool or SDK in
-                                  the environment of the current
-                                  shell. If the --global option is
-                                  passed, the registration is done
-                                  globally to all users in the system
+                                - Activates the given tool or SDK in the
+                                  environment of the current shell. If the
+                                  --global option is passed, the registration
+                                  is done globally to all users in the system
                                   environment. If the --embedded option is
                                   passed, all Emcripten configuration files as
                                   well as the temp, cache and ports directories
                                   are located inside the Emscripten SDK
-                                  directory rather than the user home directory.
+                                  directory rather than the user home
+                                  directory.
 
    emcmdprompt.bat              - Spawns a new command prompt window with the
                                   Emscripten environment active.''')
     else:
-      print('''
-   emsdk activate [--embedded] <tool/sdk>
+      print('''   emsdk activate [--embedded] [--build=type] <tool/sdk>
 
                                 - Activates the given tool or SDK in the
                                   environment of the current shell. If the
@@ -1324,8 +1331,38 @@ def main():
                                   Emscripten SDK directory rather than the user
                                   home directory.''')
 
+    print('''
+       Both commands 'install' and 'activate' accept an optional parameter
+       '--build=type', which can be used to override what kind of installation
+       or activation to perform. Possible values for type are Debug, Release,
+       MinSizeRel or RelWithDebInfo. Note: When overriding a custom build type,
+       be sure to match the same --build= option to both 'install' and
+       'activate' commands and the invocation of 'emsdk_env', or otherwise
+       these commands will default to operating on the default build types,
+       which are Release for the 'master' SDK, and RelWithDebInfo for the
+       'incoming' SDK.''')
     return 1
   cmd = sys.argv[1]
+
+  # Process global args
+  for i in range(2, len(sys.argv)):
+    if sys.argv[i].startswith('--build='):
+      build_type = re.match(r'^--build=(.+)$', sys.argv[i])
+      if build_type:
+        global CMAKE_BUILD_TYPE_OVERRIDE
+        build_type = build_type.group(1)
+        build_types = ['Debug', 'MinSizeRel', 'RelWithDebInfo', 'Release']
+        try:
+          build_type_index = [x.lower() for x in build_types].index(build_type)
+          CMAKE_BUILD_TYPE_OVERRIDE = build_types[build_type_index]
+          sys.argv[i] = ''
+        except:
+          print('Unknown CMake build type "' + build_type + '" specified! Please specify one of ' + str(build_types), file=sys.stderr)
+          return 1
+      else:
+        print("Invalid command line parameter " + sys.argv[i] + ' specified!', file=sys.stderr)
+        return 1
+  sys.argv = [x for x in sys.argv if not len(x) == 0]
 
   # Replace meta-packages with the real package names.
   if (cmd == 'update' or cmd == 'install' or cmd == 'activate'):
