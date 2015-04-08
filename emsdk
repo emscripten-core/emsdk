@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys, optparse, subprocess, urllib2, os, os.path, errno, zipfile, string, json, platform, shutil, tarfile, urlparse, tempfile, multiprocessing
+import sys, optparse, subprocess, urllib2, os, os.path, errno, zipfile, string, json, platform, shutil, tarfile, urlparse, tempfile, multiprocessing, re
 
 # EMSDK_DEV is a developer mode flag, which, if true, the SDK is downloaded from a 'staging' online source,
 # instead of the public source. New releases are first deployed to the staging source for testing, before 
@@ -32,6 +32,8 @@ OSX = False
 if platform.mac_ver()[0] != '':
   OSX = True
   ENVPATH_SEPARATOR = ':'
+
+CPU_CORES = max(multiprocessing.cpu_count()-1, 1) # Don't saturate all cores to not steal the whole system, but be aggressive.
 
 emscripten_config_directory = os.path.expanduser("~/")
 
@@ -441,19 +443,19 @@ def find_msbuild(sln_file):
     if os.path.isfile(p): return p
 
 def make_build(build_root, build_type):
-  cpu_cores = max(multiprocessing.cpu_count()-1, 1) # Don't saturate all cores to not steal the whole system, but be aggressive.
-  if cpu_cores > 1:
-    print 'Performing a parallel build with ' + str(cpu_cores) + ' cores.'
+  global CPU_CORES
+  if CPU_CORES > 1:
+    print 'Performing a parallel build with ' + str(CPU_CORES) + ' cores.'
   else:
     print 'Performing a singlethreaded build.'
   if WINDOWS:
     if 'Visual Studio' in CMAKE_GENERATOR:
       solution_name = subprocess.check_output(['dir', '/b', '*.sln'], shell=True, cwd=build_root).strip()
-      make = [find_msbuild(os.path.join(build_root, solution_name)), '/maxcpucount:' + str(cpu_cores), '/t:Build', '/p:Configuration='+build_type, '/nologo', '/verbosity:minimal', solution_name]
+      make = [find_msbuild(os.path.join(build_root, solution_name)), '/maxcpucount:' + str(CPU_CORES), '/t:Build', '/p:Configuration='+build_type, '/nologo', '/verbosity:minimal', solution_name]
     else:
-      make = ['mingw32-make', '-j' + str(cpu_cores)]
+      make = ['mingw32-make', '-j' + str(CPU_CORES)]
   else:
-    make = ['make', '-j' + str(cpu_cores)]
+    make = ['make', '-j' + str(CPU_CORES)]
 
   # Build
   try:
@@ -1273,7 +1275,13 @@ def main():
    emsdk update                 - Fetches a list of updates from the net (but
                                   does not install them)
 
-   emsdk install <tool/sdk>     - Downloads and installs the given tool or SDK.
+   emsdk install [-j<num>] <tool/sdk>
+                                - Downloads and installs the given tool or SDK.
+                                  An optional -j<num> specifier can be used to
+                                  specify the number of cores to use when
+                                  building the tool. (default: use one less
+                                  than the # of detected cores)
+
    emsdk uninstall <tool/sdk>   - Removes the given tool or SDK from disk.
 
    emsdk activate <tool/sdk>    - Activates the given tool or SDK in the
@@ -1419,6 +1427,18 @@ def main():
       print 'To permanently register this environment globally to all users in Windows Registry, rerun the command with the option --global.'
     return 0
   elif cmd == 'install':
+    # Process args
+    for i in range(2, len(sys.argv)):
+      if sys.argv[i].startswith('-j'):
+        multicore = re.match(r'^-j(\d+)$', sys.argv[i])
+        if multicore:
+          global CPU_CORES
+          CPU_CORES = int(multicore.group(1))
+          sys.argv[i] = ''
+        else:
+          print >> sys.stderr, "Invalid command line parameter " + sys.argv[i] + ' specified!'
+          return 1
+    sys.argv = filter(lambda x: not len(x) == 0, sys.argv)
     if len(sys.argv) <= 2:
       print "Missing parameter. Type 'emsdk install <tool name>' to install a tool or an SDK. Type 'emsdk list' to obtain a list of available tools. Type 'emsdk install latest' to automatically install the newest version of the SDK."
       return 1
