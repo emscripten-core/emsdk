@@ -1311,13 +1311,15 @@ def main():
     return 1
   cmd = sys.argv[1]
 
-  if (cmd == 'update' or cmd == 'install' or cmd == 'activate') and len(sys.argv) >= 3:
-    if sys.argv[2] == 'latest':
-      sys.argv[2] = str(find_latest_sdk())
-    elif sys.argv[2] == 'latest-32bit':
-      sys.argv[2] = str(find_latest_32bit_sdk())
-    elif sys.argv[2] == 'latest-64bit':
-      sys.argv[2] = str(find_latest_64bit_sdk())
+  # Replace meta-packages with the real package names.
+  if (cmd == 'update' or cmd == 'install' or cmd == 'activate'):
+    for i in range(2, len(sys.argv)):
+      if sys.argv[i] == 'latest':
+        sys.argv[i] = str(find_latest_sdk())
+      elif sys.argv[i] == 'latest-32bit':
+        sys.argv[i] = str(find_latest_32bit_sdk())
+      elif sys.argv[i] == 'latest-64bit':
+        sys.argv[i] = str(find_latest_64bit_sdk())
 
   if cmd == 'list':
     print ''
