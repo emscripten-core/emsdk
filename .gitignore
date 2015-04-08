@@ -9,3 +9,7 @@ crunch
 java
 mingw
 spidermonkey
+.emscripten_cache
+.emscripten_cache__last_clear
+.emscripten_sanity
+.tmp
