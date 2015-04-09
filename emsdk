@@ -469,7 +469,11 @@ def make_build(build_root, build_type):
   if WINDOWS:
     if 'Visual Studio' in CMAKE_GENERATOR:
       solution_name = subprocess.check_output(['dir', '/b', '*.sln'], shell=True, cwd=build_root).strip()
-      make = [find_msbuild(os.path.join(build_root, solution_name)), '/maxcpucount:' + str(CPU_CORES), '/t:Build', '/p:Configuration='+build_type, '/nologo', '/verbosity:minimal', solution_name]
+# Disabled for now: Don't pass /maxcpucount argument to msbuild, since it looks like when building, msbuild already automatically spawns the full amount of logical
+# cores the system has, and passing the number of logical cores here has been observed to give a quadratic N*N explosion on the number of spawned processes
+# (e.g. on a Core i7 5960X with 16 logical cores, it would spawn 16*16=256 cl.exe processes, which would start crashing when running out of system memory)
+#      make = [find_msbuild(os.path.join(build_root, solution_name)), '/maxcpucount:' + str(CPU_CORES), '/t:Build', '/p:Configuration='+build_type, '/nologo', '/verbosity:minimal', solution_name]
+      make = [find_msbuild(os.path.join(build_root, solution_name)), '/t:Build', '/p:Configuration='+build_type, '/nologo', '/verbosity:minimal', solution_name]      
     else:
       make = ['mingw32-make', '-j' + str(CPU_CORES)]
   else:
