@@ -1357,7 +1357,7 @@ def main():
         build_type = build_type.group(1)
         build_types = ['Debug', 'MinSizeRel', 'RelWithDebInfo', 'Release']
         try:
-          build_type_index = [x.lower() for x in build_types].index(build_type)
+          build_type_index = [x.lower() for x in build_types].index(build_type.lower())
           CMAKE_BUILD_TYPE_OVERRIDE = build_types[build_type_index]
           sys.argv[i] = ''
         except:
