@@ -426,7 +426,7 @@ def fastcomp_build_dir(tool):
 
   bitness_suffix = '_32' if tool.bitness == 32 else '_64'
 
-  build_dir = 'build_' + tool.git_branch + generator_suffix + bitness_suffix
+  build_dir = 'build_' + tool.git_branch.replace(os.sep, '-') + generator_suffix + bitness_suffix
   return build_dir
 
 # The directory where the binaries are produced.
