@@ -173,7 +173,8 @@
     "windows_url": "emscripten-clang_e1.27.0.zip",
     "osx_url": "emscripten-clang_e1.27.0.tar.gz",
     "activated_path": "%installation_dir%",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%'"
+    "activated_cfg": "LLVM_ROOT='%installation_dir%'",
+    "is_old": true
   },
   {
     "id": "clang",
@@ -181,6 +182,15 @@
     "bitness": 64,
     "windows_url": "emscripten-clang_e1.29.0.zip",
     "osx_url": "emscripten-clang_e1.29.0.tar.gz",
+    "activated_path": "%installation_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/optimizer%.exe%'"
+  },
+  {
+    "id": "clang",
+    "version": "e1.30.0",
+    "bitness": 64,
+    "windows_url": "emscripten-clang_e1.30.0.zip",
+    "osx_url": "emscripten-clang_e1.30.0.tar.gz",
     "activated_path": "%installation_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/optimizer%.exe%'"
   },
@@ -443,7 +453,8 @@
     "unix_url": "emscripten-1.27.0.tar.gz",
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%",
-    "activated_env": "EMSCRIPTEN=%installation_dir%"
+    "activated_env": "EMSCRIPTEN=%installation_dir%",
+    "is_old": true
   },
   {
     "id": "emscripten",
@@ -456,7 +467,18 @@
   },
   {
     "id": "emscripten",
+    "version": "1.30.0",
+    "bitness": 64,
+    "windows_url": "emscripten-1.30.0.zip",
+    "unix_url": "emscripten-1.30.0.tar.gz",
+    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
+    "activated_path": "%installation_dir%",
+    "activated_env": "EMSCRIPTEN=%installation_dir%"
+  },
+  {
+    "id": "emscripten",
     "version": "incoming",
+    "bitness": 32,
     "url": "https://github.com/kripken/emscripten/",
     "git_branch": "incoming",
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/tools/optimizer_build/%cmake_build_type_on_win%optimizer%.exe%'",
@@ -468,6 +490,31 @@
   {
     "id": "emscripten",
     "version": "master",
+    "bitness": 32,
+    "url": "https://github.com/kripken/emscripten/",
+    "git_branch": "master",
+    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/tools/optimizer_build/%cmake_build_type_on_win%optimizer%.exe%'",
+    "activated_path": "%installation_dir%",
+    "activated_env": "EMSCRIPTEN=%installation_dir%",
+    "cmake_build_type": "Release",
+    "custom_install_script": "build_optimizer"
+  },
+  {
+    "id": "emscripten",
+    "version": "incoming",
+    "bitness": 64,
+    "url": "https://github.com/kripken/emscripten/",
+    "git_branch": "incoming",
+    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/tools/optimizer_build/%cmake_build_type_on_win%optimizer%.exe%'",
+    "activated_path": "%installation_dir%",
+    "activated_env": "EMSCRIPTEN=%installation_dir%",
+    "cmake_build_type": "RelWithDebInfo",
+    "custom_install_script": "build_optimizer"
+  },
+  {
+    "id": "emscripten",
+    "version": "master",
+    "bitness": 64,
     "url": "https://github.com/kripken/emscripten/",
     "git_branch": "master",
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/tools/optimizer_build/%cmake_build_type_on_win%optimizer%.exe%'",
@@ -538,61 +585,61 @@
   {
     "version": "incoming",
     "bitness": 32,
-    "uses": ["clang-incoming-32bit", "node-0.10.17-32bit", "python-2.7.5.3-32bit", "java-7.45-32bit", "emscripten-incoming"],
+    "uses": ["clang-incoming-32bit", "node-0.10.17-32bit", "python-2.7.5.3-32bit", "java-7.45-32bit", "emscripten-incoming-32bit"],
     "os": "win"
   },
   {
     "version": "incoming",
     "bitness": 64,
-    "uses": ["clang-incoming-64bit", "node-0.10.17-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-incoming"],
+    "uses": ["clang-incoming-64bit", "node-0.10.17-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-incoming-64bit"],
     "os": "win"
   },
   {
     "version": "incoming",
     "bitness": 64,
-    "uses": ["clang-incoming-64bit", "node-0.10.18-64bit", "emscripten-incoming"],
+    "uses": ["clang-incoming-64bit", "node-0.10.18-64bit", "emscripten-incoming-64bit"],
     "os": "osx"
   },
   {
     "version": "incoming",
     "bitness": 32,
-    "uses": ["clang-incoming-32bit", "emscripten-incoming"],
+    "uses": ["clang-incoming-32bit", "emscripten-incoming-32bit"],
     "os": "linux"
   },
   {
     "version": "incoming",
     "bitness": 64,
-    "uses": ["clang-incoming-64bit", "emscripten-incoming"],
+    "uses": ["clang-incoming-64bit", "emscripten-incoming-64bit"],
     "os": "linux"
   },
   {
     "version": "master",
     "bitness": 32,
-    "uses": ["clang-master-32bit", "node-0.10.17-32bit", "python-2.7.5.3-32bit", "java-7.45-32bit", "emscripten-master"],
+    "uses": ["clang-master-32bit", "node-0.10.17-32bit", "python-2.7.5.3-32bit", "java-7.45-32bit", "emscripten-master-32bit"],
     "os": "win"
   },
   {
     "version": "master",
     "bitness": 64,
-    "uses": ["clang-master-64bit", "node-0.10.17-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-master"],
+    "uses": ["clang-master-64bit", "node-0.10.17-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-master-64bit"],
     "os": "win"
   },
   {
     "version": "master",
     "bitness": 64,
-    "uses": ["clang-master-64bit", "node-0.10.18-64bit", "emscripten-master"],
+    "uses": ["clang-master-64bit", "node-0.10.18-64bit", "emscripten-master-64bit"],
     "os": "osx"
   },
   {
     "version": "master",
     "bitness": 32,
-    "uses": ["clang-master-32bit", "emscripten-master"],
+    "uses": ["clang-master-32bit", "emscripten-master-32bit"],
     "os": "linux"
   },
   {
     "version": "master",
     "bitness": 64,
-    "uses": ["clang-master-64bit", "emscripten-master"],
+    "uses": ["clang-master-64bit", "emscripten-master-64bit"],
     "os": "linux"
   },
   {
@@ -848,6 +895,18 @@
     "version": "1.29.0",
     "bitness": 64,
     "uses": ["clang-e1.29.0-64bit", "node-0.10.18-64bit", "emscripten-1.29.0"],
+    "os": "osx"
+  },
+  {
+    "version": "1.30.0",
+    "bitness": 64,
+    "uses": ["clang-e1.29.0-64bit", "node-0.10.17-64bit", "python-2.7.5.3-64bit", "emscripten-1.30.0-64bit"],
+    "os": "win"
+  },
+  {
+    "version": "1.30.0",
+    "bitness": 64,
+    "uses": ["clang-e1.29.0-64bit", "node-0.10.18-64bit", "emscripten-1.30.0-64bit"],
     "os": "osx"
   }
   ]
