@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-import sys, optparse, subprocess, os, os.path, errno, zipfile, string, json, platform, shutil, tarfile, tempfile, multiprocessing, re
+import sys, optparse, subprocess, os, os.path, errno, zipfile, string, json, platform, shutil, tarfile, tempfile, multiprocessing, re, stat
 if sys.version_info >= (3,):
   from urllib.parse import urljoin
   from urllib.request import urlopen
@@ -56,6 +56,19 @@ if WINDOWS:
     CMAKE_GENERATOR = 'Visual Studio 12'
   else:
     CMAKE_GENERATOR += 'MinGW Makefiles'
+
+# Removes a directory tree even if it was readonly, and doesn't throw exception on failure.
+def remove_tree(d):
+  try:
+    def remove_readonly_and_try_again(func, path, exc_info):
+      if not (os.stat(path).st_mode & stat.S_IWRITE):
+        os.chmod(path, stat.S_IWRITE)
+        func(path)
+      else:
+        raise
+    shutil.rmtree(d, onerror=remove_readonly_and_try_again)
+  except:
+    pass
 
 def win_get_environment_variable(key, system=True):
   prev_path = os.environ['PATH']
@@ -233,12 +246,12 @@ def unzip(source_filename, dest_dir, unpack_even_if_exists=False):
       if common_subdir:
         try:
           if os.path.exists(dest_dir):
-            shutil.rmtree(dest_dir)
+            remove_tree(dest_dir)
         except:
           pass
         shutil.copytree(os.path.join(unzip_to_dir, common_subdir), dest_dir)
         try:
-          shutil.rmtree(unzip_to_dir)
+          remove_tree(unzip_to_dir)
         except:
           pass
   except zipfile.BadZipfile as e:
@@ -554,10 +567,25 @@ def build_fastcomp_tool(tool):
   success = make_build(build_root, build_type)
   return success
 
+def optimizer_build_root(tool):
+  build_root = tool.installation_path().strip()
+  if build_root.endswith('/') or build_root.endswith('\\'): build_root = build_root[:-1]
+  build_root = build_root + '_' + str(tool.bitness) + 'bit_optimizer'
+  return build_root
+
+def uninstall_optimizer(tool):
+  build_root = optimizer_build_root(tool)
+  print("Deleting path '" + build_root + "'")
+  remove_tree(build_root)
+  os.remove(build_root)
+
+def is_optimizer_installed(tool):
+  build_root = optimizer_build_root(tool)
+  return os.path.exists(build_root)
+
 def build_optimizer_tool(tool):
   src_root = os.path.join(tool.installation_path(), 'tools', 'optimizer')
-  build_root = os.path.join(tool.installation_path(), 'tools', 'optimizer_build')
-
+  build_root = optimizer_build_root(tool)
   build_type = decide_cmake_build_type(tool)
 
   # Configure
@@ -660,7 +688,7 @@ JS_ENGINES = [NODE_JS]
   
   # Clear old cached emscripten content.
   try:
-    shutil.rmtree(os.path.join(emscripten_config_directory, ".emscripten_cache"), ignore_errors=True)
+    remove_tree(os.path.join(emscripten_config_directory, ".emscripten_cache"))
     os.remove(os.path.join(emscripten_config_directory, ".emscripten_sanity"))
     os.remove(os.path.join(emscripten_config_directory, ".emscripten_cache__last_clear"))
   except:
@@ -742,7 +770,7 @@ class Tool:
       pth = self.expand_vars(self.install_path)
       return sdk_path(pth)
     p = self.version
-    if hasattr(self, 'bitness'):
+    if hasattr(self, 'bitness') and (not hasattr(self, 'append_bitness') or self.append_bitness):
       p += '_' + str(self.bitness) + 'bit'
     return sdk_path(os.path.join(self.id, p))
 
@@ -815,6 +843,8 @@ class Tool:
       
       if self.id == 'vs-tool': # vs-tool is a special tool since all versions must be installed to the same dir, so dir name will not differentiate the version.
         return content_exists and get_installed_vstool_version(self.installation_path()) == self.version
+      elif hasattr(self, 'custom_is_installed_script') and self.custom_is_installed_script == 'is_optimizer_installed':
+        return is_optimizer_installed(self)
       else:
         return content_exists
     else:
@@ -953,13 +983,18 @@ class Tool:
       rmfile(tempzipfile)
 
   def uninstall(self):
-    if  not self.is_installed():
+    if not self.is_installed():
       print("Tool '" + str(self) + "' was not installed. No need to uninstall.")
       return
     print("Uninstalling tool '" + str(self) + "'..")
+    if hasattr(self, 'custom_uninstall_script') and self.custom_uninstall_script == 'uninstall_optimizer':
+      try:
+        uninstall_optimizer(self)
+      except:
+        pass
     try:
       print("Deleting path '" + self.installation_path() + "'")
-      shutil.rmtree(self.installation_path(), ignore_errors=True)
+      remove_tree(self.installation_path())
       os.remove(self.installation_path())
     except:
       pass
