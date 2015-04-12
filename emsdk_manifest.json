@@ -328,6 +328,25 @@
     "windows_url": "spidermonkey-30.0.0.zip",
     "osx_url": "spidermonkey-30.0.0.tar.gz",
     "activated_path": "%installation_dir%",
+    "activated_cfg": "SPIDERMONKEY_ENGINE='%installation_dir%/js%.exe%'",
+    "is_old": true
+  },
+  {
+    "id": "spidermonkey",
+    "version": "37.0.1",
+    "bitness": 64,
+    "windows_url": "spidermonkey-37.0.1.zip",
+    "osx_url": "spidermonkey-37.0.1.tar.gz",
+    "activated_path": "%installation_dir%",
+    "activated_cfg": "SPIDERMONKEY_ENGINE='%installation_dir%/js%.exe%'"
+  },
+  {
+    "id": "spidermonkey",
+    "version": "nightly-2015-04-12",
+    "bitness": 64,
+    "windows_url": "spidermonkey-nightly-2015-04-12_64bit.zip",
+    "osx_url": "spidermonkey-nightly-2015-04-12_64bit.tar.gz",
+    "activated_path": "%installation_dir%",
     "activated_cfg": "SPIDERMONKEY_ENGINE='%installation_dir%/js%.exe%'"
   },
   {
