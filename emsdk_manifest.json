@@ -335,8 +335,8 @@
     "id": "spidermonkey",
     "version": "37.0.1",
     "bitness": 64,
-    "windows_url": "spidermonkey-37.0.1.zip",
-    "osx_url": "spidermonkey-37.0.1.tar.gz",
+    "windows_url": "spidermonkey-37.0.1_64bit.zip",
+    "osx_url": "spidermonkey-37.0.1_64bit.tar.gz",
     "activated_path": "%installation_dir%",
     "activated_cfg": "SPIDERMONKEY_ENGINE='%installation_dir%/js%.exe%'"
   },
