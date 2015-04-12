@@ -516,7 +516,6 @@
   {
     "id": "emscripten",
     "version": "1.30.0",
-    "bitness": 64,
     "windows_url": "emscripten-1.30.0.zip",
     "unix_url": "emscripten-1.30.0.tar.gz",
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
