@@ -934,8 +934,8 @@ class Tool:
       print("The tool '" + str(self) + "' is not available due to the reason: " + self.can_be_installed())
       return False
 
-    print("Installing '" + str(self) + "'..")
     if self.id == 'sdk':
+      print("Installing SDK '" + str(self) + "'..")
       for tool_name in self.uses:
         tool = find_tool(tool_name)
         if tool == None:
@@ -943,9 +943,10 @@ class Tool:
         success = tool.install()
         if not success:
           return False
-        print("Done.")
+      print("Done installing SDK '" + str(self) + "'.")
       return True
     else:
+      print("Installing tool '" + str(self) + "'..")
       url = self.download_url()
       if hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_fastcomp':
         success = build_fastcomp_tool(self)
@@ -966,7 +967,7 @@ class Tool:
       if not success:
         print("Installation failed!")
         return False
-    print("Done.")
+    print("Done installing tool '" + str(self) + "'.")
 
     # Sanity check that the installation succeeded, and if so, remove unneeded leftover installation files.
     if self.is_installed():
@@ -998,7 +999,7 @@ class Tool:
       os.remove(self.installation_path())
     except:
       pass
-    print("Done.")
+    print("Done uninstalling '" + str(self) + "'.")
 
   def dependencies(self):
     if not hasattr(self, 'uses'):
