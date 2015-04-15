@@ -17,7 +17,7 @@
 
 SRC="$BASH_SOURCE"
 if [ "$SRC" = "" ]; then
-  SRC="$_"
+  SRC="$0"
 fi
 pushd `dirname "$SRC"` > /dev/null
 unset SRC
