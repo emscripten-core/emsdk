@@ -514,7 +514,7 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
   try:
     if generator: generator = ['-G', generator]
     else: generator = []
-    cmdline = ['cmake'] + generator +  ['-DCMAKE_BUILD_TYPE='+build_type] + extra_cmake_args + [src_root]
+    cmdline = ['cmake'] + generator +  ['-DCMAKE_BUILD_TYPE='+build_type, '-DPYTHON_EXECUTABLE='+sys.executable] + extra_cmake_args + [src_root]
     print('Running CMake: ' + str(cmdline))
     ret = subprocess.check_call(cmdline, cwd=build_root)
     if ret != 0:
