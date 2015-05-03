@@ -43,7 +43,9 @@ if platform.mac_ver()[0] != '':
 
 CPU_CORES = max(multiprocessing.cpu_count()-1, 1) # Don't saturate all cores to not steal the whole system, but be aggressive.
 
-CMAKE_BUILD_TYPE_OVERRIDE = None
+# These variables will be changed by command-line options
+CMAKE_BUILD_TYPE_OVERRIDE = None # --build=...
+USE_SHALLOW_GIT = False # --shallow
 
 emscripten_config_directory = os.path.expanduser("~/")
 
@@ -397,12 +399,18 @@ def git_clone(url, dstpath):
     print("Repository '" + url + "' already cloned to directory '" + dstpath + "', skipping.")
     return True
   mkdir_p(dstpath)
-  return run([GIT(), 'clone', url, dstpath]) == 0
+  if USE_SHALLOW_GIT:
+    return run([GIT(), 'clone', '--depth', '1', url, dstpath]) == 0
+  else:
+    return run([GIT(), 'clone', url, dstpath]) == 0
 
 def git_checkout_and_pull(repo_path, branch):
   try:
     print("Fetching latest changes to the branch '" + branch + "' for '" + repo_path + "'...")
-    run([GIT(), 'fetch', 'origin'], repo_path)
+    if USE_SHALLOW_GIT:
+      run([GIT(), 'fetch', '--depth', '1', 'origin'], repo_path)
+    else:
+      run([GIT(), 'fetch', 'origin'], repo_path)
 #  run([GIT, 'checkout', '-b', branch, '--track', 'origin/'+branch], repo_path)
     run([GIT(), 'checkout', '--quiet', branch], repo_path) # this line assumes that the user has not gone and manually messed with the repo and added new remotes to ambiguate the checkout.
     run([GIT(), 'merge', '--ff-only', 'origin/'+branch], repo_path) # this line assumes that the user has not gone and made local changes to the repo
@@ -1333,12 +1341,14 @@ def main():
    emsdk update                 - Fetches a list of updates from the net (but
                                   does not install them)
 
-   emsdk install [-j<num>] [--build=type] <tool/sdk>
+   emsdk install [-j<num>] [--shallow] [--build=type] <tool/sdk>
                                 - Downloads and installs the given tool or SDK.
                                   An optional -j<num> specifier can be used to
                                   specify the number of cores to use when
-                                  building the tool. (default: use one less
-                                  than the # of detected cores)
+                                  building the tool (default: use one less
+                                  than the # of detected cores). If the
+                                  --shallow option is passed, shallow git
+                                  repositories are used.
 
    emsdk uninstall <tool/sdk>   - Removes the given tool or SDK from disk.''')
 
@@ -1401,6 +1411,10 @@ def main():
       else:
         print("Invalid command line parameter " + sys.argv[i] + ' specified!', file=sys.stderr)
         return 1
+    if sys.argv[i] == '--shallow':
+      global USE_SHALLOW_GIT
+      USE_SHALLOW_GIT = True
+      sys.argv[i] = ''
   sys.argv = [x for x in sys.argv if not len(x) == 0]
 
   # Replace meta-packages with the real package names.
