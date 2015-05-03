@@ -400,7 +400,6 @@ def git_clone(url, dstpath):
   return run([GIT(), 'clone', url, dstpath]) == 0
 
 def git_checkout_and_pull(repo_path, branch):
-  run([GIT(), 'fetch', 'origin'], repo_path)
   try:
     print("Fetching latest changes to the branch '" + branch + "' for '" + repo_path + "'...")
     run([GIT(), 'fetch', 'origin'], repo_path)
