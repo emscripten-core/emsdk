@@ -457,6 +457,15 @@ def fastcomp_build_bin_dir(tool):
 
 make_env = os.environ.copy()
 
+cxxflags = ''
+if hasattr(make_env, 'CXXFLAGS'): cxxflags = make_env['CXXFLAGS'] + ' '
+
+# To work around a build issue with older Mac OS X builds, add -stdlib=libc++ to all builds.
+# See https://groups.google.com/forum/#!topic/emscripten-discuss/5Or6QIzkqf0
+if OSX: cxxflags += '-stdlib=libc++'
+
+make_env['CXXFLAGS'] = cxxflags
+
 def find_msbuild(sln_file):
   search_paths_vs2013 = [os.path.join(os.environ['ProgramFiles'], 'MSBuild/12.0/Bin/amd64'),
                         os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/12.0/Bin/amd64'),
