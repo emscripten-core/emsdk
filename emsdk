@@ -602,7 +602,9 @@ def build_optimizer_tool(tool):
   if not success: return False
 
   # Make
-  success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'x86')
+# TODO: Enable the following:
+#  success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'x86')
+  success = make_build(build_root, build_type, 'x86')
   return success
 
 def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False):
