@@ -482,7 +482,7 @@ def find_msbuild(sln_file):
     p = os.path.join(path, 'MSBuild.exe')
     if os.path.isfile(p): return p
 
-def make_build(build_root, build_type):
+def make_build(build_root, build_type, build_target_platform='x64'):
   global CPU_CORES
   if CPU_CORES > 1:
     print('Performing a parallel build with ' + str(CPU_CORES) + ' cores.')
@@ -495,7 +495,7 @@ def make_build(build_root, build_type):
 # cores the system has, and passing the number of logical cores here has been observed to give a quadratic N*N explosion on the number of spawned processes
 # (e.g. on a Core i7 5960X with 16 logical cores, it would spawn 16*16=256 cl.exe processes, which would start crashing when running out of system memory)
 #      make = [find_msbuild(os.path.join(build_root, solution_name)), '/maxcpucount:' + str(CPU_CORES), '/t:Build', '/p:Configuration='+build_type, '/nologo', '/verbosity:minimal', solution_name]
-      make = [find_msbuild(os.path.join(build_root, solution_name)), '/t:Build', '/p:Configuration='+build_type, '/nologo', '/verbosity:minimal', solution_name]      
+      make = [find_msbuild(os.path.join(build_root, solution_name)), '/t:Build', '/p:Configuration='+build_type, '/p:Platform='+build_target_platform, '/nologo', '/verbosity:minimal', solution_name]
     else:
       make = ['mingw32-make', '-j' + str(CPU_CORES)]
   else:
@@ -573,7 +573,7 @@ def build_fastcomp_tool(tool):
   if not success: return False
 
   # Make
-  success = make_build(build_root, build_type)
+  success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'x86')
   return success
 
 def optimizer_build_root(tool):
@@ -602,7 +602,7 @@ def build_optimizer_tool(tool):
   if not success: return False
 
   # Make
-  success = make_build(build_root, build_type)
+  success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'x86')
   return success
 
 def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False):
