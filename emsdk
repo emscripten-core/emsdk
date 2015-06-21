@@ -573,7 +573,7 @@ def build_fastcomp_tool(tool):
   if not success: return False
 
   # Make
-  success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'x86')
+  success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'Win32')
   return success
 
 def optimizer_build_root(tool):
@@ -603,8 +603,8 @@ def build_optimizer_tool(tool):
 
   # Make
 # TODO: Enable the following:
-#  success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'x86')
-  success = make_build(build_root, build_type, 'x86')
+#  success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'Win32')
+  success = make_build(build_root, build_type, 'Win32')
   return success
 
 def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False):
