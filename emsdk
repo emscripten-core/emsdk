@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-import sys, optparse, subprocess, os, os.path, errno, zipfile, string, json, platform, shutil, tarfile, tempfile, multiprocessing, re, stat
+import sys, optparse, subprocess, os, os.path, errno, zipfile, string, json, platform, shutil, tarfile, tempfile, multiprocessing, re, stat, copy
 if sys.version_info >= (3,):
   from urllib.parse import urljoin
   from urllib.request import urlopen
@@ -25,6 +25,9 @@ else:
 emsdk_packages_url = urljoin(emsdk_master_server, 'packages/')
 
 emscripten_git_repo = 'git@github.com:kripken/emscripten.git'
+
+# Enable this to do very verbose printing about the different steps that are being run. Useful for debugging.
+VERBOSE = bool(os.getenv('EMSDK_VERBOSE')) if os.getenv('EMSDK_VERBOSE') != None else False
 
 WINDOWS = False
 if os.name == 'nt':
@@ -59,6 +62,7 @@ if WINDOWS:
 
 # Removes a directory tree even if it was readonly, and doesn't throw exception on failure.
 def remove_tree(d):
+  if VERBOSE: print('remove_tree(' + str(d) + ')')
   try:
     def remove_readonly_and_try_again(func, path, exc_info):
       if not (os.stat(path).st_mode & stat.S_IWRITE):
@@ -67,7 +71,8 @@ def remove_tree(d):
       else:
         raise
     shutil.rmtree(d, onerror=remove_readonly_and_try_again)
-  except:
+  except Exception as e:
+    if VERBOSE: print('remove_tree threw an exception, ignoring: ' + str(e))
     pass
 
 def win_get_environment_variable(key, system=True):
@@ -105,7 +110,7 @@ def win_get_active_environment_variable(key):
   return win_get_environment_variable(key, True)
 
 def win_set_environment_variable(key, value, system=True):
-#  print('set ' + str(key) + '=' + str(value) + ', in system=' + str(system), file=sys.stderr)
+  if VERBOSE: print('set ' + str(key) + '=' + str(value) + ', in system=' + str(system), file=sys.stderr)
   previous_value = win_get_environment_variable(key, system)
   if previous_value == value:
     return # No need to elevate UAC for nothing to set the same value, skip.
@@ -134,6 +139,7 @@ def win_set_environment_variable(key, value, system=True):
     print('You may need to set it manually.', file=sys.stderr)
 
 def win_delete_environment_variable(key, system=True):
+  if VERBOSE: print('win_delete_environment_variable(key=' + key + ', system=' + str(system) + ')')
   win_set_environment_variable(key, None, system)
 
 # Returns the absolute pathname to the given path inside the Emscripten SDK.
@@ -159,6 +165,7 @@ def file_to_lf(filename):
 
 # Removes a single file, suppressing exceptions on failure.
 def rmfile(filename):
+  if VERBOSE: print('rmfile(' + filename + ')')
   try:
     os.remove(filename)
   except:
@@ -172,14 +179,15 @@ def fix_lineendings(filename):
 
 # http://stackoverflow.com/questions/600268/mkdir-p-functionality-in-python
 def mkdir_p(path):
-    if os.path.exists(path):
-      return
-    try:
-        os.makedirs(path)
-    except OSError as exc: # Python >2.5
-        if exc.errno == errno.EEXIST and os.path.isdir(path):
-            pass
-        else: raise
+  if VERBOSE: print('mkdir_p(' + path + ')')
+  if os.path.exists(path):
+    return
+  try:
+    os.makedirs(path)
+  except OSError as exc: # Python >2.5
+    if exc.errno == errno.EEXIST and os.path.isdir(path):
+      pass
+    else: raise
 
 def num_files_in_directory(path):
   if not os.path.isdir(path):
@@ -187,6 +195,7 @@ def num_files_in_directory(path):
   return len([name for name in os.listdir(path) if os.path.exists(os.path.join(path, name))])
 
 def run(cmd, cwd=None):
+  if VERBOSE: print('run(cmd=' + str(cmd) + ', cwd=' + str(cwd) + ')')
   process = subprocess.Popen(cmd, cwd=cwd, env=os.environ.copy())
   process.communicate()
   if process.returncode != 0:
@@ -195,6 +204,7 @@ def run(cmd, cwd=None):
 
 # http://pythonicprose.blogspot.fi/2009/10/python-extract-targz-archive.html
 def untargz(source_filename, dest_dir, unpack_even_if_exists=False):
+  if VERBOSE: print('untargz(source_filename=' + source_filename + ', dest_dir=' + dest_dir + ')')
   if not unpack_even_if_exists and num_files_in_directory(dest_dir) > 0:
     print("File '" + source_filename + "' has already been unpacked, skipping.")
     return True
@@ -207,6 +217,7 @@ def untargz(source_filename, dest_dir, unpack_even_if_exists=False):
 
 # http://stackoverflow.com/questions/12886768/simple-way-to-unzip-file-in-python-on-all-oses
 def unzip(source_filename, dest_dir, unpack_even_if_exists=False):
+  if VERBOSE: print('unzip(source_filename=' + source_filename + ', dest_dir=' + dest_dir + ')')
   if not unpack_even_if_exists and num_files_in_directory(dest_dir) > 0:
     print("File '" + source_filename + "' has already been unpacked, skipping.")
     return True
@@ -282,8 +293,9 @@ def path_points_to_directory(path):
 
 # On success, returns the filename on the disk pointing to the destination file that was produced
 # On failure, returns None.
-def download_file(url, dstpath, download_even_if_exists=False):
-  file_name = url.split('/')[-1]
+def download_file(url, dstpath, download_even_if_exists=False, filename_prefix = ''):
+  if VERBOSE: print('download_file(url=' + url + ', dstpath=' + dstpath + ')')
+  file_name = filename_prefix + url.split('/')[-1]
   if path_points_to_directory(dstpath):
     file_name = os.path.join(dstpath, file_name)
   else:
@@ -300,8 +312,12 @@ def download_file(url, dstpath, download_even_if_exists=False):
     mkdir_p(os.path.dirname(file_name))
     with open(file_name, 'wb') as f: 
       meta = u.info()
-      file_size = int(meta.getheaders("Content-Length")[0])
-      print("Downloading: %s from %s Bytes: %s" % (file_name, url, file_size))
+      if hasattr(meta.getheaders, "Content-Length"):
+        file_size = int(meta.getheaders("Content-Length")[0])
+        print("Downloading: %s from %s, %s Bytes" % (file_name, url, file_size))
+      else:
+        file_size = 0
+        print("Downloading: %s from %s" % (file_name, url))
 
       file_size_dl = 0
       block_sz = 8192
@@ -312,24 +328,26 @@ def download_file(url, dstpath, download_even_if_exists=False):
 
           file_size_dl += len(buffer)
           f.write(buffer)
-          status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
-          status = status + chr(8)*(len(status)+1)
-          print(status, end=' ')
+          if file_size:
+            status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
+            status = status + chr(8)*(len(status)+1)
+            print(status, end=' ')
   except HTTPError as e:
     print("HTTP error with URL '" + url + "': " + str(e))
     rmfile(file_name)
     return None
-  except Exception as e:
-    print("Error downloading URL '" + url + "': " + str(e))
-    rmfile(file_name)
-    return None
+#  except Exception as e:
+#    print("Error downloading URL '" + url + "': " + str(e))
+#    rmfile(file_name)
+#    return None
   return file_name
 
-def download_text_file(url, dstpath, download_even_if_exists=False):
-  filename = download_file(url, dstpath, download_even_if_exists)
+def download_text_file(url, dstpath, download_even_if_exists=False, filename_prefix=''):
+  filename = download_file(url, dstpath, download_even_if_exists, filename_prefix)
   fix_lineendings(os.path.join(emsdk_path(), filename))
 
 def run_get_output(cmd, cwd=None):
+  if VERBOSE: print('run_get_output(cmd=' + str(cmd) + ', cwd=' + str(cwd) + ')')
   process = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE, env=os.environ.copy(), universal_newlines=True)
   (stdout, stderr) = process.communicate()
   return (process.returncode, stdout, stderr)
@@ -393,6 +411,7 @@ def git_repo_version(repo_path):
     return ""
 
 def git_clone(url, dstpath):
+  if VERBOSE: print('git_clone(url=' + url + ', dstpath=' + dstpath + ')')
   if os.path.isdir(os.path.join(dstpath, '.git')):
     print("Repository '" + url + "' already cloned to directory '" + dstpath + "', skipping.")
     return True
@@ -400,6 +419,7 @@ def git_clone(url, dstpath):
   return run([GIT(), 'clone', url, dstpath]) == 0
 
 def git_checkout_and_pull(repo_path, branch):
+  if VERBOSE: print('git_checkout_and_pull(repo_path=' + repo_path + ', branch=' + branch + ')')
   run([GIT(), 'fetch', 'origin'], repo_path)
   try:
     print("Fetching latest changes to the branch '" + branch + "' for '" + repo_path + "'...")
@@ -415,6 +435,7 @@ def git_checkout_and_pull(repo_path, branch):
   return True
 
 def git_clone_checkout_and_pull(url, dstpath, branch):
+  if VERBOSE: print('git_clone_checkout_and_pull(url=' + url + ', dstpath=' + dstpath + ', branch=' + branch + ')')
   success = git_clone(url, dstpath)
   if not success:
     return False
@@ -439,7 +460,10 @@ def fastcomp_build_dir(tool):
 
   bitness_suffix = '_32' if tool.bitness == 32 else '_64'
 
-  build_dir = 'build_' + tool.git_branch.replace(os.sep, '-') + generator_suffix + bitness_suffix
+  if hasattr(tool, 'git_branch'):
+    build_dir = 'build_' + tool.git_branch.replace(os.sep, '-') + generator_suffix + bitness_suffix
+  else:
+    build_dir = 'build_' + tool.version + generator_suffix + bitness_suffix
   return build_dir
 
 # The directory where the binaries are produced.
@@ -483,6 +507,7 @@ def find_msbuild(sln_file):
     if os.path.isfile(p): return p
 
 def make_build(build_root, build_type, build_target_platform='x64'):
+  if VERBOSE: print('make_build(build_root=' + build_root + ', build_type=' + build_type + ', build_target_platform=' + build_target_platform + ')')
   global CPU_CORES
   if CPU_CORES > 1:
     print('Performing a parallel build with ' + str(CPU_CORES) + ' cores.')
@@ -518,6 +543,7 @@ def make_build(build_root, build_type, build_target_platform='x64'):
   return True
 
 def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_args = []):
+  if VERBOSE: print('cmake_configure(generator=' + str(generator) + ', build_root=' + str(build_root) + ', src_root=' + str(src_root) + ', build_type=' + str(build_type) + ', extra_cmake_args=' + str(extra_cmake_args) + ')')
   # Configure
   if not os.path.isdir(build_root): os.mkdir(build_root) # Create build output directory if it doesn't yet exist.
   try:
@@ -551,13 +577,21 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
   return True
 
 def build_fastcomp_tool(tool):
+  if VERBOSE: print('build_fastcomp_tool(' + str(tool) + ')')
   fastcomp_root = tool.installation_path()
   fastcomp_src_root = os.path.join(fastcomp_root, 'src')
-  success = git_clone_checkout_and_pull(tool.url, fastcomp_src_root, tool.git_branch)
-  if not success: return False
-  clang_root = os.path.join(fastcomp_src_root, 'tools/clang')
-  success = git_clone_checkout_and_pull(tool.clang_url, clang_root, tool.git_branch)
-  if not success: return False
+  if hasattr(tool, 'git_branch'): # Does this tool want to be git cloned from github?
+    success = git_clone_checkout_and_pull(tool.download_url(), fastcomp_src_root, tool.git_branch)
+    if not success: return False
+    clang_root = os.path.join(fastcomp_src_root, 'tools/clang')
+    success = git_clone_checkout_and_pull(tool.clang_url, clang_root, tool.git_branch)
+    if not success: return False
+  else: # Not a git cloned tool, so instead download from git tagged releases
+    success = download_and_unzip(tool.download_url(), fastcomp_src_root, filename_prefix='llvm-e')
+    if not success: return False
+    success = download_and_unzip(tool.windows_clang_url if WINDOWS else tool.unix_clang_url, os.path.join(fastcomp_src_root, 'tools/clang'), filename_prefix='clang-e')
+    if not success: return False
+
   cmake_generator = CMAKE_GENERATOR
   if 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
     cmake_generator += ' Win64'
@@ -583,6 +617,7 @@ def optimizer_build_root(tool):
   return build_root
 
 def uninstall_optimizer(tool):
+  if VERBOSE: print('uninstall_optimizer(' + str(tool) + ')')
   build_root = optimizer_build_root(tool)
   print("Deleting path '" + build_root + "'")
   remove_tree(build_root)
@@ -593,6 +628,7 @@ def is_optimizer_installed(tool):
   return os.path.exists(build_root)
 
 def build_optimizer_tool(tool):
+  if VERBOSE: print('build_optimizer_tool(' + str(tool) + ')')
   src_root = os.path.join(tool.installation_path(), 'tools', 'optimizer')
   build_root = optimizer_build_root(tool)
   build_type = decide_cmake_build_type(tool)
@@ -607,11 +643,12 @@ def build_optimizer_tool(tool):
   success = make_build(build_root, build_type, 'Win32')
   return success
 
-def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False):
+def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False, filename_prefix = ''):
+  if VERBOSE: print('download_and_unzip(zipfile=' + zipfile + ', dest_dir=' + dest_dir + ')')
   if not download_even_if_exists and num_files_in_directory(dest_dir) > 0:
     print("The contents of file '" + zipfile + "' already exist in destination '" + dest_dir + "', skipping.")
     return True
-  dst_file = download_file(urljoin(emsdk_packages_url, zipfile), 'zips/', download_even_if_exists)
+  dst_file = download_file(urljoin(emsdk_packages_url, zipfile), 'zips/', download_even_if_exists, filename_prefix)
   if not dst_file:
     return False
   if zipfile.endswith('.zip'):
@@ -771,6 +808,17 @@ class Tool:
     if '%fastcomp_build_bin_dir%' in str:
       str = str.replace('%fastcomp_build_bin_dir%', fastcomp_build_bin_dir(self))
     return str
+
+  # Return true if this tool requires building from source, and false if this is a precompiled tool.
+  def needs_compilation(self):
+    if hasattr(self, 'cmake_build_type'): return True
+
+    if hasattr(self, 'uses'):
+      for tool_name in self.uses:
+        tool = find_tool(tool_name)
+        if tool.needs_compilation(): return True
+
+    return False
 
   # Specifies the target path where this tool will be installed to. This could either be a directory or a filename (e.g. in case of node.js)
   def installation_path(self):
@@ -968,7 +1016,10 @@ class Tool:
             success = build_optimizer_tool(self)
       elif url.endswith('zip') or url.endswith('.tar') or url.endswith('.gz'):
         download_even_if_exists = (self.id == 'vs-tool')
-        success = download_and_unzip(url, self.installation_path(), download_even_if_exists)
+        success = download_and_unzip(url, self.installation_path(), download_even_if_exists, filename_prefix=self.zipfile_prefix if hasattr(self, 'zipfile_prefix') else '')
+        if success:
+          if hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_optimizer':
+            success = build_optimizer_tool(self)
       else:
         dst_file = download_file(urljoin(emsdk_packages_url, self.download_url()), self.installation_path())
         if dst_file:
@@ -1106,12 +1157,30 @@ def load_sdk_manifest():
     print('Error parsing emsdk_manifest.json!')
     print(str(e))
     return
+
+  emscripten_tags = ['1.28.2','1.28.3','1.29.0','1.29.1','1.29.10','1.29.11','1.29.12','1.29.2','1.29.3',
+      '1.29.4','1.29.5','1.29.6','1.29.7','1.29.8','1.29.9','1.30.0','1.30.1','1.30.2','1.30.3','1.30.4',
+      '1.30.5','1.30.6','1.31.0','1.31.1','1.31.2','1.31.3','1.32.0','1.32.1','1.32.2','1.32.3','1.32.4',
+      '1.33.0','1.33.1','1.33.2','1.34.0','1.34.1']
+
   for tool in manifest['tools']:
     t = Tool(tool)
     if t.compatible_with_this_os():
       if not hasattr(t, 'is_old'):
         t.is_old = False
-      tools.append(t)
+
+      if '%tag%' in t.version:
+        # Expand the metapackage that refers to all tags.
+        for i in range(len(emscripten_tags)):
+          tag = emscripten_tags[i]
+          t2 = copy.copy(t)
+          for p, v in vars(t2).iteritems():
+            if isinstance(v, basestring) and '%tag%' in v:
+              t2.__dict__[p] = v.replace('%tag%', tag)
+          t2.is_old = i < len(emscripten_tags) - 2
+          tools.append(t2)
+      else:
+        tools.append(t)
 
   for sdk_str in manifest['sdks']:
     sdk = Tool(sdk_str)
@@ -1119,7 +1188,20 @@ def load_sdk_manifest():
     if sdk.compatible_with_this_os():
       if not hasattr(sdk, 'is_old'):
         sdk.is_old = False
-      sdks.append(sdk)
+
+      if '%tag%' in sdk.version:
+        # Expand the metapackage that refers to all tags.
+        for i in range(len(emscripten_tags)):
+          tag = emscripten_tags[i]
+          sdk2 = copy.copy(sdk)
+          for p, v in vars(sdk2).iteritems():
+            if isinstance(v, basestring) and '%tag%' in v:
+              sdk2.__dict__[p] = v.replace('%tag%', tag)
+          sdk2.is_old = i < len(emscripten_tags) - 2
+          sdk2.uses = map((lambda x: x.replace('%tag%', tag)), sdk2.uses)
+          sdks.append(sdk2)
+      else:
+        sdks.append(sdk)
 
 # Tests if the two given tools can be active at the same time.
 # Currently only a simple check for name for same tool with different versions,
@@ -1428,40 +1510,67 @@ def main():
   if cmd == 'list':
     print('')
     show_old = len(sys.argv) >= 3 and sys.argv[2] == '--old'
-    has_partially_active_tools = False
+    has_partially_active_tools = [False] # Use array to work around the lack of being able to mutate from enclosing function.
     if len(tools) > 0:
-      print('The following individual tools exist:')
-      for tool in tools:
-        if tool.is_old and not show_old:
-          continue
-        if tool.can_be_installed() == True:
-          installed = '\tINSTALLED' if tool.is_installed() else ''
-        else:
-          installed = '\tNot available: ' + tool.can_be_installed()
-        tool_is_active = tool.is_active()
-        tool_is_env_active = tool_is_active and tool.is_env_active()
-        if tool_is_env_active: active = ' * '
-        elif tool_is_active:
-          active = '(*)'
-          has_partially_active_tools = True
-        else: active = '   '
-        print('    ' + active + '    {0: <25}'.format(str(tool)) + installed)
-      print('')
+      def find_tools(needs_compilation):
+        t = []
+        for tool in tools:
+          if tool.is_old and not show_old:
+            continue
+          if tool.needs_compilation() != needs_compilation:
+            continue
+          t += [tool]
+        return t
+
+      def print_tools(t):
+        for tool in t:
+          if tool.is_old and not show_old:
+            continue
+          if tool.can_be_installed() == True:
+            installed = '\tINSTALLED' if tool.is_installed() else ''
+          else:
+            installed = '\tNot available: ' + tool.can_be_installed()
+          tool_is_active = tool.is_active()
+          tool_is_env_active = tool_is_active and tool.is_env_active()
+          if tool_is_env_active: active = ' * '
+          elif tool_is_active:
+            active = '(*)'
+            has_partially_active_tools[0] = has_partially_active_tools[0] or True
+          else: active = '   '
+          print('    ' + active + '    {0: <25}'.format(str(tool)) + installed)
+        print('')
+
+      print('The following precompiled tool packages are available for download:')
+      print_tools(find_tools(False))
+      print('The following tools can be compiled from source:')
+      print_tools(find_tools(True))
     else:
       print("There are no tools available. Run 'emsdk update' to fetch the latest set of tools.")
-    print('')
+      print('')
 
     if len(sdks) > 0:
-      print('The following Emscripten SDK versions are available:')
-      for sdk in sdks:
-        if sdk.is_old and not show_old:
-          continue
-        installed = '\tINSTALLED' if sdk.is_installed() else ''
-        active = '*' if sdk.is_active() else ' '
-        print('    ' + active + '    {0: <25}'.format(str(sdk)) + installed)
-      print('')
+      def find_sdks(needs_compilation):
+        s = []
+        for sdk in sdks:
+          if sdk.is_old and not show_old:
+            continue
+          if sdk.needs_compilation() == needs_compilation:
+            s += [sdk]
+        return s
+
+      def print_sdks(s):
+        for sdk in s:
+          installed = '\tINSTALLED' if sdk.is_installed() else ''
+          active = '*' if sdk.is_active() else ' '
+          print('    ' + active + '    {0: <25}'.format(str(sdk)) + installed)
+        print('')
+      print('The following precompiled SDKs are available for download:')
+      print_sdks(find_sdks(False))
+      print('The following SDKs can be compiled from source:')
+      print_sdks(find_sdks(True))
+
       print('Items marked with * are activated for the current user.')
-      if has_partially_active_tools:
+      if has_partially_active_tools[0]:
         env_cmd = 'emsdk_env.bat' if WINDOWS else 'source ./emsdk_env.sh'
         print('Items marked with (*) are selected for use, but your current shell environment is not configured to use them. Type "' + env_cmd + '" to set up your current shell to use them, or call "emsdk activate --global <name_of_sdk>" to permanently activate them.')
       if not show_old:

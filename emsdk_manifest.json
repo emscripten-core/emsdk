@@ -56,6 +56,34 @@
   },
   {
     "id": "clang",
+    "version": "tag-e%tag%",
+    "bitness": 32,
+    "append_bitness": false,
+    "windows_url": "https://github.com/kripken/emscripten-fastcomp/archive/%tag%.zip",
+    "unix_url": "https://github.com/kripken/emscripten-fastcomp/archive/%tag%.tar.gz",
+    "windows_clang_url": "https://github.com/kripken/emscripten-fastcomp-clang/archive/%tag%.zip",
+    "unix_clang_url": "https://github.com/kripken/emscripten-fastcomp-clang/archive/%tag%.tar.gz",
+    "custom_install_script": "build_fastcomp",
+    "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "cmake_build_type": "RelWithDebInfo"
+  },
+  {
+    "id": "clang",
+    "version": "tag-e%tag%",
+    "bitness": 64,
+    "append_bitness": false,
+    "windows_url": "https://github.com/kripken/emscripten-fastcomp/archive/%tag%.zip",
+    "unix_url": "https://github.com/kripken/emscripten-fastcomp/archive/%tag%.tar.gz",
+    "windows_clang_url": "https://github.com/kripken/emscripten-fastcomp-clang/archive/%tag%.zip",
+    "unix_clang_url": "https://github.com/kripken/emscripten-fastcomp-clang/archive/%tag%.tar.gz",
+    "custom_install_script": "build_fastcomp",
+    "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "cmake_build_type": "RelWithDebInfo"
+  },
+  {
+    "id": "clang",
     "version": "incoming",
     "bitness": 32,
     "install_path": "clang/fastcomp",
@@ -524,6 +552,37 @@
   },
   {
     "id": "emscripten",
+    "version": "tag-%tag%",
+    "bitness": 32,
+    "append_bitness": false,
+    "windows_url": "https://github.com/kripken/emscripten/archive/%tag%.zip",
+    "unix_url": "https://github.com/kripken/emscripten/archive/%tag%.tar.gz",
+    "zipfile_prefix": "emscripten-e",
+    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%_32bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%'",
+    "activated_path": "%installation_dir%",
+    "activated_env": "EMSCRIPTEN=%installation_dir%",
+    "cmake_build_type": "RelWithDebInfo",
+    "custom_install_script": "build_optimizer",
+    "custom_is_installed_script": "is_optimizer_installed",
+    "custom_uninstall_script": "uninstall_optimizer"
+  },
+  {
+    "id": "emscripten",
+    "version": "tag-%tag%",
+    "bitness": 64,
+    "append_bitness": false,
+    "windows_url": "https://github.com/kripken/emscripten/archive/%tag%.zip",
+    "unix_url": "https://github.com/kripken/emscripten/archive/%tag%.tar.gz",
+    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%_64bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%'",
+    "activated_path": "%installation_dir%",
+    "activated_env": "EMSCRIPTEN=%installation_dir%",
+    "cmake_build_type": "RelWithDebInfo",
+    "custom_install_script": "build_optimizer",
+    "custom_is_installed_script": "is_optimizer_installed",
+    "custom_uninstall_script": "uninstall_optimizer"
+  },
+  {
+    "id": "emscripten",
     "version": "incoming",
     "bitness": 32,
     "append_bitness": false,
@@ -969,6 +1028,36 @@
     "bitness": 64,
     "uses": ["clang-e1.30.0-64bit", "node-0.12.2-64bit", "emscripten-1.30.0"],
     "os": "osx"
+  },
+  {
+    "version": "tag-%tag%",
+    "bitness": 32,
+    "uses": ["clang-tag-e%tag%-32bit", "node-0.10.17-32bit", "python-2.7.5.3-32bit", "java-7.45-32bit", "emscripten-tag-%tag%-32bit"],
+    "os": "win"
+  },
+  {
+    "version": "tag-%tag%",
+    "bitness": 64,
+    "uses": ["clang-tag-e%tag%-64bit", "node-0.10.17-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-tag-%tag%-64bit"],
+    "os": "win"
+  },
+  {
+    "version": "tag-%tag%",
+    "bitness": 64,
+    "uses": ["clang-tag-e%tag%-64bit", "node-0.10.18-64bit", "emscripten-tag-%tag%-64bit"],
+    "os": "osx"
+  },
+  {
+    "version": "tag-%tag%",
+    "bitness": 32,
+    "uses": ["clang-tag-e%tag%-32bit", "emscripten-tag-%tag%-32bit"],
+    "os": "linux"
+  },
+  {
+    "version": "tag-%tag%",
+    "bitness": 64,
+    "uses": ["clang-tag-%tag%-64bit", "emscripten-tag-%tag%-64bit"],
+    "os": "linux"
   }
   ]
 }
