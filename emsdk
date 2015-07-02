@@ -1156,6 +1156,11 @@ def is_version_at_least(ver, target):
       return True
   return True
 
+def version_compare(x, y):
+  a = 1 if is_version_at_least(x, y) else 0
+  b = 1 if is_version_at_least(y, x) else 0
+  return a - b
+
 def fetch_emscripten_tags():
   print('Fetching all tags from Emscripten Github repository...')
   tags = run_get_output([GIT(), 'ls-remote', '--tags', emscripten_git_repo])
@@ -1169,6 +1174,7 @@ def fetch_emscripten_tags():
         all_tags += [t]
     except:
       pass
+  all_tags = sorted(all_tags, cmp=version_compare)
   open(sdk_path('emscripten-tags.txt'), 'w').write('\n'.join(all_tags))
   if len(all_tags) > 0:
     print('Done. ' + str(len(all_tags)) + ' tagged releases available, latest is ' + all_tags[-1] + '.') 
