@@ -472,9 +472,9 @@ def fastcomp_build_bin_dir(tool):
   if WINDOWS and 'Visual Studio' in CMAKE_GENERATOR:
     old_llvm_bin_dir = os.path.join(build_dir, 'bin\\' + decide_cmake_build_type(tool))
     new_llvm_bin_dir = os.path.join(build_dir, decide_cmake_build_type(tool) + '\\bin')
-    if os.path.exists(os.path.join(tool.install_path, new_llvm_bin_dir)):
+    if os.path.exists(os.path.join(tool.installation_path(), new_llvm_bin_dir)):
       return new_llvm_bin_dir
-    if os.path.exists(os.path.join(tool.install_path, old_llvm_bin_dir)): return old_llvm_bin_dir
+    if os.path.exists(os.path.join(tool.installation_path(), old_llvm_bin_dir)): return old_llvm_bin_dir
     return new_llvm_bin_dir
   else:
     return os.path.join(build_dir, 'bin')
