@@ -48,6 +48,8 @@ CPU_CORES = max(multiprocessing.cpu_count()-1, 1) # Don't saturate all cores to 
 
 CMAKE_BUILD_TYPE_OVERRIDE = None
 
+GIT_CLONE_SHALLOW = False
+
 emscripten_config_directory = os.path.expanduser("~/")
 
 EMSDK_SET_ENV = 'emsdk_set_env.bat' if WINDOWS else 'emsdk_set_env.sh'
@@ -416,7 +418,10 @@ def git_clone(url, dstpath):
     print("Repository '" + url + "' already cloned to directory '" + dstpath + "', skipping.")
     return True
   mkdir_p(dstpath)
-  return run([GIT(), 'clone', url, dstpath]) == 0
+  git_clone_args = []
+  if GIT_CLONE_SHALLOW:
+    git_clone_args += ['--depth', '1']
+  return run([GIT(), 'clone'] + git_clone_args + [url, dstpath]) == 0
 
 def git_checkout_and_pull(repo_path, branch):
   if VERBOSE: print('git_checkout_and_pull(repo_path=' + repo_path + ', branch=' + branch + ')')
@@ -1412,7 +1417,7 @@ def main():
   load_dot_emscripten()
   load_sdk_manifest()
 
-  if len(sys.argv) <= 1 or sys.argv[1] == 'help':
+  if len(sys.argv) <= 1 or sys.argv[1] == 'help' or sys.argv[1] == '--help':
     if len(sys.argv) <= 1:
       print(' emsdk: No command given. Please call one of the following:')
     else:
@@ -1427,12 +1432,23 @@ def main():
    emsdk update                 - Fetches a list of updates from the net (but
                                   does not install them)
 
-   emsdk install [-j<num>] [--build=type] <tool/sdk>
+   emsdk install [-j<num>] [--build=type] [--shallow] <tool/sdk>
                                 - Downloads and installs the given tool or SDK.
                                   An optional -j<num> specifier can be used to
                                   specify the number of cores to use when
                                   building the tool. (default: use one less
                                   than the # of detected cores)
+
+                                  When installing tools from one of the git
+                                  development branches 'master' or 'incoming',
+                                  you can specify the --shallow parameter
+                                  to perform a shallow git clone instead of a
+                                  full one. This reduces the amount of network
+                                  transfer that is needed. This option should
+                                  only be used when you are interested in
+                                  downloading one of the development branches,
+                                  but are not looking to develop Emscripten
+                                  yourself.
 
    emsdk uninstall <tool/sdk>   - Removes the given tool or SDK from disk.''')
 
@@ -1643,6 +1659,10 @@ def main():
         else:
           print("Invalid command line parameter " + sys.argv[i] + ' specified!', file=sys.stderr)
           return 1
+      elif sys.argv[i] == '--shallow':
+        global GIT_CLONE_SHALLOW
+        GIT_CLONE_SHALLOW = True
+        sys.argv[i] = ''
     sys.argv = [x for x in sys.argv if not len(x) == 0]
     if len(sys.argv) <= 2:
       print("Missing parameter. Type 'emsdk install <tool name>' to install a tool or an SDK. Type 'emsdk list' to obtain a list of available tools. Type 'emsdk install latest' to automatically install the newest version of the SDK.")
