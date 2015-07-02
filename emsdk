@@ -24,7 +24,7 @@ else:
 
 emsdk_packages_url = urljoin(emsdk_master_server, 'packages/')
 
-emscripten_git_repo = 'git@github.com:kripken/emscripten.git'
+emscripten_git_repo = 'https://github.com/kripken/emscripten/'
 
 # Enable this to do very verbose printing about the different steps that are being run. Useful for debugging.
 VERBOSE = bool(os.getenv('EMSDK_VERBOSE')) if os.getenv('EMSDK_VERBOSE') != None else False
@@ -1144,6 +1144,37 @@ def find_used_python():
       return t
   return None
 
+def is_version_at_least(ver, target):
+  ver = ver.split('.')
+  target = target.split('.')
+  while len(ver) < len(target):
+    ver += ['0']
+  for i in range(len(ver)):
+    if int(ver[i]) < int(target[i]):
+      return False
+    elif int(ver[i]) > int(target[i]):
+      return True
+  return True
+
+def fetch_emscripten_tags():
+  print('Fetching all tags from Emscripten Github repository...')
+  tags = run_get_output([GIT(), 'ls-remote', '--tags', emscripten_git_repo])
+  if tags[0] != 0: return False # failed to get tags?
+  tags = tags[1]
+  all_tags = []
+  for t in tags.split('\n'):
+    try:
+      t = t[t.index('refs/tags/') + len('refs/tags/'):].strip()
+      if is_version_at_least(t, '1.28.2'):
+        all_tags += [t]
+    except:
+      pass
+  open(sdk_path('emscripten-tags.txt'), 'w').write('\n'.join(all_tags))
+  if len(all_tags) > 0:
+    print('Done. ' + str(len(all_tags)) + ' tagged releases available, latest is ' + all_tags[-1] + '.') 
+  else:
+    print('Done. No tagged releases available.')
+
 def update_emsdk():
   if WINDOWS:
     download_and_unzip(urljoin(emsdk_packages_url, 'emsdk_windows_update.zip'), emsdk_path(), download_even_if_exists=True)
@@ -1153,6 +1184,13 @@ def update_emsdk():
     rmfile('zips/emsdk_unix_update.tar.gz')
   else:
     print('Unsupported OS, cannot update!')
+  fetch_emscripten_tags()
+
+def load_emscripten_tags():
+  try:
+    return open(sdk_path('emscripten-tags.txt'), 'r').read().split('\n')
+  except:
+    return []
 
 def load_sdk_manifest():
   global tools
@@ -1163,10 +1201,7 @@ def load_sdk_manifest():
     print(str(e))
     return
 
-  emscripten_tags = ['1.28.2','1.28.3','1.29.0','1.29.1','1.29.10','1.29.11','1.29.12','1.29.2','1.29.3',
-      '1.29.4','1.29.5','1.29.6','1.29.7','1.29.8','1.29.9','1.30.0','1.30.1','1.30.2','1.30.3','1.30.4',
-      '1.30.5','1.30.6','1.31.0','1.31.1','1.31.2','1.31.3','1.32.0','1.32.1','1.32.2','1.32.3','1.32.4',
-      '1.33.0','1.33.1','1.33.2','1.34.0','1.34.1']
+  emscripten_tags = load_emscripten_tags()
 
   for tool in manifest['tools']:
     t = Tool(tool)
