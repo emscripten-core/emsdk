@@ -1090,7 +1090,7 @@
   {
     "version": "tag-%tag%",
     "bitness": 64,
-    "uses": ["clang-tag-%tag%-64bit", "emscripten-tag-%tag%-64bit"],
+    "uses": ["clang-tag-e%tag%-64bit", "emscripten-tag-%tag%-64bit"],
     "os": "linux"
   }
   ]
