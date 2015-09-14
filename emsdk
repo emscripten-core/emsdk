@@ -720,16 +720,26 @@ def generate_dot_emscripten(active_tools):
   else:
     temp_dir = tempfile.gettempdir().replace('\\', '/')
 
+  has_spidermonkey = False
+  has_node = False
+
   cfg = 'import os\n'
-  cfg += '''SPIDERMONKEY_ENGINE = ''
-NODE_JS = 'node'
-'''
 
   for tool in active_tools:
     tool_cfg = tool.activated_config()
     if tool_cfg:
       tool_cfg = tool_cfg.replace(';', '\n')
+      if 'SPIDERMONKEY_ENGINE=' in tool_cfg: has_spidermonkey = True
+      if 'NODE_JS=' in tool_cfg: has_node = True
       cfg += tool_cfg + '\n'
+
+  # These two vars must always be defined, even though they might not exist.
+  if not has_spidermonkey: cfg += "SPIDERMONKEY_ENGINE = ''\n"
+  if not has_node:
+    node_fallback = which('nodejs')
+    if not node_fallback:
+      node_fallback = 'node'
+    cfg += "NODE_JS = '" + node_fallback + "'\n"
 
   cfg += '''V8_ENGINE = ''
 TEMP_DIR = ''' + "'" + temp_dir + "'" + '''
