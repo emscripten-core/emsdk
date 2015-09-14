@@ -1375,7 +1375,7 @@ def adjusted_path(tools_to_activate, log_additions=False):
   new_path = [item for item in path_add if not normalized_contains(existing_path, item)]
   return (ENVPATH_SEPARATOR.join(unique_items(new_path + existing_path)), new_emsdk_tools)
 
-def construct_env_windows(tools_to_activate, permanent):
+def construct_env(tools_to_activate, permanent):
   global emscripten_config_directory
   env_string = ''
   newpath, added_path = adjusted_path(tools_to_activate)
@@ -1387,7 +1387,8 @@ def construct_env_windows(tools_to_activate, permanent):
 #  else:
 
   if os.environ['PATH'] != newpath: # Don't bother setting the path if there are no changes.
-    env_string += 'SET PATH=' + newpath + '\n'
+    if WINDOWS: env_string += 'SET PATH=' + newpath + '\n'
+    else: env_string += 'export PATH="' + newpath + '"\n'
     if len(added_path) > 0:
       print('Adding directories to PATH:')
       for item in added_path:
@@ -1414,48 +1415,16 @@ def construct_env_windows(tools_to_activate, permanent):
   if len(env_vars_to_add) > 0:
     print('Setting environment variables:')
     for key, value in env_vars_to_add:
-      if permanent:
-        env_string += 'SETX ' + key + ' "' + value + '"\n'
+      if WINDOWS:
+        if permanent:
+          env_string += 'SETX ' + key + ' "' + value + '"\n'
+        else:
+          env_string += 'SET ' + key + '=' + value + '\n'
       else:
-        env_string += 'SET ' + key + '=' + value + '\n'
+        env_string += 'export ' + key + '="' + value + '"\n'
       print(key + ' = ' + value)
     print('')
   return env_string
-
-def construct_env_unix(tools_to_activate):
-  env_string = ''
-  newpath, added_path = adjusted_path(tools_to_activate)
-
-  if os.environ['PATH'] != newpath: # Don't bother setting the path if there are no changes.
-    env_string += 'export PATH="' + newpath + '"\n'
-    if len(added_path) > 0:
-      print('Adding directories to PATH:')
-      for item in added_path:
-        print('PATH += ' + item)
-      print('')
-
-  env_vars_to_add = []
-  for tool in tools_to_activate:
-    if hasattr(tool, 'activated_env'):
-      (key, value) = parse_key_value(tool.activated_env)
-      value = to_native_path(tool.expand_vars(value))
-      if not key in os.environ or to_unix_path(os.environ[key]) != to_unix_path(value): # Don't set env. vars which are already set to the correct value.
-        env_vars_to_add += [(key, value)]
-
-  if len(env_vars_to_add) > 0:
-    print('Setting environment variables:')
-    for key, value in env_vars_to_add:
-      env_string += 'export ' + key + '="' + value + '"\n'
-      print(key + ' = ' + value)
-    print('')
-  return env_string
-
-
-def construct_env(tools_to_activate, permanent):
-  if WINDOWS:
-    return construct_env_windows(tools_to_activate, permanent)
-  else:
-    return construct_env_unix(tools_to_activate)
 
 def silentremove(filename):
   try:
