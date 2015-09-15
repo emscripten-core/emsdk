@@ -1452,8 +1452,8 @@ def main():
    emsdk update                 - Fetches a list of updates from the net (but
                                   does not install them)
 
-   emsdk install [-j<num>] [--build=type] [--shallow] <tool/sdk>
-                                - Downloads and installs the given tool or SDK.
+   emsdk install [-j<num>] [--build=type] [--shallow] <tool 1> <tool 2> ...
+                                - Downloads and installs given tools or SDKs.
                                   An optional -j<num> specifier can be used to
                                   specify the number of cores to use when
                                   building the tool. (default: use one less
@@ -1687,15 +1687,16 @@ def main():
     if len(sys.argv) <= 2:
       print("Missing parameter. Type 'emsdk install <tool name>' to install a tool or an SDK. Type 'emsdk list' to obtain a list of available tools. Type 'emsdk install latest' to automatically install the newest version of the SDK.")
       return 1
-    tool = find_tool(sys.argv[2])
-    if tool == None:
-      tool = find_sdk(sys.argv[2])
-    if tool == None:
-      print("Error: No tool or SDK found by name '" + sys.argv[2] + "'.")
-      return 1
-    success = tool.install()
-    if not success:
-      return 1
+    for t in sys.argv[2:]:
+      tool = find_tool(t)
+      if tool == None:
+        tool = find_sdk(t)
+      if tool == None:
+        print("Error: No tool or SDK found by name '" + t + "'.")
+        return 1
+      success = tool.install()
+      if not success:
+        return 1
   elif cmd == 'uninstall':
     if len(sys.argv) <= 2:
       print("Syntax error. Call 'emsdk uninstall <tool name>'. Call 'emsdk list' to obtain a list of available tools.")
