@@ -721,7 +721,7 @@ def load_dot_emscripten():
 def generate_dot_emscripten(active_tools):
   global emscripten_config_directory
   if emscripten_config_directory == emsdk_path():
-    temp_dir = sdk_path('.tmp')
+    temp_dir = sdk_path('tmp')
     mkdir_p(temp_dir)
   else:
     temp_dir = tempfile.gettempdir().replace('\\', '/')
