@@ -884,10 +884,13 @@ class Tool:
       else:
         return False
     else:
-      if not hasattr(self, 'osx_url') and not hasattr(self, 'windows_url') and not hasattr(self, 'unix_url'):
+      if not hasattr(self, 'osx_url') and not hasattr(self, 'windows_url') and not hasattr(self, 'unix_url') and not hasattr(self, 'linux_url'):
         return True
 
     if OSX and hasattr(self, 'osx_url'):
+      return True
+
+    if LINUX and hasattr(self, 'linux_url'):
       return True
 
     if WINDOWS and (hasattr(self, 'windows_url') or hasattr(self, 'windows_install_path')):
@@ -1001,6 +1004,8 @@ class Tool:
     if WINDOWS and hasattr(self, 'windows_url'):
       return self.windows_url
     elif OSX and hasattr(self, 'osx_url'):
+      return self.osx_url
+    elif LINUX and hasattr(self, 'linux_url'):
       return self.osx_url
     elif (OSX or LINUX) and hasattr(self, 'unix_url'):
       return self.unix_url
