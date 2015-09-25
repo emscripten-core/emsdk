@@ -1006,7 +1006,7 @@ class Tool:
     elif OSX and hasattr(self, 'osx_url'):
       return self.osx_url
     elif LINUX and hasattr(self, 'linux_url'):
-      return self.osx_url
+      return self.linux_url
     elif (OSX or LINUX) and hasattr(self, 'unix_url'):
       return self.unix_url
     elif hasattr(self, 'url'):
