@@ -268,7 +268,8 @@
     "windows_url": "node_0.12.2_32bit.exe",
     "windows_install_path": "node/0.12.2_32bit/node.exe",
     "activated_path": "%installation_dir%",
-    "activated_cfg": "NODE_JS='%installation_dir%/node.exe'"
+    "activated_cfg": "NODE_JS='%installation_dir%/node.exe'",
+    "is_old": true
   },
   {
     "id": "node",
@@ -277,7 +278,8 @@
     "windows_url": "node_0.12.2_64bit.exe",
     "windows_install_path": "node/0.12.2_64bit/node.exe",
     "activated_path": "%installation_dir%",
-    "activated_cfg": "NODE_JS='%installation_dir%/node.exe'"
+    "activated_cfg": "NODE_JS='%installation_dir%/node.exe'",
+    "is_old": true
   },
   {
     "id": "node",
@@ -285,7 +287,8 @@
     "bitness": 64,
     "osx_url": "node-v0.12.2-darwin-x64.tar.gz",
     "activated_path": "%installation_dir%/bin",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node'"
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node'",
+    "is_old": true
   },
   {
     "id": "node",
@@ -740,19 +743,19 @@
   {
     "version": "incoming",
     "bitness": 32,
-    "uses": ["clang-incoming-32bit", "node-0.10.17-32bit", "python-2.7.5.3-32bit", "java-7.45-32bit", "emscripten-incoming-32bit"],
+    "uses": ["clang-incoming-32bit", "node-4.1.1-32bit", "python-2.7.5.3-32bit", "java-7.45-32bit", "emscripten-incoming-32bit"],
     "os": "win"
   },
   {
     "version": "incoming",
     "bitness": 64,
-    "uses": ["clang-incoming-64bit", "node-0.10.17-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-incoming-64bit"],
+    "uses": ["clang-incoming-64bit", "node-4.1.1-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-incoming-64bit"],
     "os": "win"
   },
   {
     "version": "incoming",
     "bitness": 64,
-    "uses": ["clang-incoming-64bit", "node-0.10.18-64bit", "emscripten-incoming-64bit"],
+    "uses": ["clang-incoming-64bit", "node-4.1.1-64bit", "emscripten-incoming-64bit"],
     "os": "osx"
   },
   {
@@ -770,19 +773,19 @@
   {
     "version": "master",
     "bitness": 32,
-    "uses": ["clang-master-32bit", "node-0.12.2-32bit", "python-2.7.5.3-32bit", "java-7.45-32bit", "emscripten-master-32bit"],
+    "uses": ["clang-master-32bit", "node-4.1.1-32bit", "python-2.7.5.3-32bit", "java-7.45-32bit", "emscripten-master-32bit"],
     "os": "win"
   },
   {
     "version": "master",
     "bitness": 64,
-    "uses": ["clang-master-64bit", "node-0.12.2-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-master-64bit"],
+    "uses": ["clang-master-64bit", "node-4.1.1-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-master-64bit"],
     "os": "win"
   },
   {
     "version": "master",
     "bitness": 64,
-    "uses": ["clang-master-64bit", "node-0.12.2-64bit", "emscripten-master-64bit"],
+    "uses": ["clang-master-64bit", "node-4.1.1-64bit", "emscripten-master-64bit"],
     "os": "osx"
   },
   {
@@ -1083,19 +1086,19 @@
   {
     "version": "tag-%tag%",
     "bitness": 32,
-    "uses": ["clang-tag-e%tag%-32bit", "node-0.10.17-32bit", "python-2.7.5.3-32bit", "java-7.45-32bit", "emscripten-tag-%tag%-32bit"],
+    "uses": ["clang-tag-e%tag%-32bit", "node-4.1.1-32bit", "python-2.7.5.3-32bit", "java-7.45-32bit", "emscripten-tag-%tag%-32bit"],
     "os": "win"
   },
   {
     "version": "tag-%tag%",
     "bitness": 64,
-    "uses": ["clang-tag-e%tag%-64bit", "node-0.10.17-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-tag-%tag%-64bit"],
+    "uses": ["clang-tag-e%tag%-64bit", "node-4.1.1-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-tag-%tag%-64bit"],
     "os": "win"
   },
   {
     "version": "tag-%tag%",
     "bitness": 64,
-    "uses": ["clang-tag-e%tag%-64bit", "node-0.10.18-64bit", "emscripten-tag-%tag%-64bit"],
+    "uses": ["clang-tag-e%tag%-64bit", "node-4.1.1-64bit", "emscripten-tag-%tag%-64bit"],
     "os": "osx"
   },
   {
