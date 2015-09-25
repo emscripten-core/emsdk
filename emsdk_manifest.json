@@ -763,13 +763,13 @@
   {
     "version": "incoming",
     "bitness": 32,
-    "uses": ["clang-incoming-32bit", "emscripten-incoming-32bit"],
+    "uses": ["clang-incoming-32bit", "node-4.1.1-32bit", "emscripten-incoming-32bit"],
     "os": "linux"
   },
   {
     "version": "incoming",
     "bitness": 64,
-    "uses": ["clang-incoming-64bit", "emscripten-incoming-64bit"],
+    "uses": ["clang-incoming-64bit", "node-4.1.1-64bit", "emscripten-incoming-64bit"],
     "os": "linux"
   },
   {
@@ -793,13 +793,13 @@
   {
     "version": "master",
     "bitness": 32,
-    "uses": ["clang-master-32bit", "emscripten-master-32bit"],
+    "uses": ["clang-master-32bit", "node-4.1.1-32bit", "emscripten-master-32bit"],
     "os": "linux"
   },
   {
     "version": "master",
     "bitness": 64,
-    "uses": ["clang-master-64bit", "emscripten-master-64bit"],
+    "uses": ["clang-master-64bit", "node-4.1.1-64bit", "emscripten-master-64bit"],
     "os": "linux"
   },
   {
@@ -1099,21 +1099,15 @@
   },
   {
     "version": "tag-%tag%",
+    "bitness": 32,
+    "uses": ["clang-tag-e%tag%-32bit", "node-4.1.1-32bit", "emscripten-tag-%tag%-32bit"],
+    "os": "linux"
+  },
+  {
+    "version": "tag-%tag%",
     "bitness": 64,
     "uses": ["clang-tag-e%tag%-64bit", "node-4.1.1-64bit", "emscripten-tag-%tag%-64bit"],
-    "os": "osx"
-  },
-  {
-    "version": "tag-%tag%",
-    "bitness": 32,
-    "uses": ["clang-tag-e%tag%-32bit", "emscripten-tag-%tag%-32bit"],
-    "os": "linux"
-  },
-  {
-    "version": "tag-%tag%",
-    "bitness": 64,
-    "uses": ["clang-tag-e%tag%-64bit", "emscripten-tag-%tag%-64bit"],
-    "os": "linux"
+    "os": "unix"
   }
   ]
 }
