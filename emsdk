@@ -1631,7 +1631,7 @@ def main():
       print('Items marked with * are activated for the current user.')
       if has_partially_active_tools[0]:
         env_cmd = 'emsdk_env.bat' if WINDOWS else 'source ./emsdk_env.sh'
-        print('Items marked with (*) are selected for use, but your current shell environment is not configured to use them. Type "' + env_cmd + '" to set up your current shell to use them, or call "emsdk activate --global <name_of_sdk>" to permanently activate them.')
+        print('Items marked with (*) are selected for use, but your current shell environment is not configured to use them. Type "' + env_cmd + '" to set up your current shell to use them' + (', or call "emsdk activate --global <name_of_sdk>" to permanently activate them.' if WINDOWS else '.'))
       if not show_old:
         print('')
         print("To access the historical archived versions, type 'emsdk list --old'")
