@@ -299,6 +299,7 @@
     "id": "node",
     "version": "4.1.1",
     "bitness": 64,
+    "osx_url": "node-v4.1.1-darwin-x64.tar.gz",
     "windows_url": "node_4.1.1_64bit.zip",
     "activated_path": "%installation_dir%/bin",
     "activated_cfg": "NODE_JS='%installation_dir%/bin/node'"
