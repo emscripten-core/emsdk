@@ -288,6 +288,22 @@
     "activated_cfg": "NODE_JS='%installation_dir%/bin/node'"
   },
   {
+    "id": "node",
+    "version": "4.1.1",
+    "bitness": 32,
+    "windows_url": "node_4.1.1_32bit.zip",
+    "activated_path": "%installation_dir%/bin",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node'"
+  },
+  {
+    "id": "node",
+    "version": "4.1.1",
+    "bitness": 64,
+    "windows_url": "node_4.1.1_64bit.zip",
+    "activated_path": "%installation_dir%/bin",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node'"
+  },
+  {
     "id": "python",
     "version": "2.7.5.1",
     "bitness": 32,
