@@ -645,13 +645,14 @@ def build_optimizer_tool(tool):
   build_type = decide_cmake_build_type(tool)
 
   # Configure
-  success = cmake_configure(None, build_root, src_root, build_type)
+  cmake_generator = CMAKE_GENERATOR
+  if 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
+    cmake_generator += ' Win64'
+  success = cmake_configure(cmake_generator, build_root, src_root, build_type)
   if not success: return False
 
   # Make
-# TODO: Enable the following:
-#  success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'Win32')
-  success = make_build(build_root, build_type, 'Win32')
+  success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'Win32')
   return success
 
 def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False, filename_prefix = ''):
