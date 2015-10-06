@@ -724,6 +724,7 @@ def generate_dot_emscripten(active_tools):
   if emscripten_config_directory == emsdk_path():
     temp_dir = sdk_path('tmp')
     mkdir_p(temp_dir)
+    embedded=True
   else:
     temp_dir = tempfile.gettempdir().replace('\\', '/')
 
@@ -731,6 +732,9 @@ def generate_dot_emscripten(active_tools):
   has_node = False
 
   cfg = 'import os\n'
+  
+  if embedded:
+    cfg += 'emsdk_path=os.path.dirname(EM_CONFIG)\n'
 
   for tool in active_tools:
     tool_cfg = tool.activated_config()
@@ -753,6 +757,9 @@ TEMP_DIR = ''' + "'" + temp_dir + "'" + '''
 COMPILER_ENGINE = NODE_JS
 JS_ENGINES = [NODE_JS]
 '''
+
+  if embedded:
+    cfg = cfg.replace(emscripten_config_directory, '\' + emsdk_path + \'')
 
   with open(dot_emscripten_path(), "w") as text_file: text_file.write(cfg)
   
