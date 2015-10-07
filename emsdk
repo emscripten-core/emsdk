@@ -735,7 +735,7 @@ def generate_dot_emscripten(active_tools):
   cfg = 'import os\n'
   
   if embedded:
-    cfg += "emsdk_path=os.path.dirname(EM_CONFIG).replace('\\\\', '/')\n"
+    cfg += "emsdk_path=os.path.dirname(os.environ.get('EM_CONFIG')).replace('\\\\', '/')\n"
 
   for tool in active_tools:
     tool_cfg = tool.activated_config()
