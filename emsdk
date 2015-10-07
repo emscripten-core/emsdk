@@ -724,9 +724,10 @@ def generate_dot_emscripten(active_tools):
   if emscripten_config_directory == emsdk_path():
     temp_dir = sdk_path('tmp')
     mkdir_p(temp_dir)
-    embedded=True
+    embedded = True
   else:
     temp_dir = tempfile.gettempdir().replace('\\', '/')
+    embedded = False
 
   has_spidermonkey = False
   has_node = False
