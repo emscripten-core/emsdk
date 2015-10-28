@@ -1192,6 +1192,20 @@ def version_compare(x, y):
   return a - b
 
 def fetch_emscripten_tags():
+  git = GIT(must_succeed=False)
+  if not git:
+    print('Update complete, however skipped fetching the Emscripten tags, since git was not found.')
+    if WINDOWS:
+      print("If you want to compile one of the tagged releases from source, please install git by typing 'emsdk install git-1.9.4', or alternatively by installing it manually from http://git-scm.com/downloads . If you install git manually, remember to add it to PATH.")
+    elif OSX:
+      print("If you want to compile one of the tagged releases from source, please install git from http://git-scm.com/ , or by installing XCode and then the XCode Command Line Tools (see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools ).")
+    elif LINUX:
+      print("If you want to compile one of the tagged releases from source, please install git using your package manager, see http://git-scm.com/book/en/Getting-Started-Installing-Git .")
+    else:
+      print("If you want to compile one of the tagged releases from source, please install git.")
+    print("If you are not looking to build Emscripten from source, you can safely ignore this message.")
+    return
+
   print('Fetching all tags from Emscripten Github repository...')
   tags = run_get_output([GIT(), 'ls-remote', '--tags', emscripten_git_repo])
   if tags[0] != 0: return False # failed to get tags?
