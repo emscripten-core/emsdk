@@ -438,13 +438,17 @@ def git_clone(url, dstpath):
 
 def git_checkout_and_pull(repo_path, branch):
   if VERBOSE: print('git_checkout_and_pull(repo_path=' + repo_path + ', branch=' + branch + ')')
-  run([GIT(), 'fetch', 'origin'], repo_path)
+  ret = run([GIT(), 'fetch', 'origin'], repo_path)
+  if ret != 0: return False
   try:
     print("Fetching latest changes to the branch '" + branch + "' for '" + repo_path + "'...")
-    run([GIT(), 'fetch', 'origin'], repo_path)
+    ret = run([GIT(), 'fetch', 'origin'], repo_path)
+    if ret != 0: return False
 #  run([GIT, 'checkout', '-b', branch, '--track', 'origin/'+branch], repo_path)
-    run([GIT(), 'checkout', '--quiet', branch], repo_path) # this line assumes that the user has not gone and manually messed with the repo and added new remotes to ambiguate the checkout.
-    run([GIT(), 'merge', '--ff-only', 'origin/'+branch], repo_path) # this line assumes that the user has not gone and made local changes to the repo
+    ret = run([GIT(), 'checkout', '--quiet', branch], repo_path) # this line assumes that the user has not gone and manually messed with the repo and added new remotes to ambiguate the checkout.
+    if ret != 0: return False
+    ret = run([GIT(), 'merge', '--ff-only', 'origin/'+branch], repo_path) # this line assumes that the user has not gone and made local changes to the repo
+    if ret != 0: return False
   except:
     print('git operation failed!')
     return False
