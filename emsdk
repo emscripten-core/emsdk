@@ -93,7 +93,7 @@ if WINDOWS:
   else:
     vs2015_exists = 'VS140COMNTOOLS' in os.environ or 'VSSDK140Install' in os.environ or os.path.isdir(os.path.join(os.environ['ProgramFiles'], 'Microsoft Visual Studio 14.0')) or ('ProgramFiles(x86)' in os.environ and os.path.isdir(os.path.join(os.environ['ProgramFiles(x86)'], 'Microsoft Visual Studio 14.0')))
     vs2013_exists = 'VS120COMNTOOLS' in os.environ or os.path.isdir(os.path.join(os.environ['ProgramFiles'], 'Microsoft Visual Studio 12.0')) or ('ProgramFiles(x86)' in os.environ and os.path.isdir(os.path.join(os.environ['ProgramFiles(x86)'], 'Microsoft Visual Studio 12.0')))
-    mingw_exists = len(which('mingw32-make').strip()) > 0 and len(which('g++').strip()) > 0
+    mingw_exists = which('mingw32-make') != None and which('g++') != None
     if vs2013_exists: CMAKE_GENERATOR = 'Visual Studio 12' # Favor VS2013 over VS2015, since there is no big known difference, and VS2013 CRT is more widely available (for portable installation compatibility).
     elif vs2015_exists: CMAKE_GENERATOR = 'Visual Studio 14'
     elif mingw_exists: CMAKE_GENERATOR = 'MinGW Makefiles'
