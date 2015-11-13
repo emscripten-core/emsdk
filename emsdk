@@ -58,13 +58,48 @@ emscripten_config_directory = os.path.expanduser("~/")
 
 EMSDK_SET_ENV = 'emsdk_set_env.bat' if WINDOWS else 'emsdk_set_env.sh'
 
+# Finds the given executable 'program' in PATH. Operates like the Unix tool 'which'.
+def which(program):
+  def is_exe(fpath):
+    return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+  fpath, fname = os.path.split(program)
+  if fpath:
+    if is_exe(program):
+      return program
+  else:
+    for path in os.environ["PATH"].split(os.pathsep):
+      path = path.strip('"')
+      exe_file = os.path.join(path, program)
+      if is_exe(exe_file):
+        return exe_file
+
+      if WINDOWS and not '.' in fname:
+        if is_exe(exe_file + '.exe'):
+          return exe_file + '.exe'
+        if is_exe(exe_file + '.cmd'):
+          return exe_file + '.cmd'
+        if is_exe(exe_file + '.bat'):
+          return exe_file + '.bat'
+
+  return None
+
 CMAKE_GENERATOR = 'Unix Makefiles'
 if WINDOWS:
-  build_with_visualstudio = True
-  if build_with_visualstudio:
-    CMAKE_GENERATOR = 'Visual Studio 12'
+  # Detect which CMake generator to use when building on Windows
+  if '--mingw' in sys.argv: CMAKE_GENERATOR = 'MinGW Makefiles'
+  elif '--vs2013' in sys.argv: CMAKE_GENERATOR = 'Visual Studio 12'
+  elif '--vs2015' in sys.argv: CMAKE_GENERATOR = 'Visual Studio 14'
   else:
-    CMAKE_GENERATOR += 'MinGW Makefiles'
+    vs2015_exists = 'VS140COMNTOOLS' in os.environ or 'VSSDK140Install' in os.environ or os.path.isdir(os.path.join(os.environ['ProgramFiles'], 'Microsoft Visual Studio 14.0')) or ('ProgramFiles(x86)' in os.environ and os.path.isdir(os.path.join(os.environ['ProgramFiles(x86)'], 'Microsoft Visual Studio 14.0')))
+    vs2013_exists = 'VS120COMNTOOLS' in os.environ or os.path.isdir(os.path.join(os.environ['ProgramFiles'], 'Microsoft Visual Studio 12.0')) or ('ProgramFiles(x86)' in os.environ and os.path.isdir(os.path.join(os.environ['ProgramFiles(x86)'], 'Microsoft Visual Studio 12.0')))
+    mingw_exists = len(which('mingw32-make').strip()) > 0 and len(which('g++').strip()) > 0
+    if vs2013_exists: CMAKE_GENERATOR = 'Visual Studio 12' # Favor VS2013 over VS2015, since there is no big known difference, and VS2013 CRT is more widely available (for portable installation compatibility).
+    elif vs2015_exists: CMAKE_GENERATOR = 'Visual Studio 14'
+    elif mingw_exists: CMAKE_GENERATOR = 'MinGW Makefiles'
+    else: CMAKE_GENERATOR = '' # No detected generator
+if VERBOSE: print('CMAKE_GENERATOR: ' + CMAKE_GENERATOR)
+sys.argv = filter(lambda x: x not in ['--mingw', '--vs2013', '--vs2015'], sys.argv)
 
 # Removes a directory tree even if it was readonly, and doesn't throw exception on failure.
 def remove_tree(d):
@@ -358,32 +393,6 @@ def run_get_output(cmd, cwd=None):
   (stdout, stderr) = process.communicate()
   return (process.returncode, stdout, stderr)
 
-# Finds the given executable 'program' in PATH. Operates like the Unix tool 'which'.
-def which(program):
-  def is_exe(fpath):
-    return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-
-  fpath, fname = os.path.split(program)
-  if fpath:
-    if is_exe(program):
-      return program
-  else:
-    for path in os.environ["PATH"].split(os.pathsep):
-      path = path.strip('"')
-      exe_file = os.path.join(path, program)
-      if is_exe(exe_file):
-        return exe_file
-
-      if WINDOWS and not '.' in fname:
-        if is_exe(exe_file + '.exe'):
-          return exe_file + '.exe'
-        if is_exe(exe_file + '.cmd'):
-          return exe_file + '.cmd'
-        if is_exe(exe_file + '.bat'):
-          return exe_file + '.bat'
-
-  return None
-
 # must_succeed: If false, the search is performed silently without printing out errors if not found. Empty string is returned if git is not found.
 #               If true, the search is required to succeed, and the execution will terminate with sys.exit(1) if not found.
 def GIT(must_succeed=True):
@@ -465,6 +474,7 @@ def fastcomp_build_dir(tool):
   if CMAKE_GENERATOR == 'Visual Studio 10': generator_suffix = '_vs2010'
   elif CMAKE_GENERATOR == 'Visual Studio 11': generator_suffix = '_vs2012'
   elif CMAKE_GENERATOR == 'Visual Studio 12': generator_suffix = '_vs2013'
+  elif CMAKE_GENERATOR == 'Visual Studio 14': generator_suffix = '_vs2015'
   elif CMAKE_GENERATOR == 'MinGW Makefiles': generator_suffix = '_mingw'
 
   bitness_suffix = '_32' if tool.bitness == 32 else '_64'
@@ -500,13 +510,20 @@ if OSX: cxxflags += '-stdlib=libc++'
 make_env['CXXFLAGS'] = cxxflags
 
 def find_msbuild(sln_file):
+  search_paths_vs2015 = [os.path.join(os.environ['ProgramFiles'], 'MSBuild/14.0/Bin/amd64'),
+                        os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/14.0/Bin/amd64'),
+                        os.path.join(os.environ['ProgramFiles'], 'MSBuild/14.0/Bin'),
+                        os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/14.0/Bin')]
   search_paths_vs2013 = [os.path.join(os.environ['ProgramFiles'], 'MSBuild/12.0/Bin/amd64'),
                         os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/12.0/Bin/amd64'),
                         os.path.join(os.environ['ProgramFiles'], 'MSBuild/12.0/Bin'),
-                        os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/12.0/Bin'),]
+                        os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/12.0/Bin')]
   search_paths_old = [os.path.join(os.environ["WINDIR"], 'Microsoft.NET/Framework/v4.0.30319')]
   contents = open(sln_file, 'r').read()
-  if '# Visual Studio Express 2013' in contents or '# Visual Studio 2013' in contents:
+  if '# Visual Studio Express 2015' in contents or '# Visual Studio 2015' in contents or '# Visual Studio 14' in contents:
+    search_paths = search_paths_vs2015
+    make_env['VCTargetsPath'] = os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/Microsoft.Cpp/v4.0/V140')
+  if '# Visual Studio Express 2013' in contents or '# Visual Studio 2013' in contents or '# Visual Studio 12' in contents:
     search_paths = search_paths_vs2013 + search_paths_old
     make_env['VCTargetsPath'] = os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/Microsoft.Cpp/v4.0/V120')
   else:
@@ -624,7 +641,10 @@ def build_fastcomp_tool(tool):
 def optimizer_build_root(tool):
   build_root = tool.installation_path().strip()
   if build_root.endswith('/') or build_root.endswith('\\'): build_root = build_root[:-1]
-  build_root = build_root + '_' + str(tool.bitness) + 'bit_optimizer'
+  generator_prefix = '' # Unix Makefiles and Visual Studio 2013 do not specify a path prefix for backwards path compatibility
+  if CMAKE_GENERATOR == 'Visual Studio 14': generator_prefix = '_vs2015'
+  elif CMAKE_GENERATOR == 'MinGW Makefiles': generator_prefix = '_mingw'
+  build_root = build_root + generator_prefix + '_' + str(tool.bitness) + 'bit_optimizer'
   return build_root
 
 def uninstall_optimizer(tool):
@@ -1515,12 +1535,18 @@ def main():
                                   included. Pass this to enable running test
                                   other.test_llvm_lit in the Emscripten test
                                   suite. Default: disabled.
+               --vs2013/--vs2015: If building from source, overrides to build
+                                  using the specified compiler. When installing
+                                  precompiled packages, this has no effect.
+                                  Note: The same compiler specifier must be
+                                  passed to the emsdk activate command to
+                                  activate the desired version.
 
    emsdk uninstall <tool/sdk>   - Removes the given tool or SDK from disk.''')
 
     if WINDOWS:
       print('''
-   emsdk activate [--global] [--embedded] [--build=type] <tool/sdk> 
+   emsdk activate [--global] [--embedded] [--build=type] [--vs2013/--vs2015] <tool/sdk> 
 
                                 - Activates the given tool or SDK in the
                                   environment of the current shell. If the
@@ -1531,7 +1557,10 @@ def main():
                                   well as the temp, cache and ports directories
                                   are located inside the Emscripten SDK
                                   directory rather than the user home
-                                  directory.
+                                  directory. If a custom compiler version was
+                                  used to override the compiler to use, pass
+                                  the same --vs2013/--vs2015 parameter here to
+                                  choose which version to activate.
 
    emcmdprompt.bat              - Spawns a new command prompt window with the
                                   Emscripten environment active.''')
