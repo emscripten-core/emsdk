@@ -173,6 +173,10 @@ It is also possible to use your own fork of the Emscripten repository via the SD
 
 In this way you can utilize the Emscripten SDK tools while using your own git fork. You can switch back and forth between remotes via the `git checkout` command as usual.
 
+##### How do I use Emscripten SDK with a custom version of python, java, node.js or some other tool?
+
+The provided Emscripten SDK targets are metapackages that refer to a specific set of tools that have been tested to work together. For example, `sdk-1.35.0-64bit` is an alias to the individual packages `clang-e1.35.0-64bit`, `node-4.1.1-64bit`, `python-2.7.5.3-64bit` and `emscripten-1.35.0`. This means that if you install this version of the SDK, both python and node.js will be installed inside emsdk as well. If you want to use your own/system python or node.js instead, you can opt to install emsdk by specifying the individual set of packages that you want to use. For example, `emsdk install clang-e1.35.0-64bit emscripten-1.35.0` will only install the Emscripten LLVM/Clang compiler and the Emscripten frontend without supplying python and node.js.
+
 ## Uninstalling the Emscripten SDK
 
 If you installed the SDK using a NSIS installer on Windows, launch 'Control Panel' -> 'Uninstall a program' -> 'Emscripten SDK'.
