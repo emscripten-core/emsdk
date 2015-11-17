@@ -177,6 +177,10 @@ In this way you can utilize the Emscripten SDK tools while using your own git fo
 
 The provided Emscripten SDK targets are metapackages that refer to a specific set of tools that have been tested to work together. For example, `sdk-1.35.0-64bit` is an alias to the individual packages `clang-e1.35.0-64bit`, `node-4.1.1-64bit`, `python-2.7.5.3-64bit` and `emscripten-1.35.0`. This means that if you install this version of the SDK, both python and node.js will be installed inside emsdk as well. If you want to use your own/system python or node.js instead, you can opt to install emsdk by specifying the individual set of packages that you want to use. For example, `emsdk install clang-e1.35.0-64bit emscripten-1.35.0` will only install the Emscripten LLVM/Clang compiler and the Emscripten frontend without supplying python and node.js.
 
+##### My installation fails with "fatal error: ld terminated with signal 9 [Killed]"?
+
+This may happen if the system runs out of memory. If you are attempting to build one of the packages from source and are running in a virtual OS or have relatively little RAM and disk space available, then the build might fail. Try feeding your computer more memory. Another thing to try is to force emsdk install to build in a singlethreaded mode, which will require less RAM simultaneously. To do this, pass the `-j1` flag to the `emsdk install` command.
+
 ## Uninstalling the Emscripten SDK
 
 If you installed the SDK using a NSIS installer on Windows, launch 'Control Panel' -> 'Uninstall a program' -> 'Emscripten SDK'.
