@@ -54,6 +54,10 @@ GIT_CLONE_SHALLOW = False
 # If true, LLVM backend is built with tests enabled.
 BUILD_LLVM_TESTS = False
 
+# If 'auto', assertions are decided by the build type (Release&MinSizeRel=disabled, Debug&RelWithDebInfo=enabled)
+# Other valid values are 'ON' and 'OFF'
+ENABLE_LLVM_ASSERTIONS = 'auto'
+
 emscripten_config_directory = os.path.expanduser("~/")
 
 EMSDK_SET_ENV = 'emsdk_set_env.bat' if WINDOWS else 'emsdk_set_env.sh'
@@ -632,9 +636,12 @@ def build_fastcomp_tool(tool):
   build_type = decide_cmake_build_type(tool)
 
   # Configure
-  global BUILD_LLVM_TESTS
+  global BUILD_LLVM_TESTS, ENABLE_LLVM_ASSERTIONS
   tests_arg = 'ON' if BUILD_LLVM_TESTS else 'OFF'
-  args = ['-DLLVM_TARGETS_TO_BUILD=X86;JSBackend', '-DLLVM_INCLUDE_EXAMPLES=OFF', '-DCLANG_INCLUDE_EXAMPLES=OFF', '-DLLVM_INCLUDE_TESTS=' + tests_arg, '-DCLANG_INCLUDE_TESTS=' + tests_arg]
+
+  enable_assertions = ENABLE_LLVM_ASSERTIONS.lower() == 'on' or (ENABLE_LLVM_ASSERTIONS == 'auto' and build_type.lower() != 'release' and build_type.lower() != 'minsizerel')
+
+  args = ['-DLLVM_TARGETS_TO_BUILD=X86;JSBackend', '-DLLVM_INCLUDE_EXAMPLES=OFF', '-DCLANG_INCLUDE_EXAMPLES=OFF', '-DLLVM_INCLUDE_TESTS=' + tests_arg, '-DCLANG_INCLUDE_TESTS=' + tests_arg, '-DLLVM_ENABLE_ASSERTIONS=' + ('ON' if enable_assertions else 'OFF')]
   success = cmake_configure(cmake_generator, build_root, fastcomp_src_root, build_type, args)
   if not success: return False
 
@@ -1491,7 +1498,7 @@ def silentremove(filename):
     if e.errno != errno.ENOENT: raise
 
 def main():
-  global emscripten_config_directory
+  global emscripten_config_directory, BUILD_LLVM_TESTS, ENABLE_LLVM_ASSERTIONS
   load_dot_emscripten()
   load_sdk_manifest()
 
@@ -1539,6 +1546,12 @@ def main():
                                   included. Pass this to enable running test
                                   other.test_llvm_lit in the Emscripten test
                                   suite. Default: disabled.
+             --enable-assertions: If specified, LLVM is built with assert()
+                                  checks enabled. Useful for development
+                                  purposes. Default: Enabled for 'incoming'
+                                  branch, disabled for 'master' branch.
+            --disable-assertions: Forces assertions off during the build.
+
                --vs2013/--vs2015: If building from source, overrides to build
                                   using the specified compiler. When installing
                                   precompiled packages, this has no effect.
@@ -1763,8 +1776,13 @@ def main():
         GIT_CLONE_SHALLOW = True
         sys.argv[i] = ''
       elif sys.argv[i] == '--build-tests':
-        global BUILD_LLVM_TESTS
         BUILD_LLVM_TESTS = True
+        sys.argv[i] = ''
+      elif sys.argv[i] == '--enable-assertions':
+        ENABLE_LLVM_ASSERTIONS = 'ON'
+        sys.argv[i] = ''
+      elif sys.argv[i] == '--disable-assertions':
+        ENABLE_LLVM_ASSERTIONS = 'OFF'
         sys.argv[i] = ''
     sys.argv = [x for x in sys.argv if not len(x) == 0]
     if len(sys.argv) <= 2:
