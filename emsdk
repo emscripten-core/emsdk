@@ -919,7 +919,7 @@ class Tool:
     if hasattr(self, 'os'):
       if self.os == 'all':
         return True
-      if (WINDOWS and 'win' in self.os) or (LINUX and 'linux' in self.os) or (OSX and 'osx' in self.os):
+      if (WINDOWS and 'win' in self.os) or (LINUX and ('linux' in self.os or 'unix' in self.os)) or (OSX and ('osx' in self.os or 'unix' in self.os)):
         return True
       else:
         return False
