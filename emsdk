@@ -1803,7 +1803,7 @@ def main():
         tools_to_activate += [tool]
     tools_to_activate = set_active_tools(tools_to_activate, permanently_activate=permanently_activate)
     if WINDOWS and not permanently_activate:
-      print('To permanently register this environment globally to all users in Windows Registry, rerun the command with the option --global.')
+      print('The changes made to environment variables only apply to the currently running shell instance. Use the \'emsdk_env.bat\' to re-enter this environment later, or if you\'d like to permanently register this environment globally to all users in Windows Registry, rerun this command with the option --global.')
     return 0
   elif cmd == 'install':
     # Process args
