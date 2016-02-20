@@ -120,6 +120,33 @@ def remove_tree(d):
     if VERBOSE: print('remove_tree threw an exception, ignoring: ' + str(e))
     pass
 
+def win_set_environment_variable_direct(key, value, system=True):
+  prev_path = os.environ['PATH']
+  try:
+    py = find_used_python()
+    if py:
+      py_path = to_native_path(py.expand_vars(py.activated_path))
+      os.environ['PATH'] = os.environ['PATH'] + ';' + py_path
+    import win32api, win32con
+    if system: # Read globally from ALL USERS section.
+      folder = win32api.RegOpenKeyEx(win32con.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment', 0, win32con.KEY_ALL_ACCESS)
+    else: # Register locally from CURRENT USER section.
+      folder = win32api.RegOpenKeyEx(win32con.HKEY_CURRENT_USER, 'Environment', 0, win32con.KEY_ALL_ACCESS)
+    win32api.RegSetValueEx(folder, key, 0, win32con.REG_EXPAND_SZ, value)
+  except Exception as e:
+    if e[0] == 5 or e[2] == 'Access is denied.':
+      print('Error! Failed to set the environment variable \'' + key + '\'! Setting environment variables permanently requires administrator access. Please rerun this command with administrative privileges. This can be done for example by holding down the Ctrl and Shift keys while opening a command prompt in start menu.')
+      sys.exit(1)
+    if e[0] != 2: # 'The system cannot find the file specified.'
+      print('Failed to write environment variable ' + key + ':', file=sys.stderr)
+      print(str(e), file=sys.stderr)
+    win32api.RegCloseKey(folder)
+    os.environ['PATH'] = prev_path
+    return None
+  win32api.RegCloseKey(folder)
+  os.environ['PATH'] = prev_path
+  win32api.SendMessage(win32con.HWND_BROADCAST, win32con.WM_SETTINGCHANGE, 0, 'Environment')
+
 def win_get_environment_variable(key, system=True):
   prev_path = os.environ['PATH']
   try:
@@ -172,9 +199,15 @@ def win_set_environment_variable(key, value, system=True):
 
   try:
     if system:
-      cmd = ['bin/elevate.exe', 'SETX', '/M']
+      win_set_environment_variable_direct(key, value, system)
+      return
     else:
-      cmd = ['SETX']
+      if len(value) < 1024:
+        cmd = ['SETX']
+      else:
+        print('ERROR! The new environment variable ' + key + ' is more than 1024 characters long! A value this long cannot be set via command line: please add the environment variable specified above to system environment manually via Control Panel.', file=sys.stderr)
+        sys.exit(1)
+    if WINDOWS: value = value.replace('%', '^%') # Escape % signs so that we don't expand references to environment variables.
     retcode = subprocess.call(cmd + [key, value], stdout=subprocess.PIPE)
     if retcode is not 0:
       print('ERROR! Failed to set environment variable ' + key + '=' + value + '. You may need to set it manually.', file=sys.stderr)
@@ -1388,12 +1421,9 @@ def set_active_tools(tools_to_activate, permanently_activate):
       tool.win_activate_env_vars(permanently_activate=True)
 
     # PATH variable
-    newpath, added_items = adjusted_path(tools_to_activate)
+    newpath, added_items = adjusted_path(tools_to_activate, system_path_only=True)
     if newpath != os.environ['PATH']: # Are there any actual changes?
-      if len(newpath) < 1024:
-        win_set_environment_variable('PATH', newpath, system=True)
-      else:
-        print('ERROR! The new PATH is more than 1024 characters long! A PATH this long cannot be set via command line: please add the PATHs specified above to system PATH manually via Control Panel.', file=sys.stderr)
+      win_set_environment_variable('PATH', newpath, system=True)
 
   return tools_to_activate
 
@@ -1426,11 +1456,16 @@ def normalized_contains(lst, elem):
 
 # Looks at the current PATH and adds and removes entries so that the PATH reflects
 # the set of given active tools.
-def adjusted_path(tools_to_activate, log_additions=False):
+def adjusted_path(tools_to_activate, log_additions=False, system_path_only=False):
   # These directories should be added to PATH
   path_add = get_required_path(tools_to_activate)
   # These already exist.
-  existing_path = os.environ['PATH'].split(ENVPATH_SEPARATOR)
+  if WINDOWS:
+    existing_path = win_get_environment_variable('PATH', system=True)
+    if not system_path_only: existing_path += ENVPATH_SEPARATOR + win_get_environment_variable('PATH', system=False)
+    existing_path = existing_path.split(ENVPATH_SEPARATOR)
+  else:
+    existing_path = os.environ['PATH'].split(ENVPATH_SEPARATOR)
   emsdk_root_path = to_unix_path(emsdk_path())
 
   existing_emsdk_tools = [item for item in existing_path if to_unix_path(item).startswith(emsdk_root_path)]
