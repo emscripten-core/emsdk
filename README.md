@@ -66,7 +66,7 @@ Additional Notes:
 
 ### Installing emsdk directly from GitHub
 
-If you want to bootstrap to emsdk development version instead of the stable releases, you can do so by installing emsdk directly from github. Functionally this behaves identical to the Portable SDK. As a prerequisite, you must first manually download and install [Python](https://www.python.org) to bootstrap, and after that, run:
+If you want to bootstrap to emsdk development version instead of the stable releases, you can do so by installing emsdk directly from github. Functionally, this behaves identically to the Portable SDK. As a prerequisite, you must first manually download and install [Python](https://www.python.org) to bootstrap, and after that, run:
 
     git clone https://github.com/juj/emsdk.git
     cd emsdk
