@@ -62,11 +62,11 @@ The [LLVM Backend](https://github.com/kripken/emscripten/wiki/LLVM-Backend) page
 Additional Notes:
 
  * Python is probably already installed if you are on Linux or OS X.
- * Node.js and LLVM should have convenient binaries for your OS, but installing them from source is easy, just compile them in their directories, you don't need to bother with installing them systemwide.
+ * Node.js and LLVM should have convenient binaries for your OS, but installing them from source is easy: just compile them in their directories; you don't need to bother with installing them system-wide.
 
 ### Installing emsdk directly from GitHub
 
-If you want to bootstrap to emsdk development version instead of the stable releases, you can do so by installing emsdk directly from github. Functionally this behaves identical to the Portable SDK. As a prerequisite, you must first manually download and install [Python](https://www.python.org) to bootstrap, and after that, run:
+If you want to bootstrap to emsdk development version instead of the stable releases, you can do so by installing emsdk directly from github. Functionally, this behaves identically to the Portable SDK. As a prerequisite, you must first manually download and install [Python](https://www.python.org) to bootstrap, and after that, run:
 
     git clone https://github.com/juj/emsdk.git
     cd emsdk
