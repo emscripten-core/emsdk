@@ -105,6 +105,12 @@ if WINDOWS:
 if VERBOSE: print('CMAKE_GENERATOR: ' + CMAKE_GENERATOR)
 sys.argv = filter(lambda x: x not in ['--mingw', '--vs2013', '--vs2015'], sys.argv)
 
+# Computes a suitable path prefix to use when building with a given generator.
+def cmake_generator_prefix():
+  if CMAKE_GENERATOR == 'Visual Studio 14': return '_vs2015'
+  elif CMAKE_GENERATOR == 'MinGW Makefiles': return '_mingw'
+  return '' # Unix Makefiles and Visual Studio 2013 do not specify a path prefix for backwards path compatibility
+
 # Removes a directory tree even if it was readonly, and doesn't throw exception on failure.
 def remove_tree(d):
   if VERBOSE: print('remove_tree(' + str(d) + ')')
@@ -685,9 +691,7 @@ def build_fastcomp_tool(tool):
 def optimizer_build_root(tool):
   build_root = tool.installation_path().strip()
   if build_root.endswith('/') or build_root.endswith('\\'): build_root = build_root[:-1]
-  generator_prefix = '' # Unix Makefiles and Visual Studio 2013 do not specify a path prefix for backwards path compatibility
-  if CMAKE_GENERATOR == 'Visual Studio 14': generator_prefix = '_vs2015'
-  elif CMAKE_GENERATOR == 'MinGW Makefiles': generator_prefix = '_mingw'
+  generator_prefix = cmake_generator_prefix()
   build_root = build_root + generator_prefix + '_' + str(tool.bitness) + 'bit_optimizer'
   return build_root
 
@@ -896,6 +900,8 @@ class Tool:
       str = str.replace('%cmake_build_type_on_win%', (decide_cmake_build_type(self) + '/') if WINDOWS else '')
     if '%installation_dir%' in str:
       str = str.replace('%installation_dir%', sdk_path(self.installation_dir()))
+    if '%generator_prefix%' in str:
+      str = str.replace('%generator_prefix%', cmake_generator_prefix())
     str = str.replace('%.exe%', '.exe' if WINDOWS else '')
     if '%fastcomp_build_dir%' in str:
       str = str.replace('%fastcomp_build_dir%', fastcomp_build_dir(self))
