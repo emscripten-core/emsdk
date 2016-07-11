@@ -139,16 +139,17 @@ def win_set_environment_variable_direct(key, value, system=True):
     else: # Register locally from CURRENT USER section.
       folder = win32api.RegOpenKeyEx(win32con.HKEY_CURRENT_USER, 'Environment', 0, win32con.KEY_ALL_ACCESS)
     win32api.RegSetValueEx(folder, key, 0, win32con.REG_EXPAND_SZ, value)
+    if VERBOSE: print('Set key=' + key + ' with value ' + value + ' in registry.')
   except Exception as e:
     if e[0] == 5 or e[2] == 'Access is denied.':
       print('Error! Failed to set the environment variable \'' + key + '\'! Setting environment variables permanently requires administrator access. Please rerun this command with administrative privileges. This can be done for example by holding down the Ctrl and Shift keys while opening a command prompt in start menu.')
       sys.exit(1)
-    if e[0] != 2: # 'The system cannot find the file specified.'
-      print('Failed to write environment variable ' + key + ':', file=sys.stderr)
-      print(str(e), file=sys.stderr)
+    print('Failed to write environment variable ' + key + ':', file=sys.stderr)
+    print(str(e), file=sys.stderr)
     win32api.RegCloseKey(folder)
     os.environ['PATH'] = prev_path
     return None
+
   win32api.RegCloseKey(folder)
   os.environ['PATH'] = prev_path
   win32api.SendMessage(win32con.HWND_BROADCAST, win32con.WM_SETTINGCHANGE, 0, 'Environment')
@@ -191,14 +192,17 @@ def win_set_environment_variable(key, value, system=True):
   if VERBOSE: print('set ' + str(key) + '=' + str(value) + ', in system=' + str(system), file=sys.stderr)
   previous_value = win_get_environment_variable(key, system)
   if previous_value == value:
+    if VERBOSE: print('  no need to set, since same value already exists.')
     return # No need to elevate UAC for nothing to set the same value, skip.
 
   if not value:
     try:
       if system:
-        value = subprocess.call(['REG', 'DELETE', 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment', '/V', key, '/f'], stdout=subprocess.PIPE)
+        cmd = ['REG', 'DELETE', 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment', '/V', key, '/f']
       else:
-        value = subprocess.call(['REG', 'DELETE', 'HKCU\\Environment', '/V', key, '/f'], stdout=subprocess.PIPE)
+        cmd = ['REG', 'DELETE', 'HKCU\\Environment', '/V', key, '/f']
+      if VERBOSE: print(str(cmd))
+      value = subprocess.call(cmd, stdout=subprocess.PIPE)
     except Exception as e:
       return
     return
@@ -207,14 +211,13 @@ def win_set_environment_variable(key, value, system=True):
     if system:
       win_set_environment_variable_direct(key, value, system)
       return
-    else:
-      if len(value) < 1024:
-        cmd = ['SETX']
-      else:
-        print('ERROR! The new environment variable ' + key + ' is more than 1024 characters long! A value this long cannot be set via command line: please add the environment variable specified above to system environment manually via Control Panel.', file=sys.stderr)
-        sys.exit(1)
-    if WINDOWS: value = value.replace('%', '^%') # Escape % signs so that we don't expand references to environment variables.
-    retcode = subprocess.call(cmd + [key, value], stdout=subprocess.PIPE)
+    value = value.replace('%', '^%') # Escape % signs so that we don't expand references to environment variables.
+    if len(value) >= 1024:
+      print('ERROR! The new environment variable ' + key + ' is more than 1024 characters long! A value this long cannot be set via command line: please add the environment variable specified above to system environment manually via Control Panel.', file=sys.stderr)
+      sys.exit(1)
+    cmd = ['SETX', key, value] 
+    if VERBOSE: print(str(cmd))
+    retcode = subprocess.call(cmd, stdout=subprocess.PIPE)
     if retcode is not 0:
       print('ERROR! Failed to set environment variable ' + key + '=' + value + '. You may need to set it manually.', file=sys.stderr)
   except Exception as e:
