@@ -750,6 +750,12 @@
     "activated_path": "%installation_dir%"
   },
   {
+    "id": "gnu", // Would really want to name this 'grep' but llvm-lit has a bug that it fails to find 'grep' tool if it is located in a directory that has the word 'grep' as a substring.
+    "version": "2.5.4",
+    "windows_url": "grep-2.5.4.zip",
+    "activated_path": "%installation_dir%/bin"
+  },
+  {
     "id": "mingw",
     "version": "4.6.2",
     "bitness": 32,
