@@ -548,16 +548,35 @@ def fastcomp_build_bin_dir(tool):
   else:
     return os.path.join(build_dir, 'bin')
 
-make_env = os.environ.copy()
+def build_env(generator):
+  build_env = os.environ.copy()
 
-cxxflags = ''
-if hasattr(make_env, 'CXXFLAGS'): cxxflags = make_env['CXXFLAGS'] + ' '
+  # To work around a build issue with older Mac OS X builds, add -stdlib=libc++ to all builds.
+  # See https://groups.google.com/forum/#!topic/emscripten-discuss/5Or6QIzkqf0
+  if OSX: build_env['CXXFLAGS'] = ((build_env['CXXFLAGS'] + ' ') if hasattr(build_env, 'CXXFLAGS') else '') + '-stdlib=libc++'
 
-# To work around a build issue with older Mac OS X builds, add -stdlib=libc++ to all builds.
-# See https://groups.google.com/forum/#!topic/emscripten-discuss/5Or6QIzkqf0
-if OSX: cxxflags += '-stdlib=libc++'
+  if 'Visual Studio 14' in generator or 'Visual Studio 2015' in generator:
+    build_env['VCTargetsPath'] = os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/Microsoft.Cpp/v4.0/V140')
 
-make_env['CXXFLAGS'] = cxxflags
+    # CMake and VS2015 cl.exe needs to have mspdb140.dll et al. in its PATH.
+    vc_bin_paths = [os.path.join(os.environ['ProgramFiles'], 'Microsoft Visual Studio 14.0\\VC\\bin'),
+                    os.path.join(os.environ['ProgramFiles(x86)'], 'Microsoft Visual Studio 14.0\\VC\\bin')]
+    for path in vc_bin_paths:
+      if os.path.isdir(path):
+        build_env['PATH'] = build_env['PATH'] + ';' + path
+
+  elif 'Visual Studio 12' in generator or 'Visual Studio 2013' in generator:
+    build_env['VCTargetsPath'] = os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/Microsoft.Cpp/v4.0/V120')
+
+  return build_env
+
+def get_generator_for_sln_file(sln_file):
+  contents = open(sln_file, 'r').read()
+  if '# Visual Studio Express 2015' in contents or '# Visual Studio 2015' in contents or '# Visual Studio 14' in contents:
+    return 'Visual Studio 14'
+  if '# Visual Studio Express 2013' in contents or '# Visual Studio 2013' in contents or '# Visual Studio 12' in contents:
+    return 'Visual Studio 12'
+  raise Exception('Unknown generator used to build solution file ' + sln_file)
 
 def find_msbuild(sln_file):
   search_paths_vs2015 = [os.path.join(os.environ['ProgramFiles'], 'MSBuild/14.0/Bin/amd64'),
@@ -569,15 +588,14 @@ def find_msbuild(sln_file):
                         os.path.join(os.environ['ProgramFiles'], 'MSBuild/12.0/Bin'),
                         os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/12.0/Bin')]
   search_paths_old = [os.path.join(os.environ["WINDIR"], 'Microsoft.NET/Framework/v4.0.30319')]
-  contents = open(sln_file, 'r').read()
-  if '# Visual Studio Express 2015' in contents or '# Visual Studio 2015' in contents or '# Visual Studio 14' in contents:
+  generator = get_generator_for_sln_file(sln_file)
+  if generator == 'Visual Studio 14':
     search_paths = search_paths_vs2015
-    make_env['VCTargetsPath'] = os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/Microsoft.Cpp/v4.0/V140')
-  if '# Visual Studio Express 2013' in contents or '# Visual Studio 2013' in contents or '# Visual Studio 12' in contents:
+  elif generator == 'Visual Studio 12':
     search_paths = search_paths_vs2013 + search_paths_old
-    make_env['VCTargetsPath'] = os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/Microsoft.Cpp/v4.0/V120')
   else:
-    search_paths = search_paths_old + search_paths_vs2013
+    raise Exception('Unknown generator!')
+
   for path in search_paths:
     p = os.path.join(path, 'MSBuild.exe')
     if os.path.isfile(p): return p
@@ -589,9 +607,13 @@ def make_build(build_root, build_type, build_target_platform='x64'):
     print('Performing a parallel build with ' + str(CPU_CORES) + ' cores.')
   else:
     print('Performing a singlethreaded build.')
+
+  generator_to_use = CMAKE_GENERATOR
+
   if WINDOWS:
     if 'Visual Studio' in CMAKE_GENERATOR:
       solution_name = subprocess.check_output(['dir', '/b', '*.sln'], shell=True, cwd=build_root).strip()
+      generator_to_use = get_generator_for_sln_file(os.path.join(build_root, solution_name))
 # Disabled for now: Don't pass /maxcpucount argument to msbuild, since it looks like when building, msbuild already automatically spawns the full amount of logical
 # cores the system has, and passing the number of logical cores here has been observed to give a quadratic N*N explosion on the number of spawned processes
 # (e.g. on a Core i7 5960X with 16 logical cores, it would spawn 16*16=256 cl.exe processes, which would start crashing when running out of system memory)
@@ -605,7 +627,7 @@ def make_build(build_root, build_type, build_target_platform='x64'):
   # Build
   try:
     print('Running build: ' + str(make))
-    ret = subprocess.check_call(make, cwd=build_root, env=make_env)
+    ret = subprocess.check_call(make, cwd=build_root, env=build_env(generator_to_use))
     if ret != 0:
       print('Build failed with exit code ' + ret + '!', file=sys.stderr)
       print('Working directory: ' + build_root, file=sys.stderr)
@@ -627,8 +649,13 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
     else: generator = []
     cmdline = ['cmake'] + generator +  ['-DCMAKE_BUILD_TYPE='+build_type, '-DPYTHON_EXECUTABLE='+sys.executable] + extra_cmake_args + [src_root]
     print('Running CMake: ' + str(cmdline))
-    open(os.path.join(build_root, 'recmake.' + ('bat' if WINDOWS else 'sh')), 'w').write(' '.join(cmdline)) # Create a file 'recmake.bat/sh' in the build root that user can call to manually recmake the build tree with the previous build params
-    ret = subprocess.check_call(cmdline, cwd=build_root)
+    def quote_parens(x):
+      if ' ' in x:
+        return '"' + x.replace('"', '\\"') + '"'
+      else:
+        return x
+    open(os.path.join(build_root, 'recmake.' + ('bat' if WINDOWS else 'sh')), 'w').write(' '.join(map(quote_parens, cmdline))) # Create a file 'recmake.bat/sh' in the build root that user can call to manually recmake the build tree with the previous build params
+    ret = subprocess.check_call(cmdline, cwd=build_root, env=build_env(CMAKE_GENERATOR))
     if ret != 0:
       print('CMake invocation failed with exit code ' + ret + '!', file=sys.stderr)
       print('Working directory: ' + build_root, file=sys.stderr)
