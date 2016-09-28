@@ -871,6 +871,24 @@
     "os": "unix"
   },  
   {
+    "version": "nightly-%nightly-llvm-32bit%",
+    "bitness": 32,
+    "uses": ["clang-nightly-e%nightly-llvm-32bit%-32bit", "node-4.1.1-32bit", "python-2.7.5.3-32bit", "java-7.45-32bit", "emscripten-nightly-%nightly-llvm-32bit%"],
+    "os": "win"
+  },
+  {
+    "version": "nightly-%nightly-llvm-64bit%",
+    "bitness": 64,
+    "uses": ["clang-nightly-e%nightly-llvm-64bit%-64bit", "node-4.1.1-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-nightly-%nightly-llvm-64bit%"],
+    "os": "win"
+  },
+  {
+    "version": "nightly-%nightly-llvm-32bit%",
+    "bitness": 32,
+    "uses": ["clang-nightly-e%nightly-llvm-32bit%-32bit", "node-4.1.1-64bit", "emscripten-nightly-%nightly-llvm-32bit%"],
+    "os": "unix"
+  },
+  {
     "version": "nightly-%nightly-llvm-64bit%",
     "bitness": 64,
     "uses": ["clang-nightly-e%nightly-llvm-64bit%-64bit", "node-4.1.1-64bit", "emscripten-nightly-%nightly-llvm-64bit%"],
