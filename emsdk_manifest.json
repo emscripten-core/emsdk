@@ -84,6 +84,17 @@
   },
   {
     "id": "clang",
+    "version": "nightly-e%nightly-llvm-64bit%",
+    "bitness": 64,
+    "append_bitness": false,
+    "windows_url": "llvm/nightly/win_64bit/emscripten-llvm-e%nightly-llvm-64bit%.zip",
+    "osx_url": "llvm/nightly/osx_64bit/emscripten-llvm-e%nightly-llvm-64bit%.tar.gz",
+    "linux_url": "llvm/nightly/linux_64bit/emscripten-llvm-e%nightly-llvm-64bit%.tar.gz",
+    "activated_path": "%installation_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%'"
+  },
+  {
+    "id": "clang",
     "version": "incoming",
     "bitness": 32,
     "install_path": "clang/fastcomp",
@@ -643,6 +654,15 @@
   },
   {
     "id": "emscripten",
+    "version": "nightly-%nightly-emscripten%",
+    "windows_url": "emscripten/nightly/win/emscripten-nightly-%nightly-emscripten%.zip",
+    "unix_url": "emscripten/nightly/linux/emscripten-nightly-%nightly-emscripten%.tar.gz",
+    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
+    "activated_path": "%installation_dir%",
+    "activated_env": "EMSCRIPTEN=%installation_dir%"
+  },
+  {
+    "id": "emscripten",
     "version": "incoming",
     "bitness": 32,
     "append_bitness": false,
@@ -850,6 +870,12 @@
     "uses": ["clang-tag-e%tag%-64bit", "node-4.1.1-64bit", "emscripten-tag-%tag%-64bit"],
     "os": "unix"
   },  
+  {
+    "version": "nightly-%nightly-llvm-64bit%",
+    "bitness": 64,
+    "uses": ["clang-nightly-e%nightly-llvm-64bit%-64bit", "node-4.1.1-64bit", "emscripten-nightly-%nightly-llvm-64bit%"],
+    "os": "unix"
+  },
   {
     "version": "1.5.6",
     "bitness": 32,

@@ -373,7 +373,7 @@ def path_points_to_directory(path):
   if no_suffix:
     return True
   suffix = path[last_dot:]
-  if suffix == '.exe' or suffix == '.zip': # Very simple logic for the only file suffixes used by emsdk downloader. Other suffixes, like 'clang-3.2' are treated as dirs.
+  if suffix == '.exe' or suffix == '.zip' or suffix == '.txt': # Very simple logic for the only file suffixes used by emsdk downloader. Other suffixes, like 'clang-3.2' are treated as dirs.
     return False
   else:
     return True
@@ -947,6 +947,9 @@ class Tool:
     if hasattr(self, 'uses'):
       for tool_name in self.uses:
         tool = find_tool(tool_name)
+        if not tool:
+          if VERBOSE: print('Tool ' + str(self) + ' depends on ' + tool_name + ' which does not exist!')
+          continue
         if tool.needs_compilation(): return True
 
     return False
@@ -1326,6 +1329,19 @@ def fetch_emscripten_tags():
   else:
     print('Done. No tagged releases available.')
 
+  def os_name_for_llvm_location():
+    if WINDOWS: return 'win'
+    if LINUX: return 'linux'
+    if OSX: return 'osx'
+  def os_name_for_emscripten_location():
+    if WINDOWS: return 'win'
+    else: return 'linux'
+
+  print('Fetching all precompiled Nightly versions..')
+  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/nightly/' + os_name_for_llvm_location() + '_32bit/index.txt', 'llvm-nightlies-32bit.txt', download_even_if_exists=True)
+  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/nightly/' + os_name_for_llvm_location() + '_64bit/index.txt', 'llvm-nightlies-64bit.txt', download_even_if_exists=True)
+  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/emscripten/nightly/' + os_name_for_emscripten_location() + '/index.txt', 'emscripten-nightlies.txt', download_even_if_exists=True)
+
 def update_emsdk():
   if WINDOWS:
     download_and_unzip(urljoin(emsdk_packages_url, 'emsdk_windows_update.zip'), emsdk_path(), download_even_if_exists=True)
@@ -1343,8 +1359,35 @@ def load_emscripten_tags():
   except:
     return []
 
+def remove_prefix(s, prefix):
+  if s.startswith(prefix): return s[len(prefix):]
+  else: return s
+
+def remove_suffix(s, suffix):
+  if s.endswith(suffix): return s[:len(s)-len(suffix)]
+  else: return s
+
+# Kind should be one of: 'llvm-nightlies-32bit.txt', 'llvm-nightlies-64bit.txt', 'emscripten-nightlies.txt'
+def load_nightlies_list(kind):
+  try:
+    items = open(sdk_path(kind), 'r').read().split('\n')
+    items = map(lambda x: remove_suffix(remove_suffix(remove_prefix(remove_prefix(x, 'emscripten-llvm-e'), 'emscripten-nightly-'), '.tar.gz'), '.zip').strip(), items)
+    items = filter(lambda x: 'latest' not in x and len(x) > 0, items)
+    return items
+  except:
+    return []
+
+def load_llvm_32bit_nightlies():
+  return load_nightlies_list('llvm-nightlies-32bit.txt')
+
+def load_llvm_64bit_nightlies():
+  return load_nightlies_list('llvm-nightlies-64bit.txt')
+
+def load_emscripten_nightlies():
+  return load_nightlies_list('emscripten-nightlies.txt')
+
 def load_sdk_manifest():
-  global tools
+  global tools, sdks
   try:
     manifest = json.loads(open(sdk_path("emsdk_manifest.json"), "r").read())
   except Exception as e:
@@ -1353,6 +1396,34 @@ def load_sdk_manifest():
     return
 
   emscripten_tags = load_emscripten_tags()
+  llvm_32bit_nightlies = load_llvm_32bit_nightlies()
+  llvm_64bit_nightlies = load_llvm_64bit_nightlies()
+  emscripten_nightlies = load_emscripten_nightlies()
+
+  def dependencies_exist(sdk):
+    for tool_name in sdk.uses:
+      tool = find_tool(tool_name)
+      if not tool: return False
+    return True
+
+  # A 'category parameter' is a %foo%-encoded identifier that specifies
+  # a class of tools instead of just one tool, e.g. %tag% or %nightly..%
+  def expand_category_param(param, category_list, t, is_sdk):
+    global tools, sdks
+    for i in range(len(category_list)):
+      ver = category_list[i]
+      t2 = copy.copy(t)
+      for p, v in vars(t2).iteritems():
+        if isinstance(v, basestring) and param in v:
+          t2.__dict__[p] = v.replace(param, ver)
+      t2.is_old = i < len(category_list) - 2
+      if hasattr(t2, 'uses'):
+        t2.uses = map((lambda x: x.replace(param, ver)), t2.uses)
+      if is_sdk:
+        if dependencies_exist(t2):
+          sdks.append(t2)
+      else:
+        tools.append(t2)
 
   for tool in manifest['tools']:
     t = Tool(tool)
@@ -1360,16 +1431,15 @@ def load_sdk_manifest():
       if not hasattr(t, 'is_old'):
         t.is_old = False
 
+      # Expand the metapackages that refer to tags or nightlies.
       if '%tag%' in t.version:
-        # Expand the metapackage that refers to all tags.
-        for i in range(len(emscripten_tags)):
-          tag = emscripten_tags[i]
-          t2 = copy.copy(t)
-          for p, v in vars(t2).iteritems():
-            if isinstance(v, basestring) and '%tag%' in v:
-              t2.__dict__[p] = v.replace('%tag%', tag)
-          t2.is_old = i < len(emscripten_tags) - 2
-          tools.append(t2)
+        expand_category_param('%tag%', emscripten_tags, t, is_sdk=False)
+      elif '%nightly-llvm-64bit%' in t.version:
+        expand_category_param('%nightly-llvm-64bit%', llvm_64bit_nightlies, t, is_sdk=False)
+      elif '%nightly-llvm-32bit%' in t.version:
+        expand_category_param('%nightly-llvm-32bit%', llvm_32bit_nightlies, t, is_sdk=False)
+      elif '%nightly-emscripten%' in t.version:
+        expand_category_param('%nightly-emscripten%', emscripten_nightlies, t, is_sdk=False)
       else:
         tools.append(t)
 
@@ -1381,16 +1451,13 @@ def load_sdk_manifest():
         sdk.is_old = False
 
       if '%tag%' in sdk.version:
-        # Expand the metapackage that refers to all tags.
-        for i in range(len(emscripten_tags)):
-          tag = emscripten_tags[i]
-          sdk2 = copy.copy(sdk)
-          for p, v in vars(sdk2).iteritems():
-            if isinstance(v, basestring) and '%tag%' in v:
-              sdk2.__dict__[p] = v.replace('%tag%', tag)
-          sdk2.is_old = i < len(emscripten_tags) - 2
-          sdk2.uses = map((lambda x: x.replace('%tag%', tag)), sdk2.uses)
-          sdks.append(sdk2)
+        expand_category_param('%tag%', emscripten_tags, sdk, is_sdk=True)
+      elif '%nightly-llvm-64bit%' in sdk.version:
+        expand_category_param('%nightly-llvm-64bit%', llvm_64bit_nightlies, sdk, is_sdk=True)
+      elif '%nightly-llvm-32bit%' in sdk.version:
+        expand_category_param('%nightly-llvm-32bit%', llvm_32bit_nightlies, sdk, is_sdk=True)
+      elif '%nightly-emscripten%' in sdk.version:
+        expand_category_param('%nightly-emscripten%', emscripten_nightlies, sdk, is_sdk=True)
       else:
         sdks.append(sdk)
 
@@ -1777,7 +1844,7 @@ def main():
           active = '*' if sdk.is_active() else ' '
           print('    ' + active + '    {0: <25}'.format(str(sdk)) + installed)
         print('')
-      print('The following precompiled SDKs are available for download:')
+      print('The following precompiled SDKs are available for download: (Run "./emsdk update" to pull in the latest list)')
       print_sdks(find_sdks(False))
       print('The following SDKs can be compiled from source:')
       print_sdks(find_sdks(True))
