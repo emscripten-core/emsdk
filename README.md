@@ -9,9 +9,9 @@ You can also set up Emscripten from source, without the pre-built SDK, see "Inst
 To get started with Emscripten development, grab one of the packages below:
 
 Windows:
-* Emscripten SDK Web Installer (64-bit) is a NSIS installer that always gets you the latest Emscripten SDK from the web:
+* Emscripten SDK Web Installer (64-bit) is an NSIS installer that always gets you the latest Emscripten SDK from the web:
   * [emsdk-1.35.0-web-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.35.0-web-64bit.exe)
-* Emscripten SDK Offline Installer (64-bit) is a NSIS installer that bundles together the Emscripten toolchain as an offline-installable package:
+* Emscripten SDK Offline Installer (64-bit) is an NSIS installer that bundles together the Emscripten toolchain as an offline-installable package:
   * [emsdk-1.35.0-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.35.0-full-64bit.exe)
 * Portable Emscripten SDK (64-bit) is a zipped package of the Emscripten SDK that does not require system installation privileges. Just unzip and go:
   * [emsdk-1.35.0-portable-64bit.zip](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.35.0-portable-64bit.zip)
@@ -19,15 +19,15 @@ Windows:
 Linux and Mac OS X:
 * [emsdk-portable.tar.gz](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz): Emscripten SDK is available as a portable web-installer for Linux and OS X.
 
-**Old Releases** are available in the **Archived Releases** section below. 
+**Old Releases** are available in the **Archived Releases** section below.
 
 ## Installation Instructions
 
 Check one of the topics below for what to do with the package you just downloaded.
 
-#### Windows: Installing using a NSIS Installer
+#### Windows: Installing using an NSIS Installer
 
-The NSIS installers register the Emscripten SDK as a 'standard' Windows application. To install the SDK, download a NSIS .exe file above, double-click on it, and run through the installer to perform the installation. After the installer finishes, the full Emscripten toolchain will be available in the directory that was chosen during the installation, and no other steps are necessary. If your system has Visual Studio 2010 installed, the vs-tool MSBuild plugin will be automatically installed as well.
+The NSIS installers register the Emscripten SDK as a 'standard' Windows application. To install the SDK, download an NSIS .exe file above, double-click on it, and run through the installer to perform the installation. After the installer finishes, the full Emscripten toolchain will be available in the directory that was chosen during the installation, and no other steps are necessary. If your system has Visual Studio 2010 installed, the vs-tool MSBuild plugin will be automatically installed as well.
 
 #### Windows, OSX and Linux: Installing the Portable SDK
 
@@ -62,11 +62,11 @@ The [LLVM Backend](https://github.com/kripken/emscripten/wiki/LLVM-Backend) page
 Additional Notes:
 
  * Python is probably already installed if you are on Linux or OS X.
- * Node.js and LLVM should have convenient binaries for your OS, but installing them from source is easy: just compile them in their directories; you don't need to bother with installing them system-wide.
+ * Node.js and LLVM should have convenient binaries for your OS, but installing them from source is easy, just compile them in their directories, you don't need to bother with installing them systemwide.
 
 ### Installing emsdk directly from GitHub
 
-If you want to bootstrap to emsdk development version instead of the stable releases, you can do so by installing emsdk directly from github. Functionally, this behaves identically to the Portable SDK. As a prerequisite, you must first manually download and install [Python](https://www.python.org) to bootstrap, and after that, run:
+If you want to bootstrap to emsdk development version instead of the stable releases, you can do so by installing emsdk directly from github. Functionally this behaves identical to the Portable SDK. As a prerequisite, you must first manually download and install [Python](https://www.python.org) to bootstrap, and after that, run:
 
     git clone https://github.com/juj/emsdk.git
     cd emsdk
@@ -183,7 +183,7 @@ This may happen if the system runs out of memory. If you are attempting to build
 
 ## Uninstalling the Emscripten SDK
 
-If you installed the SDK using a NSIS installer on Windows, launch 'Control Panel' -> 'Uninstall a program' -> 'Emscripten SDK'.
+If you installed the SDK using an NSIS installer on Windows, launch 'Control Panel' -> 'Uninstall a program' -> 'Emscripten SDK'.
 
 If you want to remove a Portable SDK, just delete the directory where you put the Portable SDK into.
 
