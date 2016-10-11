@@ -1070,7 +1070,7 @@ class Tool:
 #      print('activated cfg ' + key + ', value: ' + value)
 #      if dot_emscripten.has_key(key):
 #        print('dot_emscripten ' + dot_emscripten[key])
-      if key in dot_emscripten and dot_emscripten[key] != value:
+      if not key in dot_emscripten or dot_emscripten[key] != value:
         return False
     return True
 
