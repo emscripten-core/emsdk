@@ -9,6 +9,7 @@ crunch
 java
 mingw
 spidermonkey
+binaryen
 .emscripten
 .emscripten_cache
 .emscripten_cache__last_clear
@@ -16,3 +17,6 @@ spidermonkey
 .tmp
 tmp
 gnu
+emscripten-nightlies.txt
+llvm-nightlies-32bit.txt
+llvm-nightlies-64bit.txt

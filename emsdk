@@ -535,16 +535,28 @@ def fastcomp_build_dir(tool):
     build_dir = 'build_' + tool.version + generator_suffix + bitness_suffix
   return build_dir
 
-# The directory where the binaries are produced.
+def exe_suffix(filename):
+  if WINDOWS and not filename.endswith('.exe'): return filename + '.exe'
+  else: return filename
+
+# The directory where the binaries are produced. (relative to the installation root directory of the tool)
 def fastcomp_build_bin_dir(tool):
   build_dir = fastcomp_build_dir(tool)
   if WINDOWS and 'Visual Studio' in CMAKE_GENERATOR:
-    old_llvm_bin_dir = os.path.join(build_dir, 'bin\\' + decide_cmake_build_type(tool))
-    new_llvm_bin_dir = os.path.join(build_dir, decide_cmake_build_type(tool) + '\\bin')
-    if os.path.exists(os.path.join(tool.installation_path(), new_llvm_bin_dir)):
-      return new_llvm_bin_dir
-    if os.path.exists(os.path.join(tool.installation_path(), old_llvm_bin_dir)): return old_llvm_bin_dir
-    return new_llvm_bin_dir
+    old_llvm_bin_dir = os.path.join(build_dir, 'bin', decide_cmake_build_type(tool))
+
+    new_llvm_bin_dir = None
+    default_cmake_build_type = decide_cmake_build_type(tool)
+    cmake_build_types = [default_cmake_build_type, 'Release', 'RelWithDebInfo', 'MinSizeRel', 'Debug']
+    for build_type in cmake_build_types:
+      d = os.path.join(build_dir, build_type, 'bin')
+      if os.path.isfile(os.path.join(tool.installation_path(), d, exe_suffix('clang'))):
+        new_llvm_bin_dir = d
+        break
+
+    if new_llvm_bin_dir and os.path.exists(os.path.join(tool.installation_path(), new_llvm_bin_dir)): return new_llvm_bin_dir
+    elif os.path.exists(os.path.join(tool.installation_path(), old_llvm_bin_dir)): return old_llvm_bin_dir
+    return os.path.join(build_dir, default_cmake_build_type, 'bin')
   else:
     return os.path.join(build_dir, 'bin')
 
@@ -719,6 +731,7 @@ def build_fastcomp_tool(tool):
   success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'Win32')
   return success
 
+# Emscripten asm.js optimizer build scripts:
 def optimizer_build_root(tool):
   build_root = tool.installation_path().strip()
   if build_root.endswith('/') or build_root.endswith('\\'): build_root = build_root[:-1]
@@ -730,8 +743,11 @@ def uninstall_optimizer(tool):
   if VERBOSE: print('uninstall_optimizer(' + str(tool) + ')')
   build_root = optimizer_build_root(tool)
   print("Deleting path '" + build_root + "'")
-  remove_tree(build_root)
-  os.remove(build_root)
+  try:
+    remove_tree(build_root)
+    os.remove(build_root)
+  except:
+    pass
 
 def is_optimizer_installed(tool):
   build_root = optimizer_build_root(tool)
@@ -753,6 +769,56 @@ def build_optimizer_tool(tool):
   # Make
   success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'Win32')
   return success
+
+
+# Binaryen build scripts:
+def binaryen_build_root(tool):
+  build_root = tool.installation_path().strip()
+  if build_root.endswith('/') or build_root.endswith('\\'): build_root = build_root[:-1]
+  generator_prefix = cmake_generator_prefix()
+  build_root = build_root + generator_prefix + '_' + str(tool.bitness) + 'bit_binaryen'
+  return build_root
+
+def uninstall_binaryen(tool):
+  if VERBOSE: print('uninstall_binaryen(' + str(tool) + ')')
+  build_root = binaryen_build_root(tool)
+  print("Deleting path '" + build_root + "'")
+  try:
+    remove_tree(build_root)
+    os.remove(build_root)
+  except:
+    pass
+
+def is_binaryen_installed(tool):
+  build_root = binaryen_build_root(tool)
+  return os.path.exists(build_root)
+
+def build_binaryen_tool(tool):
+  if VERBOSE: print('build_binaryen_tool(' + str(tool) + ')')
+  src_root = tool.installation_path()
+  build_root = binaryen_build_root(tool)
+  build_type = decide_cmake_build_type(tool)
+
+  # Configure
+  cmake_generator = CMAKE_GENERATOR
+  if 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
+    cmake_generator += ' Win64'
+  success = cmake_configure(cmake_generator, build_root, src_root, build_type)
+  if not success: return False
+
+  # Make
+  success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'Win32')
+
+  # Deploy scripts needed from source repository to build directory
+  remove_tree(os.path.join(build_root, 'scripts'))
+  shutil.copytree(os.path.join(src_root, 'scripts'), os.path.join(build_root, 'scripts'))
+  remove_tree(os.path.join(build_root, 'src', 'js'))
+  shutil.copytree(os.path.join(src_root, 'src', 'js'), os.path.join(build_root, 'src', 'js'))
+  shutil.copyfile(os.path.join(src_root, 'bin', 'binaryen.js'), os.path.join(build_root, 'bin', 'binaryen.js'))
+  shutil.copyfile(os.path.join(src_root, 'bin', 'wasm.js'), os.path.join(build_root, 'bin', 'wasm.js'))
+
+  return success
+
 
 def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False, filename_prefix = ''):
   if VERBOSE: print('download_and_unzip(zipfile=' + zipfile + ', dest_dir=' + dest_dir + ')')
@@ -1039,8 +1105,10 @@ class Tool:
       
       if self.id == 'vs-tool': # vs-tool is a special tool since all versions must be installed to the same dir, so dir name will not differentiate the version.
         return content_exists and get_installed_vstool_version(self.installation_path()) == self.version
-      elif hasattr(self, 'custom_is_installed_script') and self.custom_is_installed_script == 'is_optimizer_installed':
-        return is_optimizer_installed(self)
+      elif hasattr(self, 'custom_is_installed_script'):
+        if self.custom_is_installed_script == 'is_optimizer_installed': return is_optimizer_installed(self)
+        elif self.custom_is_installed_script == 'is_binaryen_installed': return is_binaryen_installed(self)
+        else: raise Exception('Unknown custom_is_installed_script directive "' + self.custom_is_installed_script + '"!')
       else:
         return content_exists
     else:
@@ -1146,25 +1214,25 @@ class Tool:
     else:
       print("Installing tool '" + str(self) + "'..")
       url = self.download_url()
+
       if hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_fastcomp':
         success = build_fastcomp_tool(self)
       elif hasattr(self, 'git_branch'):
         success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch)
-        if success:
-          if hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_optimizer':
-            success = build_optimizer_tool(self)
       elif url.endswith('zip') or url.endswith('.tar') or url.endswith('.gz'):
         download_even_if_exists = (self.id == 'vs-tool')
         success = download_and_unzip(url, self.installation_path(), download_even_if_exists, filename_prefix=self.zipfile_prefix if hasattr(self, 'zipfile_prefix') else '')
-        if success:
-          if hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_optimizer':
-            success = build_optimizer_tool(self)
       else:
         dst_file = download_file(urljoin(emsdk_packages_url, self.download_url()), self.installation_path())
-        if dst_file:
-          success = True
-        else:
-          success = False
+        if dst_file: success = True
+        else: success = False
+
+      if success and hasattr(self, 'custom_install_script'):
+        if self.custom_install_script == 'build_optimizer': success = build_optimizer_tool(self)
+        elif self.custom_install_script == 'build_fastcomp': pass # 'build_fastcomp' is a special one that does the download on its own, others do the download manually.
+        elif self.custom_install_script == 'build_binaryen': success = build_binaryen_tool(self)
+        else: raise Exception('Unknown custom_install_script command "' + self.custom_install_script + '"!')
+
       if not success:
         print("Installation failed!")
         return False
@@ -1189,11 +1257,10 @@ class Tool:
       print("Tool '" + str(self) + "' was not installed. No need to uninstall.")
       return
     print("Uninstalling tool '" + str(self) + "'..")
-    if hasattr(self, 'custom_uninstall_script') and self.custom_uninstall_script == 'uninstall_optimizer':
-      try:
-        uninstall_optimizer(self)
-      except:
-        pass
+    if hasattr(self, 'custom_uninstall_script'):
+      if self.custom_uninstall_script == 'uninstall_optimizer': uninstall_optimizer(self)
+      elif self.custom_uninstall_script == 'uninstall_binaryen': uninstall_binaryen(self)
+      else: raise Exception('Unknown custom_uninstall_script directive "' + custom_uninstall_script + '"!')
     try:
       print("Deleting path '" + self.installation_path() + "'")
       remove_tree(self.installation_path())
