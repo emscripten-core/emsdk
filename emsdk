@@ -58,7 +58,15 @@ BUILD_LLVM_TESTS = False
 # Other valid values are 'ON' and 'OFF'
 ENABLE_LLVM_ASSERTIONS = 'auto'
 
+def to_unix_path(p):
+  return p.replace('\\', '/')
+
+def emsdk_path(): return to_unix_path(os.path.dirname(os.path.realpath(__file__)))
+
 emscripten_config_directory = os.path.expanduser("~/")
+# If .emscripten exists, we are configuring as embedded inside the emsdk directory.
+if os.path.exists(os.path.join(emsdk_path(), '.emscripten')):
+  emscripten_config_directory = emsdk_path()
 
 EMSDK_SET_ENV = 'emsdk_set_env.bat' if WINDOWS else 'emsdk_set_env.sh'
 
@@ -235,8 +243,6 @@ def sdk_path(path):
     return path
   else:
     return to_unix_path(os.path.join(os.path.dirname(os.path.realpath(__file__)), path))
-
-def emsdk_path(): return to_unix_path(os.path.dirname(os.path.realpath(__file__)))
 
 # Modifies the given file in-place to contain '\r\n' line endings.
 def file_to_crlf(filename):
@@ -833,9 +839,6 @@ def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False, filenam
   else:
     return untargz(dst_file, dest_dir, unpack_even_if_exists=download_even_if_exists)
 
-def to_unix_path(p):
-  return p.replace('\\', '/')
-
 def to_native_path(p):
   if WINDOWS:
     return to_unix_path(p).replace('/', '\\')
@@ -1135,10 +1138,11 @@ class Tool:
     for cfg in activated_cfg:
       cfg = cfg.strip()
       (key, value) = parse_key_value(cfg)
-#      print('activated cfg ' + key + ', value: ' + value)
-#      if dot_emscripten.has_key(key):
-#        print('dot_emscripten ' + dot_emscripten[key])
-      if not key in dot_emscripten or dot_emscripten[key] != value:
+      if not key in dot_emscripten: return False
+
+      # If running in embedded mode, all paths are stored dynamically relative to the emsdk root, so normalize those first.
+      dot_emscripten_key = dot_emscripten[key].replace("' + emsdk_path + '", emsdk_path())
+      if dot_emscripten_key != value:
         return False
     return True
 
@@ -1926,10 +1930,6 @@ def main():
 
     return 0
   elif cmd == 'construct_env':
-    # If .emscripten exists, we are configuring as embedded inside the emsdk directory.
-    if os.path.exists(os.path.join(emsdk_path(), '.emscripten')):
-      emscripten_config_directory = emsdk_path()
-
     silentremove(EMSDK_SET_ENV) # Clean up old temp file up front, in case of failure later before we get to write out the new one.
     tools_to_activate = currently_active_tools()
     tools_to_activate = process_tool_list(tools_to_activate, log_errors=True)
