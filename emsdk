@@ -51,8 +51,8 @@ CMAKE_BUILD_TYPE_OVERRIDE = None
 # If true, perform a --shallow clone of git.
 GIT_CLONE_SHALLOW = False
 
-# If true, LLVM backend is built with tests enabled.
-BUILD_LLVM_TESTS = False
+# If true, LLVM backend is built with tests enabled, and Binaryen is built with Visual Studio static analyzer enabled.
+BUILD_FOR_TESTING = False
 
 # If 'auto', assertions are decided by the build type (Release&MinSizeRel=disabled, Debug&RelWithDebInfo=enabled)
 # Other valid values are 'ON' and 'OFF'
@@ -724,8 +724,8 @@ def build_fastcomp_tool(tool):
   build_type = decide_cmake_build_type(tool)
 
   # Configure
-  global BUILD_LLVM_TESTS, ENABLE_LLVM_ASSERTIONS
-  tests_arg = 'ON' if BUILD_LLVM_TESTS else 'OFF'
+  global BUILD_FOR_TESTING, ENABLE_LLVM_ASSERTIONS
+  tests_arg = 'ON' if BUILD_FOR_TESTING else 'OFF'
 
   enable_assertions = ENABLE_LLVM_ASSERTIONS.lower() == 'on' or (ENABLE_LLVM_ASSERTIONS == 'auto' and build_type.lower() != 'release' and build_type.lower() != 'minsizerel')
 
@@ -806,10 +806,14 @@ def build_binaryen_tool(tool):
   build_type = decide_cmake_build_type(tool)
 
   # Configure
+  args = []
+
   cmake_generator = CMAKE_GENERATOR
-  if 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
-    cmake_generator += ' Win64'
-  success = cmake_configure(cmake_generator, build_root, src_root, build_type)
+  if 'Visual Studio' in CMAKE_GENERATOR:
+    if tool.bitness == 64: cmake_generator += ' Win64'
+    if BUILD_FOR_TESTING: args += ['-DRUN_STATIC_ANALYZER=1']
+
+  success = cmake_configure(cmake_generator, build_root, src_root, build_type, args)
   if not success: return False
 
   # Make
@@ -1721,7 +1725,7 @@ def silentremove(filename):
     if e.errno != errno.ENOENT: raise
 
 def main():
-  global emscripten_config_directory, BUILD_LLVM_TESTS, ENABLE_LLVM_ASSERTIONS
+  global emscripten_config_directory, BUILD_FOR_TESTING, ENABLE_LLVM_ASSERTIONS
   load_dot_emscripten()
   load_sdk_manifest()
 
@@ -1995,7 +1999,7 @@ def main():
         GIT_CLONE_SHALLOW = True
         sys.argv[i] = ''
       elif sys.argv[i] == '--build-tests':
-        BUILD_LLVM_TESTS = True
+        BUILD_FOR_TESTING = True
         sys.argv[i] = ''
       elif sys.argv[i] == '--enable-assertions':
         ENABLE_LLVM_ASSERTIONS = 'ON'
