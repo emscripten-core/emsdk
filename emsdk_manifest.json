@@ -317,7 +317,7 @@
     "windows_url": "node_4.1.1_32bit.zip",
     "linux_url": "node-v4.1.1-linux-x86.tar.gz",
     "activated_path": "%installation_dir%/bin",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node'"
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'"
   },
   {
     "id": "node",
@@ -327,7 +327,7 @@
     "windows_url": "node_4.1.1_64bit.zip",
     "linux_url": "node-v4.1.1-linux-x64.tar.gz",
     "activated_path": "%installation_dir%/bin",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node'"
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'"
   },
   {
     "id": "python",
