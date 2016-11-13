@@ -1493,9 +1493,9 @@ def load_sdk_manifest():
     return
 
   emscripten_tags = load_emscripten_tags()
-  llvm_32bit_nightlies = load_llvm_32bit_nightlies()
-  llvm_64bit_nightlies = load_llvm_64bit_nightlies()
-  emscripten_nightlies = load_emscripten_nightlies()
+  llvm_32bit_nightlies = list(reversed(load_llvm_32bit_nightlies()))
+  llvm_64bit_nightlies = list(reversed(load_llvm_64bit_nightlies()))
+  emscripten_nightlies = list(reversed(load_emscripten_nightlies()))
 
   def dependencies_exist(sdk):
     for tool_name in sdk.uses:
