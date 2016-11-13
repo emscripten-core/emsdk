@@ -1325,13 +1325,15 @@ def is_os_64bit(): # http://stackoverflow.com/questions/2208828/detect-64bit-os-
 def find_latest_32bit_sdk():
   for sdk in reversed(sdks): # Newest SDK is always at the end of the list.
     if not hasattr(sdk, 'bitness') or sdk.bitness == 32: # If no 'bitness' field, it means the SDK is universal.
-      return sdk
+      if not 'nightly' in sdk.version:
+        return sdk
   return None
 
 def find_latest_64bit_sdk():
   for sdk in reversed(sdks): # Newest SDK is always at the end of the list.
     if not hasattr(sdk, 'bitness') or sdk.bitness == 64: # If no 'bitness' field, it means the SDK is universal.
-      return sdk
+      if not 'nightly' in sdk.version:
+        return sdk
   return None
 
 def find_latest_sdk():
@@ -1339,6 +1341,26 @@ def find_latest_sdk():
     return find_latest_64bit_sdk()
   else:
     return find_latest_32bit_sdk()
+
+def find_latest_nightly_32bit_sdk():
+  for sdk in reversed(sdks): # Newest SDK is always at the end of the list.
+    if not hasattr(sdk, 'bitness') or sdk.bitness == 32: # If no 'bitness' field, it means the SDK is universal.
+      if 'nightly' in sdk.version:
+        return sdk
+  return None
+
+def find_latest_nightly_64bit_sdk():
+  for sdk in reversed(sdks): # Newest SDK is always at the end of the list.
+    if not hasattr(sdk, 'bitness') or sdk.bitness == 64: # If no 'bitness' field, it means the SDK is universal.
+      if 'nightly' in sdk.version:
+        return sdk
+  return None
+
+def find_latest_nightly_sdk():
+  if is_os_64bit():
+    return find_latest_nightly_64bit_sdk()
+  else:
+    return find_latest_nightly_32bit_sdk()
 
 # Finds the best-matching python tool for use.
 def find_used_python():
@@ -1865,6 +1887,12 @@ def main():
         sys.argv[i] = str(find_latest_32bit_sdk())
       elif sys.argv[i] == 'latest-64bit':
         sys.argv[i] = str(find_latest_64bit_sdk())
+      elif sys.argv[i] == 'sdk-nightly-latest':
+        sys.argv[i] = str(find_latest_nightly_sdk())
+      elif sys.argv[i] == 'sdk-nightly-latest-32bit':
+        sys.argv[i] = str(find_latest_nightly_32bit_sdk())
+      elif sys.argv[i] == 'sdk-nightly-latest-64bit':
+        sys.argv[i] = str(find_latest_nightly_64bit_sdk())
 
   if cmd == 'list':
     print('')
