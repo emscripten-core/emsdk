@@ -1767,8 +1767,11 @@ def main():
                                   parameter, also historical versions are
                                   shown.
 
-   emsdk update                 - Fetches a list of updates from the net (but
-                                  does not install them)
+   emsdk update                 - Updates emsdk to the newest version, and also
+                                  runs 'update-tags' (below).
+
+   emsdk update-tags            - Fetches the most up to date list of available
+                                  Emscripten tagged and nightly releases.
 
    emsdk install [options] <tool 1> <tool 2> <tool 3> ...
                                 - Downloads and installs given tools or SDKs.
@@ -1976,6 +1979,9 @@ def main():
   elif cmd == 'update':
     update_emsdk()
     silentremove(sdk_path(EMSDK_SET_ENV)) # Clean up litter after old emsdk update which may have left this temp file around.
+    return 0
+  elif cmd == 'update-tags':
+    fetch_emscripten_tags()
     return 0
   elif cmd == 'activate':
     permanently_activate = '--global' in sys.argv
