@@ -1881,11 +1881,11 @@ def main():
   # Replace meta-packages with the real package names.
   if (cmd == 'update' or cmd == 'install' or cmd == 'activate'):
     for i in range(2, len(sys.argv)):
-      if sys.argv[i] == 'latest':
+      if sys.argv[i] == 'latest' or sys.argv[i] == 'sdk-latest':
         sys.argv[i] = str(find_latest_sdk())
-      elif sys.argv[i] == 'latest-32bit':
+      elif sys.argv[i] == 'latest-32bit' or sys.argv[i] == 'sdk-latest-32bit':
         sys.argv[i] = str(find_latest_32bit_sdk())
-      elif sys.argv[i] == 'latest-64bit':
+      elif sys.argv[i] == 'latest-64bit' or sys.argv[i] == 'sdk-latest-64bit':
         sys.argv[i] = str(find_latest_64bit_sdk())
       elif sys.argv[i] == 'sdk-nightly-latest':
         sys.argv[i] = str(find_latest_nightly_sdk())
