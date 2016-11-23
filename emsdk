@@ -111,7 +111,7 @@ if WINDOWS:
     elif vs2013_exists: CMAKE_GENERATOR = 'Visual Studio 12' # VS2013 is no longer supported, so attempt it as a last resort if someone might want to insist using it.
     else: CMAKE_GENERATOR = '' # No detected generator
 if VERBOSE: print('CMAKE_GENERATOR: ' + CMAKE_GENERATOR)
-sys.argv = filter(lambda x: x not in ['--mingw', '--vs2013', '--vs2015'], sys.argv)
+sys.argv = list(filter(lambda x: x not in ['--mingw', '--vs2013', '--vs2015'], sys.argv))
 
 # Computes a suitable path prefix to use when building with a given generator.
 def cmake_generator_prefix():
@@ -223,7 +223,7 @@ def win_set_environment_variable(key, value, system=True):
     if len(value) >= 1024:
       print('ERROR! The new environment variable ' + key + ' is more than 1024 characters long! A value this long cannot be set via command line: please add the environment variable specified above to system environment manually via Control Panel.', file=sys.stderr)
       sys.exit(1)
-    cmd = ['SETX', key, value] 
+    cmd = ['SETX', key, value]
     if VERBOSE: print(str(cmd))
     retcode = subprocess.call(cmd, stdout=subprocess.PIPE)
     if retcode is not 0:
@@ -403,14 +403,22 @@ def download_file(url, dstpath, download_even_if_exists=False, filename_prefix =
   try:
     u = urlopen(url)
     mkdir_p(os.path.dirname(file_name))
-    with open(file_name, 'wb') as f: 
+    with open(file_name, 'wb') as f:
       meta = u.info()
-      if hasattr(meta.getheaders, "Content-Length"):
-        file_size = int(meta.getheaders("Content-Length")[0])
-        print("Downloading: %s from %s, %s Bytes" % (file_name, url, file_size))
+      if sys.version_info >= (3,):
+        if "Content-Length" in meta:
+          file_size = int(meta["Content-Length"])
+          print("Downloading: %s from %s, %s Bytes" % (file_name, url, file_size))
+        else:
+          file_size = 0
+          print("Downloading: %s from %s" % (file_name, url))
       else:
-        file_size = 0
-        print("Downloading: %s from %s" % (file_name, url))
+        if hasattr(meta.getheaders, "Content-Length"):
+          file_size = int(meta.getheaders("Content-Length")[0])
+          print("Downloading: %s from %s, %s Bytes" % (file_name, url, file_size))
+        else:
+          file_size = 0
+          print("Downloading: %s from %s" % (file_name, url))
 
       file_size_dl = 0
       block_sz = 8192
@@ -677,7 +685,7 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
     if ret != 0:
       print('CMake invocation failed with exit code ' + ret + '!', file=sys.stderr)
       print('Working directory: ' + build_root, file=sys.stderr)
-      return False  
+      return False
   except OSError as e:
     if e.errno == errno.ENOENT:
       print(str(e), file=sys.stderr)
@@ -687,7 +695,7 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
       elif LINUX:
         print('Installing this package requires CMake. Get it via your system package manager (e.g. sudo apt-get install cmake), or from http://www.cmake.org/', file=sys.stderr)
       elif OSX:
-        print('Installing this package requires CMake. Get it via a OSX package manager (Homebrew: "brew install cmake", or MacPorts: "sudo port install cmake"), or from http://www.cmake.org/', file=sys.stderr)        
+        print('Installing this package requires CMake. Get it via a OSX package manager (Homebrew: "brew install cmake", or MacPorts: "sudo port install cmake"), or from http://www.cmake.org/', file=sys.stderr)
       return False
     raise
   except Exception as e:
@@ -905,7 +913,7 @@ def generate_dot_emscripten(active_tools):
   has_node = False
 
   cfg = 'import os\n'
-  
+
   if embedded:
     cfg += "emsdk_path=os.path.dirname(os.environ.get('EM_CONFIG')).replace('\\\\', '/')\n"
 
@@ -935,7 +943,7 @@ JS_ENGINES = [NODE_JS]
     cfg = cfg.replace(emscripten_config_directory, "' + emsdk_path + '")
 
   with open(dot_emscripten_path(), "w") as text_file: text_file.write(cfg)
-  
+
   # Clear old cached emscripten content.
   try:
     remove_tree(os.path.join(emscripten_config_directory, ".emscripten_cache"))
@@ -948,7 +956,7 @@ JS_ENGINES = [NODE_JS]
   print('')
   print(cfg.strip())
   print('')
-  
+
   path_add = get_required_path(active_tools)
   if not WINDOWS:
     emsdk_env = os.path.relpath(sdk_path('emsdk_env.sh'))
@@ -1060,7 +1068,7 @@ class Tool:
       return self.expand_vars(self.activated_env)
     else:
       return ''
-  
+
   def compatible_with_this_os(self):
     if hasattr(self, 'os'):
       if self.os == 'all':
@@ -1109,7 +1117,7 @@ class Tool:
           if not os.path.exists(path): return False
         return True
       content_exists = os.path.exists(self.installation_path()) and each_path_exists(activated_path) and (os.path.isfile(self.installation_path()) or num_files_in_directory(self.installation_path()) > 0)
-      
+
       if self.id == 'vs-tool': # vs-tool is a special tool since all versions must be installed to the same dir, so dir name will not differentiate the version.
         return content_exists and get_installed_vstool_version(self.installation_path()) == self.version
       elif hasattr(self, 'custom_is_installed_script'):
@@ -1125,9 +1133,9 @@ class Tool:
     if not self.is_installed():
       return False
 
-    if self.id == 'vs-tool': 
+    if self.id == 'vs-tool':
       return True # vs-tool is a special tool since all versions must be installed to the same dir, which means that if this tool is installed, it is also active.
-      
+
     # All dependencies of this tool must be active as well.
     deps = self.dependencies()
     for tool in deps:
@@ -1176,7 +1184,7 @@ class Tool:
         win_delete_environment_variable(key, False) # If there is an env var for the LOCAL USER with same name, it will hide the system var, so must remove that first.
 
       win_set_environment_variable(key, value, permanently_activate)
-    
+
   # If this tool can be installed on this system, this function returns True.
   # Otherwise, this function returns a string that describes the reason why this tool is not available.
   def can_be_installed(self):
@@ -1281,7 +1289,7 @@ class Tool:
     if not hasattr(self, 'uses'):
       return []
     deps = []
-    
+
     for tool_name in self.uses:
       tool = find_tool(tool_name)
       if tool:
@@ -1392,6 +1400,9 @@ def version_compare(x, y):
   b = 1 if is_version_at_least(y, x) else 0
   return a - b
 
+def tag_to_sortable_list(tag):
+  return [int(i) for i in tag.split('.')]
+
 def fetch_emscripten_tags():
   git = GIT(must_succeed=False)
   if not git:
@@ -1419,10 +1430,10 @@ def fetch_emscripten_tags():
         all_tags += [t]
     except:
       pass
-  all_tags = sorted(all_tags, cmp=version_compare)
+  all_tags = sorted(all_tags, key=tag_to_sortable_list)
   open(sdk_path('emscripten-tags.txt'), 'w').write('\n'.join(all_tags))
   if len(all_tags) > 0:
-    print('Done. ' + str(len(all_tags)) + ' tagged releases available, latest is ' + all_tags[-1] + '.') 
+    print('Done. ' + str(len(all_tags)) + ' tagged releases available, latest is ' + all_tags[-1] + '.')
   else:
     print('Done. No tagged releases available.')
 
@@ -1470,7 +1481,7 @@ def load_nightlies_list(kind):
     items = open(sdk_path(kind), 'r').read().split('\n')
     items = map(lambda x: remove_suffix(remove_suffix(remove_prefix(remove_prefix(x, 'emscripten-llvm-e'), 'emscripten-nightly-'), '.tar.gz'), '.zip').strip(), items)
     items = filter(lambda x: 'latest' not in x and len(x) > 0, items)
-    return items
+    return list(items)
   except:
     return []
 
@@ -1510,7 +1521,11 @@ def load_sdk_manifest():
     for i in range(len(category_list)):
       ver = category_list[i]
       t2 = copy.copy(t)
-      for p, v in vars(t2).iteritems():
+      for p, v in vars(t2).items():
+        try:
+          basestring
+        except NameError:
+          basestring = str
         if isinstance(v, basestring) and param in v:
           t2.__dict__[p] = v.replace(param, ver)
       t2.is_old = i < len(category_list) - 2
@@ -1819,7 +1834,7 @@ def main():
 
     if WINDOWS:
       print('''
-   emsdk activate [--global] [--embedded] [--build=type] [--vs2013/--vs2015] <tool/sdk> 
+   emsdk activate [--global] [--embedded] [--build=type] [--vs2013/--vs2015] <tool/sdk>
 
                                 - Activates the given tool or SDK in the
                                   environment of the current shell. If the
