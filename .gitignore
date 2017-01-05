@@ -1,5 +1,7 @@
 clang
 emscripten
+emsdk_set_env.bat
+emsdk_set_env.sh
 git
 node
 python
