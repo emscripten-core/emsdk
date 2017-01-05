@@ -141,6 +141,12 @@ Emsdk contains a history of old compiler versions that you can use to maintain y
 
 On Windows, you can directly install an old SDK version by using one of the archived offline NSIS installers. See the **Archived Releases** section down below.
 
+##### When working on git branches compiled from source, how do I update to a newer compiler version?
+
+Unlike tags and precompiled versions, a few of the SDK packages are based on "moving" git branches and compiled from source (sdk-incoming, sdk-master, emscripten-incoming, emscripten-master, binaryen-master). Because of that, the compiled versions will eventually go out of date as new commits are introduced to the development branches. To update an old compiled installation of one of this branches, simply reissue the "emsdk install" command on that package. This will `git pull` the latest changes to the branch and issue an incremental recompilation of the target in question. This way you can keep calling `emsdk install` to keep an Emscripten installation up to date with a given git branch.
+
+Note though that if the previously compiled branch is very old, sometimes CMake gets confused and is unable to properly rebuild a project. This has happened in the past e.g. when LLVM migrated to requiring a newer CMake version. In cases of any odd compilation errors, it is advised to try deleting the intermediate build directory to clear the build (e.g. "emsdk/clang/fastcomp/build_xxx/") before reissuing `emsdk install`.
+
 ##### How do I change the currently active SDK version?
 
 You can toggle between different tools and SDK versions by running `emsdk activate <tool/sdk name>`. Activating a tool will set up `~/.emscripten` to point to that particular tool. On Windows, you can pass the option `--global` to the `activate` command to register the environment permanently to the system registry for all users.
