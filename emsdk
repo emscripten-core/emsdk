@@ -25,6 +25,7 @@ else:
 emsdk_packages_url = urljoin(emsdk_master_server, 'packages/')
 
 emscripten_git_repo = 'https://github.com/kripken/emscripten/'
+binaryen_git_repo = 'https://github.com/WebAssembly/binaryen/'
 
 # Enable this to do very verbose printing about the different steps that are being run. Useful for debugging.
 VERBOSE = bool(os.getenv('EMSDK_VERBOSE')) if os.getenv('EMSDK_VERBOSE') != None else False
@@ -1426,6 +1427,25 @@ def fetch_emscripten_tags():
   else:
     print('Done. No tagged releases available.')
 
+  print('Fetching all tags from Binaryen Github repository...')
+  tags = run_get_output([GIT(), 'ls-remote', '--tags', binaryen_git_repo])
+  if tags[0] != 0: return False # failed to get tags?
+  tags = tags[1]
+  binaryen_tags = []
+  for t in tags.split('\n'):
+    try:
+      t = t[t.index('refs/tags/') + len('refs/tags/'):].strip()
+      if '.' in t:
+        binaryen_tags += [t]
+    except:
+      pass
+  binaryen_tags = sorted(binaryen_tags, cmp=version_compare)
+  open(sdk_path('binaryen-tags.txt'), 'w').write('\n'.join(binaryen_tags))
+  if len(binaryen_tags) > 0:
+    print('Done. ' + str(len(binaryen_tags)) + ' tagged Binaryen releases available, latest is ' + binaryen_tags[-1] + '.')
+  else:
+    print('Done. No tagged Binaryen releases available.')
+
   def os_name_for_llvm_location():
     if WINDOWS: return 'win'
     if LINUX: return 'linux'
@@ -1453,6 +1473,12 @@ def update_emsdk():
 def load_emscripten_tags():
   try:
     return open(sdk_path('emscripten-tags.txt'), 'r').read().split('\n')
+  except:
+    return []
+
+def load_binaryen_tags():
+  try:
+    return open(sdk_path('binaryen-tags.txt'), 'r').read().split('\n')
   except:
     return []
 
@@ -1493,6 +1519,7 @@ def load_sdk_manifest():
     return
 
   emscripten_tags = load_emscripten_tags()
+  binaryen_tags = load_binaryen_tags()
   llvm_32bit_nightlies = list(reversed(load_llvm_32bit_nightlies()))
   llvm_64bit_nightlies = list(reversed(load_llvm_64bit_nightlies()))
   emscripten_nightlies = list(reversed(load_emscripten_nightlies()))
@@ -1531,6 +1558,8 @@ def load_sdk_manifest():
       # Expand the metapackages that refer to tags or nightlies.
       if '%tag%' in t.version:
         expand_category_param('%tag%', emscripten_tags, t, is_sdk=False)
+      elif '%binaryen_tag%' in t.version:
+        expand_category_param('%binaryen_tag%', binaryen_tags, t, is_sdk=False)
       elif '%nightly-llvm-64bit%' in t.version:
         expand_category_param('%nightly-llvm-64bit%', llvm_64bit_nightlies, t, is_sdk=False)
       elif '%nightly-llvm-32bit%' in t.version:
