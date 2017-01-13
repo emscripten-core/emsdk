@@ -328,8 +328,11 @@ def unzip(source_filename, dest_dir, unpack_even_if_exists=False):
           if common_subdir == None:
             common_subdir = words[0]
           elif common_subdir != words[0]:
-            common_subdir = ''
+            common_subdir = None
             break
+        else:
+          common_subdir = None
+          break
 
       unzip_to_dir = dest_dir
       if common_subdir:
