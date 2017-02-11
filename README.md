@@ -216,7 +216,7 @@ If you want to remove a Portable SDK, just delete the directory where you put th
 
 ##### Windows
 
-* On Windows, if you want to build any of the packages from source (instead of using the precompiled ones), you will need git, CMake and Visual Studio 2013. Git can be installed via emsdk by typing "emsdk install git-1.9.4", CMake can be found from http://www.cmake.org/, and Visual Studio can be installed from https://www.visualstudio.com.
+* On Windows, if you want to build any of the packages from source (instead of using the precompiled ones), you will need git, CMake and Visual Studio 2013 or higher. Git can be installed via emsdk by typing "emsdk install git-1.9.4", CMake can be found from http://www.cmake.org/, and Visual Studio can be installed from https://www.visualstudio.com.
 
 ###### How do I run Emscripten on a 32-bit Windows?
 

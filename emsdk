@@ -11,7 +11,7 @@ else:
   from urllib2 import urlopen, HTTPError
 
 # EMSDK_DEV is a developer mode flag, which, if true, the SDK is downloaded from a 'staging' online source,
-# instead of the public source. New releases are first deployed to the staging source for testing, before 
+# instead of the public source. New releases are first deployed to the staging source for testing, before
 # being published to the public. Don't enable this unless you develop EMSDK itself and need to access the
 # staging source repository instead.
 EMSDK_DEV = bool(os.getenv('EMSDK_DEV')) if os.getenv('EMSDK_DEV') != None else False
@@ -103,21 +103,25 @@ if WINDOWS:
   if '--mingw' in sys.argv: CMAKE_GENERATOR = 'MinGW Makefiles'
   elif '--vs2013' in sys.argv: CMAKE_GENERATOR = 'Visual Studio 12'
   elif '--vs2015' in sys.argv: CMAKE_GENERATOR = 'Visual Studio 14'
+  elif '--vs2017' in sys.argv: CMAKE_GENERATOR = 'Visual Studio 15'
   else:
+    vs2017_exists = 'VS150COMMNTOOLS' in os.environ or 'VSSDK150Install' in os.environ or ('ProgramFiles(x86)' in os.environ and os.path.isdir(os.path.join(os.environ['ProgramFiles(x86)'], 'Microsoft Visual Studio/2017')))
     vs2015_exists = 'VS140COMNTOOLS' in os.environ or 'VSSDK140Install' in os.environ or os.path.isdir(os.path.join(os.environ['ProgramFiles'], 'Microsoft Visual Studio 14.0')) or ('ProgramFiles(x86)' in os.environ and os.path.isdir(os.path.join(os.environ['ProgramFiles(x86)'], 'Microsoft Visual Studio 14.0')))
     vs2013_exists = 'VS120COMNTOOLS' in os.environ or os.path.isdir(os.path.join(os.environ['ProgramFiles'], 'Microsoft Visual Studio 12.0')) or ('ProgramFiles(x86)' in os.environ and os.path.isdir(os.path.join(os.environ['ProgramFiles(x86)'], 'Microsoft Visual Studio 12.0')))
     mingw_exists = which('mingw32-make') != None and which('g++') != None
-    if vs2015_exists: CMAKE_GENERATOR = 'Visual Studio 14'
+    if vs2017_exists: CMAKE_GENERATOR = 'Visual Studio 15'
+    elif vs2015_exists: CMAKE_GENERATOR = 'Visual Studio 14'
     elif mingw_exists: CMAKE_GENERATOR = 'MinGW Makefiles'
     elif vs2013_exists: CMAKE_GENERATOR = 'Visual Studio 12' # VS2013 is no longer supported, so attempt it as a last resort if someone might want to insist using it.
     else: CMAKE_GENERATOR = '' # No detected generator
 if VERBOSE: print('CMAKE_GENERATOR: ' + CMAKE_GENERATOR)
-sys.argv = filter(lambda x: x not in ['--mingw', '--vs2013', '--vs2015'], sys.argv)
+sys.argv = filter(lambda x: x not in ['--mingw', '--vs2013', '--vs2015', '--vs2017'], sys.argv)
 
 # Computes a suitable path prefix to use when building with a given generator.
 def cmake_generator_prefix():
+  if CMAKE_GENERATOR == 'Visual Studio 15': return '_vs2017'
   if CMAKE_GENERATOR == 'Visual Studio 14': return '_vs2015'
-  elif CMAKE_GENERATOR == 'MinGW Makefiles': return '_mingw'
+  if CMAKE_GENERATOR == 'MinGW Makefiles': return '_mingw'
   return '' # Unix Makefiles and Visual Studio 2013 do not specify a path prefix for backwards path compatibility
 
 # Removes a directory tree even if it was readonly, and doesn't throw exception on failure.
@@ -224,7 +228,7 @@ def win_set_environment_variable(key, value, system=True):
     if len(value) >= 1024:
       print('ERROR! The new environment variable ' + key + ' is more than 1024 characters long! A value this long cannot be set via command line: please add the environment variable specified above to system environment manually via Control Panel.', file=sys.stderr)
       sys.exit(1)
-    cmd = ['SETX', key, value] 
+    cmd = ['SETX', key, value]
     if VERBOSE: print(str(cmd))
     retcode = subprocess.call(cmd, stdout=subprocess.PIPE)
     if retcode is not 0:
@@ -407,7 +411,7 @@ def download_file(url, dstpath, download_even_if_exists=False, filename_prefix =
   try:
     u = urlopen(url)
     mkdir_p(os.path.dirname(file_name))
-    with open(file_name, 'wb') as f: 
+    with open(file_name, 'wb') as f:
       meta = u.info()
       if hasattr(meta.getheaders, "Content-Length"):
         file_size = int(meta.getheaders("Content-Length")[0])
@@ -535,6 +539,7 @@ def fastcomp_build_dir(tool):
   elif CMAKE_GENERATOR == 'Visual Studio 11': generator_suffix = '_vs2012'
   elif CMAKE_GENERATOR == 'Visual Studio 12': generator_suffix = '_vs2013'
   elif CMAKE_GENERATOR == 'Visual Studio 14': generator_suffix = '_vs2015'
+  elif CMAKE_GENERATOR == 'Visual Studio 15': generator_suffix = '_vs2017'
   elif CMAKE_GENERATOR == 'MinGW Makefiles': generator_suffix = '_mingw'
 
   bitness_suffix = '_32' if tool.bitness == 32 else '_64'
@@ -594,6 +599,8 @@ def build_env(generator):
 
 def get_generator_for_sln_file(sln_file):
   contents = open(sln_file, 'r').read()
+  if '# Visual Studio 15' in contents:
+    return 'Visual Studio 15'
   if '# Visual Studio Express 2015' in contents or '# Visual Studio 2015' in contents or '# Visual Studio 14' in contents:
     return 'Visual Studio 14'
   if '# Visual Studio Express 2013' in contents or '# Visual Studio 2013' in contents or '# Visual Studio 12' in contents:
@@ -601,6 +608,9 @@ def get_generator_for_sln_file(sln_file):
   raise Exception('Unknown generator used to build solution file ' + sln_file)
 
 def find_msbuild(sln_file):
+  search_paths_vs2017 = [os.path.join(os.environ['ProgramFiles(x86)'], 'Microsoft Visual Studio/2017/Community/MSBuild/15.0/Bin'),
+                        os.path.join(os.environ['ProgramFiles(x86)'], 'Microsoft Visual Studio/2017/Professional/MSBuild/15.0/Bin'),
+                        os.path.join(os.environ['ProgramFiles(x86)'], 'Microsoft Visual Studio/2017/Enterprise/MSBuild/15.0/Bin')]
   search_paths_vs2015 = [os.path.join(os.environ['ProgramFiles'], 'MSBuild/14.0/Bin/amd64'),
                         os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/14.0/Bin/amd64'),
                         os.path.join(os.environ['ProgramFiles'], 'MSBuild/14.0/Bin'),
@@ -611,7 +621,9 @@ def find_msbuild(sln_file):
                         os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/12.0/Bin')]
   search_paths_old = [os.path.join(os.environ["WINDIR"], 'Microsoft.NET/Framework/v4.0.30319')]
   generator = get_generator_for_sln_file(sln_file)
-  if generator == 'Visual Studio 14':
+  if generator == 'Visual Studio 15':
+    search_paths = search_paths_vs2017
+  elif generator == 'Visual Studio 14':
     search_paths = search_paths_vs2015
   elif generator == 'Visual Studio 12':
     search_paths = search_paths_vs2013 + search_paths_old
@@ -681,7 +693,7 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
     if ret != 0:
       print('CMake invocation failed with exit code ' + ret + '!', file=sys.stderr)
       print('Working directory: ' + build_root, file=sys.stderr)
-      return False  
+      return False
   except OSError as e:
     if e.errno == errno.ENOENT:
       print(str(e), file=sys.stderr)
@@ -691,7 +703,7 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
       elif LINUX:
         print('Installing this package requires CMake. Get it via your system package manager (e.g. sudo apt-get install cmake), or from http://www.cmake.org/', file=sys.stderr)
       elif OSX:
-        print('Installing this package requires CMake. Get it via a OSX package manager (Homebrew: "brew install cmake", or MacPorts: "sudo port install cmake"), or from http://www.cmake.org/', file=sys.stderr)        
+        print('Installing this package requires CMake. Get it via a OSX package manager (Homebrew: "brew install cmake", or MacPorts: "sudo port install cmake"), or from http://www.cmake.org/', file=sys.stderr)
       return False
     raise
   except Exception as e:
@@ -909,7 +921,7 @@ def generate_dot_emscripten(active_tools):
   has_node = False
 
   cfg = 'import os\n'
-  
+
   if embedded:
     cfg += "emsdk_path=os.path.dirname(os.environ.get('EM_CONFIG')).replace('\\\\', '/')\n"
 
@@ -939,7 +951,7 @@ JS_ENGINES = [NODE_JS]
     cfg = cfg.replace(emscripten_config_directory, "' + emsdk_path + '")
 
   with open(dot_emscripten_path(), "w") as text_file: text_file.write(cfg)
-  
+
   # Clear old cached emscripten content.
   try:
     remove_tree(os.path.join(emscripten_config_directory, ".emscripten_cache"))
@@ -952,7 +964,7 @@ JS_ENGINES = [NODE_JS]
   print('')
   print(cfg.strip())
   print('')
-  
+
   path_add = get_required_path(active_tools)
   if not WINDOWS:
     emsdk_env = os.path.relpath(sdk_path('emsdk_env.sh'))
@@ -1064,7 +1076,7 @@ class Tool:
       return self.expand_vars(self.activated_env)
     else:
       return ''
-  
+
   def compatible_with_this_os(self):
     if hasattr(self, 'os'):
       if self.os == 'all':
@@ -1113,7 +1125,7 @@ class Tool:
           if not os.path.exists(path): return False
         return True
       content_exists = os.path.exists(self.installation_path()) and each_path_exists(activated_path) and (os.path.isfile(self.installation_path()) or num_files_in_directory(self.installation_path()) > 0)
-      
+
       if self.id == 'vs-tool': # vs-tool is a special tool since all versions must be installed to the same dir, so dir name will not differentiate the version.
         return content_exists and get_installed_vstool_version(self.installation_path()) == self.version
       elif hasattr(self, 'custom_is_installed_script'):
@@ -1129,9 +1141,9 @@ class Tool:
     if not self.is_installed():
       return False
 
-    if self.id == 'vs-tool': 
+    if self.id == 'vs-tool':
       return True # vs-tool is a special tool since all versions must be installed to the same dir, which means that if this tool is installed, it is also active.
-      
+
     # All dependencies of this tool must be active as well.
     deps = self.dependencies()
     for tool in deps:
@@ -1180,7 +1192,7 @@ class Tool:
         win_delete_environment_variable(key, False) # If there is an env var for the LOCAL USER with same name, it will hide the system var, so must remove that first.
 
       win_set_environment_variable(key, value, permanently_activate)
-    
+
   # If this tool can be installed on this system, this function returns True.
   # Otherwise, this function returns a string that describes the reason why this tool is not available.
   def can_be_installed(self):
@@ -1285,7 +1297,7 @@ class Tool:
     if not hasattr(self, 'uses'):
       return []
     deps = []
-    
+
     for tool_name in self.uses:
       tool = find_tool(tool_name)
       if tool:
@@ -1426,7 +1438,7 @@ def fetch_emscripten_tags():
   all_tags = sorted(all_tags, cmp=version_compare)
   open(sdk_path('emscripten-tags.txt'), 'w').write('\n'.join(all_tags))
   if len(all_tags) > 0:
-    print('Done. ' + str(len(all_tags)) + ' tagged releases available, latest is ' + all_tags[-1] + '.') 
+    print('Done. ' + str(len(all_tags)) + ' tagged releases available, latest is ' + all_tags[-1] + '.')
   else:
     print('Done. No tagged releases available.')
 
@@ -1840,7 +1852,7 @@ def main():
                                   branch, disabled for 'master' branch.
             --disable-assertions: Forces assertions off during the build.
 
-               --vs2013/--vs2015: If building from source, overrides to build
+      --vs2013/--vs2015/--vs2017: If building from source, overrides to build
                                   using the specified compiler. When installing
                                   precompiled packages, this has no effect.
                                   Note: The same compiler specifier must be
@@ -1851,7 +1863,7 @@ def main():
 
     if WINDOWS:
       print('''
-   emsdk activate [--global] [--embedded] [--build=type] [--vs2013/--vs2015] <tool/sdk> 
+   emsdk activate [--global] [--embedded] [--build=type] [--vs2013/--vs2015/--vs2017] <tool/sdk>
 
                                 - Activates the given tool or SDK in the
                                   environment of the current shell. If the
@@ -1864,8 +1876,8 @@ def main():
                                   directory rather than the user home
                                   directory. If a custom compiler version was
                                   used to override the compiler to use, pass
-                                  the same --vs2013/--vs2015 parameter here to
-                                  choose which version to activate.
+                                  the same --vs2013/--vs2015/--vs2017 parameter
+                                  here to choose which version to activate.
 
    emcmdprompt.bat              - Spawns a new command prompt window with the
                                   Emscripten environment active.''')
