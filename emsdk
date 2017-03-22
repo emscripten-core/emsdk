@@ -309,6 +309,16 @@ def untargz(source_filename, dest_dir, unpack_even_if_exists=False):
   #tfile.extractall(dest_dir)
   return True
 
+# On Windows, it is not possible to reference path names that are longer than ~260 characters, unless the path is referenced via a "\\?\" prefix.
+# See https://msdn.microsoft.com/en-us/library/aa365247.aspx#maxpath and http://stackoverflow.com/questions/3555527/python-win32-filename-length-workaround
+# In that mode, forward slashes cannot be used as delimiters.
+def fix_potentially_long_windows_pathname(pathname):
+  if not WINDOWS: return pathname
+  # Test if emsdk calls fix_potentially_long_windows_pathname() with long relative paths (which is problematic)
+  if not os.path.isabs(pathname) and len(pathname) > 200: print('Warning: Seeing a relative path "' + pathname + '" which is dangerously long for being referenced as a short Windows path name. Refactor emsdk to be able to handle this!')
+  if pathname.startswith('\\\\?\\'): return pathname
+  return '\\\\?\\' + os.path.normpath(pathname.replace('/', '\\'))
+
 # http://stackoverflow.com/questions/12886768/simple-way-to-unzip-file-in-python-on-all-oses
 def unzip(source_filename, dest_dir, unpack_even_if_exists=False):
   if VERBOSE: print('unzip(source_filename=' + source_filename + ', dest_dir=' + dest_dir + ')')
@@ -340,24 +350,22 @@ def unzip(source_filename, dest_dir, unpack_even_if_exists=False):
 
       # Now do the actual decompress.
       for member in zf.infolist():
-        # Path traversal defense copied from
-        # http://hg.python.org/cpython/file/tip/Lib/http/server.py#l789
-        words = member.filename.split('/')
-        path = unzip_to_dir
-        for word in words[:-1]:
-          drive, word = os.path.splitdrive(word)
-          head, word = os.path.split(word)
-          if word in (os.curdir, os.pardir, ''): continue
-          path = os.path.join(path, word)
-        zf.extract(member, unzip_to_dir)
+        zf.extract(member, fix_potentially_long_windows_pathname(unzip_to_dir))
+
+        # Move the extracted file to its final location without the base directory name, if we are stripping that away.
+        if common_subdir:
+          if not member.filename.startswith(common_subdir):
+            raise Exception('Unexpected filename "' + member.filename + '"!')
+          stripped_filename = '.' + member.filename[len(common_subdir):]
+          final_dst_filename = os.path.join(dest_dir, stripped_filename)
+          if stripped_filename.endswith('/'): # Directory?
+            d = fix_potentially_long_windows_pathname(final_dst_filename)
+            if not os.path.isdir(d): os.mkdir(d)
+          else:
+            tmp_dst_filename = os.path.join(unzip_to_dir, member.filename)
+            os.rename(fix_potentially_long_windows_pathname(tmp_dst_filename), fix_potentially_long_windows_pathname(final_dst_filename))
 
       if common_subdir:
-        try:
-          if os.path.exists(dest_dir):
-            remove_tree(dest_dir)
-        except:
-          pass
-        shutil.copytree(os.path.join(unzip_to_dir, common_subdir), dest_dir)
         try:
           remove_tree(unzip_to_dir)
         except:
