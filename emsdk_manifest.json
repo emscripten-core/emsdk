@@ -1319,6 +1319,30 @@
     "bitness": 64,
     "uses": ["clang-e%precompiled_tag64%-64bit", "node-4.1.1-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-%precompiled_tag64%"],
     "os": "win"
+  },
+  {
+    "version": "%precompiled_tag32%",
+    "bitness": 32,
+    "uses": ["clang-e%precompiled_tag32%-32bit", "node-4.1.1-32bit", "emscripten-%precompiled_tag32%"],
+    "os": "linux"
+  },
+  {
+    "version": "%precompiled_tag64%",
+    "bitness": 64,
+    "uses": ["clang-e%precompiled_tag64%-64bit", "node-4.1.1-64bit", "emscripten-%precompiled_tag64%"],
+    "os": "linux"
+  },
+  {
+    "version": "%precompiled_tag32%",
+    "bitness": 32,
+    "uses": ["clang-e%precompiled_tag32%-32bit", "node-4.1.1-32bit", "emscripten-%precompiled_tag32%"],
+    "os": "osx"
+  },
+  {
+    "version": "%precompiled_tag64%",
+    "bitness": 64,
+    "uses": ["clang-e%precompiled_tag64%-64bit", "node-4.1.1-64bit", "emscripten-%precompiled_tag64%"],
+    "os": "osx"
   }
   ]
 }
