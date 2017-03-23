@@ -264,6 +264,28 @@
     "activated_env": "BINARYEN_ROOT=%installation_dir%/binaryen"
   },
   {
+    "id": "clang",
+    "version": "e%precompiled_tag32%",
+    "bitness": 32,
+    "windows_url": "llvm/tag/win_64bit/emscripten-llvm-e%precompiled_tag32%.zip",
+    "osx_url": "llvm/tag/osx_64bit/emscripten-llvm-e%precompiled_tag32%.tar.gz",
+    "linux_url": "llvm/tag/linux_64bit/emscripten-llvm-e%precompiled_tag32%.tar.gz",
+    "activated_path": "%installation_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/optimizer%.exe%';BINARYEN_ROOT='%installation_dir%/binaryen'",
+    "activated_env": "BINARYEN_ROOT=%installation_dir%/binaryen"
+  },
+  {
+    "id": "clang",
+    "version": "e%precompiled_tag64%",
+    "bitness": 64,
+    "windows_url": "llvm/tag/win_64bit/emscripten-llvm-e%precompiled_tag64%.zip",
+    "osx_url": "llvm/tag/osx_64bit/emscripten-llvm-e%precompiled_tag64%.tar.gz",
+    "linux_url": "llvm/tag/linux_64bit/emscripten-llvm-e%precompiled_tag64%.tar.gz",
+    "activated_path": "%installation_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/optimizer%.exe%';BINARYEN_ROOT='%installation_dir%/binaryen'",
+    "activated_env": "BINARYEN_ROOT=%installation_dir%/binaryen"
+  },
+  {
     "id": "node",
     "version": "0.10.17",
     "bitness": 32,
@@ -671,6 +693,15 @@
     "custom_install_script": "build_optimizer",
     "custom_is_installed_script": "is_optimizer_installed",
     "custom_uninstall_script": "uninstall_optimizer"
+  },
+  {
+    "id": "emscripten",
+    "version": "%precompiled_tag%",
+    "windows_url": "https://github.com/kripken/emscripten/archive/%precompiled_tag%.zip",
+    "unix_url": "https://github.com/kripken/emscripten/archive/%precompiled_tag%.tar.gz",
+    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
+    "activated_path": "%installation_dir%",
+    "activated_env": "EMSCRIPTEN=%installation_dir%"
   },
   {
     "id": "binaryen",
@@ -1275,6 +1306,18 @@
     "version": "1.37.1",
     "bitness": 64,
     "uses": ["clang-e1.37.1-64bit", "node-4.1.1-64bit", "python-2.7.5.3-64bit", "emscripten-1.37.1"],
+    "os": "win"
+  },
+  {
+    "version": "%precompiled_tag32%",
+    "bitness": 32,
+    "uses": ["clang-e%precompiled_tag32%-32bit", "node-4.1.1-32bit", "python-2.7.5.3-32bit", "java-7.45-32bit", "emscripten-%precompiled_tag32%"],
+    "os": "win"
+  },
+  {
+    "version": "%precompiled_tag64%",
+    "bitness": 64,
+    "uses": ["clang-e%precompiled_tag64%-64bit", "node-4.1.1-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-%precompiled_tag64%"],
     "os": "win"
   }
   ]

@@ -1470,8 +1470,15 @@ def fetch_emscripten_tags():
   download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/nightly/' + os_name_for_llvm_location() + '_64bit/index.txt', 'llvm-nightlies-64bit.txt', download_even_if_exists=True)
   download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/emscripten/nightly/' + os_name_for_emscripten_location() + '/index.txt', 'emscripten-nightlies.txt', download_even_if_exists=True)
 
+  print('Fetching all precompiled tagged releases..')
+  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/tag/' + os_name_for_llvm_location() + '_32bit/index.txt', 'llvm-tags-32bit.txt', download_even_if_exists=True)
+  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/tag/' + os_name_for_llvm_location() + '_64bit/index.txt', 'llvm-tags-64bit.txt', download_even_if_exists=True)
+
+def is_emsdk_sourced_from_github():
+  return os.path.exists(os.path.join(emsdk_path(), '.git'))
+
 def update_emsdk():
-  if os.path.exists(os.path.join(emsdk_path(), '.git')):
+  if is_emsdk_sourced_from_github():
     print('You seem to have bootstrapped Emscripten SDK by cloning from GitHub. In this case, use "git pull" instead of "emsdk update" to update emsdk. (Not doing that automatically in case you have local changes)', file=sys.stderr)
     print('Alternatively, use "emsdk update-tags" to refresh the latest list of tags from the different Git repositories.', file=sys.stderr)
     sys.exit(1)
@@ -1486,6 +1493,7 @@ def update_emsdk():
     print('Unsupported OS, cannot update!')
   fetch_emscripten_tags()
 
+# Lists all tagged versions directly in the Git repositories. These we can pull and compile from source.
 def load_emscripten_tags():
   try:
     return open(sdk_path('emscripten-tags.txt'), 'r').read().split('\n')
@@ -1506,10 +1514,10 @@ def remove_suffix(s, suffix):
   if s.endswith(suffix): return s[:len(s)-len(suffix)]
   else: return s
 
-# Kind should be one of: 'llvm-nightlies-32bit.txt', 'llvm-nightlies-64bit.txt', 'emscripten-nightlies.txt'
-def load_nightlies_list(kind):
+# filename should be one of: 'llvm-nightlies-32bit.txt', 'llvm-nightlies-64bit.txt', 'llvm-precompiled-tags-32bit.txt', 'llvm-precompiled-tags-64bit.txt', 'emscripten-nightlies.txt'
+def load_file_index_list(filename):
   try:
-    items = open(sdk_path(kind), 'r').read().split('\n')
+    items = open(sdk_path(filename), 'r').read().split('\n')
     items = map(lambda x: remove_suffix(remove_suffix(remove_prefix(remove_prefix(x, 'emscripten-llvm-e'), 'emscripten-nightly-'), '.tar.gz'), '.zip').strip(), items)
     items = filter(lambda x: 'latest' not in x and len(x) > 0, items)
     return items
@@ -1517,13 +1525,19 @@ def load_nightlies_list(kind):
     return []
 
 def load_llvm_32bit_nightlies():
-  return load_nightlies_list('llvm-nightlies-32bit.txt')
+  return load_file_index_list('llvm-nightlies-32bit.txt')
 
 def load_llvm_64bit_nightlies():
-  return load_nightlies_list('llvm-nightlies-64bit.txt')
+  return load_file_index_list('llvm-nightlies-64bit.txt')
 
 def load_emscripten_nightlies():
-  return load_nightlies_list('emscripten-nightlies.txt')
+  return load_file_index_list('emscripten-nightlies.txt')
+
+def load_llvm_precompiled_tags_32bit():
+  return load_file_index_list('llvm-tags-32bit.txt')
+
+def load_llvm_precompiled_tags_64bit():
+  return load_file_index_list('llvm-tags-64bit.txt')
 
 def load_sdk_manifest():
   global tools, sdks
@@ -1535,6 +1549,9 @@ def load_sdk_manifest():
     return
 
   emscripten_tags = load_emscripten_tags()
+  llvm_precompiled_tags_32bit = list(reversed(load_llvm_precompiled_tags_32bit()))
+  llvm_precompiled_tags_64bit = list(reversed(load_llvm_precompiled_tags_64bit()))
+  llvm_precompiled_tags = llvm_precompiled_tags_32bit + llvm_precompiled_tags_64bit
   binaryen_tags = load_binaryen_tags()
   llvm_32bit_nightlies = list(reversed(load_llvm_32bit_nightlies()))
   llvm_64bit_nightlies = list(reversed(load_llvm_64bit_nightlies()))
@@ -1572,16 +1589,14 @@ def load_sdk_manifest():
         t.is_old = False
 
       # Expand the metapackages that refer to tags or nightlies.
-      if '%tag%' in t.version:
-        expand_category_param('%tag%', emscripten_tags, t, is_sdk=False)
-      elif '%binaryen_tag%' in t.version:
-        expand_category_param('%binaryen_tag%', binaryen_tags, t, is_sdk=False)
-      elif '%nightly-llvm-64bit%' in t.version:
-        expand_category_param('%nightly-llvm-64bit%', llvm_64bit_nightlies, t, is_sdk=False)
-      elif '%nightly-llvm-32bit%' in t.version:
-        expand_category_param('%nightly-llvm-32bit%', llvm_32bit_nightlies, t, is_sdk=False)
-      elif '%nightly-emscripten%' in t.version:
-        expand_category_param('%nightly-emscripten%', emscripten_nightlies, t, is_sdk=False)
+      if '%tag%' in t.version: expand_category_param('%tag%', emscripten_tags, t, is_sdk=False)
+      elif '%precompiled_tag%' in t.version: expand_category_param('%precompiled_tag%', llvm_precompiled_tags, t, is_sdk=False)
+      elif '%precompiled_tag32%' in t.version: expand_category_param('%precompiled_tag32%', llvm_precompiled_tags_32bit, t, is_sdk=False)
+      elif '%precompiled_tag64%' in t.version: expand_category_param('%precompiled_tag64%', llvm_precompiled_tags_64bit, t, is_sdk=False)
+      elif '%binaryen_tag%' in t.version: expand_category_param('%binaryen_tag%', binaryen_tags, t, is_sdk=False)
+      elif '%nightly-llvm-64bit%' in t.version: expand_category_param('%nightly-llvm-64bit%', llvm_64bit_nightlies, t, is_sdk=False)
+      elif '%nightly-llvm-32bit%' in t.version: expand_category_param('%nightly-llvm-32bit%', llvm_32bit_nightlies, t, is_sdk=False)
+      elif '%nightly-emscripten%' in t.version: expand_category_param('%nightly-emscripten%', emscripten_nightlies, t, is_sdk=False)
       else:
         tools.append(t)
 
@@ -1592,14 +1607,13 @@ def load_sdk_manifest():
       if not hasattr(sdk, 'is_old'):
         sdk.is_old = False
 
-      if '%tag%' in sdk.version:
-        expand_category_param('%tag%', emscripten_tags, sdk, is_sdk=True)
-      elif '%nightly-llvm-64bit%' in sdk.version:
-        expand_category_param('%nightly-llvm-64bit%', llvm_64bit_nightlies, sdk, is_sdk=True)
-      elif '%nightly-llvm-32bit%' in sdk.version:
-        expand_category_param('%nightly-llvm-32bit%', llvm_32bit_nightlies, sdk, is_sdk=True)
-      elif '%nightly-emscripten%' in sdk.version:
-        expand_category_param('%nightly-emscripten%', emscripten_nightlies, sdk, is_sdk=True)
+      if '%tag%' in sdk.version: expand_category_param('%tag%', emscripten_tags, sdk, is_sdk=True)
+      elif '%precompiled_tag%' in sdk.version: expand_category_param('%precompiled_tag%', llvm_precompiled_tags, sdk, is_sdk=True)
+      elif '%precompiled_tag32%' in sdk.version: expand_category_param('%precompiled_tag32%', llvm_precompiled_tags_32bit, sdk, is_sdk=True)
+      elif '%precompiled_tag64%' in sdk.version: expand_category_param('%precompiled_tag64%', llvm_precompiled_tags_64bit, sdk, is_sdk=True)
+      elif '%nightly-llvm-64bit%' in sdk.version: expand_category_param('%nightly-llvm-64bit%', llvm_64bit_nightlies, sdk, is_sdk=True)
+      elif '%nightly-llvm-32bit%' in sdk.version: expand_category_param('%nightly-llvm-32bit%', llvm_32bit_nightlies, sdk, is_sdk=True)
+      elif '%nightly-emscripten%' in sdk.version: expand_category_param('%nightly-emscripten%', emscripten_nightlies, sdk, is_sdk=True)
       else:
         sdks.append(sdk)
 
@@ -1813,7 +1827,9 @@ def main():
                                   shown.
 
    emsdk update                 - Updates emsdk to the newest version, and also
-                                  runs 'update-tags' (below).
+                                  runs 'update-tags' (below). If you have
+                                  bootstrapped emsdk via cloning directly from
+                                  GitHub, call "git pull" instead to update emsdk.
 
    emsdk update-tags            - Fetches the most up to date list of available
                                   Emscripten tagged and nightly releases.
@@ -1980,7 +1996,10 @@ def main():
       print('The following tools can be compiled from source:')
       print_tools(find_tools(True))
     else:
-      print("There are no tools available. Run 'emsdk update' to fetch the latest set of tools.")
+      if is_emsdk_sourced_from_github():
+        print("There are no tools available. Run 'git pull' followed by 'emsdk update-tags' to fetch the latest set of tools.")
+      else:
+        print("There are no tools available. Run 'emsdk update' to fetch the latest set of tools.")
       print('')
 
     if len(sdks) > 0:
@@ -1999,7 +2018,10 @@ def main():
           active = '*' if sdk.is_active() else ' '
           print('    ' + active + '    {0: <25}'.format(str(sdk)) + installed)
         print('')
-      print('The following precompiled SDKs are available for download: (Run "./emsdk update" to pull in the latest list)')
+      if is_emsdk_sourced_from_github():
+        print('The following precompiled SDKs are available for download: (Run "git pull" followed by "./emsdk update-tags" to pull in the latest list)')
+      else:
+        print('The following precompiled SDKs are available for download: (Run "./emsdk update" to pull in the latest list)')
       print_sdks(find_sdks(False))
       print('The following SDKs can be compiled from source:')
       print_sdks(find_sdks(True))
