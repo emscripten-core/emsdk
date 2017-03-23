@@ -1270,6 +1270,7 @@ class Tool:
     if url.endswith('zip') or url.endswith('.tar') or url.endswith('.gz'):
       file_name = url.split('/')[-1]
       tempzipfile = os.path.join('zips/', file_name)
+      if VERBOSE: print("Deleting temporary zip file " + tempzipfile)
       rmfile(tempzipfile)
 
   def uninstall(self):
