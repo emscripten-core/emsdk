@@ -1812,8 +1812,6 @@ def silentremove(filename):
 
 def main():
   global emscripten_config_directory, BUILD_FOR_TESTING, ENABLE_LLVM_ASSERTIONS
-  load_dot_emscripten()
-  load_sdk_manifest()
 
   if len(sys.argv) <= 1 or sys.argv[1] == 'help' or sys.argv[1] == '--help':
     if len(sys.argv) <= 1:
@@ -1923,6 +1921,13 @@ def main():
     return 1
   cmd = sys.argv[1]
 
+  # On first run when tag list is not present, populate it to bootstrap.
+  if (cmd == 'install' or cmd == 'list') and not os.path.isfile(sdk_path('llvm-tags-64bit.txt')):
+    fetch_emscripten_tags()
+
+  load_dot_emscripten()
+  load_sdk_manifest()
+
   # Process global args
   for i in range(2, len(sys.argv)):
     if sys.argv[i].startswith('--build='):
@@ -1942,10 +1947,6 @@ def main():
         print("Invalid command line parameter " + sys.argv[i] + ' specified!', file=sys.stderr)
         return 1
   sys.argv = [x for x in sys.argv if not len(x) == 0]
-
-  # On first run when tag list is not present, populate it to bootstrap.
-  if (cmd == 'install' or cmd == 'list') and not os.path.isfile(sdk_path('llvm-tags-64bit.txt')):
-    fetch_emscripten_tags()
 
   # Replace meta-packages with the real package names.
   if (cmd == 'update' or cmd == 'install' or cmd == 'activate'):
