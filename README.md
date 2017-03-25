@@ -1,6 +1,6 @@
 # Emscripten SDK
 
-The whole Emscripten toolchain is distributed as a standalone Emscripten SDK. The SDK provides all the required tools, such as Clang, Python, Node.js and Visual Studio integration along with an update mechanism that enables migrating to newer Emscripten versions as they are released.
+Emscripten toolchain is distributed as a standalone Emscripten SDK. The SDK provides all the required tools, such as Clang, Python and Node.js along with an update mechanism that enables migrating to newer Emscripten versions as they are released.
 
 You can also set up Emscripten from source, without the pre-built SDK, see "Installing from Source" below.
 
@@ -8,68 +8,47 @@ You can also set up Emscripten from source, without the pre-built SDK, see "Inst
 
 To get started with Emscripten development, grab one of the packages below:
 
-Windows:
-* Emscripten SDK Web Installer (64-bit) is an NSIS installer that always gets you the latest Emscripten SDK from the web:
-  * [emsdk-1.35.0-web-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.35.0-web-64bit.exe)
-* Emscripten SDK Offline Installer (64-bit) is an NSIS installer that bundles together the Emscripten toolchain as an offline-installable package:
-  * [emsdk-1.35.0-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.35.0-full-64bit.exe)
-* Portable Emscripten SDK (64-bit) is a zipped package of the Emscripten SDK that does not require system installation privileges. Just unzip and go:
-  * [emsdk-1.35.0-portable-64bit.zip](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.35.0-portable-64bit.zip)
-
-Linux and Mac OS X:
-* [emsdk-portable.tar.gz](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz): Emscripten SDK is available as a portable web-installer for Linux and OS X.
+* Windows: [emsdk-portable.zip](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.zip)
+* Linux and Mac OS X: [emsdk-portable.tar.gz](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz)
 
 **Old Releases** are available in the **Archived Releases** section below.
 
 ## Installation Instructions
 
-Check one of the topics below for what to do with the package you just downloaded.
-
-#### Windows: Installing using an NSIS Installer
-
-The NSIS installers register the Emscripten SDK as a 'standard' Windows application. To install the SDK, download an NSIS .exe file above, double-click on it, and run through the installer to perform the installation. After the installer finishes, the full Emscripten toolchain will be available in the directory that was chosen during the installation, and no other steps are necessary. If your system has Visual Studio 2010 installed, the vs-tool MSBuild plugin will be automatically installed as well.
-
-#### Windows, OSX and Linux: Installing the Portable SDK
-
-The Portable Emscripten SDK is a no-installer version of the SDK package. It is identical to the NSIS installer, except that it does not interact with the Windows registry, which allows Emscripten to be used on a computer without administrative privileges, and gives the ability to migrate the installation from one location (directory or computer) to another by just copying/zipping up the directory contents.
-
-If you want to use the Portable Emscripten SDK, the initial setup process is as follows:
+The initial setup process is as follows:
 
 1. Download and unzip the portable SDK package to a directory of your choice. This directory will contain the Emscripten SDK.
 2. Open a command prompt to the directory of the SDK.
 3. Run `emsdk update`. This will fetch the latest registry of available tools.
-4. Run `emsdk install latest`. This will download and install the latest SDK tools.
+4. Run `emsdk install latest`. This will download and install the latest set of precompiled SDK tools.
 5. Run `emsdk activate latest`. This will set up ~/.emscripten to point to the SDK.
+6a. OSX and Linux: Run `source ./emsdk_env.sh`. This will add PATH and other required environment variables to the currently executing terminal prompt. If you want to permanently add these environment variables to each terminal instance on your system, add a call to this command to `.bash_profile` or another initialization script for your terminal.
+6b. Windows: Call `emsdk_env.bat` to add PATH and other environment variables to the current command prompt. If you want to persist these environment variables to all command prompts, run `emsdk activate --global latest` to have Emsdk edit the Windows registry to add these variables.
 
-Whenever you change the location of the Portable SDK (e.g. take it to another computer), re-run step 5.
+Whenever you change the location of the Portable SDK (e.g. take it to another computer), re-run steps 5 and 6. If you choose not to permanently add the environment variables to all terminal prompts, rerun step 6 whenever opening a new terminal window.
 
 Note: On Linux and OSX, type `./emsdk` instead of `emsdk` above.
 
-### Installing from Source
+### Building an Emscripten tag or branch from source
 
-If you want to build Emscripten Clang backend and the dependencies yourself, follow the instructions in this section.
+In addition to providing precompiled compiler versions, Emscripten SDK automates driving builds of the Emscripten toolchain from source. These builds obtain the source code directly from GitHub, and can either target a specific tagged release, or one of the two main Emscripten development branches, `incoming` and `master`. Building tagged releases from source is useful to build a version of Emscripten that there is no provided precompiled build available. Building one of the development branches is useful when you want to get the very latest version from source, e.g. to verify a brand new bugfix, or to participate to Emscripten development.
 
-Get the following:
+To build one of the tagged releases from source, run the following steps:
 
- * The Emscripten code, from github (git clone git://github.com/kripken/emscripten.git. The master branch is fine, it is guaranteed to always be stable. We merge to master only after all tests pass.)
- * Emscripten's LLVM and Clang. Emscripten now has an LLVM backend ("fastcomp"), which means you need to use our LLVM+Clang. See "[Getting Fastcomp](https://github.com/kripken/emscripten/wiki/LLVM-Backend#getting-fastcomp)" in the [LLVM Backend](https://github.com/kripken/emscripten/wiki/LLVM-Backend) page. (See also notes on that link about how to disable fastcomp and use a stock version of LLVM, if you want, although that is not recommended.)
- * Node.js (0.8 or above; 0.10.17 or above to run websocket-using servers in node)
- * Python 2.7.3
- * Optionally, if you want to use Closure Compiler to minify your code as much as possible, you will also need Java.
+1. Open a command prompt to the directory of the SDK.
+2. Run `emsdk update-tags`. This will ping GitHub to obtain the latest list of known tags in the different repositories.
+3. Run `emsdk list` to check out the list of available tags. Look for the section "The following SDKs can be compiled from source".
+4. Proceed through the steps 4, 5 and 6 above, except substitute `latest` with the SDK version of your choice, for example `emsdk install sdk-tag-1.37.9-64bit` followed by `emsdk activate sdk-tag-1.37.9-64bit`.
 
-The [LLVM Backend](https://github.com/kripken/emscripten/wiki/LLVM-Backend) page has instructions for building Emscripten's LLVM+Clang. After you build it, run `emcc -v`, which should print out the version number as well as run some basic tests.
-
-Additional Notes:
-
- * Python is probably already installed if you are on Linux or OS X.
- * Node.js and LLVM should have convenient binaries for your OS, but installing them from source is easy, just compile them in their directories, you don't need to bother with installing them systemwide.
+To build one of the Github branches, `emsdk install` one of the targets `sdk-incoming-64bit` or `sdk-master-64bit`.
 
 ### Installing emsdk directly from GitHub
 
-If you want to bootstrap to emsdk development version instead of the stable releases, you can do so by installing emsdk directly from github. Functionally this behaves identical to the Portable SDK. As a prerequisite, you must first manually download and install [Python](https://www.python.org) to bootstrap, and after that, run:
+If you want to bootstrap to the development version of emsdk instead of the stable releases, you can do so by installing emsdk directly from github. Functionally this behaves identical to the Portable SDK. As a prerequisite on Windows, you must first manually download and install [Python](https://www.python.org) to bootstrap, and after that, run:
 
     git clone https://github.com/juj/emsdk.git
     cd emsdk
+    ./emsdk update-tags
     ./emsdk install <sdk-of-your-choice>
     ./emsdk activate <sdk-of-your-choice>
     source ./emsdk_env.sh (Windows: emsdk_env.bat)
@@ -88,23 +67,13 @@ The root directory of the Emscripten SDK contains scripts `emsdk_env.bat` (Windo
 
 <b>Check out the tutorial!</b> See the Emscripten [Tutorial](https://github.com/kripken/emscripten/wiki/Tutorial) page for help on how to get going with the tools from command line.
 
-##### Windows: Emscripten Command Prompt
-
-Start the Emscripten Command Prompt from Start Menu -> All Programs -> Emscripten -> Emscripten Command Prompt. This will spawn a new command prompt that has all the tools for the currently activated SDK version set to PATH. The Emscripten Command Prompt is analogous to the Visual Studio Command Prompt that ships with installations of Visual Studio.
-
-##### Windows: Use Visual Studio 2010
-
-After installing the vs-tool plugin, a new 'Emscripten' platform will appear to the list of all Solution Platforms in Visual Studio. To activate the Emscripten platform, right-click on the solution in the Solution Explorer, choose Configuration Manager... -> Active solution platform... -> New... -> Emscripten. After that, activating the Emscripten platform for the solution will make Visual Studio run the project build through Emscripten, producing .html or .js output, depending on the project properties you set up.
-
-Note: If you copied the Emscripten platform properties from the Win32 platform, be sure to go and clean up any leftover Win32-specific #defines and other configuration from the Emscripten platform!
-
 ## SDK Concepts
 
 The Emscripten SDK is effectively a small package manager for tools that are used in conjunction with Emscripten. The following glossary highlights the important concepts to help understanding the internals of the SDK:
 
 * <b>Tool</b>: The basic unit of software bundled in the SDK. A Tool has a name and a version. For example, 'clang-3.2-32bit' is a Tool that contains the 32-bit version of the Clang v3.2 compiler.
-* <b>SDK</b>: A set of tools. For example, 'sdk-1.5.6-32bit' is an SDK consisting of the tools clang-3.2-32bit, node-0.10.17-32bit, python-2.7.5.1-32bit and emscripten-1.5.6.
-* <b>Active Tool/SDK</b>: Emscripten stores compiler configuration in a user-specific file <b>~/.emscripten</b>. This file points to paths for Emscripten, Python, Clang and so on. If the file ~/.emscripten is configured to point to a Tool in a specific directory, then that tool is denoted as being <b>active</b>. The Emscripten Command Prompt always gives access to the currently active Tools. This mechanism allows switching between different SDK versions easily.
+* <b>SDK</b>: A set of tools. For example, 'sdk-1.5.6-32bit' is an SDK consisting of the tools `clang-3.2-32bit`, `node-0.10.17-32bit`, `python-2.7.5.1-32bit` and `emscripten-1.5.6`.
+* <b>Active Tool/SDK</b>: Emscripten stores compiler configuration in a user-specific file <b>~/.emscripten</b>. This file points to paths for Emscripten, Python, Clang and so on. If the file ~/.emscripten is configured to point to a Tool in a specific directory, then that tool is denoted as being <b>active</b>. The Emscripten Command Prompt always gives access to the currently active Tools. This mechanism allows switching between different installed SDK versions easily.
 * <b>emsdk</b>: This is the name of the manager script that Emscripten SDK is accessed through. Most operations are of the form `emsdk command`. To access the emsdk script, launch the Emscripten Command Prompt.
 
 ## SDK Maintenance
@@ -129,11 +98,11 @@ Run the command `emsdk install <tool/sdk name>` to download and install a new to
 
 ##### How do I remove a tool or an SDK?
 
-Run the command `emsdk uninstall <tool/sdk name>` to delete the given tool or SDK from the local harddrive completely.
+Run the command `emsdk uninstall <tool/sdk name>` to delete the given tool or SDK from the local hard drive completely.
 
 ##### How do I check for updates to the Emscripten SDK?
 
-The command `emsdk update` will fetch package information for all new tools and SDK versions. After that, run `emsdk install <tool/sdk name>` to install a new version.
+The command `emsdk update` will fetch package information for all new tools and SDK versions. After that, run `emsdk install <tool/sdk name>` to install a new version. The command `emsdk update-tags` obtains a list of all new tagged releases from GitHub without updating Emscripten SDK itself.
 
 ##### How do I install an old Emscripten compiler version?
 
@@ -143,7 +112,7 @@ On Windows, you can directly install an old SDK version by using one of the arch
 
 ##### When working on git branches compiled from source, how do I update to a newer compiler version?
 
-Unlike tags and precompiled versions, a few of the SDK packages are based on "moving" git branches and compiled from source (sdk-incoming, sdk-master, emscripten-incoming, emscripten-master, binaryen-master). Because of that, the compiled versions will eventually go out of date as new commits are introduced to the development branches. To update an old compiled installation of one of this branches, simply reissue the "emsdk install" command on that package. This will `git pull` the latest changes to the branch and issue an incremental recompilation of the target in question. This way you can keep calling `emsdk install` to keep an Emscripten installation up to date with a given git branch.
+Unlike tags and precompiled versions, a few of the SDK packages are based on "moving" git branches and compiled from source (sdk-incoming, sdk-master, emscripten-incoming, emscripten-master, binaryen-master). Because of that, the compiled versions will eventually go out of date as new commits are introduced to the development branches. To update an old compiled installation of one of this branches, simply reissue the "emsdk install" command on that tool/SDK. This will `git pull` the latest changes to the branch and issue an incremental recompilation of the target in question. This way you can keep calling `emsdk install` to keep an Emscripten installation up to date with a given git branch.
 
 Note though that if the previously compiled branch is very old, sometimes CMake gets confused and is unable to properly rebuild a project. This has happened in the past e.g. when LLVM migrated to requiring a newer CMake version. In cases of any odd compilation errors, it is advised to try deleting the intermediate build directory to clear the build (e.g. "emsdk/clang/fastcomp/build_xxx/") before reissuing `emsdk install`.
 
@@ -159,7 +128,7 @@ By default, Emscripten locates all configuration files in the home directory of 
 
 A common and supported use case of the Emscripten SDK is to enable the workflow where you directly interact with the github repositories. This allows you to obtain new features and latest fixes immediately as they are pushed to the github repository, without having to wait for release to be tagged. You do not need a github account or a fork of Emscripten to do this. To switch to using the latest upstream git development branch `incoming`, run the following:
 
-    emsdk install git-1.8.3 # Install git. Skip if the system already has it.
+    emsdk install git-1.9.4 # Install git. Skip if the system already has it.
     emsdk install sdk-incoming-64bit # Clone+pull the latest kripken/emscripten/incoming.
     emsdk activate sdk-incoming-64bit # Set the incoming SDK as the currently active one.
 
@@ -204,23 +173,19 @@ If you want to remove a Portable SDK, just delete the directory where you put th
 
 * Also, on OSX, `java` is not bundled with the Emscripten SDK. After installing emscripten via emsdk, typing 'emcc --help' should pop up a OSX dialog "Java is not installed. To open java, you need a Java SE 6 runtime. Would you like to install one now?" that will automatically download a Java runtime to the system.
 
-* Emscripten requires the command line tool 'python2' to be present on OSX. On default OSX installations, this does not exist. To manually work around this issue, see step 10 at https://github.com/kripken/emscripten/wiki/Getting-started-on-Mac-OS-X
-
 ##### Linux
 
-* On Linux, prebuilt binaries of tools are not available. Installing a tool will automatically clone and build that tool from the sources inside emsdk directory. Emsdk does not interact with Linux package managers on the behalf of the user, nor does it install any tools to the system. All file changes are done inside the `emsdk/` directory.
-
-* Because emsdk builds software from the source on Linux, the system must have a working compiler environment available.
+* On Linux, emsdk does not interact with Linux package managers on the behalf of the user, nor does it install any tools to the system. All file changes are done inside the `emsdk/` directory.
 
 * Emsdk does not provide `python`, `node` or `java` on Linux. The user is expected to install these beforehand with the system package manager.
 
 ##### Windows
 
-* On Windows, if you want to build any of the packages from source (instead of using the precompiled ones), you will need git, CMake and Visual Studio 2013. Git can be installed via emsdk by typing "emsdk install git-1.9.4", CMake can be found from http://www.cmake.org/, and Visual Studio can be installed from https://www.visualstudio.com.
+* On Windows, if you want to build any of the packages from source (instead of using the precompiled ones), you will need git, CMake and Visual Studio 2015. Git can be installed via emsdk by typing "emsdk install git-1.9.4", CMake can be found from http://www.cmake.org/, and Visual Studio can be installed from https://www.visualstudio.com.
 
 ###### How do I run Emscripten on a 32-bit Windows?
 
-Emscripten SDK releases are no longer packaged or maintained for 32-bit Windows. If you want to run Emscripten on a 32-bit system, you can try manually building the compiler for 32-bit mode. Follow the steps in the above section "Installing emsdk directly from GitHub" to get started.
+Emscripten SDK releases are no longer packaged or maintained for 32-bit Windows. If you want to run Emscripten on a 32-bit system, you can try manually building the compiler for 32-bit mode. Follow the steps in the above section "Building an Emscripten tag or branch from source" to get started.
 
 ### Archived Releases
 
@@ -247,3 +212,6 @@ On Windows, you can install one of the **old versions** via an offline NSIS inst
  - [emsdk-1.30.0-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.30.0-full-64bit.exe) (the only release based on Clang 3.5)
  - [emsdk-1.34.1-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.34.1-full-64bit.exe) (first release based on Clang 3.7)
  - [emsdk-1.35.0-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.35.0-full-64bit.exe)
+ - [emsdk-1.35.0-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.35.0-full-64bit.exe)
+ - [emsdk-1.35.0-web-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.35.0-web-64bit.exe)
+ - [emsdk-1.35.0-portable-64bit.zip](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.35.0-portable-64bit.zip)
