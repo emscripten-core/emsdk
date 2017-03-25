@@ -1943,6 +1943,10 @@ def main():
         return 1
   sys.argv = [x for x in sys.argv if not len(x) == 0]
 
+  # On first run when tag list is not present, populate it to bootstrap.
+  if (cmd == 'install' or cmd == 'list') and not os.path.isfile(sdk_path('llvm-tags-64bit.txt')):
+    fetch_emscripten_tags()
+
   # Replace meta-packages with the real package names.
   if (cmd == 'update' or cmd == 'install' or cmd == 'activate'):
     for i in range(2, len(sys.argv)):
