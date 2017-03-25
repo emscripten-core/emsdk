@@ -22,3 +22,5 @@ gnu
 emscripten-nightlies.txt
 llvm-nightlies-32bit.txt
 llvm-nightlies-64bit.txt
+llvm-tags-32bit.txt
+llvm-tags-64bit.txt
