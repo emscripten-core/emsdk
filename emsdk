@@ -11,7 +11,7 @@ else:
   from urllib2 import urlopen, HTTPError
 
 # EMSDK_DEV is a developer mode flag, which, if true, the SDK is downloaded from a 'staging' online source,
-# instead of the public source. New releases are first deployed to the staging source for testing, before 
+# instead of the public source. New releases are first deployed to the staging source for testing, before
 # being published to the public. Don't enable this unless you develop EMSDK itself and need to access the
 # staging source repository instead.
 EMSDK_DEV = bool(os.getenv('EMSDK_DEV')) if os.getenv('EMSDK_DEV') != None else False
@@ -54,6 +54,9 @@ GIT_CLONE_SHALLOW = False
 
 # If true, LLVM backend is built with tests enabled, and Binaryen is built with Visual Studio static analyzer enabled.
 BUILD_FOR_TESTING = False
+
+# If true, we will try to build WebAssembly support
+ENABLE_WASM = False
 
 # If 'auto', assertions are decided by the build type (Release&MinSizeRel=disabled, Debug&RelWithDebInfo=enabled)
 # Other valid values are 'ON' and 'OFF'
@@ -224,7 +227,7 @@ def win_set_environment_variable(key, value, system=True):
     if len(value) >= 1024:
       print('ERROR! The new environment variable ' + key + ' is more than 1024 characters long! A value this long cannot be set via command line: please add the environment variable specified above to system environment manually via Control Panel.', file=sys.stderr)
       sys.exit(1)
-    cmd = ['SETX', key, value] 
+    cmd = ['SETX', key, value]
     if VERBOSE: print(str(cmd))
     retcode = subprocess.call(cmd, stdout=subprocess.PIPE)
     if retcode is not 0:
@@ -415,7 +418,7 @@ def download_file(url, dstpath, download_even_if_exists=False, filename_prefix =
   try:
     u = urlopen(url)
     mkdir_p(os.path.dirname(file_name))
-    with open(file_name, 'wb') as f: 
+    with open(file_name, 'wb') as f:
       meta = u.info()
       if hasattr(meta.getheaders, "Content-Length"):
         file_size = int(meta.getheaders("Content-Length")[0])
@@ -689,7 +692,7 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
     if ret != 0:
       print('CMake invocation failed with exit code ' + ret + '!', file=sys.stderr)
       print('Working directory: ' + build_root, file=sys.stderr)
-      return False  
+      return False
   except OSError as e:
     if e.errno == errno.ENOENT:
       print(str(e), file=sys.stderr)
@@ -699,7 +702,7 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
       elif LINUX:
         print('Installing this package requires CMake. Get it via your system package manager (e.g. sudo apt-get install cmake), or from http://www.cmake.org/', file=sys.stderr)
       elif OSX:
-        print('Installing this package requires CMake. Get it via a OSX package manager (Homebrew: "brew install cmake", or MacPorts: "sudo port install cmake"), or from http://www.cmake.org/', file=sys.stderr)        
+        print('Installing this package requires CMake. Get it via a OSX package manager (Homebrew: "brew install cmake", or MacPorts: "sudo port install cmake"), or from http://www.cmake.org/', file=sys.stderr)
       return False
     raise
   except Exception as e:
@@ -742,6 +745,8 @@ def build_fastcomp_tool(tool):
   enable_assertions = ENABLE_LLVM_ASSERTIONS.lower() == 'on' or (ENABLE_LLVM_ASSERTIONS == 'auto' and build_type.lower() != 'release' and build_type.lower() != 'minsizerel')
 
   args = ['-DLLVM_TARGETS_TO_BUILD=X86;JSBackend', '-DLLVM_INCLUDE_EXAMPLES=OFF', '-DCLANG_INCLUDE_EXAMPLES=OFF', '-DLLVM_INCLUDE_TESTS=' + tests_arg, '-DCLANG_INCLUDE_TESTS=' + tests_arg, '-DLLVM_ENABLE_ASSERTIONS=' + ('ON' if enable_assertions else 'OFF')]
+  if ENABLE_WASM:
+    args += ['-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=WebAssembly']
   success = cmake_configure(cmake_generator, build_root, fastcomp_src_root, build_type, args)
   if not success: return False
 
@@ -917,7 +922,7 @@ def generate_dot_emscripten(active_tools):
   has_node = False
 
   cfg = 'import os\n'
-  
+
   if embedded:
     cfg += "emsdk_path=os.path.dirname(os.environ.get('EM_CONFIG')).replace('\\\\', '/')\n"
 
@@ -947,7 +952,7 @@ JS_ENGINES = [NODE_JS]
     cfg = cfg.replace(emscripten_config_directory, "' + emsdk_path + '")
 
   with open(dot_emscripten_path(), "w") as text_file: text_file.write(cfg)
-  
+
   # Clear old cached emscripten content.
   try:
     remove_tree(os.path.join(emscripten_config_directory, ".emscripten_cache"))
@@ -960,7 +965,7 @@ JS_ENGINES = [NODE_JS]
   print('')
   print(cfg.strip())
   print('')
-  
+
   path_add = get_required_path(active_tools)
   if not WINDOWS:
     emsdk_env = os.path.relpath(sdk_path('emsdk_env.sh'))
@@ -1072,7 +1077,7 @@ class Tool:
       return self.expand_vars(self.activated_env)
     else:
       return ''
-  
+
   def compatible_with_this_os(self):
     if hasattr(self, 'os'):
       if self.os == 'all':
@@ -1121,7 +1126,7 @@ class Tool:
           if not os.path.exists(path): return False
         return True
       content_exists = os.path.exists(self.installation_path()) and each_path_exists(activated_path) and (os.path.isfile(self.installation_path()) or num_files_in_directory(self.installation_path()) > 0)
-      
+
       if self.id == 'vs-tool': # vs-tool is a special tool since all versions must be installed to the same dir, so dir name will not differentiate the version.
         return content_exists and get_installed_vstool_version(self.installation_path()) == self.version
       elif hasattr(self, 'custom_is_installed_script'):
@@ -1137,9 +1142,9 @@ class Tool:
     if not self.is_installed():
       return False
 
-    if self.id == 'vs-tool': 
+    if self.id == 'vs-tool':
       return True # vs-tool is a special tool since all versions must be installed to the same dir, which means that if this tool is installed, it is also active.
-      
+
     # All dependencies of this tool must be active as well.
     deps = self.dependencies()
     for tool in deps:
@@ -1188,7 +1193,7 @@ class Tool:
         win_delete_environment_variable(key, False) # If there is an env var for the LOCAL USER with same name, it will hide the system var, so must remove that first.
 
       win_set_environment_variable(key, value, permanently_activate)
-    
+
   # If this tool can be installed on this system, this function returns True.
   # Otherwise, this function returns a string that describes the reason why this tool is not available.
   def can_be_installed(self):
@@ -1294,7 +1299,7 @@ class Tool:
     if not hasattr(self, 'uses'):
       return []
     deps = []
-    
+
     for tool_name in self.uses:
       tool = find_tool(tool_name)
       if tool:
@@ -1435,7 +1440,7 @@ def fetch_emscripten_tags():
   all_tags = sorted(all_tags, cmp=version_compare)
   open(sdk_path('emscripten-tags.txt'), 'w').write('\n'.join(all_tags))
   if len(all_tags) > 0:
-    print('Done. ' + str(len(all_tags)) + ' tagged releases available, latest is ' + all_tags[-1] + '.') 
+    print('Done. ' + str(len(all_tags)) + ' tagged releases available, latest is ' + all_tags[-1] + '.')
   else:
     print('Done. No tagged releases available.')
 
@@ -1875,11 +1880,14 @@ def main():
                                   passed to the emsdk activate command to
                                   activate the desired version.
 
+                   --enable-wasm: Enable WebAssembly support in the
+                                  installed components.
+
    emsdk uninstall <tool/sdk>   - Removes the given tool or SDK from disk.''')
 
     if WINDOWS:
       print('''
-   emsdk activate [--global] [--embedded] [--build=type] [--vs2013/--vs2015] <tool/sdk> 
+   emsdk activate [--global] [--embedded] [--build=type] [--vs2013/--vs2015] <tool/sdk>
 
                                 - Activates the given tool or SDK in the
                                   environment of the current shell. If the
@@ -2117,6 +2125,10 @@ def main():
         sys.argv[i] = ''
       elif sys.argv[i] == '--disable-assertions':
         ENABLE_LLVM_ASSERTIONS = 'OFF'
+        sys.argv[i] = ''
+      elif sys.argv[i] == '--enable-wasm':
+        global ENABLE_WASM
+        ENABLE_WASM = True
         sys.argv[i] = ''
     sys.argv = [x for x in sys.argv if not len(x) == 0]
     if len(sys.argv) <= 2:
