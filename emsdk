@@ -747,6 +747,10 @@ def build_fastcomp_tool(tool):
   args = ['-DLLVM_TARGETS_TO_BUILD=X86;JSBackend', '-DLLVM_INCLUDE_EXAMPLES=OFF', '-DCLANG_INCLUDE_EXAMPLES=OFF', '-DLLVM_INCLUDE_TESTS=' + tests_arg, '-DCLANG_INCLUDE_TESTS=' + tests_arg, '-DLLVM_ENABLE_ASSERTIONS=' + ('ON' if enable_assertions else 'OFF')]
   if ENABLE_WASM:
     args += ['-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=WebAssembly']
+  if os.environ.get('LLVM_CMAKE_ARGS'):
+    extra_args = os.environ['LLVM_CMAKE_ARGS'].split(',')
+    print('Passing the following extra arguments to LLVM CMake configuration: ' + str(extra_args))
+    args += extra_args
   success = cmake_configure(cmake_generator, build_root, fastcomp_src_root, build_type, args)
   if not success: return False
 
@@ -1882,6 +1886,12 @@ def main():
 
                    --enable-wasm: Enable WebAssembly support in the
                                   installed components.
+
+                                  To pass custom CMake directives when configuring
+                                  LLVM build, specify the environment variable
+                                  LLVM_CMAKE_ARGS="param1=value1,param2=value2"
+                                  in the environment where the build is invoked.
+                                  See README.md for details.
 
    emsdk uninstall <tool/sdk>   - Removes the given tool or SDK from disk.''')
 

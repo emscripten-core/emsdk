@@ -42,6 +42,8 @@ To build one of the tagged releases from source, run the following steps:
 
 To build one of the Github branches, `emsdk install` one of the targets `sdk-incoming-64bit` or `sdk-master-64bit`.
 
+Building Emscripten involves building LLVM with Clang from source. LLVM build configuration allows specifying a number of extra configuration fields, see here: http://llvm.org/docs/CMake.html. To build the SDK with a specific set of custom CMake parameters, run the emsdk build script with the environment variable LLVM_CMAKE_ARGS="param1=value1,param2=value2,...". For example, to use the gold linker to link the final Clang executable and to enable assertions, run the installation with the command `LLVM_CMAKE_ARGS="-DLLVM_USE_LINKER=gold,-DLLVM_ENABLE_ASSERTIONS=ON" ./emsdk install sdk-incoming-64bit`.
+
 ### Installing emsdk directly from GitHub
 
 If you want to bootstrap to the development version of emsdk instead of the stable releases, you can do so by installing emsdk directly from github. Functionally this behaves identical to the Portable SDK. As a prerequisite on Windows, you must first manually download and install [Python](https://www.python.org) to bootstrap, and after that, run:
