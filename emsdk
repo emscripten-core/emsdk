@@ -24,8 +24,8 @@ else:
 
 emsdk_packages_url = urljoin(emsdk_master_server, 'packages/')
 
-emscripten_git_repo = 'https://github.com/kripken/emscripten/'
-binaryen_git_repo = 'https://github.com/WebAssembly/binaryen/'
+emscripten_git_repo = 'https://github.com/kripken/emscripten.git'
+binaryen_git_repo = 'https://github.com/WebAssembly/binaryen.git'
 
 # Enable this to do very verbose printing about the different steps that are being run. Useful for debugging.
 VERBOSE = bool(os.getenv('EMSDK_VERBOSE')) if os.getenv('EMSDK_VERBOSE') != None else False
