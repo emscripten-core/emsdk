@@ -36,7 +36,7 @@ if os.name == 'nt':
   ENVPATH_SEPARATOR = ';'
 
 LINUX = False
-if platform.system() == 'Linux':
+if platform.system() == 'Linux' or os.name == 'posix':
   LINUX = True
   ENVPATH_SEPARATOR = ':'
 
