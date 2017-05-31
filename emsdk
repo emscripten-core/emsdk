@@ -100,26 +100,46 @@ def which(program):
 
   return None
 
+def vswhere(version):
+  program_files = os.environ['ProgramFiles(x86)'] if 'ProgramFiles(x86)' in os.environ else os.environ['ProgramFiles']
+  vswhere_path = os.path.join(program_files, 'Microsoft Visual Studio', 'Installer', 'vswhere.exe')
+  output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-version', '[%s.0,%s.0)' % (version, version + 1) , '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', '-property', 'installationPath', '-format', 'json']))
+  return output[0]['installationPath'].encode('ascii') if len(output) > 0 else ''
+
+def vs_filewhere(installation_path, platform, file):
+  vcvarsall = os.path.join(installation_path, 'VC/Auxiliary/Build/vcvarsall.bat')
+  env = subprocess.check_output('cmd /c "%s" %s & where %s' % (vcvarsall, platform, file))
+  paths = [path[:-len(file)] for path in env.split('\r\n') if path.endswith(file)]
+  if (len(paths) > 0):
+    return paths[0]
+  else:
+    raise Exception('Cannot find the file in the given Visual Studio environment')
+
 CMAKE_GENERATOR = 'Unix Makefiles'
 if WINDOWS:
   # Detect which CMake generator to use when building on Windows
   if '--mingw' in sys.argv: CMAKE_GENERATOR = 'MinGW Makefiles'
   elif '--vs2013' in sys.argv: CMAKE_GENERATOR = 'Visual Studio 12'
   elif '--vs2015' in sys.argv: CMAKE_GENERATOR = 'Visual Studio 14'
+  elif '--vs2017' in sys.argv: CMAKE_GENERATOR = 'Visual Studio 15'
   else:
-    vs2015_exists = 'VS140COMNTOOLS' in os.environ or 'VSSDK140Install' in os.environ or os.path.isdir(os.path.join(os.environ['ProgramFiles'], 'Microsoft Visual Studio 14.0')) or ('ProgramFiles(x86)' in os.environ and os.path.isdir(os.path.join(os.environ['ProgramFiles(x86)'], 'Microsoft Visual Studio 14.0')))
-    vs2013_exists = 'VS120COMNTOOLS' in os.environ or os.path.isdir(os.path.join(os.environ['ProgramFiles'], 'Microsoft Visual Studio 12.0')) or ('ProgramFiles(x86)' in os.environ and os.path.isdir(os.path.join(os.environ['ProgramFiles(x86)'], 'Microsoft Visual Studio 12.0')))
+    program_files = os.environ['ProgramFiles(x86)'] if 'ProgramFiles(x86)' in os.environ else os.environ['ProgramFiles']
+    vs2017_exists = len(vswhere(15)) > 0
+    vs2015_exists = 'VS140COMNTOOLS' in os.environ or 'VSSDK140Install' in os.environ or os.path.isdir(os.path.join(program_files, 'Microsoft Visual Studio 14.0'))
+    vs2013_exists = 'VS120COMNTOOLS' in os.environ or os.path.isdir(os.path.join(program_files, 'Microsoft Visual Studio 12.0'))
     mingw_exists = which('mingw32-make') != None and which('g++') != None
-    if vs2015_exists: CMAKE_GENERATOR = 'Visual Studio 14'
+    if vs2017_exists: CMAKE_GENERATOR = 'Visual Studio 15'
+    elif vs2015_exists: CMAKE_GENERATOR = 'Visual Studio 14'
     elif mingw_exists: CMAKE_GENERATOR = 'MinGW Makefiles'
     elif vs2013_exists: CMAKE_GENERATOR = 'Visual Studio 12' # VS2013 is no longer supported, so attempt it as a last resort if someone might want to insist using it.
     else: CMAKE_GENERATOR = '' # No detected generator
 if VERBOSE: print('CMAKE_GENERATOR: ' + CMAKE_GENERATOR)
-sys.argv = filter(lambda x: x not in ['--mingw', '--vs2013', '--vs2015'], sys.argv)
+sys.argv = filter(lambda x: x not in ['--mingw', '--vs2013', '--vs2015', '--vs2017'], sys.argv)
 
 # Computes a suitable path prefix to use when building with a given generator.
 def cmake_generator_prefix():
-  if CMAKE_GENERATOR == 'Visual Studio 14': return '_vs2015'
+  if CMAKE_GENERATOR == 'Visual Studio 15': return '_vs2017'
+  elif CMAKE_GENERATOR == 'Visual Studio 14': return '_vs2015'
   elif CMAKE_GENERATOR == 'MinGW Makefiles': return '_mingw'
   return '' # Unix Makefiles and Visual Studio 2013 do not specify a path prefix for backwards path compatibility
 
@@ -546,6 +566,7 @@ def fastcomp_build_dir(tool):
   elif CMAKE_GENERATOR == 'Visual Studio 11': generator_suffix = '_vs2012'
   elif CMAKE_GENERATOR == 'Visual Studio 12': generator_suffix = '_vs2013'
   elif CMAKE_GENERATOR == 'Visual Studio 14': generator_suffix = '_vs2015'
+  elif CMAKE_GENERATOR == 'Visual Studio 15': generator_suffix = '_vs2017'
   elif CMAKE_GENERATOR == 'MinGW Makefiles': generator_suffix = '_mingw'
 
   bitness_suffix = '_32' if tool.bitness == 32 else '_64'
@@ -588,7 +609,18 @@ def build_env(generator):
   # See https://groups.google.com/forum/#!topic/emscripten-discuss/5Or6QIzkqf0
   if OSX: build_env['CXXFLAGS'] = ((build_env['CXXFLAGS'] + ' ') if hasattr(build_env, 'CXXFLAGS') else '') + '-stdlib=libc++'
 
-  if 'Visual Studio 14' in generator or 'Visual Studio 2015' in generator:
+  elif 'Visual Studio 15' in generator:
+    path = vswhere(15)
+    build_env['VCTargetsPath'] = os.path.join(path, 'Common7\IDE\VC\VCTargets')
+
+    # CMake and VS2017 cl.exe needs to have mspdb140.dll et al. in its PATH.
+    vc_bin_paths = [vs_filewhere(path, 'amd64', 'cl.exe'),
+                    vs_filewhere(path, 'x86', 'cl.exe')]
+    for path in vc_bin_paths:
+      if os.path.isdir(path):
+          build_env['PATH'] = build_env['PATH'] + ';' + path
+
+  elif 'Visual Studio 14' in generator or 'Visual Studio 2015' in generator:
     build_env['VCTargetsPath'] = os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/Microsoft.Cpp/v4.0/V140')
 
     # CMake and VS2015 cl.exe needs to have mspdb140.dll et al. in its PATH.
@@ -605,6 +637,8 @@ def build_env(generator):
 
 def get_generator_for_sln_file(sln_file):
   contents = open(sln_file, 'r').read()
+  if '# Visual Studio 15' in contents:
+    return 'Visual Studio 15'
   if '# Visual Studio Express 2015' in contents or '# Visual Studio 2015' in contents or '# Visual Studio 14' in contents:
     return 'Visual Studio 14'
   if '# Visual Studio Express 2013' in contents or '# Visual Studio 2013' in contents or '# Visual Studio 12' in contents:
@@ -622,7 +656,11 @@ def find_msbuild(sln_file):
                         os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/12.0/Bin')]
   search_paths_old = [os.path.join(os.environ["WINDIR"], 'Microsoft.NET/Framework/v4.0.30319')]
   generator = get_generator_for_sln_file(sln_file)
-  if generator == 'Visual Studio 14':
+  if generator == 'Visual Studio 15':
+    path = vswhere(15)
+    search_paths = [os.path.join(path, 'MSBuild/15.0/Bin/amd64'),
+                    os.path.join(path, 'MSBuild/15.0/Bin')]
+  elif generator == 'Visual Studio 14':
     search_paths = search_paths_vs2015
   elif generator == 'Visual Studio 12':
     search_paths = search_paths_vs2013 + search_paths_old
@@ -1905,7 +1943,7 @@ def main():
                                   branch, disabled for 'master' branch.
             --disable-assertions: Forces assertions off during the build.
 
-               --vs2013/--vs2015: If building from source, overrides to build
+      --vs2013/--vs2015/--vs2017: If building from source, overrides to build
                                   using the specified compiler. When installing
                                   precompiled packages, this has no effect.
                                   Note: The same compiler specifier must be
@@ -1925,7 +1963,7 @@ def main():
 
     if WINDOWS:
       print('''
-   emsdk activate [--global] [--embedded] [--build=type] [--vs2013/--vs2015] <tool/sdk>
+   emsdk activate [--global] [--embedded] [--build=type] [--vs2013/--vs2015/--vs2017] <tool/sdk>
 
                                 - Activates the given tool or SDK in the
                                   environment of the current shell. If the
@@ -1938,8 +1976,8 @@ def main():
                                   directory rather than the user home
                                   directory. If a custom compiler version was
                                   used to override the compiler to use, pass
-                                  the same --vs2013/--vs2015 parameter here to
-                                  choose which version to activate.
+                                  the same --vs2013/--vs2015/--vs2017 parameter
+                                  here to choose which version to activate.
 
    emcmdprompt.bat              - Spawns a new command prompt window with the
                                   Emscripten environment active.''')
