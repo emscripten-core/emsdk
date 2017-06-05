@@ -1,4 +1,5 @@
 clang
+emsdk_set_env.sh
 emscripten
 emsdk_set_env.bat
 emsdk_set_env.sh
