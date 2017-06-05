@@ -35,14 +35,14 @@ if os.name == 'nt':
   WINDOWS = True
   ENVPATH_SEPARATOR = ';'
 
-LINUX = False
-if platform.system() == 'Linux' or os.name == 'posix':
-  LINUX = True
-  ENVPATH_SEPARATOR = ':'
-
 OSX = False
 if platform.mac_ver()[0] != '':
   OSX = True
+  ENVPATH_SEPARATOR = ':'
+
+LINUX = False
+if not OSX and (platform.system() == 'Linux' or os.name == 'posix'):
+  LINUX = True
   ENVPATH_SEPARATOR = ':'
 
 CPU_CORES = max(multiprocessing.cpu_count()-1, 1) # Don't saturate all cores to not steal the whole system, but be aggressive.
