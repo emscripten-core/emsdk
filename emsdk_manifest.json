@@ -981,8 +981,20 @@
     "version": "tag-%tag%",
     "bitness": 64,
     "uses": ["clang-tag-e%tag%-64bit", "node-4.1.1-64bit", "emscripten-tag-%tag%-64bit"],
+    "os": "linux"
+  },
+  {
+    "version": "tag-%tag%",
+    "bitness": 32,
+    "uses": ["clang-tag-e%tag%-32bit", "node-4.1.1-32bit", "emscripten-tag-%tag%-32bit"],
     "os": "unix"
-  },  
+  },
+  {
+    "version": "tag-%tag%",
+    "bitness": 64,
+    "uses": ["clang-tag-e%tag%-64bit", "node-4.1.1-64bit", "emscripten-tag-%tag%-64bit"],
+    "os": "unix"
+  },
   {
     "version": "nightly-%nightly-llvm-32bit%",
     "bitness": 32,
