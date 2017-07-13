@@ -101,10 +101,13 @@ def which(program):
   return None
 
 def vswhere(version):
-  program_files = os.environ['ProgramFiles(x86)'] if 'ProgramFiles(x86)' in os.environ else os.environ['ProgramFiles']
-  vswhere_path = os.path.join(program_files, 'Microsoft Visual Studio', 'Installer', 'vswhere.exe')
-  output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-version', '[%s.0,%s.0)' % (version, version + 1) , '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', '-property', 'installationPath', '-format', 'json']))
-  return output[0]['installationPath'].encode('ascii') if len(output) > 0 else ''
+  try:
+    program_files = os.environ['ProgramFiles(x86)'] if 'ProgramFiles(x86)' in os.environ else os.environ['ProgramFiles']
+    vswhere_path = os.path.join(program_files, 'Microsoft Visual Studio', 'Installer', 'vswhere.exe')
+    output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-version', '[%s.0,%s.0)' % (version, version + 1) , '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', '-property', 'installationPath', '-format', 'json']))
+    return output[0]['installationPath'].encode('ascii') if len(output) > 0 else ''
+  except Exception, e:
+    return ''
 
 def vs_filewhere(installation_path, platform, file):
   vcvarsall = os.path.join(installation_path, 'VC/Auxiliary/Build/vcvarsall.bat')
