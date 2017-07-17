@@ -1647,6 +1647,7 @@ def load_sdk_manifest():
     global tools, sdks
     for i in range(len(category_list)):
       ver = category_list[i]
+      if len(ver.strip()) == 0: continue
       t2 = copy.copy(t)
       for p, v in vars(t2).iteritems():
         if isinstance(v, basestring) and param in v:
