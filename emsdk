@@ -106,7 +106,7 @@ def vswhere(version):
     vswhere_path = os.path.join(program_files, 'Microsoft Visual Studio', 'Installer', 'vswhere.exe')
     output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-version', '[%s.0,%s.0)' % (version, version + 1) , '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', '-property', 'installationPath', '-format', 'json']))
     return output[0]['installationPath'].encode('ascii') if len(output) > 0 else ''
-  except Exception, e:
+  except Exception as e:
     return ''
 
 def vs_filewhere(installation_path, platform, file):
@@ -137,7 +137,7 @@ if WINDOWS:
     elif vs2013_exists: CMAKE_GENERATOR = 'Visual Studio 12' # VS2013 is no longer supported, so attempt it as a last resort if someone might want to insist using it.
     else: CMAKE_GENERATOR = '' # No detected generator
 if VERBOSE: print('CMAKE_GENERATOR: ' + CMAKE_GENERATOR)
-sys.argv = filter(lambda x: x not in ['--mingw', '--vs2013', '--vs2015', '--vs2017'], sys.argv)
+sys.argv = list(filter(lambda x: x not in ['--mingw', '--vs2013', '--vs2015', '--vs2017'], sys.argv))
 
 # Computes a suitable path prefix to use when building with a given generator.
 def cmake_generator_prefix():
@@ -422,6 +422,14 @@ def path_points_to_directory(path):
   else:
     return True
 
+def get_content_length(meta):
+  if hasattr(meta, "getheaders") and hasattr(meta.getheaders, "Content-Length"):
+    return int(meta.getheaders("Content-Length")[0])
+  elif hasattr(meta, "getheader"):
+    return int(meta.getheader('Content-Length'))
+  else:
+    return 0
+
 # On success, returns the filename on the disk pointing to the destination file that was produced
 # On failure, returns None.
 def download_file(url, dstpath, download_even_if_exists=False, filename_prefix = ''):
@@ -442,13 +450,9 @@ def download_file(url, dstpath, download_even_if_exists=False, filename_prefix =
     u = urlopen(url)
     mkdir_p(os.path.dirname(file_name))
     with open(file_name, 'wb') as f:
-      meta = u.info()
-      if hasattr(meta.getheaders, "Content-Length"):
-        file_size = int(meta.getheaders("Content-Length")[0])
-        print("Downloading: %s from %s, %s Bytes" % (file_name, url, file_size))
-      else:
-        file_size = 0
-        print("Downloading: %s from %s" % (file_name, url))
+      file_size = get_content_length(u.info())
+      if file_size > 0: print("Downloading: %s from %s, %s Bytes" % (file_name, url, file_size))
+      else: print("Downloading: %s from %s" % (file_name, url))
 
       file_size_dl = 0
       block_sz = 8192
@@ -1617,6 +1621,10 @@ def load_llvm_precompiled_tags_32bit():
 def load_llvm_precompiled_tags_64bit():
   return load_file_index_list('llvm-tags-64bit.txt')
 
+def is_string(s):
+  if (sys.version_info[0] >= 3): return isinstance(s, str)
+  return isinstance(s, basestring)
+
 def load_sdk_manifest():
   global tools, sdks
   try:
@@ -1649,8 +1657,8 @@ def load_sdk_manifest():
       ver = category_list[i]
       if len(ver.strip()) == 0: continue
       t2 = copy.copy(t)
-      for p, v in vars(t2).iteritems():
-        if isinstance(v, basestring) and param in v:
+      for p, v in vars(t2).items():
+        if is_string(v) and param in v:
           t2.__dict__[p] = v.replace(param, ver)
       t2.is_old = i < len(category_list) - 2
       if hasattr(t2, 'uses'):
