@@ -422,13 +422,16 @@ def path_points_to_directory(path):
   else:
     return True
 
-def get_content_length(meta):
-  if hasattr(meta, "getheaders") and hasattr(meta.getheaders, "Content-Length"):
-    return int(meta.getheaders("Content-Length")[0])
-  elif hasattr(meta, "getheader"):
-    return int(meta.getheader('Content-Length'))
-  else:
-    return 0
+def get_content_length(download):
+  try:
+    meta = download.info()
+    if hasattr(meta, "getheaders") and hasattr(meta.getheaders, "Content-Length"): return int(meta.getheaders("Content-Length")[0])
+    elif hasattr(download, "getheader") and download.getheader('Content-Length'): return int(download.getheader('Content-Length'))
+    elif hasattr(meta, "getheader") and meta.getheader('Content-Length'): return int(meta.getheader('Content-Length'))
+  except Exception as e:
+    pass
+
+  return 0
 
 # On success, returns the filename on the disk pointing to the destination file that was produced
 # On failure, returns None.
@@ -450,7 +453,7 @@ def download_file(url, dstpath, download_even_if_exists=False, filename_prefix =
     u = urlopen(url)
     mkdir_p(os.path.dirname(file_name))
     with open(file_name, 'wb') as f:
-      file_size = get_content_length(u.info())
+      file_size = get_content_length(u)
       if file_size > 0: print("Downloading: %s from %s, %s Bytes" % (file_name, url, file_size))
       else: print("Downloading: %s from %s" % (file_name, url))
 
@@ -463,18 +466,14 @@ def download_file(url, dstpath, download_even_if_exists=False, filename_prefix =
 
           file_size_dl += len(buffer)
           f.write(buffer)
-          if file_size:
+          if sys.stdout.isatty() and file_size:
             status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
             status = status + chr(8)*(len(status)+1)
             print(status, end=' ')
-  except HTTPError as e:
-    print("HTTP error with URL '" + url + "': " + str(e))
+  except Exception as e:
+    print("Error downloading URL '" + url + "': " + str(e))
     rmfile(file_name)
     return None
-#  except Exception as e:
-#    print("Error downloading URL '" + url + "': " + str(e))
-#    rmfile(file_name)
-#    return None
   return file_name
 
 def download_text_file(url, dstpath, download_even_if_exists=False, filename_prefix=''):
