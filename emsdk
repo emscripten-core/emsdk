@@ -168,12 +168,16 @@ def win_set_environment_variable_direct(key, value, system=True):
     if py:
       py_path = to_native_path(py.expand_vars(py.activated_path))
       os.environ['PATH'] = os.environ['PATH'] + ';' + py_path
-    import win32api, win32con
+    try:
+        import winreg
+    except ImportError:
+        import _winreg as winreg
+    import ctypes.wintypes
     if system: # Read globally from ALL USERS section.
-      folder = win32api.RegOpenKeyEx(win32con.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment', 0, win32con.KEY_ALL_ACCESS)
+      folder = winreg.OpenKeyEx(winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment', 0, winreg.KEY_ALL_ACCESS)
     else: # Register locally from CURRENT USER section.
-      folder = win32api.RegOpenKeyEx(win32con.HKEY_CURRENT_USER, 'Environment', 0, win32con.KEY_ALL_ACCESS)
-    win32api.RegSetValueEx(folder, key, 0, win32con.REG_EXPAND_SZ, value)
+      folder = winreg.OpenKeyEx(winreg.HKEY_CURRENT_USER, 'Environment', 0, winreg.KEY_ALL_ACCESS)
+    winreg.SetValueEx(folder, key, 0, winreg.REG_EXPAND_SZ, value)
     if VERBOSE: print('Set key=' + key + ' with value ' + value + ' in registry.')
   except Exception as e:
     if e[0] == 5 or e[2] == 'Access is denied.':
@@ -181,13 +185,15 @@ def win_set_environment_variable_direct(key, value, system=True):
       sys.exit(1)
     print('Failed to write environment variable ' + key + ':', file=sys.stderr)
     print(str(e), file=sys.stderr)
-    win32api.RegCloseKey(folder)
+    folder.Close()
     os.environ['PATH'] = prev_path
     return None
 
-  win32api.RegCloseKey(folder)
+  folder.Close()
   os.environ['PATH'] = prev_path
-  win32api.SendMessage(win32con.HWND_BROADCAST, win32con.WM_SETTINGCHANGE, 0, 'Environment')
+  HWND_BROADCAST = ctypes.wintypes.HWND(0xFFFF)
+  WM_SETTINGCHANGE = 0x001A
+  ctypes.windll.user32.SendMessageA(HWND_BROADCAST, WM_SETTINGCHANGE, 0, 'Environment')
 
 def win_get_environment_variable(key, system=True):
   prev_path = os.environ['PATH']
@@ -196,20 +202,23 @@ def win_get_environment_variable(key, system=True):
     if py:
       py_path = to_native_path(py.expand_vars(py.activated_path))
       os.environ['PATH'] = os.environ['PATH'] + ';' + py_path
-    import win32api, win32con
+    try:
+        import winreg
+    except ImportError:
+        import _winreg as winreg
     if system: # Read globally from ALL USERS section.
-      folder = win32api.RegOpenKey(win32con.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment')
+      folder = winreg.OpenKeyEx(winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment')
     else: # Register locally from CURRENT USER section.
-      folder = win32api.RegOpenKey(win32con.HKEY_CURRENT_USER, 'Environment')
-    value = str(win32api.RegQueryValueEx(folder, key)[0])
+      folder = winreg.OpenKeyEx(winreg.HKEY_CURRENT_USER, 'Environment')
+    value = str(winreg.QueryValueEx(folder, key)[0])
   except Exception as e:
     if e[0] != 2: # 'The system cannot find the file specified.'
       print('Failed to read environment variable ' + key + ':', file=sys.stderr)
       print(str(e), file=sys.stderr)
-    win32api.RegCloseKey(folder)
+    folder.Close()
     os.environ['PATH'] = prev_path
     return None
-  win32api.RegCloseKey(folder)
+  folder.Close()
   os.environ['PATH'] = prev_path
   return value
 
