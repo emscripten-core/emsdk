@@ -6,6 +6,7 @@ if sys.version_info >= (3,):
   from urllib.parse import urljoin
   from urllib.request import urlopen
   from urllib.error import HTTPError
+  import functools
 else:
   from urlparse import urljoin
   from urllib2 import urlopen, HTTPError
@@ -1458,6 +1459,13 @@ def version_compare(x, y):
   b = 1 if is_version_at_least(y, x) else 0
   return a - b
 
+# A sort function that is compatible with both Python 2 and Python 3 using a custom comparison function.
+def python_2_3_sorted(arr, cmp):
+  if sys.version_info >= (3,):
+    return sorted(arr, key=functools.cmp_to_key(cmp))
+  else:
+    return sorted(arr, cmp=cmp)
+
 def fetch_emscripten_tags():
   git = GIT(must_succeed=False)
   if not git:
@@ -1485,7 +1493,7 @@ def fetch_emscripten_tags():
         all_tags += [t]
     except:
       pass
-  all_tags = sorted(all_tags, cmp=version_compare)
+  all_tags = python_2_3_sorted(all_tags, cmp=version_compare)
   open(sdk_path('emscripten-tags.txt'), 'w').write('\n'.join(all_tags))
   if len(all_tags) > 0:
     print('Done. ' + str(len(all_tags)) + ' tagged releases available, latest is ' + all_tags[-1] + '.')
@@ -1504,7 +1512,7 @@ def fetch_emscripten_tags():
         binaryen_tags += [t]
     except:
       pass
-  binaryen_tags = sorted(binaryen_tags, cmp=version_compare)
+  binaryen_tags = python_2_3_sorted(binaryen_tags, cmp=version_compare)
   open(sdk_path('binaryen-tags.txt'), 'w').write('\n'.join(binaryen_tags))
   if len(binaryen_tags) > 0:
     print('Done. ' + str(len(binaryen_tags)) + ' tagged Binaryen releases available, latest is ' + binaryen_tags[-1] + '.')
@@ -1599,7 +1607,7 @@ def load_file_index_list(filename):
     items = filter(lambda x: 'latest' not in x and len(x) > 0, items)
 
     # Sort versions from oldest to newest (the default sort would be lexicographic, i.e. '1.37.1 < 1.37.10 < 1.37.2')
-    items = sorted(items, cmp=sort_by_version)[::-1]
+    items = python_2_3_sorted(items, cmp=sort_by_version)[::-1]
 
     return items
   except:
