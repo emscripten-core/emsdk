@@ -32,9 +32,16 @@ binaryen_git_repo = 'https://github.com/WebAssembly/binaryen.git'
 VERBOSE = bool(os.getenv('EMSDK_VERBOSE')) if os.getenv('EMSDK_VERBOSE') != None else False
 
 WINDOWS = False
-if os.name == 'nt':
+if os.name == 'nt' or 'WINDOWS' in os.getenv('SYSTEMROOT') or 'WINDOWS' in os.getenv('COMSPEC'):
   WINDOWS = True
   ENVPATH_SEPARATOR = ';'
+
+MSYS = False
+if os.getenv('MSYSTEM'):
+  if os.getenv('MSYSTEM') == 'MSYS':
+    MSYS = True
+  else:
+    print('Warning: MSYSTEM environment variable is present, and is set to "' + os.getenv('MSYSTEM') + '". This shell has not been tested with emsdk and may not work.') # https://stackoverflow.com/questions/37460073/msys-vs-mingw-internal-environment-variables
 
 OSX = False
 if platform.mac_ver()[0] != '':
@@ -73,7 +80,7 @@ emscripten_config_directory = os.path.expanduser("~/")
 if os.path.exists(os.path.join(emsdk_path(), '.emscripten')):
   emscripten_config_directory = emsdk_path()
 
-EMSDK_SET_ENV = 'emsdk_set_env.bat' if WINDOWS else 'emsdk_set_env.sh'
+EMSDK_SET_ENV = 'emsdk_set_env.bat' if (WINDOWS and not MSYS) else 'emsdk_set_env.sh'
 
 # Finds the given executable 'program' in PATH. Operates like the Unix tool 'which'.
 def which(program):
@@ -910,7 +917,7 @@ def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False, filenam
     return untargz(dst_file, dest_dir, unpack_even_if_exists=download_even_if_exists)
 
 def to_native_path(p):
-  if WINDOWS:
+  if WINDOWS and not MSYS:
     return to_unix_path(p).replace('/', '\\')
   else:
     return to_unix_path(p)
@@ -1208,11 +1215,14 @@ class Tool:
     for cfg in activated_cfg:
       cfg = cfg.strip()
       (key, value) = parse_key_value(cfg)
-      if not key in dot_emscripten: return False
+      if not key in dot_emscripten:
+        if VERBOSE: print(str(self) + ' is not active, because key="' + key + '" does not exist in .emscripten')
+        return False
 
       # If running in embedded mode, all paths are stored dynamically relative to the emsdk root, so normalize those first.
       dot_emscripten_key = dot_emscripten[key].replace("' + emsdk_path + '", emsdk_path())
       if dot_emscripten_key != value:
+        if VERBOSE: print(str(self) + ' is not active, because key="' + key + '" has value "' + dot_emscripten_key + '" but should have value "' + value + '"')
         return False
     return True
 
@@ -1221,6 +1231,7 @@ class Tool:
     if hasattr(self, 'activated_env'):
       (key, value) = parse_key_value(self.activated_environment())
       if not key in os.environ or to_unix_path(os.environ[key]) != to_unix_path(value):
+        if VERBOSE: print(str(self) + ' is not active, because environment variable key="' + key + '" has value "' + str(os.getenv(key)) + '" but should have value "' + value + '"')
         return False
 #      if WINDOWS:
 #        env_var = win_get_active_environment_variable(key)
@@ -1232,6 +1243,7 @@ class Tool:
       for p in path:
         path_items = os.environ['PATH'].replace('\\', '/').split(ENVPATH_SEPARATOR)
         if not normalized_contains(path_items, p):
+          if VERBOSE: print(str(self) + ' is not active, because environment variable PATH item "' + p + '" is not present (PATH=' + os.environ['PATH'] + ')')
           return False
     return True
 
@@ -1808,13 +1820,20 @@ def normalized_contains(lst, elem):
       return True
   return False
 
+def to_msys_path(p):
+  p = to_unix_path(p)
+  new_path = re.sub(r'([a-zA-Z]):/(.*)', r'/\1/\2', p)
+  if len(new_path) > 3 and new_path[0] == '/' and new_path[2] == '/':
+    new_path = new_path[0] + new_path[1].lower() + new_path[2:]
+  return new_path
+
 # Looks at the current PATH and adds and removes entries so that the PATH reflects
 # the set of given active tools.
 def adjusted_path(tools_to_activate, log_additions=False, system_path_only=False):
   # These directories should be added to PATH
   path_add = get_required_path(tools_to_activate)
   # These already exist.
-  if WINDOWS:
+  if WINDOWS and not MSYS:
     existing_path = win_get_environment_variable('PATH', system=True)
     if not system_path_only:
       current_user_path = win_get_environment_variable('PATH', system=False)
@@ -1830,17 +1849,24 @@ def adjusted_path(tools_to_activate, log_additions=False, system_path_only=False
       elif (system_root + '\\system32\\wbem') in p.lower(): p = '%SystemRoot%\\System32\\Wbem'
       elif (system_root + '\\system32\\windowspowershell\v1.0') in p.lower(): p = '%SystemRoot%\\System32\\WindowsPowerShell\v1.0\\'
       existing_path[i] = p
-
   else:
     existing_path = os.environ['PATH'].split(ENVPATH_SEPARATOR)
   emsdk_root_path = to_unix_path(emsdk_path())
 
   existing_emsdk_tools = [item for item in existing_path if to_unix_path(item).startswith(emsdk_root_path)]
   new_emsdk_tools = [item for item in path_add if not normalized_contains(existing_emsdk_tools, item)]
+
   # Existing non-emsdk tools
   existing_path = [item for item in existing_path if not to_unix_path(item).startswith(emsdk_root_path)]
   new_path = [item for item in path_add if not normalized_contains(existing_path, item)]
-  return (ENVPATH_SEPARATOR.join(unique_items(new_path + existing_path)), new_emsdk_tools)
+  whole_path = unique_items(new_path + existing_path)
+  if MSYS:
+    # XXX Hack: If running native Windows Python in MSYS prompt where PATH entries look like "/c/Windows/System32", os.environ['PATH']
+    # in Python will transform to show them as "C:\\Windows\\System32", so need to reconvert path delimiter back to forward slashes.
+    whole_path = map(to_msys_path, whole_path)
+    new_emsdk_tools = map(to_msys_path, new_emsdk_tools)
+
+  return ((':' if MSYS else ENVPATH_SEPARATOR).join(whole_path), new_emsdk_tools)
 
 def construct_env(tools_to_activate, permanent):
   global emscripten_config_directory
@@ -1854,7 +1880,7 @@ def construct_env(tools_to_activate, permanent):
 #  else:
 
   if os.environ['PATH'] != newpath: # Don't bother setting the path if there are no changes.
-    if WINDOWS: env_string += 'SET PATH=' + newpath + '\n'
+    if WINDOWS and not MSYS: env_string += 'SET PATH=' + newpath + '\n'
     else: env_string += 'export PATH="' + newpath + '"\n'
     if len(added_path) > 0:
       print('Adding directories to PATH:')
@@ -1886,7 +1912,7 @@ def construct_env(tools_to_activate, permanent):
   if len(env_vars_to_add) > 0:
     print('Setting environment variables:')
     for key, value in env_vars_to_add:
-      if WINDOWS:
+      if WINDOWS and not MSYS:
         if permanent:
           env_string += 'SETX ' + key + ' "' + value + '"\n'
         else:

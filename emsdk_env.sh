@@ -22,7 +22,7 @@ fi
 pushd `dirname "$SRC"` > /dev/null
 unset SRC
 
-./emsdk construct_env
+./emsdk construct_env "$@"
 . ./emsdk_set_env.sh
 
 popd > /dev/null
