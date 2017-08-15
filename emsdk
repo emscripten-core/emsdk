@@ -32,7 +32,7 @@ binaryen_git_repo = 'https://github.com/WebAssembly/binaryen.git'
 VERBOSE = bool(os.getenv('EMSDK_VERBOSE')) if os.getenv('EMSDK_VERBOSE') != None else False
 
 WINDOWS = False
-if os.name == 'nt' or 'WINDOWS' in os.getenv('SYSTEMROOT') or 'WINDOWS' in os.getenv('COMSPEC'):
+if os.name == 'nt' or (os.getenv('SYSTEMROOT') != None and 'WINDOWS' in os.getenv('SYSTEMROOT')) or (os.getenv('COMSPEC') != None and 'WINDOWS' in os.getenv('COMSPEC')):
   WINDOWS = True
   ENVPATH_SEPARATOR = ';'
 
