@@ -1681,7 +1681,7 @@ def load_sdk_manifest():
           t2.__dict__[p] = v.replace(param, ver)
       t2.is_old = i < len(category_list) - 2
       if hasattr(t2, 'uses'):
-        t2.uses = map((lambda x: x.replace(param, ver)), t2.uses)
+        t2.uses = list(map((lambda x: x.replace(param, ver)), t2.uses))
       if is_sdk:
         if dependencies_exist(t2):
           sdks.append(t2)
@@ -1863,8 +1863,8 @@ def adjusted_path(tools_to_activate, log_additions=False, system_path_only=False
   if MSYS:
     # XXX Hack: If running native Windows Python in MSYS prompt where PATH entries look like "/c/Windows/System32", os.environ['PATH']
     # in Python will transform to show them as "C:\\Windows\\System32", so need to reconvert path delimiter back to forward slashes.
-    whole_path = map(to_msys_path, whole_path)
-    new_emsdk_tools = map(to_msys_path, new_emsdk_tools)
+    whole_path = list(map(to_msys_path, whole_path))
+    new_emsdk_tools = list(map(to_msys_path, new_emsdk_tools))
 
   return ((':' if MSYS else ENVPATH_SEPARATOR).join(whole_path), new_emsdk_tools)
 
