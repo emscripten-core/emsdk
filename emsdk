@@ -189,7 +189,7 @@ def win_set_environment_variable_direct(key, value, system=True):
     win32api.RegSetValueEx(folder, key, 0, win32con.REG_EXPAND_SZ, value)
     if VERBOSE: print('Set key=' + key + ' with value ' + value + ' in registry.')
   except Exception as e:
-    if e[0] == 5 or e[2] == 'Access is denied.':
+    if e.args[0] == 5 or e.args[2] == 'Access is denied.':
       print('Error! Failed to set the environment variable \'' + key + '\'! Setting environment variables permanently requires administrator access. Please rerun this command with administrative privileges. This can be done for example by holding down the Ctrl and Shift keys while opening a command prompt in start menu.')
       sys.exit(1)
     print('Failed to write environment variable ' + key + ':', file=sys.stderr)
@@ -216,7 +216,7 @@ def win_get_environment_variable(key, system=True):
       folder = win32api.RegOpenKey(win32con.HKEY_CURRENT_USER, 'Environment')
     value = str(win32api.RegQueryValueEx(folder, key)[0])
   except Exception as e:
-    if e[0] != 2: # 'The system cannot find the file specified.'
+    if e.args[0] != 2: # 'The system cannot find the file specified.'
       print('Failed to read environment variable ' + key + ':', file=sys.stderr)
       print(str(e), file=sys.stderr)
     win32api.RegCloseKey(folder)
