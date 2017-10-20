@@ -118,14 +118,14 @@ def vswhere(version):
     # Visual Studio 2017 Express is not included in the above search, and it does not have the VC.Tools.x86.x64 tool, so do a catch-all attempt as a fallback, to detect Express version.
     if len(output) == 0:
       output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-version', '[%s.0,%s.0)' % (version, version + 1), '-products', '*', '-property', 'installationPath', '-format', 'json']))
-    return output[0]['installationPath'].encode('ascii') if len(output) > 0 else ''
+    return output[0]['installationPath'] if len(output) > 0 else ''
   except Exception as e:
     return ''
 
 def vs_filewhere(installation_path, platform, file):
   try:
     vcvarsall = os.path.join(installation_path, 'VC\\Auxiliary\\Build\\vcvarsall.bat')
-    env = subprocess.check_output('cmd /c "%s" %s & where %s' % (vcvarsall, platform, file))
+    env = subprocess.check_output('cmd /c "%s" %s & where %s' % (vcvarsall, platform, file)).decode()
     paths = [path[:-len(file)] for path in env.split('\r\n') if path.endswith(file)]
     return paths[0]
   except Exception as e:
@@ -634,14 +634,14 @@ def build_env(generator):
 
   elif 'Visual Studio 15' in generator:
     path = vswhere(15)
-    build_env['VCTargetsPath'] = os.path.join(path, 'Common7\IDE\VC\VCTargets')
+    build_env['VCTargetsPath'] = str(os.path.join(path, 'Common7\IDE\VC\VCTargets'))
 
     # CMake and VS2017 cl.exe needs to have mspdb140.dll et al. in its PATH.
     vc_bin_paths = [vs_filewhere(path, 'amd64', 'cl.exe'),
                     vs_filewhere(path, 'x86', 'cl.exe')]
     for path in vc_bin_paths:
       if os.path.isdir(path):
-          build_env['PATH'] = build_env['PATH'] + ';' + path
+          build_env['PATH'] = str(build_env['PATH'] + ';' + path)
 
   elif 'Visual Studio 14' in generator or 'Visual Studio 2015' in generator:
     build_env['VCTargetsPath'] = os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/Microsoft.Cpp/v4.0/V140')
@@ -651,7 +651,7 @@ def build_env(generator):
                     os.path.join(os.environ['ProgramFiles(x86)'], 'Microsoft Visual Studio 14.0\\VC\\bin')]
     for path in vc_bin_paths:
       if os.path.isdir(path):
-        build_env['PATH'] = build_env['PATH'] + ';' + path
+        build_env['PATH'] = str(build_env['PATH'] + ';' + path)
 
   elif 'Visual Studio 12' in generator or 'Visual Studio 2013' in generator:
     build_env['VCTargetsPath'] = os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/Microsoft.Cpp/v4.0/V120')
@@ -706,7 +706,7 @@ def make_build(build_root, build_type, build_target_platform='x64'):
 
   if WINDOWS:
     if 'Visual Studio' in CMAKE_GENERATOR:
-      solution_name = subprocess.check_output(['dir', '/b', '*.sln'], shell=True, cwd=build_root).strip()
+      solution_name = subprocess.check_output(['dir', '/b', '*.sln'], shell=True, cwd=build_root).strip().decode()
       generator_to_use = get_generator_for_sln_file(os.path.join(build_root, solution_name))
 # Disabled for now: Don't pass /maxcpucount argument to msbuild, since it looks like when building, msbuild already automatically spawns the full amount of logical
 # cores the system has, and passing the number of logical cores here has been observed to give a quadratic N*N explosion on the number of spawned processes
