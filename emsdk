@@ -31,6 +31,8 @@ binaryen_git_repo = 'https://github.com/WebAssembly/binaryen.git'
 # Enable this to do very verbose printing about the different steps that are being run. Useful for debugging.
 VERBOSE = bool(os.getenv('EMSDK_VERBOSE')) if os.getenv('EMSDK_VERBOSE') != None else False
 
+POWERSHELL = bool(os.getenv('EMSDK_POWERSHELL'))
+
 WINDOWS = False
 if os.name == 'nt' or (os.getenv('SYSTEMROOT') != None and 'WINDOWS' in os.getenv('SYSTEMROOT')) or (os.getenv('COMSPEC') != None and 'WINDOWS' in os.getenv('COMSPEC')):
   WINDOWS = True
@@ -80,7 +82,7 @@ emscripten_config_directory = os.path.expanduser("~/")
 if os.path.exists(os.path.join(emsdk_path(), '.emscripten')):
   emscripten_config_directory = emsdk_path()
 
-EMSDK_SET_ENV = 'emsdk_set_env.bat' if (WINDOWS and not MSYS) else 'emsdk_set_env.sh'
+EMSDK_SET_ENV = 'emsdk_set_env.ps1' if POWERSHELL else 'emsdk_set_env.bat' if (WINDOWS and not MSYS) else 'emsdk_set_env.sh'
 
 # Finds the given executable 'program' in PATH. Operates like the Unix tool 'which'.
 def which(program):
@@ -1880,7 +1882,8 @@ def construct_env(tools_to_activate, permanent):
 #  else:
 
   if os.environ['PATH'] != newpath: # Don't bother setting the path if there are no changes.
-    if WINDOWS and not MSYS: env_string += 'SET PATH=' + newpath + '\n'
+    if POWERSHELL: env_string += '$env:PATH="' + newpath + '"\n'
+    elif WINDOWS and not MSYS: env_string += 'SET PATH=' + newpath + '\n'
     else: env_string += 'export PATH="' + newpath + '"\n'
     if len(added_path) > 0:
       print('Adding directories to PATH:')
@@ -1912,7 +1915,9 @@ def construct_env(tools_to_activate, permanent):
   if len(env_vars_to_add) > 0:
     print('Setting environment variables:')
     for key, value in env_vars_to_add:
-      if WINDOWS and not MSYS:
+      if POWERSHELL:
+        env_string += '$env:' + key + '="' + value + '"\n'
+      elif WINDOWS and not MSYS:
         if permanent:
           env_string += 'SETX ' + key + ' "' + value + '"\n'
         else:

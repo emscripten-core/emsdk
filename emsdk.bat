@@ -1,5 +1,3 @@
-@SET PREVPATH=%PATH%
-
 :: Find python from an explicit location relative to the Emscripten SDK.
 @IF EXIST "%~dp0python\2.7.5.3_64bit\python.exe" (
   @SET EMSDK_PY="%~dp0python\2.7.5.3_64bit\python.exe"
@@ -21,15 +19,13 @@
   @GOTO end
 )
 
-:: As last resort, access from PATH.
+:: As a last resort, access from PATH.
 @SET EMSDK_PY=python
 
 :end
 @call %EMSDK_PY% "%~dp0\emsdk" %*
 
 @set EMSDK_PY=
-@set PATH=%PREVPATH%
-@set PREVPATH=
 
 :: python is not able to set environment variables to the parent calling process, so
 :: therefore have it craft a .bat file, which we invoke after finishing python execution,
