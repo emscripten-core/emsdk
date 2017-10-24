@@ -338,7 +338,7 @@ def untargz(source_filename, dest_dir, unpack_even_if_exists=False):
     return True
   print("Unpacking '" + source_filename + "' to '" + dest_dir + "'")
   mkdir_p(dest_dir)
-  run(['tar', '-xvf', sdk_path(source_filename), '--strip', '1'], cwd=dest_dir)
+  run(['tar', '-xvf' if VERBOSE else '-xf', sdk_path(source_filename), '--strip', '1'], cwd=dest_dir)
   #tfile = tarfile.open(source_filename, 'r:gz')
   #tfile.extractall(dest_dir)
   return True
