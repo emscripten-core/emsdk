@@ -114,19 +114,22 @@ def vswhere(version):
   try:
     program_files = os.environ['ProgramFiles(x86)'] if 'ProgramFiles(x86)' in os.environ else os.environ['ProgramFiles']
     vswhere_path = os.path.join(program_files, 'Microsoft Visual Studio', 'Installer', 'vswhere.exe')
-    output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-version', '[%s.0,%s.0)' % (version, version + 1) , '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', '-property', 'installationPath', '-format', 'json']))
+    output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-version', '[%s.0,%s.0)' % (version, version + 1), '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', '-property', 'installationPath', '-format', 'json']))
+    # Visual Studio 2017 Express is not included in the above search, and it does not have the VC.Tools.x86.x64 tool, so do a catch-all attempt as a fallback, to detect Express version.
+    if len(output) == 0:
+      output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-version', '[%s.0,%s.0)' % (version, version + 1), '-products', '*', '-property', 'installationPath', '-format', 'json']))
     return output[0]['installationPath'].encode('ascii') if len(output) > 0 else ''
   except Exception as e:
     return ''
 
 def vs_filewhere(installation_path, platform, file):
-  vcvarsall = os.path.join(installation_path, 'VC/Auxiliary/Build/vcvarsall.bat')
-  env = subprocess.check_output('cmd /c "%s" %s & where %s' % (vcvarsall, platform, file))
-  paths = [path[:-len(file)] for path in env.split('\r\n') if path.endswith(file)]
-  if (len(paths) > 0):
+  try:
+    vcvarsall = os.path.join(installation_path, 'VC\\Auxiliary\\Build\\vcvarsall.bat')
+    env = subprocess.check_output('cmd /c "%s" %s & where %s' % (vcvarsall, platform, file))
+    paths = [path[:-len(file)] for path in env.split('\r\n') if path.endswith(file)]
     return paths[0]
-  else:
-    raise Exception('Cannot find the file in the given Visual Studio environment')
+  except Exception as e:
+    return ''
 
 CMAKE_GENERATOR = 'Unix Makefiles'
 if WINDOWS:
