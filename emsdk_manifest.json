@@ -415,6 +415,24 @@
     "activated_cfg": "JAVA='%installation_dir%/bin/java%.exe%'"
   },
   {
+    "id": "java",
+    "version": "8.152",
+    "bitness": 32,
+    "windows_url": "portable_jre_8_update_152_32bit.zip",
+    "activated_path": "%installation_dir%/bin",
+    "activated_env": "JAVA_HOME=%installation_dir%",
+    "activated_cfg": "JAVA='%installation_dir%/bin/java%.exe%'"
+  },
+  {
+    "id": "java",
+    "version": "8.152",
+    "bitness": 64,
+    "windows_url": "portable_jre_8_update_152_64bit.zip",
+    "activated_path": "%installation_dir%/bin",
+    "activated_env": "JAVA_HOME=%installation_dir%",
+    "activated_cfg": "JAVA='%installation_dir%/bin/java%.exe%'"
+  },
+  {
     "id": "spidermonkey",
     "version": "27.0.1",
     "bitness": 64,
@@ -911,13 +929,13 @@
   {
     "version": "incoming",
     "bitness": 32,
-    "uses": ["clang-incoming-32bit", "node-4.1.1-32bit", "python-2.7.5.3-32bit", "java-7.45-32bit", "emscripten-incoming-32bit"],
+    "uses": ["clang-incoming-32bit", "node-4.1.1-32bit", "python-2.7.5.3-32bit", "java-8.152-32bit", "emscripten-incoming-32bit"],
     "os": "win"
   },
   {
     "version": "incoming",
     "bitness": 64,
-    "uses": ["clang-incoming-64bit", "node-4.1.1-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-incoming-64bit"],
+    "uses": ["clang-incoming-64bit", "node-4.1.1-64bit", "python-2.7.5.3-64bit", "java-8.152-64bit", "emscripten-incoming-64bit"],
     "os": "win"
   },
   {
@@ -941,13 +959,13 @@
   {
     "version": "master",
     "bitness": 32,
-    "uses": ["clang-master-32bit", "node-4.1.1-32bit", "python-2.7.5.3-32bit", "java-7.45-32bit", "emscripten-master-32bit"],
+    "uses": ["clang-master-32bit", "node-4.1.1-32bit", "python-2.7.5.3-32bit", "java-8.152-32bit", "emscripten-master-32bit"],
     "os": "win"
   },
   {
     "version": "master",
     "bitness": 64,
-    "uses": ["clang-master-64bit", "node-4.1.1-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-master-64bit"],
+    "uses": ["clang-master-64bit", "node-4.1.1-64bit", "python-2.7.5.3-64bit", "java-8.152-64bit", "emscripten-master-64bit"],
     "os": "win"
   },
   {
@@ -972,13 +990,37 @@
     "version": "tag-%tag%",
     "bitness": 32,
     "uses": ["clang-tag-e%tag%-32bit", "node-4.1.1-32bit", "python-2.7.5.3-32bit", "java-7.45-32bit", "emscripten-tag-%tag%-32bit"],
-    "os": "win"
+    "os": "win",
+    "version_filter": [
+      ["%tag%", "<=", "1.37.22"]
+    ]
   },
   {
     "version": "tag-%tag%",
     "bitness": 64,
     "uses": ["clang-tag-e%tag%-64bit", "node-4.1.1-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-tag-%tag%-64bit"],
-    "os": "win"
+    "os": "win",
+    "version_filter": [
+      ["%tag%", "<=", "1.37.22"]
+    ]
+  },
+  {
+    "version": "tag-%tag%",
+    "bitness": 32,
+    "uses": ["clang-tag-e%tag%-32bit", "node-4.1.1-32bit", "python-2.7.5.3-32bit", "java-8.152-32bit", "emscripten-tag-%tag%-32bit"],
+    "os": "win",
+    "version_filter": [
+      ["%tag%", ">", "1.37.22"]
+    ]
+  },
+  {
+    "version": "tag-%tag%",
+    "bitness": 64,
+    "uses": ["clang-tag-e%tag%-64bit", "node-4.1.1-64bit", "python-2.7.5.3-64bit", "java-8.152-64bit", "emscripten-tag-%tag%-64bit"],
+    "os": "win",
+    "version_filter": [
+      ["%tag%", ">", "1.37.22"]
+    ]
   },
   {
     "version": "tag-%tag%",
@@ -996,13 +1038,37 @@
     "version": "nightly-%nightly-llvm-32bit%",
     "bitness": 32,
     "uses": ["clang-nightly-e%nightly-llvm-32bit%-32bit", "node-4.1.1-32bit", "python-2.7.5.3-32bit", "java-7.45-32bit", "emscripten-nightly-%nightly-llvm-32bit%"],
-    "os": "win"
+    "os": "win",
+    "version_filter": [
+      ["%nightly-llvm-32bit%", "<=", "1.37.22-2017_11_05"]
+    ]
   },
   {
     "version": "nightly-%nightly-llvm-64bit%",
     "bitness": 64,
     "uses": ["clang-nightly-e%nightly-llvm-64bit%-64bit", "node-4.1.1-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-nightly-%nightly-llvm-64bit%"],
-    "os": "win"
+    "os": "win",
+    "version_filter": [
+      ["%nightly-llvm-64bit%", "<=", "1.37.22-2017_11_05"]
+    ]
+  },
+  {
+    "version": "nightly-%nightly-llvm-32bit%",
+    "bitness": 32,
+    "uses": ["clang-nightly-e%nightly-llvm-32bit%-32bit", "node-4.1.1-32bit", "python-2.7.5.3-32bit", "java-8.152-32bit", "emscripten-nightly-%nightly-llvm-32bit%"],
+    "os": "win",
+    "version_filter": [
+      ["%nightly-llvm-32bit%", ">", "1.37.22-2017_11_05"]
+    ]
+  },
+  {
+    "version": "nightly-%nightly-llvm-64bit%",
+    "bitness": 64,
+    "uses": ["clang-nightly-e%nightly-llvm-64bit%-64bit", "node-4.1.1-64bit", "python-2.7.5.3-64bit", "java-8.152-64bit", "emscripten-nightly-%nightly-llvm-64bit%"],
+    "os": "win",
+    "version_filter": [
+      ["%nightly-llvm-64bit%", ">", "1.37.22-2017_11_05"]
+    ]
   },
   {
     "version": "nightly-%nightly-llvm-32bit%",
@@ -1321,13 +1387,37 @@
     "version": "%precompiled_tag32%",
     "bitness": 32,
     "uses": ["clang-e%precompiled_tag32%-32bit", "node-4.1.1-32bit", "python-2.7.5.3-32bit", "java-7.45-32bit", "emscripten-%precompiled_tag32%"],
-    "os": "win"
+    "os": "win",
+    "version_filter": [
+      ["%precompiled_tag32%", "<=", "1.37.22"]
+    ]
   },
   {
     "version": "%precompiled_tag64%",
     "bitness": 64,
     "uses": ["clang-e%precompiled_tag64%-64bit", "node-4.1.1-64bit", "python-2.7.5.3-64bit", "java-7.45-64bit", "emscripten-%precompiled_tag64%"],
-    "os": "win"
+    "os": "win",
+    "version_filter": [
+      ["%precompiled_tag64%", "<=", "1.37.22"]
+    ]
+  },
+  {
+    "version": "%precompiled_tag32%",
+    "bitness": 32,
+    "uses": ["clang-e%precompiled_tag32%-32bit", "node-4.1.1-32bit", "python-2.7.5.3-32bit", "java-8.152-32bit", "emscripten-%precompiled_tag32%"],
+    "os": "win",
+    "version_filter": [
+      ["%precompiled_tag32%", ">", "1.37.22"]
+    ]
+  },
+  {
+    "version": "%precompiled_tag64%",
+    "bitness": 64,
+    "uses": ["clang-e%precompiled_tag64%-64bit", "node-4.1.1-64bit", "python-2.7.5.3-64bit", "java-8.152-64bit", "emscripten-%precompiled_tag64%"],
+    "os": "win",
+    "version_filter": [
+      ["%precompiled_tag64%", ">", "1.37.22"]
+    ]
   },
   {
     "version": "%precompiled_tag32%",

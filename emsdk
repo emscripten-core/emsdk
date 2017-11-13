@@ -1459,11 +1459,14 @@ def find_used_python():
       return t
   return None
 
-def is_version_at_least(ver, target):
-  ver = ver.split('.')
-  target = target.split('.')
+# Performs a ver >= target comparison
+def is_version_equal_or_newer(ver, target):
+  ver = ver.replace('-', '.').replace('_', '.').split('.')
+  target = target.replace('-', '.').replace('_', '.').split('.')
   while len(ver) < len(target):
     ver += ['0']
+  while len(target) < len(ver):
+    target += ['0']
   for i in range(len(ver)):
     if int(ver[i]) < int(target[i]):
       return False
@@ -1471,9 +1474,29 @@ def is_version_at_least(ver, target):
       return True
   return True
 
+# Tests ver < target
+def is_version_strictly_older_than(ver, target):
+  return not is_version_equal_or_newer(ver, target)
+
+# Tests ver <= target
+def is_version_equal_or_older(ver, target):
+  return is_version_equal_or_newer(target, ver)
+
+# Tests ver > target
+def is_version_strictly_newer_than(ver, target):
+  return not is_version_strictly_older_than(target, ver)
+
+# Performs a ver == target comparison
+def is_version_equal(ver, target):
+  return is_version_equal_or_newer(ver, target) and is_version_equal_or_newer(target, ver)
+
+# Performs a ver != target comparison
+def is_version_not_equal(ver, target):
+  return not is_version_equal_or_newer(ver, target) or not is_version_equal_or_newer(target, ver)
+
 def version_compare(x, y):
-  a = 1 if is_version_at_least(x, y) else 0
-  b = 1 if is_version_at_least(y, x) else 0
+  a = 1 if is_version_equal_or_newer(x, y) else 0
+  b = 1 if is_version_equal_or_newer(y, x) else 0
   return a - b
 
 # A sort function that is compatible with both Python 2 and Python 3 using a custom comparison function.
@@ -1506,7 +1529,7 @@ def fetch_emscripten_tags():
   for t in tags.split('\n'):
     try:
       t = t[t.index('refs/tags/') + len('refs/tags/'):].strip()
-      if is_version_at_least(t, '1.28.2'):
+      if is_version_equal_or_newer(t, '1.28.2'):
         all_tags += [t]
     except:
       pass
@@ -1673,6 +1696,21 @@ def load_sdk_manifest():
       if not tool: return False
     return True
 
+  def cmp_version(ver, cmp_operand, reference):
+    if cmp_operand == '<=': return is_version_equal_or_older(ver, reference)
+    if cmp_operand == '<': return is_version_strictly_older_than(ver, reference)
+    if cmp_operand == '>=': return is_version_equal_or_newer(ver, reference)
+    if cmp_operand == '>': return is_version_strictly_newer_than(ver, reference)
+    if cmp_operand == '==': return is_version_equal(ver, reference)
+    if cmp_operand == '!=': return is_version_not_equal(ver, reference)
+    raise Exception('Invalid cmp_operand "' + cmp_operand + '"!')
+
+  def passes_filters(param, ver, filters):
+    for v in filters:
+      if v[0] == param and not cmp_version(ver, v[1], v[2]):
+        return False
+    return True
+
   # A 'category parameter' is a %foo%-encoded identifier that specifies
   # a class of tools instead of just one tool, e.g. %tag% or %nightly..%
   def expand_category_param(param, category_list, t, is_sdk):
@@ -1687,6 +1725,11 @@ def load_sdk_manifest():
       t2.is_old = i < len(category_list) - 2
       if hasattr(t2, 'uses'):
         t2.uses = list(map((lambda x: x.replace(param, ver)), t2.uses))
+
+      # Filter out expanded tools by version requirements, such as ["tag", "<=", "1.37.22"]
+      if hasattr(t, 'version_filter') and not passes_filters(param, ver, t.version_filter):
+          continue
+
       if is_sdk:
         if dependencies_exist(t2):
           sdks.append(t2)
