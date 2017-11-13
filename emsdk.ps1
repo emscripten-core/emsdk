@@ -29,9 +29,9 @@ $env:EMSDK_POWERSHELL = 1
 # python is not able to set environment variables to the parent calling process, so
 # therefore have it craft a .ps1 file, which we invoke after finishing python execution,
 # to set up the environment variables
-if (Test-Path "emsdk_set_env.ps1") {
-    & emsdk_set_env.ps1
-    Remove-Item emsdk_set_env.ps1
+if (Test-Path ./emsdk_set_env.ps1) {
+    & ./emsdk_set_env.ps1
+    Remove-Item ./emsdk_set_env.ps1
 }
 
 Remove-Item Env:\EMSDK_POWERSHELL
