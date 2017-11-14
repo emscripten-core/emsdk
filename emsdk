@@ -488,9 +488,9 @@ def download_file(url, dstpath, download_even_if_exists=False, filename_prefix =
     rmfile(file_name)
     return None
   except KeyboardInterrupt as e:
-    print("Received Interrupt, exiting")
+    print("Aborted by User, exiting")
     rmfile(file_name)
-    exit(0)
+    exit(1)
   return file_name
 
 def download_text_file(url, dstpath, download_even_if_exists=False, filename_prefix=''):
