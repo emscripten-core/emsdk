@@ -669,6 +669,11 @@ def get_generator_for_sln_file(sln_file):
   raise Exception('Unknown generator used to build solution file ' + sln_file)
 
 def find_msbuild(sln_file):
+  # The following logic attempts to find a Visual Studio version specific MSBuild.exe from a list of known locations. This logic
+  # exists because it was detected that when multiple Visual Studio versions exist (VS2013 & VS2015), their MSBuild.exes might not
+  # be able to drive a build proper. This search is messy, and perhaps in VS >= 2017 or similar none of this logic would be needed.
+  # Ideally would be able to do "cmake --build path/to/cmake/build/directory --config Debug|RelWithDebInfo|MinSizeRel|Release" across
+  # all platforms, but around VS2013 era this did not work. This could be reattempted when support for VS 2015 is dropped.
   search_paths_vs2015 = [os.path.join(os.environ['ProgramFiles'], 'MSBuild/14.0/Bin/amd64'),
                         os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/14.0/Bin/amd64'),
                         os.path.join(os.environ['ProgramFiles'], 'MSBuild/14.0/Bin'),
@@ -693,6 +698,9 @@ def find_msbuild(sln_file):
   for path in search_paths:
     p = os.path.join(path, 'MSBuild.exe')
     if os.path.isfile(p): return p
+  if VERBOSE:
+    print('MSBuild.exe in PATH? ' + str(which('MSBuild.exe')))
+  return which('MSBuild.exe') # Last fallback, try any MSBuild from PATH (might not be compatible, but best effort)
 
 def make_build(build_root, build_type, build_target_platform='x64'):
   if VERBOSE: print('make_build(build_root=' + build_root + ', build_type=' + build_type + ', build_target_platform=' + build_target_platform + ')')
