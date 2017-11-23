@@ -368,8 +368,8 @@
     "bitness": 32,
     "windows_url": "node-v8.9.1-win-x86.zip",
     "linux_url": "node-v8.9.1-linux-x86.tar.xz",
-    "activated_path": "%installation_dir%",
-    "activated_cfg": "NODE_JS='%installation_dir%/node%.exe%'"
+    "activated_path": "%installation_dir%/bin",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'"
   },
   {
     "id": "node",
@@ -378,8 +378,8 @@
     "osx_url": "node-v8.9.1-darwin-x64.tar.gz",
     "windows_url": "node-v8.9.1-win-x64.zip",
     "linux_url": "node-v8.9.1-linux-x64.tar.xz",
-    "activated_path": "%installation_dir%",
-    "activated_cfg": "NODE_JS='%installation_dir%/node%.exe%'"
+    "activated_path": "%installation_dir%/bin",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'"
   },
   {
     "id": "python",
