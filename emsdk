@@ -1073,11 +1073,13 @@ class Tool:
       else:
         setattr(self, key, data[key])
 
-  def __str__(self):
-    s = self.id + '-' + self.version
+    # Cache the name ID of this Tool (these are read very often)
+    self.name = self.id + '-' + self.version
     if hasattr(self, 'bitness'):
-      s += '-' + str(self.bitness) + 'bit'
-    return s
+      self.name += '-' + str(self.bitness) + 'bit'
+
+  def __str__(self):
+    return self.name
 
   def expand_vars(self, str):
     if WINDOWS and '%MSBuildPlatformsDir%' in str:
@@ -1389,22 +1391,30 @@ class Tool:
 
 # A global registry of all known Emscripten SDK tools available in the SDK manifest.
 tools = []
+tools_map = {}
+
+def add_tool(tool):
+  tools.append(tool)
+  if find_tool(str(tool)): raise Exception('Duplicate tool ' + str(tool) + '! Existing:\n{' + ', '.join("%s: %s" % item for item in vars(find_tool(str(tool))).items()) + '}, New:\n{' + ', '.join("%s: %s" % item for item in vars(tool).items()) + '}')
+  tools_map[str(tool)] = tool
 
 # A global registry of all known SDK toolsets.
 sdks = []
+sdks_map = {}
+
+def add_sdk(sdk):
+  sdks.append(sdk)
+  if find_sdk(str(sdk)): raise Exception('Duplicate sdk ' + str(sdk) + '! Existing:\n{' + ', '.join("%s: %s" % item for item in vars(find_sdk(str(sdk))).items()) + '}, New:\n{' + ', '.join("%s: %s" % item for item in vars(sdk).items()) + '}')
+  sdks_map[str(sdk)] = sdk
 
 # N.B. In both tools and sdks list above, we take the convention that the newest items are at the back of the list (ascending chronological order)
 
 def find_tool(name):
-  for tool in tools:
-    if str(tool) == name:
-      return tool
+  if name in tools_map: return tools_map[name]
   return None
 
 def find_sdk(name):
-  for sdk in sdks:
-    if str(sdk) == name:
-      return sdk
+  if name in sdks_map: return sdks_map[name]
   return None
 
 def is_os_64bit(): # http://stackoverflow.com/questions/2208828/detect-64bit-os-windows-in-python
@@ -1488,7 +1498,7 @@ def is_version_equal_or_older(ver, target):
 
 # Tests ver > target
 def is_version_strictly_newer_than(ver, target):
-  return not is_version_strictly_older_than(target, ver)
+  return not is_version_equal_or_older(ver, target)
 
 # Performs a ver == target comparison
 def is_version_equal(ver, target):
@@ -1723,22 +1733,30 @@ def load_sdk_manifest():
       ver = category_list[i]
       if len(ver.strip()) == 0: continue
       t2 = copy.copy(t)
+      found_param = False
       for p, v in vars(t2).items():
         if is_string(v) and param in v:
           t2.__dict__[p] = v.replace(param, ver)
+          found_param = True
+      if not found_param: continue
       t2.is_old = i < len(category_list) - 2
       if hasattr(t2, 'uses'):
         t2.uses = list(map((lambda x: x.replace(param, ver)), t2.uses))
 
       # Filter out expanded tools by version requirements, such as ["tag", "<=", "1.37.22"]
-      if hasattr(t, 'version_filter') and not passes_filters(param, ver, t.version_filter):
-          continue
+      if hasattr(t2, 'version_filter'):
+        passes = passes_filters(param, ver, t2.version_filter)
+        if not passes: continue
 
       if is_sdk:
         if dependencies_exist(t2):
-          sdks.append(t2)
+          if not find_sdk(t2.name):
+            add_sdk(t2)
+          elif VERBOSE: print('SDK ' + str(t2) + ' already existed in manifest, not adding twice')
       else:
-        tools.append(t2)
+        if not find_tool(t2.name):
+          add_tool(t2)
+        elif VERBOSE: print('Tool ' + str(t2) + ' already existed in manifest, not adding twice')
 
   for tool in manifest['tools']:
     t = Tool(tool)
@@ -1756,11 +1774,11 @@ def load_sdk_manifest():
       elif '%nightly-llvm-32bit%' in t.version: expand_category_param('%nightly-llvm-32bit%', llvm_32bit_nightlies, t, is_sdk=False)
       elif '%nightly-emscripten%' in t.version: expand_category_param('%nightly-emscripten%', emscripten_nightlies, t, is_sdk=False)
       else:
-        tools.append(t)
+        add_tool(t)
 
   for sdk_str in manifest['sdks']:
+    sdk_str['id'] = 'sdk'
     sdk = Tool(sdk_str)
-    sdk.id = "sdk"
     if sdk.compatible_with_this_os():
       if not hasattr(sdk, 'is_old'):
         sdk.is_old = False
@@ -1773,7 +1791,7 @@ def load_sdk_manifest():
       elif '%nightly-llvm-32bit%' in sdk.version: expand_category_param('%nightly-llvm-32bit%', llvm_32bit_nightlies, sdk, is_sdk=True)
       elif '%nightly-emscripten%' in sdk.version: expand_category_param('%nightly-emscripten%', emscripten_nightlies, sdk, is_sdk=True)
       else:
-        sdks.append(sdk)
+        add_sdk(sdk)
 
 # Tests if the two given tools can be active at the same time.
 # Currently only a simple check for name for same tool with different versions,
