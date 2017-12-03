@@ -37,6 +37,7 @@ WINDOWS = False
 if os.name == 'nt' or (os.getenv('SYSTEMROOT') != None and 'WINDOWS' in os.getenv('SYSTEMROOT')) or (os.getenv('COMSPEC') != None and 'WINDOWS' in os.getenv('COMSPEC')):
   WINDOWS = True
   ENVPATH_SEPARATOR = ';'
+  PROGRAMFILES32 = os.environ['ProgramFiles(x86)'] if 'ProgramFiles(x86)' in os.environ else os.environ['ProgramFiles']
 
 MSYS = False
 if os.getenv('MSYSTEM'):
@@ -112,8 +113,7 @@ def which(program):
 
 def vswhere(version):
   try:
-    program_files = os.environ['ProgramFiles(x86)'] if 'ProgramFiles(x86)' in os.environ else os.environ['ProgramFiles']
-    vswhere_path = os.path.join(program_files, 'Microsoft Visual Studio', 'Installer', 'vswhere.exe')
+    vswhere_path = os.path.join(PROGRAMFILES32, 'Microsoft Visual Studio', 'Installer', 'vswhere.exe')
     output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-version', '[%s.0,%s.0)' % (version, version + 1), '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', '-property', 'installationPath', '-format', 'json']))
     # Visual Studio 2017 Express is not included in the above search, and it does not have the VC.Tools.x86.x64 tool, so do a catch-all attempt as a fallback, to detect Express version.
     if len(output) == 0:
@@ -139,10 +139,9 @@ if WINDOWS:
   elif '--vs2015' in sys.argv: CMAKE_GENERATOR = 'Visual Studio 14'
   elif '--vs2017' in sys.argv: CMAKE_GENERATOR = 'Visual Studio 15'
   else:
-    program_files = os.environ['ProgramFiles(x86)'] if 'ProgramFiles(x86)' in os.environ else os.environ['ProgramFiles']
     vs2017_exists = len(vswhere(15)) > 0
-    vs2015_exists = 'VS140COMNTOOLS' in os.environ or 'VSSDK140Install' in os.environ or os.path.isdir(os.path.join(program_files, 'Microsoft Visual Studio 14.0'))
-    vs2013_exists = 'VS120COMNTOOLS' in os.environ or os.path.isdir(os.path.join(program_files, 'Microsoft Visual Studio 12.0'))
+    vs2015_exists = 'VS140COMNTOOLS' in os.environ or 'VSSDK140Install' in os.environ or os.path.isdir(os.path.join(PROGRAMFILES32, 'Microsoft Visual Studio 14.0'))
+    vs2013_exists = 'VS120COMNTOOLS' in os.environ or os.path.isdir(os.path.join(PROGRAMFILES32, 'Microsoft Visual Studio 12.0'))
     mingw_exists = which('mingw32-make') != None and which('g++') != None
     if vs2015_exists: CMAKE_GENERATOR = 'Visual Studio 14'
     elif vs2017_exists: CMAKE_GENERATOR = 'Visual Studio 15' # VS2017 has an LLVM build issue, see https://github.com/kripken/emscripten-fastcomp/issues/185
@@ -644,17 +643,15 @@ def build_env(generator):
           build_env['PATH'] = build_env['PATH'] + ';' + path
 
   elif 'Visual Studio 14' in generator or 'Visual Studio 2015' in generator:
-    build_env['VCTargetsPath'] = os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/Microsoft.Cpp/v4.0/V140')
+    build_env['VCTargetsPath'] = os.path.join(PROGRAMFILES32, 'MSBuild/Microsoft.Cpp/v4.0/V140')
 
     # CMake and VS2015 cl.exe needs to have mspdb140.dll et al. in its PATH.
-    vc_bin_paths = [os.path.join(os.environ['ProgramFiles'], 'Microsoft Visual Studio 14.0\\VC\\bin'),
-                    os.path.join(os.environ['ProgramFiles(x86)'], 'Microsoft Visual Studio 14.0\\VC\\bin')]
-    for path in vc_bin_paths:
-      if os.path.isdir(path):
-        build_env['PATH'] = build_env['PATH'] + ';' + path
+    vc_bin_paths = [os.path.join(PROGRAMFILES32, 'Microsoft Visual Studio 14.0\\VC\\bin')]
+    if os.path.isdir(path):
+      build_env['PATH'] = build_env['PATH'] + ';' + path
 
   elif 'Visual Studio 12' in generator or 'Visual Studio 2013' in generator:
-    build_env['VCTargetsPath'] = os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/Microsoft.Cpp/v4.0/V120')
+    build_env['VCTargetsPath'] = os.path.join(PROGRAMFILES32, 'MSBuild/Microsoft.Cpp/v4.0/V120')
 
   return build_env
 
@@ -674,14 +671,10 @@ def find_msbuild(sln_file):
   # be able to drive a build proper. This search is messy, and perhaps in VS >= 2017 or similar none of this logic would be needed.
   # Ideally would be able to do "cmake --build path/to/cmake/build/directory --config Debug|RelWithDebInfo|MinSizeRel|Release" across
   # all platforms, but around VS2013 era this did not work. This could be reattempted when support for VS 2015 is dropped.
-  search_paths_vs2015 = [os.path.join(os.environ['ProgramFiles'], 'MSBuild/14.0/Bin/amd64'),
-                        os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/14.0/Bin/amd64'),
-                        os.path.join(os.environ['ProgramFiles'], 'MSBuild/14.0/Bin'),
-                        os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/14.0/Bin')]
-  search_paths_vs2013 = [os.path.join(os.environ['ProgramFiles'], 'MSBuild/12.0/Bin/amd64'),
-                        os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/12.0/Bin/amd64'),
-                        os.path.join(os.environ['ProgramFiles'], 'MSBuild/12.0/Bin'),
-                        os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/12.0/Bin')]
+  search_paths_vs2015 = [os.path.join(PROGRAMFILES32, 'MSBuild/14.0/Bin/amd64'),
+                         os.path.join(PROGRAMFILES32, 'MSBuild/14.0/Bin')]
+  search_paths_vs2013 = [os.path.join(PROGRAMFILES32, 'MSBuild/12.0/Bin/amd64'),
+                         os.path.join(PROGRAMFILES32, 'MSBuild/12.0/Bin')]
   search_paths_old = [os.path.join(os.environ["WINDIR"], 'Microsoft.NET/Framework/v4.0.30319')]
   generator = get_generator_for_sln_file(sln_file)
   if generator == 'Visual Studio 15':
@@ -1062,19 +1055,8 @@ JS_ENGINES = [NODE_JS]
     print('   ' + ENVPATH_SEPARATOR.join(path_add))
 
 def find_msbuild_dir():
-  if 'ProgramFiles' in os.environ and os.environ['ProgramFiles']:
-    program_files = os.environ['ProgramFiles']
-  else:
-    program_files = 'C:/Program Files'
-  if 'ProgramFiles(x86)' in os.environ and os.environ['ProgramFiles(x86)']:
-    program_files_x86 = os.environ['ProgramFiles(x86)']
-  else:
-    program_files_x86 = 'C:/Program Files (x86)'
-  MSBUILDX86_DIR = os.path.join(program_files_x86, "MSBuild/Microsoft.Cpp/v4.0/Platforms")
-  MSBUILD_DIR = os.path.join(program_files, "MSBuild/Microsoft.Cpp/v4.0/Platforms")
-  if os.path.exists(MSBUILDX86_DIR):
-    return MSBUILDX86_DIR
-  elif os.path.exists(MSBUILD_DIR):
+  MSBUILD_DIR = os.path.join(PROGRAMFILES32, "MSBuild/Microsoft.Cpp/v4.0/Platforms")
+  if os.path.exists(MSBUILD_DIR):
     return MSBUILD_DIR
   else:
     return '' # No MSbuild installed.
