@@ -1447,7 +1447,43 @@
   {
     "version": "%precompiled_tag32%",
     "bitness": 32,
-    "uses": ["clang-e%precompiled_tag32%-32bit", "node-4.1.1-32bit", "python-2.7.5.3-32bit", "java-8.152-32bit", "emscripten-%precompiled_tag32%"],
+    "uses": ["clang-e%precompiled_tag32%-32bit", "node-4.1.1-32bit", "emscripten-%precompiled_tag32%"],
+    "os": "linux",
+    "version_filter": [
+      ["%precompiled_tag32%", "<=", "1.37.22"]
+    ]
+  },
+  {
+    "version": "%precompiled_tag64%",
+    "bitness": 64,
+    "uses": ["clang-e%precompiled_tag64%-64bit", "node-4.1.1-64bit", "emscripten-%precompiled_tag64%"],
+    "os": "linux",
+    "version_filter": [
+      ["%precompiled_tag64%", "<=", "1.37.22"]
+    ]
+  },
+  {
+    "version": "%precompiled_tag32%",
+    "bitness": 32,
+    "uses": ["clang-e%precompiled_tag32%-32bit", "node-4.1.1-32bit", "emscripten-%precompiled_tag32%"],
+    "os": "osx",
+    "version_filter": [
+      ["%precompiled_tag32%", "<=", "1.37.22"]
+    ]
+  },
+  {
+    "version": "%precompiled_tag64%",
+    "bitness": 64,
+    "uses": ["clang-e%precompiled_tag64%-64bit", "node-4.1.1-64bit", "emscripten-%precompiled_tag64%"],
+    "os": "osx",
+    "version_filter": [
+      ["%precompiled_tag64%", "<=", "1.37.22"]
+    ]
+  },
+  {
+    "version": "%precompiled_tag32%",
+    "bitness": 32,
+    "uses": ["clang-e%precompiled_tag32%-32bit", "node-8.9.1-32bit", "python-2.7.5.3-32bit", "java-8.152-32bit", "emscripten-%precompiled_tag32%"],
     "os": "win",
     "version_filter": [
       ["%precompiled_tag32%", ">", "1.37.22"]
@@ -1456,7 +1492,7 @@
   {
     "version": "%precompiled_tag64%",
     "bitness": 64,
-    "uses": ["clang-e%precompiled_tag64%-64bit", "node-4.1.1-64bit", "python-2.7.5.3-64bit", "java-8.152-64bit", "emscripten-%precompiled_tag64%"],
+    "uses": ["clang-e%precompiled_tag64%-64bit", "node-8.9.1-64bit", "python-2.7.5.3-64bit", "java-8.152-64bit", "emscripten-%precompiled_tag64%"],
     "os": "win",
     "version_filter": [
       ["%precompiled_tag64%", ">", "1.37.22"]
@@ -1465,26 +1501,38 @@
   {
     "version": "%precompiled_tag32%",
     "bitness": 32,
-    "uses": ["clang-e%precompiled_tag32%-32bit", "node-4.1.1-32bit", "emscripten-%precompiled_tag32%"],
-    "os": "linux"
+    "uses": ["clang-e%precompiled_tag32%-32bit", "node-8.9.1-32bit", "emscripten-%precompiled_tag32%"],
+    "os": "linux",
+    "version_filter": [
+      ["%precompiled_tag32%", ">", "1.37.22"]
+    ]
   },
   {
     "version": "%precompiled_tag64%",
     "bitness": 64,
-    "uses": ["clang-e%precompiled_tag64%-64bit", "node-4.1.1-64bit", "emscripten-%precompiled_tag64%"],
-    "os": "linux"
+    "uses": ["clang-e%precompiled_tag64%-64bit", "node-8.9.1-64bit", "emscripten-%precompiled_tag64%"],
+    "os": "linux",
+    "version_filter": [
+      ["%precompiled_tag64%", ">", "1.37.22"]
+    ]
   },
   {
     "version": "%precompiled_tag32%",
     "bitness": 32,
-    "uses": ["clang-e%precompiled_tag32%-32bit", "node-4.1.1-32bit", "emscripten-%precompiled_tag32%"],
-    "os": "osx"
+    "uses": ["clang-e%precompiled_tag32%-32bit", "node-8.9.1-32bit", "emscripten-%precompiled_tag32%"],
+    "os": "osx",
+    "version_filter": [
+      ["%precompiled_tag32%", ">", "1.37.22"]
+    ]
   },
   {
     "version": "%precompiled_tag64%",
     "bitness": 64,
-    "uses": ["clang-e%precompiled_tag64%-64bit", "node-4.1.1-64bit", "emscripten-%precompiled_tag64%"],
-    "os": "osx"
+    "uses": ["clang-e%precompiled_tag64%-64bit", "node-8.9.1-64bit", "emscripten-%precompiled_tag64%"],
+    "os": "osx",
+    "version_filter": [
+      ["%precompiled_tag64%", ">", "1.37.22"]
+    ]
   }
   ]
 }
