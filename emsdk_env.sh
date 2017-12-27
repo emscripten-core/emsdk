@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # This script is sourced by the user and uses
 # their shell. Try not to use bashisms.
 
