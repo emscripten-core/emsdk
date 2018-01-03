@@ -782,6 +782,12 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
 
   return True
 
+def xcode_sdk_version():
+  try:
+    return subprocess.check_output(['xcrun', '--show-sdk-version']).strip().split('.')
+  except:
+    return subprocess.checkplatform.mac_ver()[0].split('.')
+
 def build_fastcomp_tool(tool):
   if VERBOSE: print('build_fastcomp_tool(' + str(tool) + ')')
   fastcomp_root = tool.installation_path()
@@ -820,6 +826,13 @@ def build_fastcomp_tool(tool):
     extra_args = os.environ['LLVM_CMAKE_ARGS'].split(',')
     print('Passing the following extra arguments to LLVM CMake configuration: ' + str(extra_args))
     args += extra_args
+
+  # MacOS < 10.13 workaround for LLVM build bug https://github.com/kripken/emscripten/issues/5418:
+  # specify HAVE_FUTIMENS=0 in the build if building with target SDK that is older than 10.13.
+  if OSX and (not os.environ.get('LLVM_CMAKE_ARGS') or not 'HAVE_FUTIMENS' in os.environ.get('LLVM_CMAKE_ARGS')) and xcode_sdk_version() < [10,13]:
+    print('Passing -DHAVE_FUTIMENS=0 to LLVM CMake configure to workaround https://github.com/kripken/emscripten/issues/5418. Please update to macOS 10.13 or newer')
+    args += ['-DHAVE_FUTIMENS=0']
+
   success = cmake_configure(cmake_generator, build_root, fastcomp_src_root, build_type, args)
   if not success: return False
 
