@@ -2168,6 +2168,7 @@ def main():
   if cmd == 'list':
     print('')
     show_old = len(sys.argv) >= 3 and sys.argv[2] == '--old'
+    show_uses = len(sys.argv) >= 3 and sys.argv[2] == '--uses'
     has_partially_active_tools = [False] # Use array to work around the lack of being able to mutate from enclosing function.
     if len(tools) > 0:
       def find_tools(needs_compilation):
@@ -2224,6 +2225,9 @@ def main():
           installed = '\tINSTALLED' if sdk.is_installed() else ''
           active = '*' if sdk.is_active() else ' '
           print('    ' + active + '    {0: <25}'.format(str(sdk)) + installed)
+          if show_uses:
+            for dep in sdk.uses:
+              print('           -{0: <25}'.format(dep))
         print('')
       if is_emsdk_sourced_from_github():
         print('The following precompiled SDKs are available for download: (Run "git pull" followed by "./emsdk update-tags" to pull in the latest list)')
