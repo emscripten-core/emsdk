@@ -1494,45 +1494,8 @@ def find_used_python():
       return t
   return None
 
-# Performs a ver >= target comparison
-def is_version_equal_or_newer(ver, target):
-  ver = ver.replace('-', '.').replace('_', '.').split('.')
-  target = target.replace('-', '.').replace('_', '.').split('.')
-  while len(ver) < len(target):
-    ver += ['0']
-  while len(target) < len(ver):
-    target += ['0']
-  for i in range(len(ver)):
-    if int(ver[i]) < int(target[i]):
-      return False
-    elif int(ver[i]) > int(target[i]):
-      return True
-  return True
-
-# Tests ver < target
-def is_version_strictly_older_than(ver, target):
-  return not is_version_equal_or_newer(ver, target)
-
-# Tests ver <= target
-def is_version_equal_or_older(ver, target):
-  return is_version_equal_or_newer(target, ver)
-
-# Tests ver > target
-def is_version_strictly_newer_than(ver, target):
-  return not is_version_equal_or_older(ver, target)
-
-# Performs a ver == target comparison
-def is_version_equal(ver, target):
-  return is_version_equal_or_newer(ver, target) and is_version_equal_or_newer(target, ver)
-
-# Performs a ver != target comparison
-def is_version_not_equal(ver, target):
-  return not is_version_equal_or_newer(ver, target) or not is_version_equal_or_newer(target, ver)
-
-def version_compare(x, y):
-  a = 1 if is_version_equal_or_newer(x, y) else 0
-  b = 1 if is_version_equal_or_newer(y, x) else 0
-  return a - b
+def version_key(ver):
+  return map(int, re.split('[._-]', ver))
 
 # A sort function that is compatible with both Python 2 and Python 3 using a custom comparison function.
 def python_2_3_sorted(arr, cmp):
@@ -1564,11 +1527,11 @@ def fetch_emscripten_tags():
   for t in tags.split('\n'):
     try:
       t = t[t.index('refs/tags/') + len('refs/tags/'):].strip()
-      if is_version_equal_or_newer(t, '1.28.2'):
+      if version_key(t) >= version_key('1.28.2'):
         all_tags += [t]
     except:
       pass
-  all_tags = python_2_3_sorted(all_tags, cmp=version_compare)
+  all_tags = sorted(all_tags, key=version_key)
   open(sdk_path('emscripten-tags.txt'), 'w').write('\n'.join(all_tags))
   if len(all_tags) > 0:
     print('Done. ' + str(len(all_tags)) + ' tagged releases available, latest is ' + all_tags[-1] + '.')
@@ -1587,7 +1550,7 @@ def fetch_emscripten_tags():
         binaryen_tags += [t]
     except:
       pass
-  binaryen_tags = python_2_3_sorted(binaryen_tags, cmp=version_compare)
+  binaryen_tags = sorted(binaryen_tags, key=version_key)
   open(sdk_path('binaryen-tags.txt'), 'w').write('\n'.join(binaryen_tags))
   if len(binaryen_tags) > 0:
     print('Done. ' + str(len(binaryen_tags)) + ' tagged Binaryen releases available, latest is ' + binaryen_tags[-1] + '.')
@@ -1650,30 +1613,6 @@ def remove_suffix(s, suffix):
   if s.endswith(suffix): return s[:len(s)-len(suffix)]
   else: return s
 
-def try_int(a):
-  try:
-    return int(a)
-  except:
-    return None
-
-def sort_by_version(a, b):
-  a = re.split('[\\._\\-]', a)
-  b = re.split('[\\._\\-]', b)
-  for i in range(min(len(a), len(b))):
-    a_int = try_int(a[i])
-    b_int = try_int(b[i])
-    if a_int != None and b_int != None:
-      if a_int < b_int:
-        return -1
-      if b_int > a_int:
-        return 1
-    else:
-      if a[i] < b[i]:
-        return -1
-      if b[i] > a[i]:
-        return 1
-  return 0
-
 # filename should be one of: 'llvm-nightlies-32bit.txt', 'llvm-nightlies-64bit.txt', 'llvm-precompiled-tags-32bit.txt', 'llvm-precompiled-tags-64bit.txt', 'emscripten-nightlies.txt'
 def load_file_index_list(filename):
   try:
@@ -1682,7 +1621,7 @@ def load_file_index_list(filename):
     items = filter(lambda x: 'latest' not in x and len(x) > 0, items)
 
     # Sort versions from oldest to newest (the default sort would be lexicographic, i.e. '1.37.1 < 1.37.10 < 1.37.2')
-    items = python_2_3_sorted(items, cmp=sort_by_version)[::-1]
+    items = sorted(items, key=version_key)[::-1]
 
     return items
   except:
@@ -1732,12 +1671,12 @@ def load_sdk_manifest():
     return True
 
   def cmp_version(ver, cmp_operand, reference):
-    if cmp_operand == '<=': return is_version_equal_or_older(ver, reference)
-    if cmp_operand == '<': return is_version_strictly_older_than(ver, reference)
-    if cmp_operand == '>=': return is_version_equal_or_newer(ver, reference)
-    if cmp_operand == '>': return is_version_strictly_newer_than(ver, reference)
-    if cmp_operand == '==': return is_version_equal(ver, reference)
-    if cmp_operand == '!=': return is_version_not_equal(ver, reference)
+    if cmp_operand == '<=': return version_key(ver) <= version_key(reference)
+    if cmp_operand == '<': return version_key(ver) < version_key(reference)
+    if cmp_operand == '>=': return version_key(ver) >= version_key(reference)
+    if cmp_operand == '>': return version_key(ver) > version_key(reference)
+    if cmp_operand == '==': return version_key(ver) == version_key(reference)
+    if cmp_operand == '!=': return version_key(ver) != version_key(reference)
     raise Exception('Invalid cmp_operand "' + cmp_operand + '"!')
 
   def passes_filters(param, ver, filters):
