@@ -2033,10 +2033,12 @@ def main():
       print(' emsdk: Available commands:')
 
     print('''
-   emsdk list [--old]           - Lists all available SDKs and tools and their
+   emsdk list [--old] [--uses]  - Lists all available SDKs and tools and their
                                   current installation status. With the --old
                                   parameter, also historical versions are
-                                  shown.
+                                  shown. If --uses is passed, displays the
+                                  composition of different SDK packages and
+                                  dependencies.
 
    emsdk update                 - Updates emsdk to the newest version, and also
                                   runs 'update-tags' (below). If you have
@@ -2141,6 +2143,17 @@ def main():
        which are Release for the 'master' SDK, and RelWithDebInfo for the
        'incoming' SDK.''')
     return 1
+ 
+   # Extracts a boolean command line argument from sys.argv and returns True if it was present
+  def extract_bool_arg(name):
+    old_argv = sys.argv
+    sys.argv = list(filter(lambda a: a != name, sys.argv))
+    return len(sys.argv) != len(old_argv)
+
+  arg_old = extract_bool_arg('--old')
+  arg_uses = extract_bool_arg('--uses')
+  arg_global = extract_bool_arg('--global')
+  arg_embedded = extract_bool_arg('--embedded')
   cmd = sys.argv[1]
 
   # On first run when tag list is not present, populate it to bootstrap.
@@ -2188,14 +2201,12 @@ def main():
 
   if cmd == 'list':
     print('')
-    show_old = len(sys.argv) >= 3 and sys.argv[2] == '--old'
-    show_uses = len(sys.argv) >= 3 and sys.argv[2] == '--uses'
     has_partially_active_tools = [False] # Use array to work around the lack of being able to mutate from enclosing function.
     if len(tools) > 0:
       def find_tools(needs_compilation):
         t = []
         for tool in tools:
-          if tool.is_old and not show_old:
+          if tool.is_old and not arg_old:
             continue
           if tool.needs_compilation() != needs_compilation:
             continue
@@ -2204,7 +2215,7 @@ def main():
 
       def print_tools(t):
         for tool in t:
-          if tool.is_old and not show_old:
+          if tool.is_old and not arg_old:
             continue
           if tool.can_be_installed() == True:
             installed = '\tINSTALLED' if tool.is_installed() else ''
@@ -2235,7 +2246,7 @@ def main():
       def find_sdks(needs_compilation):
         s = []
         for sdk in sdks:
-          if sdk.is_old and not show_old:
+          if sdk.is_old and not arg_old:
             continue
           if sdk.needs_compilation() == needs_compilation:
             s += [sdk]
@@ -2246,9 +2257,9 @@ def main():
           installed = '\tINSTALLED' if sdk.is_installed() else ''
           active = '*' if sdk.is_active() else ' '
           print('    ' + active + '    {0: <25}'.format(str(sdk)) + installed)
-          if show_uses:
+          if arg_uses:
             for dep in sdk.uses:
-              print('           -{0: <25}'.format(dep))
+              print('          - {0: <25}'.format(dep))
         print('')
       if is_emsdk_sourced_from_github():
         print('The following precompiled SDKs are available for download: (Run "git pull" followed by "./emsdk update-tags" to pull in the latest list)')
@@ -2262,7 +2273,7 @@ def main():
       if has_partially_active_tools[0]:
         env_cmd = 'emsdk_env.bat' if WINDOWS else 'source ./emsdk_env.sh'
         print('Items marked with (*) are selected for use, but your current shell environment is not configured to use them. Type "' + env_cmd + '" to set up your current shell to use them' + (', or call "emsdk activate --global <name_of_sdk>" to permanently activate them.' if WINDOWS else '.'))
-      if not show_old:
+      if not arg_old:
         print('')
         print("To access the historical archived versions, type 'emsdk list --old'")
 
@@ -2283,12 +2294,10 @@ def main():
     fetch_emscripten_tags()
     return 0
   elif cmd == 'activate':
-    permanently_activate = '--global' in sys.argv
-    if permanently_activate:
+    if arg_global:
       print('Registering active Emscripten environment globally for all users.')
       print('')
-    embed_activation_to_sdk_dir = '--embedded' in sys.argv
-    if embed_activation_to_sdk_dir:
+    if arg_embedded:
       # Activating the emsdk tools locally relative to Emscripten SDK directory.
       emscripten_config_directory = emsdk_path()
       print('Writing .emscripten configuration file to Emscripten SDK directory ' + emscripten_config_directory)
