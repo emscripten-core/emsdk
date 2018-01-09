@@ -1415,6 +1415,7 @@ tools = []
 tools_map = {}
 
 def add_tool(tool):
+  tool.is_sdk = False
   tools.append(tool)
   if find_tool(str(tool)): raise Exception('Duplicate tool ' + str(tool) + '! Existing:\n{' + ', '.join("%s: %s" % item for item in vars(find_tool(str(tool))).items()) + '}, New:\n{' + ', '.join("%s: %s" % item for item in vars(tool).items()) + '}')
   tools_map[str(tool)] = tool
@@ -1424,6 +1425,7 @@ sdks = []
 sdks_map = {}
 
 def add_sdk(sdk):
+  sdk.is_sdk = True
   sdks.append(sdk)
   if find_sdk(str(sdk)): raise Exception('Duplicate sdk ' + str(sdk) + '! Existing:\n{' + ', '.join("%s: %s" % item for item in vars(find_sdk(str(sdk))).items()) + '}, New:\n{' + ', '.join("%s: %s" % item for item in vars(sdk).items()) + '}')
   sdks_map[str(sdk)] = sdk
@@ -1765,7 +1767,7 @@ def remove_nonexisting_tools(tool_list, log_errors=True):
     tool = tool_list[i]
     if not tool.is_installed():
       if log_errors:
-        print("The SDK/tool '" + str(tool) + "' cannot be activated since it is not installed! Skipping this tool...")
+        print("Warning: The SDK/tool '" + str(tool) + "' cannot be activated since it is not installed! Skipping this tool...")
       tool_list.pop(i)
       continue
     i += 1
@@ -1821,6 +1823,10 @@ def set_active_tools(tools_to_activate, permanently_activate):
     if newpath != os.environ['PATH']: # Are there any actual changes?
       win_set_environment_variable('PATH', newpath, system=True)
 
+  if len(tools_to_activate) > 0:
+    tools = filter(lambda x: not x.is_sdk, tools_to_activate)
+    print('Set the following tools as active:\n   ' + '\n   '.join(map(lambda x: str(x), tools)))
+    print('')
   return tools_to_activate
 
 def currently_active_sdk():
@@ -2249,21 +2255,23 @@ def main():
         pass
 
     sys.argv = [x for x in sys.argv if not x.startswith('--')]
-    # If called without arguments, activate latest versions of all tools
-    if len(sys.argv) <= 2:
-      tools_to_activate = list(tools)
-      tools_to_activate = remove_nonexisting_tools(tools_to_activate, log_errors=False)
-    else:
-      tools_to_activate = currently_active_tools()
-      for i in range(2, len(sys.argv)):
-        tool = find_tool(sys.argv[i])
-        if tool == None:
-          tool = find_sdk(sys.argv[i])
-        if tool == None:
-          print("Error: No tool or SDK found by name '" + sys.argv[i] + "'.")
-          return 1
-        tools_to_activate += [tool]
+
+    tools_to_activate = currently_active_tools()
+    for i in range(2, len(sys.argv)):
+      tool = find_tool(sys.argv[i])
+      if tool == None:
+        tool = find_sdk(sys.argv[i])
+      if tool == None:
+        print("Error: No tool or SDK found by name '" + sys.argv[i] + "'.")
+        return 1
+      tools_to_activate += [tool]
+    if len(tools_to_activate) == 0:
+      print('No tools/SDKs specified to activate! Usage:\n   emsdk activate tool/sdk1 [tool/sdk2] [...]')
+      return 1
     tools_to_activate = set_active_tools(tools_to_activate, permanently_activate=arg_global)
+    if len(tools_to_activate) == 0:
+      print('No tools/SDKs found to activate! Usage:\n   emsdk activate tool/sdk1 [tool/sdk2] [...]')
+      return 1
     if WINDOWS and not arg_global:
       print('The changes made to environment variables only apply to the currently running shell instance. Use the \'emsdk_env.bat\' to re-enter this environment later, or if you\'d like to permanently register this environment globally to all users in Windows Registry, rerun this command with the option --global.')
     return 0
