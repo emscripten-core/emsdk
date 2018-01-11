@@ -1495,7 +1495,7 @@ def find_used_python():
   return None
 
 def version_key(ver):
-  return map(int, re.split('[._-]', ver))
+  return list(map(int, re.split('[._-]', ver)))
 
 # A sort function that is compatible with both Python 2 and Python 3 using a custom comparison function.
 def python_2_3_sorted(arr, cmp):
