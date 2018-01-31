@@ -1508,56 +1508,45 @@ def python_2_3_sorted(arr, cmp):
 
 def fetch_emscripten_tags():
   git = GIT(must_succeed=False)
-  if not git:
-    print('Update complete, however skipped fetching the Emscripten tags, since git was not found.')
-    if WINDOWS:
-      print("If you want to compile one of the tagged releases from source, please install git by typing 'emsdk install git-1.9.4', or alternatively by installing it manually from http://git-scm.com/downloads . If you install git manually, remember to add it to PATH.")
-    elif OSX:
-      print("If you want to compile one of the tagged releases from source, please install git from http://git-scm.com/ , or by installing XCode and then the XCode Command Line Tools (see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools ).")
-    elif LINUX:
-      print("If you want to compile one of the tagged releases from source, please install git using your package manager, see http://git-scm.com/book/en/Getting-Started-Installing-Git .")
+
+  if git:
+    print('Fetching all tags from Emscripten Github repository...')
+    tags = run_get_output([git, 'ls-remote', '--tags', emscripten_git_repo])
+    if tags[0] != 0: return False # failed to get tags?
+    tags = tags[1]
+    all_tags = []
+    for t in tags.split('\n'):
+      try:
+        t = t[t.index('refs/tags/') + len('refs/tags/'):].strip()
+        if version_key(t) >= version_key('1.28.2'):
+          all_tags += [t]
+      except:
+        pass
+    all_tags = sorted(all_tags, key=version_key)
+    open(sdk_path('emscripten-tags.txt'), 'w').write('\n'.join(all_tags))
+    if len(all_tags) > 0:
+      print('Done. ' + str(len(all_tags)) + ' tagged releases available, latest is ' + all_tags[-1] + '.')
     else:
-      print("If you want to compile one of the tagged releases from source, please install git.")
-    print("If you are not looking to build Emscripten from source, you can safely ignore this message.")
-    return
+      print('Done. No tagged releases available.')
 
-  print('Fetching all tags from Emscripten Github repository...')
-  tags = run_get_output([GIT(), 'ls-remote', '--tags', emscripten_git_repo])
-  if tags[0] != 0: return False # failed to get tags?
-  tags = tags[1]
-  all_tags = []
-  for t in tags.split('\n'):
-    try:
-      t = t[t.index('refs/tags/') + len('refs/tags/'):].strip()
-      if version_key(t) >= version_key('1.28.2'):
-        all_tags += [t]
-    except:
-      pass
-  all_tags = sorted(all_tags, key=version_key)
-  open(sdk_path('emscripten-tags.txt'), 'w').write('\n'.join(all_tags))
-  if len(all_tags) > 0:
-    print('Done. ' + str(len(all_tags)) + ' tagged releases available, latest is ' + all_tags[-1] + '.')
-  else:
-    print('Done. No tagged releases available.')
-
-  print('Fetching all tags from Binaryen Github repository...')
-  tags = run_get_output([GIT(), 'ls-remote', '--tags', binaryen_git_repo])
-  if tags[0] != 0: return False # failed to get tags?
-  tags = tags[1]
-  binaryen_tags = []
-  for t in tags.split('\n'):
-    try:
-      t = t[t.index('refs/tags/') + len('refs/tags/'):].strip()
-      if '.' in t:
-        binaryen_tags += [t]
-    except:
-      pass
-  binaryen_tags = sorted(binaryen_tags, key=version_key)
-  open(sdk_path('binaryen-tags.txt'), 'w').write('\n'.join(binaryen_tags))
-  if len(binaryen_tags) > 0:
-    print('Done. ' + str(len(binaryen_tags)) + ' tagged Binaryen releases available, latest is ' + binaryen_tags[-1] + '.')
-  else:
-    print('Done. No tagged Binaryen releases available.')
+    print('Fetching all tags from Binaryen Github repository...')
+    tags = run_get_output([git, 'ls-remote', '--tags', binaryen_git_repo])
+    if tags[0] != 0: return False # failed to get tags?
+    tags = tags[1]
+    binaryen_tags = []
+    for t in tags.split('\n'):
+      try:
+        t = t[t.index('refs/tags/') + len('refs/tags/'):].strip()
+        if '.' in t:
+          binaryen_tags += [t]
+      except:
+        pass
+    binaryen_tags = sorted(binaryen_tags, key=version_key)
+    open(sdk_path('binaryen-tags.txt'), 'w').write('\n'.join(binaryen_tags))
+    if len(binaryen_tags) > 0:
+      print('Done. ' + str(len(binaryen_tags)) + ' tagged Binaryen releases available, latest is ' + binaryen_tags[-1] + '.')
+    else:
+      print('Done. No tagged Binaryen releases available.')
 
   def os_name_for_llvm_location():
     if WINDOWS: return 'win'
@@ -1575,6 +1564,19 @@ def fetch_emscripten_tags():
   print('Fetching all precompiled tagged releases..')
   download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/tag/' + os_name_for_llvm_location() + '_32bit/index.txt', 'llvm-tags-32bit.txt', download_even_if_exists=True)
   download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/tag/' + os_name_for_llvm_location() + '_64bit/index.txt', 'llvm-tags-64bit.txt', download_even_if_exists=True)
+
+  if not git:
+    print('Update complete, however skipped fetching the Emscripten tags, since git was not found.')
+    if WINDOWS:
+      print("If you want to compile one of the tagged releases from source, please install git by typing 'emsdk install git-1.9.4', or alternatively by installing it manually from http://git-scm.com/downloads . If you install git manually, remember to add it to PATH.")
+    elif OSX:
+      print("If you want to compile one of the tagged releases from source, please install git from http://git-scm.com/ , or by installing XCode and then the XCode Command Line Tools (see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools ).")
+    elif LINUX:
+      print("If you want to compile one of the tagged releases from source, please install git using your package manager, see http://git-scm.com/book/en/Getting-Started-Installing-Git .")
+    else:
+      print("If you want to compile one of the tagged releases from source, please install git.")
+    print("If you are not looking to build Emscripten from source, you can safely ignore this message.")
+    return
 
 def is_emsdk_sourced_from_github():
   return os.path.exists(os.path.join(emsdk_path(), '.git'))
