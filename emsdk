@@ -1556,10 +1556,13 @@ def fetch_emscripten_tags():
     if WINDOWS: return 'win'
     else: return 'linux'
 
-  print('Fetching all precompiled Nightly versions..')
-  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/nightly/' + os_name_for_llvm_location() + '_32bit/index.txt', 'llvm-nightlies-32bit.txt', download_even_if_exists=True)
-  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/nightly/' + os_name_for_llvm_location() + '_64bit/index.txt', 'llvm-nightlies-64bit.txt', download_even_if_exists=True)
-  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/emscripten/nightly/' + os_name_for_emscripten_location() + '/index.txt', 'emscripten-nightlies.txt', download_even_if_exists=True)
+#  Emscripten Nightlies support has been removed, clear the list of known Nightlies locally.
+#  print('Fetching all precompiled Nightly versions..')
+#  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/nightly/' + os_name_for_llvm_location() + '_32bit/index.txt', 'llvm-nightlies-32bit.txt', download_even_if_exists=True)
+#  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/nightly/' + os_name_for_llvm_location() + '_64bit/index.txt', 'llvm-nightlies-64bit.txt', download_even_if_exists=True)
+#  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/emscripten/nightly/' + os_name_for_emscripten_location() + '/index.txt', 'emscripten-nightlies.txt', download_even_if_exists=True)
+  for f in ['llvm-nightlies-32bit.txt', 'llvm-nightlies-64bit.txt', 'emscripten-nightlies.txt']:
+    if os.path.isfile(f): os.remove(f)
 
   print('Fetching all precompiled tagged releases..')
   download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/tag/' + os_name_for_llvm_location() + '_32bit/index.txt', 'llvm-tags-32bit.txt', download_even_if_exists=True)
