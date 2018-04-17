@@ -40,9 +40,8 @@ if os.name == 'nt' or (os.getenv('SYSTEMROOT') != None and 'WINDOWS' in os.geten
 
 MSYS = False
 if os.getenv('MSYSTEM'):
-  if os.getenv('MSYSTEM') == 'MSYS':
-    MSYS = True
-  else:
+  MSYS = True
+  if os.getenv('MSYSTEM') != 'MSYS' and os.getenv('MSYSTEM') != 'MINGW64':
     print('Warning: MSYSTEM environment variable is present, and is set to "' + os.getenv('MSYSTEM') + '". This shell has not been tested with emsdk and may not work.') # https://stackoverflow.com/questions/37460073/msys-vs-mingw-internal-environment-variables
 
 OSX = False
@@ -219,7 +218,10 @@ def win_get_environment_variable(key, system=True):
     if e[0] != 2: # 'The system cannot find the file specified.'
       print('Failed to read environment variable ' + key + ':', file=sys.stderr)
       print(str(e), file=sys.stderr)
-    win32api.RegCloseKey(folder)
+    try:
+      win32api.RegCloseKey(folder)
+    except Exception as e:
+      pass
     os.environ['PATH'] = prev_path
     return None
   win32api.RegCloseKey(folder)
