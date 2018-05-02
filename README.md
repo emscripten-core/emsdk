@@ -6,10 +6,7 @@ You can also set up Emscripten from source, without the pre-built SDK, see "Inst
 
 ## Downloads
 
-To get started with Emscripten development, grab one of the packages below:
-
-* Windows: [emsdk-portable.zip](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.zip)
-* Linux and Mac OS X: [emsdk-portable.tar.gz](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz)
+To get started with Emscripten development, see the [Emscripten website documentation](https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html).
 
 **Old Releases** are available in the **Archived Releases** section below.
 
