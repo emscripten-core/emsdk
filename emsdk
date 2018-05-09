@@ -34,7 +34,7 @@ VERBOSE = bool(os.getenv('EMSDK_VERBOSE')) if os.getenv('EMSDK_VERBOSE') != None
 POWERSHELL = bool(os.getenv('EMSDK_POWERSHELL'))
 
 WINDOWS = False
-if os.name == 'nt' or (os.getenv('SYSTEMROOT') != None and 'WINDOWS' in os.getenv('SYSTEMROOT')) or (os.getenv('COMSPEC') != None and 'WINDOWS' in os.getenv('COMSPEC')):
+if os.name == 'nt' or (os.getenv('SYSTEMROOT') != None and 'windows' in os.getenv('SYSTEMROOT').lower()) or (os.getenv('COMSPEC') != None and 'windows' in os.getenv('COMSPEC').lower()):
   WINDOWS = True
   ENVPATH_SEPARATOR = ';'
 
@@ -86,7 +86,7 @@ EMSDK_SET_ENV = 'emsdk_set_env.ps1' if POWERSHELL else 'emsdk_set_env.bat' if (W
 # Finds the given executable 'program' in PATH. Operates like the Unix tool 'which'.
 def which(program):
   def is_exe(fpath):
-    return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+    return os.path.isfile(fpath) and (WINDOWS or os.access(fpath, os.X_OK))
 
   fpath, fname = os.path.split(program)
   if fpath:
