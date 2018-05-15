@@ -982,67 +982,67 @@
   {
     "version": "incoming",
     "bitness": 32,
-    "uses": ["clang-incoming-32bit", "node-8.9.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-incoming-32bit"],
+    "uses": ["clang-incoming-32bit", "node-8.9.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-incoming-32bit", "binaryen-incoming-32bit"],
     "os": "win"
   },
   {
     "version": "incoming",
     "bitness": 64,
-    "uses": ["clang-incoming-64bit", "node-8.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-incoming-64bit"],
+    "uses": ["clang-incoming-64bit", "node-8.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-incoming-64bit", "binaryen-incoming-64bit"],
     "os": "win"
   },
   {
     "version": "incoming",
     "bitness": 64,
-    "uses": ["clang-incoming-64bit", "node-8.9.1-64bit", "emscripten-incoming-64bit"],
+    "uses": ["clang-incoming-64bit", "node-8.9.1-64bit", "emscripten-incoming-64bit", "binaryen-incoming-64bit"],
     "os": "osx"
   },
   {
     "version": "incoming",
     "bitness": 32,
-    "uses": ["clang-incoming-32bit", "node-8.9.1-32bit", "emscripten-incoming-32bit"],
+    "uses": ["clang-incoming-32bit", "node-8.9.1-32bit", "emscripten-incoming-32bit", "binaryen-incoming-32bit"],
     "os": "linux"
   },
   {
     "version": "incoming",
     "bitness": 64,
-    "uses": ["clang-incoming-64bit", "node-8.9.1-64bit", "emscripten-incoming-64bit"],
+    "uses": ["clang-incoming-64bit", "node-8.9.1-64bit", "emscripten-incoming-64bit", "binaryen-incoming-64bit"],
     "os": "linux"
   },
   {
     "version": "master",
     "bitness": 32,
-    "uses": ["clang-master-32bit", "node-4.1.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-master-32bit"],
+    "uses": ["clang-master-32bit", "node-4.1.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-master-32bit", "binaryen-master-32bit"],
     "os": "win"
   },
   {
     "version": "master",
     "bitness": 64,
-    "uses": ["clang-master-64bit", "node-4.1.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-master-64bit"],
+    "uses": ["clang-master-64bit", "node-4.1.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
     "os": "win"
   },
   {
     "version": "master",
     "bitness": 64,
-    "uses": ["clang-master-64bit", "node-4.1.1-64bit", "emscripten-master-64bit"],
+    "uses": ["clang-master-64bit", "node-4.1.1-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
     "os": "osx"
   },
   {
     "version": "master",
     "bitness": 32,
-    "uses": ["clang-master-32bit", "node-4.1.1-32bit", "emscripten-master-32bit"],
+    "uses": ["clang-master-32bit", "node-4.1.1-32bit", "emscripten-master-32bit", "binaryen-master-32bit"],
     "os": "linux"
   },
   {
     "version": "master",
     "bitness": 64,
-    "uses": ["clang-master-64bit", "node-4.1.1-64bit", "emscripten-master-64bit"],
+    "uses": ["clang-master-64bit", "node-4.1.1-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
     "os": "linux"
   },
   {
     "version": "tag-%tag%",
     "bitness": 32,
-    "uses": ["clang-tag-e%tag%-32bit", "node-4.1.1-32bit", "python-2.7.13.1-32bit", "java-7.45-32bit", "emscripten-tag-%tag%-32bit"],
+    "uses": ["clang-tag-e%tag%-32bit", "node-4.1.1-32bit", "python-2.7.13.1-32bit", "java-7.45-32bit", "emscripten-tag-%tag%-32bit", "binaryen-tag-%tag%-32bit"],
     "os": "win",
     "version_filter": [
       ["%tag%", "<=", "1.37.22"]
@@ -1051,7 +1051,7 @@
   {
     "version": "tag-%tag%",
     "bitness": 64,
-    "uses": ["clang-tag-e%tag%-64bit", "node-4.1.1-64bit", "python-2.7.13.1-64bit", "java-7.45-64bit", "emscripten-tag-%tag%-64bit"],
+    "uses": ["clang-tag-e%tag%-64bit", "node-4.1.1-64bit", "python-2.7.13.1-64bit", "java-7.45-64bit", "emscripten-tag-%tag%-64bit", "binaryen-tag-%tag%-64bit"],
     "os": "win",
     "version_filter": [
       ["%tag%", "<=", "1.37.22"]
@@ -1060,7 +1060,7 @@
   {
     "version": "tag-%tag%",
     "bitness": 32,
-    "uses": ["clang-tag-e%tag%-32bit", "node-4.1.1-32bit", "emscripten-tag-%tag%-32bit"],
+    "uses": ["clang-tag-e%tag%-32bit", "node-4.1.1-32bit", "emscripten-tag-%tag%-32bit", "binaryen-tag-%tag%-32bit"],
     "os": "linux",
     "version_filter": [
       ["%tag%", "<=", "1.37.22"]
@@ -1069,7 +1069,7 @@
   {
     "version": "tag-%tag%",
     "bitness": 64,
-    "uses": ["clang-tag-e%tag%-64bit", "node-4.1.1-64bit", "emscripten-tag-%tag%-64bit"],
+    "uses": ["clang-tag-e%tag%-64bit", "node-4.1.1-64bit", "emscripten-tag-%tag%-64bit", "binaryen-tag-%tag%-64bit"],
     "os": "unix",
     "version_filter": [
       ["%tag%", "<=", "1.37.22"]
@@ -1078,7 +1078,7 @@
   {
     "version": "tag-%tag%",
     "bitness": 32,
-    "uses": ["clang-tag-e%tag%-32bit", "node-8.9.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-tag-%tag%-32bit"],
+    "uses": ["clang-tag-e%tag%-32bit", "node-8.9.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-tag-%tag%-32bit", "binaryen-tag-%tag%-32bit"],
     "os": "win",
     "version_filter": [
       ["%tag%", ">", "1.37.22"]
@@ -1087,7 +1087,7 @@
   {
     "version": "tag-%tag%",
     "bitness": 64,
-    "uses": ["clang-tag-e%tag%-64bit", "node-8.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-tag-%tag%-64bit"],
+    "uses": ["clang-tag-e%tag%-64bit", "node-8.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-tag-%tag%-64bit", "binaryen-tag-%tag%-64bit"],
     "os": "win",
     "version_filter": [
       ["%tag%", ">", "1.37.22"]
@@ -1096,7 +1096,7 @@
   {
     "version": "tag-%tag%",
     "bitness": 32,
-    "uses": ["clang-tag-e%tag%-32bit", "node-8.9.1-32bit", "emscripten-tag-%tag%-32bit"],
+    "uses": ["clang-tag-e%tag%-32bit", "node-8.9.1-32bit", "emscripten-tag-%tag%-32bit", "binaryen-tag-%tag%-32bit"],
     "os": "linux",
     "version_filter": [
       ["%tag%", ">", "1.37.22"]
@@ -1105,7 +1105,7 @@
   {
     "version": "tag-%tag%",
     "bitness": 64,
-    "uses": ["clang-tag-e%tag%-64bit", "node-8.9.1-64bit", "emscripten-tag-%tag%-64bit"],
+    "uses": ["clang-tag-e%tag%-64bit", "node-8.9.1-64bit", "emscripten-tag-%tag%-64bit", "binaryen-tag-%tag%-64bit"],
     "os": "unix",
     "version_filter": [
       ["%tag%", ">", "1.37.22"]
