@@ -791,7 +791,16 @@ def xcode_sdk_version():
     return subprocess.checkplatform.mac_ver()[0].split('.')
 
 def build_fastcomp_tool(tool):
-  if VERBOSE: print('build_fastcomp_tool(' + str(tool) + ')')
+  return build_llvm_tool(tool, build_js=True)
+
+def build_upstream_llvm_tool(tool):
+  global ENABLE_WASM
+  # Upstream LLVM has no JSBackend, relies on wasm backend
+  ENABLE_WASM = True
+  return build_llvm_tool(tool, build_js=False)
+
+def build_llvm_tool(tool, build_js):
+  if VERBOSE: print('build_llvm_tool(' + str(tool) + ')')
   fastcomp_root = tool.installation_path()
   fastcomp_src_root = os.path.join(fastcomp_root, 'src')
   if hasattr(tool, 'git_branch'): # Does this tool want to be git cloned from github?
@@ -800,6 +809,10 @@ def build_fastcomp_tool(tool):
     clang_root = os.path.join(fastcomp_src_root, 'tools/clang')
     success = git_clone_checkout_and_pull(tool.clang_url, clang_root, tool.git_branch)
     if not success: return False
+    if hasattr(tool, 'lld_url'):
+      lld_root = os.path.join(fastcomp_src_root, 'tools/lld')
+      success = git_clone_checkout_and_pull(tool.lld_url, lld_root, tool.git_branch)
+      if not success: return False
   else: # Not a git cloned tool, so instead download from git tagged releases
     success = download_and_unzip(tool.download_url(), fastcomp_src_root, filename_prefix='llvm-e')
     if not success: return False
@@ -821,7 +834,8 @@ def build_fastcomp_tool(tool):
 
   enable_assertions = ENABLE_LLVM_ASSERTIONS.lower() == 'on' or (ENABLE_LLVM_ASSERTIONS == 'auto' and build_type.lower() != 'release' and build_type.lower() != 'minsizerel')
 
-  args = ['-DLLVM_TARGETS_TO_BUILD=X86;JSBackend', '-DLLVM_INCLUDE_EXAMPLES=OFF', '-DCLANG_INCLUDE_EXAMPLES=OFF', '-DLLVM_INCLUDE_TESTS=' + tests_arg, '-DCLANG_INCLUDE_TESTS=' + tests_arg, '-DLLVM_ENABLE_ASSERTIONS=' + ('ON' if enable_assertions else 'OFF')]
+  js_target = ';JSBackend' if build_js else ''
+  args = ['-DLLVM_TARGETS_TO_BUILD=X86' + js_target, '-DLLVM_INCLUDE_EXAMPLES=OFF', '-DCLANG_INCLUDE_EXAMPLES=OFF', '-DLLVM_INCLUDE_TESTS=' + tests_arg, '-DCLANG_INCLUDE_TESTS=' + tests_arg, '-DLLVM_ENABLE_ASSERTIONS=' + ('ON' if enable_assertions else 'OFF')]
   if ENABLE_WASM:
     args += ['-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=WebAssembly']
   if os.environ.get('LLVM_CMAKE_ARGS'):
@@ -1337,6 +1351,8 @@ class Tool:
 
       if hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_fastcomp':
         success = build_fastcomp_tool(self)
+      elif hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_llvm':
+        success = build_upstream_llvm_tool(self)
       elif hasattr(self, 'git_branch'):
         success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch)
       elif url.endswith('zip') or url.endswith('.tar') or url.endswith('.gz') or url.endswith('.xz'):
@@ -1350,6 +1366,7 @@ class Tool:
       if success and hasattr(self, 'custom_install_script'):
         if self.custom_install_script == 'build_optimizer': success = build_optimizer_tool(self)
         elif self.custom_install_script == 'build_fastcomp': pass # 'build_fastcomp' is a special one that does the download on its own, others do the download manually.
+        elif self.custom_install_script == 'build_llvm': pass # 'build_llvm' is like 'build_fastcomp'
         elif self.custom_install_script == 'build_binaryen': success = build_binaryen_tool(self)
         else: raise Exception('Unknown custom_install_script command "' + self.custom_install_script + '"!')
 
