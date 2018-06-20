@@ -153,7 +153,7 @@
     "git_branch": "master",
     "url": "https://github.com/llvm-mirror/llvm.git",
     "clang_url": "https://github.com/llvm-mirror/clang.git",
-    "lld_url": "https://github.com/llvm-mirror/clang.git",
+    "lld_url": "https://github.com/llvm-mirror/lld.git",
     "custom_install_script": "build_llvm",
     "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
