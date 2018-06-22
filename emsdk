@@ -790,8 +790,8 @@ def xcode_sdk_version():
   except:
     return subprocess.checkplatform.mac_ver()[0].split('.')
 
-def build_fastcomp_tool(tool):
-  if VERBOSE: print('build_fastcomp_tool(' + str(tool) + ')')
+def build_llvm_tool(tool):
+  if VERBOSE: print('build_llvm_tool(' + str(tool) + ')')
   fastcomp_root = tool.installation_path()
   fastcomp_src_root = os.path.join(fastcomp_root, 'src')
   if hasattr(tool, 'git_branch'): # Does this tool want to be git cloned from github?
@@ -800,6 +800,10 @@ def build_fastcomp_tool(tool):
     clang_root = os.path.join(fastcomp_src_root, 'tools/clang')
     success = git_clone_checkout_and_pull(tool.clang_url, clang_root, tool.git_branch)
     if not success: return False
+    if hasattr(tool, 'lld_url'):
+      lld_root = os.path.join(fastcomp_src_root, 'tools/lld')
+      success = git_clone_checkout_and_pull(tool.lld_url, lld_root, tool.git_branch)
+      if not success: return False
   else: # Not a git cloned tool, so instead download from git tagged releases
     success = download_and_unzip(tool.download_url(), fastcomp_src_root, filename_prefix='llvm-e')
     if not success: return False
@@ -821,8 +825,12 @@ def build_fastcomp_tool(tool):
 
   enable_assertions = ENABLE_LLVM_ASSERTIONS.lower() == 'on' or (ENABLE_LLVM_ASSERTIONS == 'auto' and build_type.lower() != 'release' and build_type.lower() != 'minsizerel')
 
-  args = ['-DLLVM_TARGETS_TO_BUILD=X86;JSBackend', '-DLLVM_INCLUDE_EXAMPLES=OFF', '-DCLANG_INCLUDE_EXAMPLES=OFF', '-DLLVM_INCLUDE_TESTS=' + tests_arg, '-DCLANG_INCLUDE_TESTS=' + tests_arg, '-DLLVM_ENABLE_ASSERTIONS=' + ('ON' if enable_assertions else 'OFF')]
-  if ENABLE_WASM:
+  only_supports_wasm = hasattr(tool, 'only_supports_wasm')
+  targets_to_build = 'X86'
+  if not only_supports_wasm:
+    targets_to_build += ';JSBackend'
+  args = ['-DLLVM_TARGETS_TO_BUILD=' + targets_to_build, '-DLLVM_INCLUDE_EXAMPLES=OFF', '-DCLANG_INCLUDE_EXAMPLES=OFF', '-DLLVM_INCLUDE_TESTS=' + tests_arg, '-DCLANG_INCLUDE_TESTS=' + tests_arg, '-DLLVM_ENABLE_ASSERTIONS=' + ('ON' if enable_assertions else 'OFF')]
+  if ENABLE_WASM or only_supports_wasm:
     args += ['-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=WebAssembly']
   if os.environ.get('LLVM_CMAKE_ARGS'):
     extra_args = os.environ['LLVM_CMAKE_ARGS'].split(',')
@@ -1336,7 +1344,7 @@ class Tool:
       url = self.download_url()
 
       if hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_fastcomp':
-        success = build_fastcomp_tool(self)
+        success = build_llvm_tool(self)
       elif hasattr(self, 'git_branch'):
         success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch)
       elif url.endswith('zip') or url.endswith('.tar') or url.endswith('.gz') or url.endswith('.xz'):
