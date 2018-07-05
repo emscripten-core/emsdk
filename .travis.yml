@@ -1,0 +1,27 @@
+sudo: false
+dist: trusty
+language: cpp
+
+stages:
+  - name: test
+  - name: build
+
+jobs:
+  include:
+    - &test-ubuntu
+      stage: test
+      compiler: clang
+      python: 2.7
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['cmake', 'g++-5']
+      script:
+        - ./emsdk install latest
+        - ./emsdk activate latest
+        - source ./emsdk_env.sh --build=Release
+        - echo "int main() {}" > hello_world.cpp
+        - emcc hello_world.cpp
+
+notifications:
+  email: false
