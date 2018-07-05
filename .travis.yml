@@ -1,29 +1,17 @@
-sudo: false
-dist: trusty
-language: cpp
+sudo: required
 
-stages:
-  - name: test
-  - name: build
+language: python
 
-jobs:
-  include:
-    - &test-ubuntu
-      stage: test
-      compiler: clang
-      python: 2.7
-      addons:
-        apt:
-          sources: ['ubuntu-toolchain-r-test']
-          packages: ['cmake', 'g++-5']
-      script:
-        # install latest tag
-        - ./emsdk install latest
-        - ./emsdk activate latest
-        - source ./emsdk_env.sh --build=Release
-        # verify building works
-        - echo "int main() {}" > hello_world.cpp
-        - emcc hello_world.cpp
+services:
+  - docker
+
+before_install:
+  - docker pull ubuntu:16.04
+
+script:
+  - set -o errexit
+  - echo "running..."
+  - docker build --build-arg TEST_TARGET="$TEST_TARGET" .
 
 notifications:
   email: false
