@@ -17,9 +17,11 @@ jobs:
           sources: ['ubuntu-toolchain-r-test']
           packages: ['cmake', 'g++-5']
       script:
+        # install latest tag
         - ./emsdk install latest
         - ./emsdk activate latest
         - source ./emsdk_env.sh --build=Release
+        # verify building works
         - echo "int main() {}" > hello_world.cpp
         - emcc hello_world.cpp
 
