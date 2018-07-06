@@ -937,7 +937,6 @@ def build_binaryen_tool(tool):
   shutil.copytree(os.path.join(src_root, 'scripts'), os.path.join(build_root, 'scripts'))
   remove_tree(os.path.join(build_root, 'src', 'js'))
   shutil.copytree(os.path.join(src_root, 'src', 'js'), os.path.join(build_root, 'src', 'js'))
-  shutil.copyfile(os.path.join(src_root, 'bin', 'binaryen.js'), os.path.join(build_root, 'bin', 'binaryen.js'))
   shutil.copyfile(os.path.join(src_root, 'bin', 'wasm.js'), os.path.join(build_root, 'bin', 'wasm.js'))
 
   return success
