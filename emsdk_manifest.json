@@ -444,6 +444,7 @@
     "windows_url": "python_2.7.5.1_32bit.zip",
     "activated_path": "%installation_dir%",
     "activated_cfg": "PYTHON='%installation_dir%/python%.exe%'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/python%.exe%",
     "is_old": true
   },
   {
@@ -453,6 +454,7 @@
     "windows_url": "python_2.7.5_64bit.zip",
     "activated_path": "%installation_dir%",
     "activated_cfg": "PYTHON='%installation_dir%/python%.exe%'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/python%.exe%",
     "is_old": true
   },
   {
@@ -462,6 +464,7 @@
     "windows_url": "python_2.7.5.3_32bit.zip",
     "activated_path": "%installation_dir%",
     "activated_cfg": "PYTHON='%installation_dir%/python%.exe%'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/python%.exe%",
     "is_old": true
   },
   {
@@ -471,6 +474,7 @@
     "windows_url": "python_2.7.5.3_64bit.zip",
     "activated_path": "%installation_dir%",
     "activated_cfg": "PYTHON='%installation_dir%/python%.exe%'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/python%.exe%",
     "is_old": true
   },
   {
@@ -479,7 +483,8 @@
     "bitness": 32,
     "windows_url": "WinPython-32bit-2.7.13.1Zero.zip",
     "activated_path": "%installation_dir%/python-2.7.13",
-    "activated_cfg": "PYTHON='%installation_dir%/python-2.7.13/python%.exe%'"
+    "activated_cfg": "PYTHON='%installation_dir%/python-2.7.13/python%.exe%'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/python-2.7.13/python%.exe%"
   },
   {
     "id": "python",
@@ -487,7 +492,8 @@
     "bitness": 64,
     "windows_url": "WinPython-64bit-2.7.13.1Zero.zip",
     "activated_path": "%installation_dir%/python-2.7.13.amd64",
-    "activated_cfg": "PYTHON='%installation_dir%/python-2.7.13.amd64/python%.exe%'"
+    "activated_cfg": "PYTHON='%installation_dir%/python-2.7.13.amd64/python%.exe%'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/python-2.7.13.amd64/python%.exe%"
   },
   {
     "id": "python",
@@ -495,7 +501,8 @@
     "bitness": 32,
     "windows_url": "WinPython-32bit-3.5.4.1Zero.zip",
     "activated_path": "%installation_dir%/python-3.5.4",
-    "activated_cfg": "PYTHON='%installation_dir%/python-3.5.4/python%.exe%'"
+    "activated_cfg": "PYTHON='%installation_dir%/python-3.5.4/python%.exe%'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/python-3.5.4/python%.exe%"
   },
   {
     "id": "python",
@@ -503,7 +510,8 @@
     "bitness": 64,
     "windows_url": "WinPython-64bit-3.5.4.1Zero.zip",
     "activated_path": "%installation_dir%/python-3.5.4.amd64",
-    "activated_cfg": "PYTHON='%installation_dir%/python-3.5.4.amd64/python%.exe%'"
+    "activated_cfg": "PYTHON='%installation_dir%/python-3.5.4.amd64/python%.exe%'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/python-3.5.4.amd64/python%.exe%"
   },
   {
     "id": "java",
