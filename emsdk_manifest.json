@@ -349,6 +349,7 @@
     "windows_install_path": "node/0.10.17_32bit/node.exe",
     "activated_path": "%installation_dir%",
     "activated_cfg": "NODE_JS='%installation_dir%/node.exe'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/node.exe",
     "is_old": true
   },
   {
@@ -359,6 +360,7 @@
     "windows_install_path": "node/0.10.17_64bit/node.exe",
     "activated_path": "%installation_dir%",
     "activated_cfg": "NODE_JS='%installation_dir%/node.exe'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/node.exe",
     "is_old": true
   },
   {
@@ -368,6 +370,7 @@
     "osx_url": "node-v0.10.18-darwin-x64.tar.gz",
     "activated_path": "%installation_dir%/bin",
     "activated_cfg": "NODE_JS='%installation_dir%/bin/node'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node",
     "is_old": true
   },
   {
@@ -378,6 +381,7 @@
     "windows_install_path": "node/0.12.2_32bit/node.exe",
     "activated_path": "%installation_dir%",
     "activated_cfg": "NODE_JS='%installation_dir%/node.exe'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/node.exe",
     "is_old": true
   },
   {
@@ -388,6 +392,7 @@
     "windows_install_path": "node/0.12.2_64bit/node.exe",
     "activated_path": "%installation_dir%",
     "activated_cfg": "NODE_JS='%installation_dir%/node.exe'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/node.exe",
     "is_old": true
   },
   {
@@ -397,6 +402,7 @@
     "osx_url": "node-v0.12.2-darwin-x64.tar.gz",
     "activated_path": "%installation_dir%/bin",
     "activated_cfg": "NODE_JS='%installation_dir%/bin/node'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node",
     "is_old": true
   },
   {
@@ -406,7 +412,8 @@
     "windows_url": "node_4.1.1_32bit.zip",
     "linux_url": "node-v4.1.1-linux-x86.tar.gz",
     "activated_path": "%installation_dir%/bin",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'"
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
   },
   {
     "id": "node",
@@ -416,7 +423,8 @@
     "windows_url": "node_4.1.1_64bit.zip",
     "linux_url": "node-v4.1.1-linux-x64.tar.gz",
     "activated_path": "%installation_dir%/bin",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'"
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
   },
   {
     "id": "node",
@@ -425,7 +433,8 @@
     "windows_url": "node-v8.9.1-win-x86.zip",
     "linux_url": "node-v8.9.1-linux-x86.tar.xz",
     "activated_path": "%installation_dir%/bin",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'"
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
   },
   {
     "id": "node",
@@ -435,7 +444,8 @@
     "windows_url": "node-v8.9.1-win-x64.zip",
     "linux_url": "node-v8.9.1-linux-x64.tar.xz",
     "activated_path": "%installation_dir%/bin",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'"
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
   },
   {
     "id": "python",
