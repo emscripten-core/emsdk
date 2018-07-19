@@ -7,6 +7,7 @@
     "windows_url": "clang_3.2_32bit.zip",
     "activated_path": "%installation_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%",
     "is_old": true
   },
   {
@@ -16,6 +17,7 @@
     "windows_url": "clang_3.2_64bit.zip",
     "activated_path": "%installation_dir%/bin",
     "activated_cfg": "LLVM_ROOT='%installation_dir%/bin'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/bin",
     "is_old": true
   },
   {
@@ -25,6 +27,7 @@
     "windows_url": "clang_3.3_32bit.zip",
     "activated_path": "%installation_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%",
     "is_old": true
   },
   {
@@ -34,6 +37,7 @@
     "windows_url": "clang_3.3_64bit.zip",
     "activated_path": "%installation_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%",
     "is_old": true
   },
   {
@@ -43,6 +47,7 @@
     "osx_url": "clang%2Bllvm-3.2-x86_64-apple-darwin11.tar.gz",
     "activated_path": "%installation_dir%/bin",
     "activated_cfg": "LLVM_ROOT='%installation_dir%/bin'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/bin",
     "is_old": true
   },
   {
@@ -52,6 +57,7 @@
     "osx_url": "clang%2Bllvm-3.3-x86_64-apple-darwin12.tar.gz",
     "activated_path": "%installation_dir%/bin",
     "activated_cfg": "LLVM_ROOT='%installation_dir%/bin'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/bin",
     "is_old": true
   },
   {
@@ -66,6 +72,7 @@
     "custom_install_script": "build_fastcomp",
     "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%",
     "cmake_build_type": "Release"
   },
   {
@@ -80,6 +87,7 @@
     "custom_install_script": "build_fastcomp",
     "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%",
     "cmake_build_type": "Release"
   },
   {
@@ -91,7 +99,8 @@
     "osx_url": "llvm/nightly/osx_64bit/emscripten-llvm-e%nightly-llvm-64bit%.tar.gz",
     "linux_url": "llvm/nightly/linux_64bit/emscripten-llvm-e%nightly-llvm-64bit%.tar.gz",
     "activated_path": "%installation_dir%",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%'"
+    "activated_cfg": "LLVM_ROOT='%installation_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%"
   },
   {
     "id": "clang",
@@ -104,6 +113,7 @@
     "custom_install_script": "build_fastcomp",
     "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%",
     "cmake_build_type": "Release"
   },
   {
@@ -117,6 +127,7 @@
     "custom_install_script": "build_fastcomp",
     "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%",
     "cmake_build_type": "Release"
   },
   {
@@ -130,6 +141,7 @@
     "custom_install_script": "build_fastcomp",
     "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%",
     "cmake_build_type": "Release"
   },
   {
@@ -143,6 +155,7 @@
     "custom_install_script": "build_fastcomp",
     "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%",
     "cmake_build_type": "Release"
   },
   {
@@ -158,6 +171,7 @@
     "only_supports_wasm": true,
     "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%",
     "cmake_build_type": "Release"
   },
   {
@@ -173,6 +187,7 @@
     "only_supports_wasm": true,
     "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%",
     "cmake_build_type": "Release"
   },
   {
@@ -183,6 +198,7 @@
     "osx_url": "emscripten-clang_e1.13.0.tar.gz",
     "activated_path": "%installation_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%",
     "is_old": true
   },
   {
@@ -193,6 +209,7 @@
     "osx_url": "emscripten-clang_e1.13.1.tar.gz",
     "activated_path": "%installation_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%",
     "is_old": true
   },
   {
@@ -203,6 +220,7 @@
     "osx_url": "emscripten-clang_e1.16.0.tar.gz",
     "activated_path": "%installation_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%",
     "is_old": true
   },
   {
@@ -213,6 +231,7 @@
     "osx_url": "emscripten-clang_e1.21.0.tar.gz",
     "activated_path": "%installation_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%",
     "is_old": true
   },
   {
@@ -223,6 +242,7 @@
     "osx_url": "emscripten-clang_e1.22.0.tar.gz",
     "activated_path": "%installation_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%",
     "is_old": true
   },
   {
@@ -233,6 +253,7 @@
     "osx_url": "emscripten-clang_e1.25.0.tar.gz",
     "activated_path": "%installation_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%",
     "is_old": true
   },
   {
@@ -243,6 +264,7 @@
     "osx_url": "emscripten-clang_e1.27.0.tar.gz",
     "activated_path": "%installation_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%",
     "is_old": true
   },
   {
@@ -253,6 +275,7 @@
     "osx_url": "emscripten-clang_e1.29.0.tar.gz",
     "activated_path": "%installation_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/optimizer%.exe%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%",
     "is_old": true
   },
   {
@@ -262,7 +285,8 @@
     "windows_url": "emscripten-clang_e1.30.0.zip",
     "osx_url": "emscripten-clang_e1.30.0.tar.gz",
     "activated_path": "%installation_dir%",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/optimizer%.exe%'"
+    "activated_cfg": "LLVM_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/optimizer%.exe%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%"
   },
   {
     "id": "clang",
@@ -271,7 +295,8 @@
     "windows_url": "emscripten-clang_e1.34.1.zip",
     "osx_url": "emscripten-clang_e1.34.1.tar.gz",
     "activated_path": "%installation_dir%",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/optimizer%.exe%'"
+    "activated_cfg": "LLVM_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/optimizer%.exe%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%"
   },
   {
     "id": "clang",
@@ -280,7 +305,8 @@
     "windows_url": "emscripten-clang_e1.35.0.zip",
     "osx_url": "emscripten-clang_e1.35.0.tar.gz",
     "activated_path": "%installation_dir%",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/optimizer%.exe%'"
+    "activated_cfg": "LLVM_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/optimizer%.exe%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%"
   },
   {
     "id": "clang",
@@ -291,7 +317,7 @@
     "linux_url": "llvm/tag/linux_64bit/emscripten-llvm-e1.37.1.tar.gz",
     "activated_path": "%installation_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/optimizer%.exe%';BINARYEN_ROOT='%installation_dir%/binaryen'",
-    "activated_env": "BINARYEN_ROOT=%installation_dir%/binaryen"
+    "activated_env": "LLVM_ROOT=%installation_dir%;BINARYEN_ROOT=%installation_dir%/binaryen"
   },
   {
     "id": "clang",
@@ -302,7 +328,7 @@
     "linux_url": "llvm/tag/linux_64bit/emscripten-llvm-e%precompiled_tag32%.tar.gz",
     "activated_path": "%installation_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/optimizer%.exe%';BINARYEN_ROOT='%installation_dir%/binaryen'",
-    "activated_env": "BINARYEN_ROOT=%installation_dir%/binaryen"
+    "activated_env": "LLVM_ROOT=%installation_dir%;BINARYEN_ROOT=%installation_dir%/binaryen"
   },
   {
     "id": "clang",
@@ -313,7 +339,7 @@
     "linux_url": "llvm/tag/linux_64bit/emscripten-llvm-e%precompiled_tag64%.tar.gz",
     "activated_path": "%installation_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/optimizer%.exe%';BINARYEN_ROOT='%installation_dir%/binaryen'",
-    "activated_env": "BINARYEN_ROOT=%installation_dir%/binaryen"
+    "activated_env": "LLVM_ROOT=%installation_dir%;BINARYEN_ROOT=%installation_dir%/binaryen"
   },
   {
     "id": "node",
