@@ -1171,9 +1171,9 @@ class Tool:
 
   def activated_environment(self):
     if hasattr(self, 'activated_env'):
-      return self.expand_vars(self.activated_env)
+      return self.expand_vars(self.activated_env).split(';')
     else:
-      return ''
+      return []
 
   def compatible_with_this_os(self):
     if hasattr(self, 'os'):
@@ -1269,15 +1269,13 @@ class Tool:
 
   # Returns true if the system environment variables requires by this tool are currently active.
   def is_env_active(self):
-    if hasattr(self, 'activated_env'):
-      (key, value) = parse_key_value(self.activated_environment())
+    envs = self.activated_environment()
+    for env in envs:
+      (key, value) = parse_key_value(env)
       if not key in os.environ or to_unix_path(os.environ[key]) != to_unix_path(value):
         if VERBOSE: print(str(self) + ' is not active, because environment variable key="' + key + '" has value "' + str(os.getenv(key)) + '" but should have value "' + value + '"')
         return False
-#      if WINDOWS:
-#        env_var = win_get_active_environment_variable(key)
-#        if env_var != value:
-#          return False
+
     if hasattr(self, 'activated_path'):
       path = self.expand_vars(self.activated_path).replace('\\', '/')
       path = path.split(ENVPATH_SEPARATOR)
@@ -1289,12 +1287,15 @@ class Tool:
     return True
 
   def win_activate_env_vars(self, permanently_activate):
-    if WINDOWS and hasattr(self, 'activated_env'):
-      (key, value) = parse_key_value(self.activated_environment())
-      if permanently_activate:
-        win_delete_environment_variable(key, False) # If there is an env var for the LOCAL USER with same name, it will hide the system var, so must remove that first.
+    if WINDOWS:
+      envs = self.activated_environment()
+      for env in envs:
+        (key, value) = parse_key_value(env)
 
-      win_set_environment_variable(key, value, permanently_activate)
+        if permanently_activate:
+          win_delete_environment_variable(key, False) # If there is an env var for the LOCAL USER with same name, it will hide the system var, so must remove that first.
+
+        win_set_environment_variable(key, value, permanently_activate)
 
   # If this tool can be installed on this system, this function returns True.
   # Otherwise, this function returns a string that describes the reason why this tool is not available.
@@ -1954,8 +1955,9 @@ def construct_env(tools_to_activate, permanent):
     mkdir_p(em_cache_dir)
 
   for tool in tools_to_activate:
-    if hasattr(tool, 'activated_env'):
-      (key, value) = parse_key_value(tool.activated_env)
+    envs = tool.activated_environment()
+    for env in envs:
+      (key, value) = parse_key_value(env)
       value = to_native_path(tool.expand_vars(value))
       if not key in os.environ or to_unix_path(os.environ[key]) != to_unix_path(value): # Don't set env. vars which are already set to the correct value.
         env_vars_to_add += [(key, value)]
