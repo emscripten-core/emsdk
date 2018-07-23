@@ -1519,6 +1519,12 @@
     "os": "win"
   },
   {
+    "version": "upstream-%waterfall-lkgr%",
+    "bitness": 64,
+    "uses": ["clang-upstream-%waterfall-lkgr%-64bit", "emscripten-upstream-%waterfall-lkgr%-64bit", "binaryen-upstream-%waterfall-lkgr%-64bit"],
+    "os": "linux"
+  },
+  {
     "version": "%precompiled_tag32%",
     "bitness": 32,
     "uses": ["clang-e%precompiled_tag32%-32bit", "node-4.1.1-32bit", "python-2.7.13.1-32bit", "java-7.45-32bit", "emscripten-%precompiled_tag32%"],
@@ -1625,12 +1631,6 @@
     "version_filter": [
       ["%precompiled_tag64%", ">", "1.37.22"]
     ]
-  },
-  {
-    "version": "upstream-%waterfall-lkgr%",
-    "bitness": 64,
-    "uses": ["clang-upstream-%waterfall-lkgr%-64bit", "emscripten-upstream-%waterfall-lkgr%-64bit", "binaryen-upstream-%waterfall-lkgr%-64bit"],
-    "os": "linux"
   }
   ]
 }
