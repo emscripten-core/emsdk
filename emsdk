@@ -2015,7 +2015,7 @@ def silentremove(filename):
     if e.errno != errno.ENOENT: raise
 
 def main():
-  global emscripten_config_directory, BUILD_FOR_TESTING, ENABLE_LLVM_ASSERTIONS
+  global emscripten_config_directory, BUILD_FOR_TESTING, ENABLE_LLVM_ASSERTIONS, TTY_OUTPUT
 
   if len(sys.argv) <= 1 or sys.argv[1] == 'help' or sys.argv[1] == '--help':
     if len(sys.argv) <= 1:
@@ -2147,7 +2147,6 @@ def main():
   arg_embedded = extract_bool_arg('--embedded')
   arg_notty = extract_bool_arg('--notty')
   if arg_notty:
-    global TTY_OUTPUT
     TTY_OUTPUT = False
 
   cmd = sys.argv[1]
