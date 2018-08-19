@@ -30,6 +30,7 @@ binaryen_git_repo = 'https://github.com/WebAssembly/binaryen.git'
 
 # Enable this to do very verbose printing about the different steps that are being run. Useful for debugging.
 VERBOSE = bool(os.getenv('EMSDK_VERBOSE')) if os.getenv('EMSDK_VERBOSE') != None else False
+TTY_OUTPUT = sys.stdout.isatty()
 
 POWERSHELL = bool(os.getenv('EMSDK_POWERSHELL'))
 
@@ -473,7 +474,12 @@ def download_file(url, dstpath, download_even_if_exists=False, filename_prefix =
       else: print("Downloading: %s from %s" % (file_name, url))
 
       file_size_dl = 0
+      # Draw a progress bar 80 chars wide (in non-TTY mode)
+      progress_max = 80 - 4
+      progress_shown = 0
       block_sz = 8192
+      if not TTY_OUTPUT:
+          print(' [', end='')
       while True:
           buffer = u.read(block_sz)
           if not buffer:
@@ -481,10 +487,18 @@ def download_file(url, dstpath, download_even_if_exists=False, filename_prefix =
 
           file_size_dl += len(buffer)
           f.write(buffer)
-          if sys.stdout.isatty() and file_size:
-            status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
-            status = status + chr(8)*(len(status)+1)
-            print(status, end=' ')
+          if file_size:
+              percent = file_size_dl * 100.0 / file_size
+              if TTY_OUTPUT:
+                  status = r" %10d  [%3.02f%%]" % (file_size_dl, percent)
+                  print(status, end='\r')
+              else:
+                  while progress_shown < progress_max * percent / 100:
+                      print('-', end='')
+                      sys.stdout.flush()
+                      progress_shown += 1
+      if not TTY_OUTPUT:
+          print(']')
   except Exception as e:
     print("Error downloading URL '" + url + "': " + str(e))
     rmfile(file_name)
@@ -2131,6 +2145,11 @@ def main():
   arg_uses = extract_bool_arg('--uses')
   arg_global = extract_bool_arg('--global')
   arg_embedded = extract_bool_arg('--embedded')
+  arg_notty = extract_bool_arg('--notty')
+  if arg_notty:
+    global TTY_OUTPUT
+    TTY_OUTPUT = False
+
   cmd = sys.argv[1]
 
   # On first run when tag list is not present, populate it to bootstrap.
