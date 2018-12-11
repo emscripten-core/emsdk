@@ -1881,7 +1881,7 @@ def set_active_tools(tools_to_activate, permanently_activate):
       tool.win_activate_env_vars(permanently_activate=True)
 
     # PATH variable
-    newpath, added_items = adjusted_path(tools_to_activate, system_path_only=True)
+    newpath, added_items = adjusted_path(tools_to_activate, system_path_only=True, for_permanent=True)
     if newpath != os.environ['PATH']: # Are there any actual changes?
       win_set_environment_variable('PATH', newpath, system=True)
 
@@ -1927,11 +1927,14 @@ def to_msys_path(p):
 
 # Looks at the current PATH and adds and removes entries so that the PATH reflects
 # the set of given active tools.
-def adjusted_path(tools_to_activate, log_additions=False, system_path_only=False):
+def adjusted_path(tools_to_activate, log_additions=False, system_path_only=False, for_permanent=False):
   # These directories should be added to PATH
   path_add = get_required_path(tools_to_activate)
   # These already exist.
-  if WINDOWS and not MSYS:
+  if WINDOWS and not MSYS and for_permanent:
+    # Only read registry values if the adjusted_path is for permanent storage
+    # otherwise we're just setting a local environment for a console, so read
+    # the environment variable use the user's local changes to PATH if any.
     existing_path = win_get_environment_variable('PATH', system=True)
     if not system_path_only:
       current_user_path = win_get_environment_variable('PATH', system=False)
@@ -1969,7 +1972,7 @@ def adjusted_path(tools_to_activate, log_additions=False, system_path_only=False
 def construct_env(tools_to_activate, permanent):
   global emscripten_config_directory
   env_string = ''
-  newpath, added_path = adjusted_path(tools_to_activate)
+  newpath, added_path = adjusted_path(tools_to_activate, for_permanent=permanent)
 
 # Dont permanently add to PATH, since this will break the whole system if there are more than 1024 chars in PATH.
 # (SETX truncates to set only 1024 chars)
@@ -2151,7 +2154,7 @@ def main():
        which are Release for the 'master' SDK, and RelWithDebInfo for the
        'incoming' SDK.''')
     return 1
- 
+
    # Extracts a boolean command line argument from sys.argv and returns True if it was present
   def extract_bool_arg(name):
     old_argv = sys.argv
