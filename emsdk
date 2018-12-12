@@ -1525,7 +1525,12 @@ def find_latest_nightly_sdk():
     return find_latest_nightly_32bit_sdk()
 
 def find_latest_upstream():
-  return 'clang-upstream-%s-64bit' % load_waterfall_lkgr()[0]
+  waterfall_lkgr = load_waterfall_lkgr()
+  print(str(waterfall_lkgr))
+  if len(waterfall_lkgr) == 0:
+    print('Failed to find an upstream lkgr')
+    sys.exit(1)
+  return 'clang-upstream-%s-64bit' % waterfall_lkgr[0]
 
 # Finds the best-matching python tool for use.
 def find_used_python():
