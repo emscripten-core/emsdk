@@ -1700,6 +1700,7 @@ def load_llvm_precompiled_tags_64bit():
   return load_file_index_list('llvm-tags-64bit.txt')
 
 def download_waterfall_lkgr():
+  print('download lkgr!!!!! waka')
   lkgr_url = 'https://storage.googleapis.com/wasm-llvm/builds/linux/lkgr.json'
   download_file(lkgr_url, 'upstream', download_even_if_exists=True)
 
