@@ -1524,6 +1524,9 @@ def find_latest_nightly_sdk():
   else:
     return find_latest_nightly_32bit_sdk()
 
+def find_latest_upstream():
+  return 'clang-upstream-%s-64bit' % load_waterfall_lkgr()[0]
+
 # Finds the best-matching python tool for use.
 def find_used_python():
   for t in reversed(tools): # Find newest tool first - those are always at the end of the list.
@@ -2210,6 +2213,8 @@ def main():
         sys.argv[i] = str(find_latest_nightly_32bit_sdk())
       elif sys.argv[i] == 'sdk-nightly-latest-64bit':
         sys.argv[i] = str(find_latest_nightly_64bit_sdk())
+      elif sys.argv[i] == 'latest-upstream' or sys.argv[i] == 'latest-clang-upstream':
+        sys.argv[i] = str(find_latest_upstream())
 
   if cmd == 'list':
     print('')
