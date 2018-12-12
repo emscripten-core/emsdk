@@ -1717,7 +1717,7 @@ def load_waterfall_lkgr():
   except Exception as e:
     print('Error parsing lkgr.json!')
     print(str(e))
-    return
+    return []
 
 def is_string(s):
   if (sys.version_info[0] >= 3): return isinstance(s, str)
