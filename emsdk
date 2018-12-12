@@ -1706,13 +1706,9 @@ def download_waterfall_lkgr():
 
 def load_waterfall_lkgr():
   try:
-    print('a0');
     text = open(sdk_path(os.path.join('upstream', 'lkgr.json')), 'r').read()
-    print('a1' + text);
     data = json.loads(text)
-    print('b: ' + str(data));
     lkgr = data['build']
-    print('c: ' + str(lkgr));
     return [lkgr]
   except Exception as e:
     print('Error parsing lkgr.json!')
