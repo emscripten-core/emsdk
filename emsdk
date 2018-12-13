@@ -1526,8 +1526,7 @@ def find_latest_nightly_sdk():
 
 def find_latest_upstream():
   waterfall_lkgr = load_waterfall_lkgr()
-  print(str(waterfall_lkgr))
-  if len(waterfall_lkgr) == 0:
+  if not waterfall_lkgr:
     print('Failed to find an upstream lkgr')
     sys.exit(1)
   return 'clang-upstream-%s-64bit' % waterfall_lkgr[0]
