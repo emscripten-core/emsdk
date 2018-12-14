@@ -1546,7 +1546,7 @@
   {
     "version": "upstream-%waterfall-lkgr%",
     "bitness": 64,
-    "uses": ["waterfall-upstream-%waterfall-lkgr%-64bit"],
+    "uses": ["waterfall-upstream-%waterfall-lkgr%-64bit", "node-8.9.1-64bit"],
     "os": "linux"
   },
   {
