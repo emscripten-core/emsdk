@@ -191,32 +191,13 @@
     "cmake_build_type": "Release"
   },
   {
-    "id": "clang",
+    "id": "waterfall",
     "version": "upstream-%waterfall-lkgr%",
     "bitness": 64,
     "linux_url": "https://storage.googleapis.com/wasm-llvm/builds/linux/%waterfall-lkgr%/wasm-binaries.tbz2",
     "install_path": "upstream/%waterfall-lkgr%",
     "activated_path": "%installation_dir%",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%/bin'"
-  },
-  {
-    "id": "emscripten",
-    "version": "upstream-%waterfall-lkgr%",
-    "bitness": 64,
-    "linux_url": "https://storage.googleapis.com/wasm-llvm/builds/linux/%waterfall-lkgr%/wasm-binaries.tbz2",
-    "install_path": "upstream/%waterfall-lkgr%",
-    "activated_path": "%installation_dir%",
-    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%/emscripten'"
-  },
-  {
-    "id": "binaryen",
-    "version": "upstream-%waterfall-lkgr%",
-    "bitness": 64,
-    "linux_url": "https://storage.googleapis.com/wasm-llvm/builds/linux/%waterfall-lkgr%/wasm-binaries.tbz2",
-    "install_path": "upstream/%waterfall-lkgr%",
-    "activated_path": "%installation_dir%",
-    "activated_cfg": "BINARYEN_ROOT='%installation_dir%'",
-    "activated_env": "BINARYEN_ROOT=%installation_dir%"
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/bin';BINARYEN_ROOT=%installation_dir%"
   },
   {
     "id": "clang",
@@ -1565,7 +1546,7 @@
   {
     "version": "upstream-%waterfall-lkgr%",
     "bitness": 64,
-    "uses": ["clang-upstream-%waterfall-lkgr%-64bit", "emscripten-upstream-%waterfall-lkgr%-64bit", "binaryen-upstream-%waterfall-lkgr%-64bit"],
+    "uses": ["waterfall-upstream-%waterfall-lkgr%-64bit"],
     "os": "linux"
   },
   {

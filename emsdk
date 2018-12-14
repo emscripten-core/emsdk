@@ -1532,7 +1532,7 @@ def find_latest_upstream():
   if not waterfall_lkgr:
     print('Failed to find an upstream lkgr')
     sys.exit(1)
-  return 'clang-upstream-%s-64bit' % waterfall_lkgr[0]
+  return 'waterfall-upstream-%s-64bit' % waterfall_lkgr[0]
 
 # Finds the best-matching python tool for use.
 def find_used_python():
