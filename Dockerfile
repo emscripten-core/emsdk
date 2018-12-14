@@ -2,6 +2,7 @@
 FROM buildpack-deps:xenial
 SHELL ["/bin/bash", "-c"]
 ENV DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8
+ENV EMCC_DEBUG=1
 RUN mkdir -p /root/emsdk/
 COPY . /root/emsdk/
 
