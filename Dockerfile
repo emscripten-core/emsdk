@@ -15,10 +15,7 @@ RUN cd /root/ \
  && emcc hello_world.cpp \
  && /root/emsdk/emsdk update-tags \
  && /root/emsdk/emsdk install latest-upstream \
- && echo "activate!" \
  && /root/emsdk/emsdk activate latest-upstream \
- && echo "activated" \
  && source /root/emsdk/emsdk_env.sh --build=Release \
- && find -name "emcc.py" \
- && emcc hello_world.cpp \
+ && emcc hello_world.cpp
 
