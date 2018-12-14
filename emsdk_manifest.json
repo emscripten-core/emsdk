@@ -196,8 +196,8 @@
     "bitness": 64,
     "linux_url": "https://storage.googleapis.com/wasm-llvm/builds/linux/%waterfall-lkgr%/wasm-binaries.tbz2",
     "install_path": "upstream/%waterfall-lkgr%",
-    "activated_path": "%installation_dir%",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%/bin';BINARYEN_ROOT=%installation_dir%"
+    "activated_path": "%installation_dir%/emscripten",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/bin';BINARYEN_ROOT='%installation_dir%'"
   },
   {
     "id": "clang",
