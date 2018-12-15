@@ -13,7 +13,5 @@ RUN cd /root/ \
  && /root/emsdk/emsdk install latest-upstream \
  && /root/emsdk/emsdk activate latest-upstream \
  && source /root/emsdk/emsdk_env.sh --build=Release \
- && emcc hello_world.cpp -o a.bc \
- && export EMCC_DEBUG=1 \
- && emcc a.bc
+ && emcc hello_world.cpp -s WASM_OBJECT_FILES=1
 
