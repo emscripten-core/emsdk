@@ -1527,7 +1527,7 @@ def find_latest_nightly_sdk():
   else:
     return find_latest_nightly_32bit_sdk()
 
-def find_latest_upstream():
+def find_latest_upstream_sdk():
   waterfall_lkgr = load_waterfall_lkgr()
   if not waterfall_lkgr:
     print('Failed to find an upstream lkgr')
@@ -2224,7 +2224,7 @@ def main():
       elif sys.argv[i] == 'sdk-nightly-latest-64bit':
         sys.argv[i] = str(find_latest_nightly_64bit_sdk())
       elif sys.argv[i] == 'latest-upstream' or sys.argv[i] == 'latest-clang-upstream':
-        sys.argv[i] = str(find_latest_upstream())
+        sys.argv[i] = str(find_latest_upstream_sdk())
 
   if cmd == 'list':
     print('')
