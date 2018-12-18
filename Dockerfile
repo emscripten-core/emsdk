@@ -13,7 +13,6 @@ RUN cd /root/ \
  && /root/emsdk/emsdk activate latest \
  && source /root/emsdk/emsdk_env.sh --build=Release \
  && emcc hello_world.cpp \
- && rm ~/.emscripten \
  && /root/emsdk/emsdk update-tags \
  && /root/emsdk/emsdk install latest-upstream \
  && /root/emsdk/emsdk activate latest-upstream \
