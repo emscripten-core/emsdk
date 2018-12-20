@@ -17,5 +17,7 @@ RUN cd /root/ \
  && /root/emsdk/emsdk install latest-upstream \
  && /root/emsdk/emsdk activate latest-upstream \
  && source /root/emsdk/emsdk_env.sh --build=Release \
- && emcc hello_world.cpp -s WASM_OBJECT_FILES=1
+ && emcc hello_world.cpp -s WASM_OBJECT_FILES=1 \
+ && python -c "import os ; assert open(os.path.expanduser('~/.emscripten')).read().count('LLVM_ROOT') == 1" \
+ && python -c "import os ; assert 'upstream' in open(os.path.expanduser('~/.emscripten')).read()"
 
