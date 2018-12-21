@@ -11,7 +11,7 @@ before_install:
 script:
   - set -o errexit
   - echo "running..."
-  - docker build --build-arg TEST_TARGET="$TEST_TARGET" .
+  - docker build .
 
 notifications:
   email: false
