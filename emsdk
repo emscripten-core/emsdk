@@ -1054,24 +1054,24 @@ def generate_dot_emscripten(active_tools):
 
   # Different tools may provide the same activated configs; the latest to be
   # activated is the relevant one.
-  final_activated_names = []
-  final_activated_values = {}
+  activated_keys_in_order = []
+  activated_key_values = {}
 
   for tool in active_tools:
     tool_cfg = tool.activated_config()
     if tool_cfg:
       for specific_cfg in tool_cfg.split(';'):
         name, value = specific_cfg.split('=')
-        if name not in final_activated_values:
-          final_activated_names.append(name)
-        final_activated_values[name] = value
+        if name not in activated_key_values:
+          activated_keys_in_order.append(name)
+        activated_key_values[name] = value
 
-  for name in final_activated_names:
+  for name in activated_keys_in_order:
     if name == 'SPIDERMONKEY_ENGINE':
       has_spidermonkey = True
     if name == 'NODE_JS':
       has_node = True
-    cfg += name + ' = ' + final_activated_values[name] + '\n'
+    cfg += name + ' = ' + activated_key_values[name] + '\n'
 
   # These two vars must always be defined, even though they might not exist.
   if not has_spidermonkey: cfg += "SPIDERMONKEY_ENGINE = ''\n"
