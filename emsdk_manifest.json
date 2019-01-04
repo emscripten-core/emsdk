@@ -1563,7 +1563,7 @@
     "bitness": 64,
     "uses": ["waterfall-fastcomp-%waterfall-lkgr%-64bit", "node-8.9.1-64bit"],
     "os": "linux"
-  }
+  },
   {
     "version": "%precompiled_tag32%",
     "bitness": 32,
