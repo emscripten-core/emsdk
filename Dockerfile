@@ -15,19 +15,19 @@ RUN cd /root/ \
  && /root/emsdk/emsdk activate latest \
  && source /root/emsdk/emsdk_env.sh --build=Release \
  && emcc hello_world.cpp \
- && nodejs a.out.js \
+ && node a.out.js \
  && echo "test upstream (waterfall)" \
  && /root/emsdk/emsdk install latest-upstream \
  && /root/emsdk/emsdk activate latest-upstream \
  && source /root/emsdk/emsdk_env.sh --build=Release \
  && emcc hello_world.cpp -s WASM_OBJECT_FILES=1 \
- && nodejs a.out.js \
+ && node a.out.js \
  && echo "test fastcomp (waterfall)" \
  && /root/emsdk/emsdk install latest-fastcomp \
  && /root/emsdk/emsdk activate latest-fastcomp \
  && source /root/emsdk/emsdk_env.sh --build=Release \
  && emcc hello_world.cpp \
- && nodejs a.out.js \
+ && node a.out.js \
  && emcc hello_world.cpp -s WASM=0 \
- && nodejs a.out.js
+ && node a.out.js
 
