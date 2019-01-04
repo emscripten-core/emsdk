@@ -27,8 +27,8 @@ RUN cd /root/ \
  && emcc hello_world.cpp -o c.out.js \
  && emcc hello_world.cpp -s WASM=0 -o d.out.js \
  && echo "text executions" \
- && node/8.9.1_64bit/bin/node a.out.js \
- && node/8.9.1_64bit/bin/node b.out.js \
- && node/8.9.1_64bit/bin/node c.out.js \
- && node/8.9.1_64bit/bin/node d.out.js
+ && /root/emsdk/node/8.9.1_64bit/bin/node a.out.js \
+ && /root/emsdk/node/8.9.1_64bit/bin/node b.out.js \
+ && /root/emsdk/node/8.9.1_64bit/bin/node c.out.js \
+ && /root/emsdk/node/8.9.1_64bit/bin/node d.out.js
 
