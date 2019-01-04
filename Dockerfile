@@ -14,20 +14,21 @@ RUN cd /root/ \
  && /root/emsdk/emsdk install latest \
  && /root/emsdk/emsdk activate latest \
  && source /root/emsdk/emsdk_env.sh --build=Release \
- && emcc hello_world.cpp \
- && node/8.9.1_64bit/bin/node a.out.js \
+ && emcc hello_world.cpp -o a.out.js \
  && echo "test upstream (waterfall)" \
  && /root/emsdk/emsdk install latest-upstream \
  && /root/emsdk/emsdk activate latest-upstream \
  && source /root/emsdk/emsdk_env.sh --build=Release \
- && emcc hello_world.cpp -s WASM_OBJECT_FILES=1 \
- && node/8.9.1_64bit/bin/node a.out.js \
+ && emcc hello_world.cpp -s WASM_OBJECT_FILES=1 -o b.out.js \
  && echo "test fastcomp (waterfall)" \
  && /root/emsdk/emsdk install latest-fastcomp \
  && /root/emsdk/emsdk activate latest-fastcomp \
  && source /root/emsdk/emsdk_env.sh --build=Release \
- && emcc hello_world.cpp \
+ && emcc hello_world.cpp -o c.out.js \
+ && emcc hello_world.cpp -s WASM=0 -o d.out.js \
+ && echo "text executions" \
  && node/8.9.1_64bit/bin/node a.out.js \
- && emcc hello_world.cpp -s WASM=0 \
- && node/8.9.1_64bit/bin/node a.out.js
+ && node/8.9.1_64bit/bin/node b.out.js \
+ && node/8.9.1_64bit/bin/node c.out.js \
+ && node/8.9.1_64bit/bin/node d.out.js
 
