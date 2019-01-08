@@ -2,39 +2,39 @@
   "repositories": {
     "libcxxabi": {
       "remote": "https://llvm.googlesource.com/libcxxabi.git", 
-      "subject": "[libcxx] Remove bad_array_length", 
-      "hash": "307bb62985575b2e3216a8cfd7e122e0574f33a9", 
-      "name": "Louis Dionne", 
-      "email": "ldionne@apple.com"
+      "subject": "[CMake] Set per-runtime library directory suffix in runtimes build", 
+      "hash": "5b1f0aa6f041edaad988a0359c5beb8cd5f1ebfb", 
+      "name": "Petr Hosek", 
+      "email": "phosek@chromium.org"
     }, 
     "binaryen": {
       "remote": "https://chromium.googlesource.com/external/github.com/WebAssembly/binaryen.git", 
-      "subject": "wasm-opt fuzz script improvements (#1851)", 
-      "hash": "c33b333bc403af7878ac7b1850862bdaa78c8753", 
+      "subject": "Refactor stack writing code into a new StackWriter class (#1620)", 
+      "hash": "e601522b1e15e5a2a96578244faca1648021fb2d", 
       "name": "Alon Zakai", 
       "email": "alonzakai@gmail.com"
     }, 
     "gnuwin32": null, 
     "lld": {
       "remote": "https://llvm.googlesource.com/lld.git", 
-      "subject": "[docs] Add a known limitation to the comment about lld supporting GCC/MinGW object files. NFC.", 
-      "hash": "c9d5567d32d3844ad028ebfd17420ca1fa9f316d", 
-      "name": "Martin Storsjo", 
-      "email": "martin@martin.st"
+      "subject": "[WebAssemlby] Set IsUsedInRegularObj correctly for undefined data symbols", 
+      "hash": "5934900bdcbc82eb2c582b68909447f8de89a5df", 
+      "name": "Sam Clegg", 
+      "email": "sbc@chromium.org"
     }, 
     "cr-buildtools": {
       "remote": "https://chromium.googlesource.com/chromium/src/build.git", 
-      "subject": "Revert \"Reland \"Roll buildtools and enable in-tree libc++ on Android\"\"", 
-      "hash": "fd2243f33c199db7d399e6377abbbeb4e1901858", 
-      "name": "Thomas Anderson", 
+      "subject": "Finish removing refrences to exe_and_shlib_deps", 
+      "hash": "7315579e388589b62236ad933f09afd1e838d234", 
+      "name": "Tom Anderson", 
       "email": "thomasanderson@chromium.org"
     }, 
     "compiler-rt": {
       "remote": "https://llvm.googlesource.com/compiler-rt.git", 
-      "subject": "[compiler-rt][Fuchsia] Replace _zx_vmar_allocate_old call", 
-      "hash": "79d27782ac7006e5b2878e7366749769ed6a11f4", 
-      "name": "Petr Hosek", 
-      "email": "phosek@chromium.org"
+      "subject": "[builtins] Implement the __chkstk function for ARM for MinGW", 
+      "hash": "a22026054ba1a9befadef306c3f56481b4397ab3", 
+      "name": "Martin Storsjo", 
+      "email": "martin@martin.st"
     }, 
     "gcc": {
       "remote": "https://chromium.googlesource.com/chromiumos/third_party/gcc.git", 
@@ -45,39 +45,39 @@
     }, 
     "emscripten": {
       "remote": "https://chromium.googlesource.com/external/github.com/kripken/emscripten.git", 
-      "subject": "update binaryen to 63 (#7810)", 
-      "hash": "9cdaf9e53f630137ea6dc0717d3285e3faf29800", 
-      "name": "Alon Zakai", 
-      "email": "alonzakai@gmail.com"
+      "subject": "Add 'ENV' to the list of runtime elements that may be exported. (#6855)", 
+      "hash": "addf0ae7697f01a1bd36889f0b7a6c30e5cf642f", 
+      "name": "Ian Henderson", 
+      "email": "ian@ianhenderson.org"
     }, 
     "libcxx": {
       "remote": "https://llvm.googlesource.com/libcxx.git", 
-      "subject": "[libcxx] Support building hermetic static library", 
-      "hash": "9e444eb82d34fd56af3875a6971dead607e20b9e", 
-      "name": "Petr Hosek", 
-      "email": "phosek@chromium.org"
+      "subject": "Address \"always inline function is not always inlinable\" warning with GCC.", 
+      "hash": "ffbb91bb640b1b0425a91aa70e2a6a2e0f7244e0", 
+      "name": "Eric Fiselier", 
+      "email": "eric@efcs.ca"
     }, 
     "nodejs": null, 
     "host-toolchain": {
-      "remote": "/b/swarming/w/ir/cache/git/chromium.googlesource.com-external-github.com-webassembly-waterfall", 
-      "subject": "Do not print list of binaries on Mac (#441)", 
-      "hash": "c368ea7a5e3c188cfbfb77ea177a82e94faefc6c", 
-      "name": "Sergiy Belozorov", 
-      "email": "rryk.ua@gmail.com"
+      "remote": "/b/build/slave/cache_dir/chromium.googlesource.com-external-github.com-webassembly-waterfall", 
+      "subject": "Pin chromium clang to a previous revision (#386)", 
+      "hash": "555c690d4cb7cefba750385eeb71cce050bd1e82", 
+      "name": "Sam Clegg", 
+      "email": "sbc@chromium.org"
     }, 
     "fastcomp": {
       "remote": "https://chromium.googlesource.com/external/github.com/kripken/emscripten-fastcomp.git", 
-      "subject": "Handle extern_weak functions: if we are done linking, then they should be resolved to null (#248)", 
-      "hash": "08e033bfad6f7f28d7b5d85e9b4ed708b9850962", 
-      "name": "Alon Zakai", 
+      "subject": "1.38.8", 
+      "hash": "6c4569077d771cf318ff5089a94d82ccef56a038", 
+      "name": "Alon Zakai (kripken)", 
       "email": "alonzakai@gmail.com"
     }, 
     "spec": {
       "remote": "https://chromium.googlesource.com/external/github.com/WebAssembly/spec.git", 
-      "subject": "Stop using readlines() in wrap_single_test().", 
-      "hash": "b42efa9b07c5544079c31f6088a66bead617559c", 
-      "name": "Ms2ger", 
-      "email": "Ms2ger@igalia.com"
+      "subject": "[test] Add test to cover one checkpoint in Todo.md (#834)", 
+      "hash": "c8338e9b4a60edb431edba51a4e1a1617060c2e9", 
+      "name": "Wanming Lin", 
+      "email": "wanming.lin@intel.com"
     }, 
     "ocamlbuild": {
       "remote": "https://github.com/ocaml/ocamlbuild.git", 
@@ -88,47 +88,47 @@
     }, 
     "llvm": {
       "remote": "https://llvm.googlesource.com/llvm.git", 
-      "subject": "[LegalizeVectorOps] Add FSHL/FSHR to the list of vector operations that should be handled.", 
-      "hash": "3a7c0dbc629e1fd0c68a2d1c486f679e4bef3a4d", 
-      "name": "Craig Topper", 
-      "email": "craig.topper@intel.com"
+      "subject": "[LangRef] Clarify which fast-math flags affect fcmp.", 
+      "hash": "1ea502b3c158159aa2d7827acbd81c7930165a13", 
+      "name": "Eli Friedman", 
+      "email": "efriedma@codeaurora.org"
     }, 
     "musl": {
       "remote": "https://github.com/jfbastien/musl.git", 
-      "subject": "Merge pull request #49 from jfbastien/fix_size_t", 
-      "hash": "edeb5004e6e016e326c475ce53199755d76d103f", 
-      "name": "Sam Clegg", 
-      "email": "sbc@chromium.org"
+      "subject": "Merge pull request #48 from jfbastien/fix_signatures", 
+      "hash": "0ed10f0b97192e9798fbb23dcd284cb5fe4df47a", 
+      "name": "JF Bastien", 
+      "email": "github@jfbastien.com"
     }, 
     "clang": {
       "remote": "https://llvm.googlesource.com/clang.git", 
-      "subject": "[CMake] Use hidden visibility for static libc++ in Fuchsia", 
-      "hash": "9474014cc9cd2c1ed6ede59304f4b976c69b72a9", 
-      "name": "Petr Hosek", 
-      "email": "phosek@chromium.org"
+      "subject": "Remove unnecessary trailing ; in macro intrinsic definition.", 
+      "hash": "726843da082dc448eec5048f24bea1bfebbc969c", 
+      "name": "Eric Christopher", 
+      "email": "echristo@gmail.com"
     }, 
     "waterfall": {
-      "remote": "/b/swarming/w/ir/cache/git/chromium.googlesource.com-external-github.com-webassembly-waterfall", 
-      "subject": "Do not print list of binaries on Mac (#441)", 
-      "hash": "c368ea7a5e3c188cfbfb77ea177a82e94faefc6c", 
-      "name": "Sergiy Belozorov", 
-      "email": "rryk.ua@gmail.com"
+      "remote": "/b/build/slave/cache_dir/chromium.googlesource.com-external-github.com-webassembly-waterfall", 
+      "subject": "Pin chromium clang to a previous revision (#386)", 
+      "hash": "555c690d4cb7cefba750385eeb71cce050bd1e82", 
+      "name": "Sam Clegg", 
+      "email": "sbc@chromium.org"
     }, 
     "v8": {
       "remote": "https://chromium.googlesource.com/v8/v8.git", 
-      "subject": "[tools] Clean up HTML for tools", 
-      "hash": "638d1b313721f9414a2d8ea16ae319a989e76d4a", 
-      "name": "Mathias Bynens", 
-      "email": "mathias@qiwi.be"
+      "subject": "[Intl] Use correct fallback values for options in Locale constructor", 
+      "hash": "b7e108d6016bf6b7de3a34e6d61cb522f5193460", 
+      "name": "Frank Tang", 
+      "email": "ftang@chromium.org"
     }, 
     "cmake": null, 
     "java": null, 
     "llvm-test-suite": {
       "remote": "https://llvm.googlesource.com/test-suite.git", 
-      "subject": "Make Python scripts portable across Python 2/3", 
-      "hash": "e259b793a57df68cb0e97436441563533d8f745b", 
-      "name": "Serge Guelton", 
-      "email": "sguelton@quarkslab.com"
+      "subject": "Fixed test to conform to FileCceck change in r336830.", 
+      "hash": "121047f033754e642217dd45b7d49d1947cff3ab", 
+      "name": "Sunil Srivastava", 
+      "email": "sunil_srivastava@playstation.sony.com"
     }, 
     "ocaml": {
       "remote": "https://github.com/ocaml/ocaml.git", 
@@ -139,19 +139,19 @@
     }, 
     "fastcomp-clang": {
       "remote": "https://chromium.googlesource.com/external/github.com/kripken/emscripten-fastcomp-clang.git", 
-      "subject": "1.38.21", 
-      "hash": "955fea46a999fc222ca7699b5e58ff193fbe6c4c", 
-      "name": "Sam Clegg", 
-      "email": "sbc@chromium.org"
+      "subject": "1.38.8", 
+      "hash": "7c43b8c67d35a870986fb92b5a04e615477ab9cf", 
+      "name": "Alon Zakai (kripken)", 
+      "email": "alonzakai@gmail.com"
     }, 
     "wabt": {
       "remote": "https://chromium.googlesource.com/external/github.com/WebAssembly/wabt.git", 
-      "subject": "Fix segfault when running `wat2wasm -d` (#990)", 
-      "hash": "943164db9bc1147a856dc202f177cf32b64231b7", 
+      "subject": "[wasm2c] Fix bad realloc in wasm-rt-impl (#869)", 
+      "hash": "e5b3830f4c992c5a0b407dae3e9c8c4ee9a626b2", 
       "name": "Ben Smith", 
       "email": "binjimin@gmail.com"
     }
   }, 
-  "build": "2517", 
-  "scheduler": null
+  "build": "33957", 
+  "scheduler": "llvm"
 }
