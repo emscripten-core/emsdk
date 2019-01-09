@@ -25,5 +25,7 @@ RUN cd /root/ \
  && /root/emsdk/emsdk activate latest-fastcomp \
  && source /root/emsdk/emsdk_env.sh --build=Release \
  && emcc hello_world.cpp \
- && emcc hello_world.cpp -s WASM=0
+ && emcc hello_world.cpp -s WASM=0 \
+ && echo "test binaryen source build" \
+ && /root/emsdk/emsdk install --build=Release binaryen-master-64bit
 
