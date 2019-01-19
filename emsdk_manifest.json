@@ -200,6 +200,15 @@
     "activated_cfg": "LLVM_ROOT='%installation_dir%/bin';BINARYEN_ROOT='%installation_dir%'"
   },
   {
+    "id": "waterfall",
+    "version": "fastcomp-%waterfall-lkgr%",
+    "bitness": 64,
+    "linux_url": "https://storage.googleapis.com/wasm-llvm/builds/linux/%waterfall-lkgr%/wasm-binaries.tbz2",
+    "install_path": "fastcomp/%waterfall-lkgr%",
+    "activated_path": "%installation_dir%/emscripten",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/fastcomp/bin';BINARYEN_ROOT='%installation_dir%'"
+  },
+  {
     "id": "clang",
     "version": "e1.13.0",
     "bitness": 64,
@@ -1547,6 +1556,12 @@
     "version": "upstream-%waterfall-lkgr%",
     "bitness": 64,
     "uses": ["waterfall-upstream-%waterfall-lkgr%-64bit", "node-8.9.1-64bit"],
+    "os": "linux"
+  },
+  {
+    "version": "fastcomp-%waterfall-lkgr%",
+    "bitness": 64,
+    "uses": ["waterfall-fastcomp-%waterfall-lkgr%-64bit", "node-8.9.1-64bit"],
     "os": "linux"
   },
   {

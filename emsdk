@@ -968,7 +968,6 @@ def build_binaryen_tool(tool):
   shutil.copytree(os.path.join(src_root, 'scripts'), os.path.join(build_root, 'scripts'))
   remove_tree(os.path.join(build_root, 'src', 'js'))
   shutil.copytree(os.path.join(src_root, 'src', 'js'), os.path.join(build_root, 'src', 'js'))
-  shutil.copyfile(os.path.join(src_root, 'bin', 'wasm.js'), os.path.join(build_root, 'bin', 'wasm.js'))
 
   return success
 
@@ -1540,12 +1539,18 @@ def find_latest_nightly_sdk():
   else:
     return find_latest_nightly_32bit_sdk()
 
-def find_latest_upstream_sdk():
+def find_latest_waterfall_sdk(which):
   waterfall_lkgr = load_waterfall_lkgr()
   if not waterfall_lkgr:
     print('Failed to find an upstream lkgr')
     sys.exit(1)
-  return 'sdk-upstream-%s-64bit' % waterfall_lkgr[0]
+  return 'sdk-%s-%s-64bit' % (which, waterfall_lkgr[0])
+
+def find_latest_upstream_sdk():
+  return find_latest_waterfall_sdk('upstream')
+
+def find_latest_fastcomp_sdk():
+  return find_latest_waterfall_sdk('fastcomp')
 
 # Finds the best-matching python tool for use.
 def find_used_python():
@@ -2238,6 +2243,8 @@ def main():
         sys.argv[i] = str(find_latest_nightly_64bit_sdk())
       elif sys.argv[i] == 'latest-upstream' or sys.argv[i] == 'latest-clang-upstream':
         sys.argv[i] = str(find_latest_upstream_sdk())
+      elif sys.argv[i] == 'latest-fastcomp':
+        sys.argv[i] = str(find_latest_fastcomp_sdk())
 
   if cmd == 'list':
     print('')
