@@ -20,6 +20,8 @@ RUN cd /root/ \
  && /root/emsdk/emsdk activate latest-upstream \
  && source /root/emsdk/emsdk_env.sh --build=Release \
  && emcc hello_world.cpp -s WASM_OBJECT_FILES=1 \
+ && python -c "import os ; assert open(os.path.expanduser('~/.emscripten')).read().count('LLVM_ROOT') == 1" \
+ && python -c "import os ; assert 'upstream' in open(os.path.expanduser('~/.emscripten')).read()" \
  && echo "test fastcomp (waterfall)" \
  && /root/emsdk/emsdk install latest-fastcomp \
  && /root/emsdk/emsdk activate latest-fastcomp \
@@ -28,4 +30,3 @@ RUN cd /root/ \
  && emcc hello_world.cpp -s WASM=0 \
  && echo "test binaryen source build" \
  && /root/emsdk/emsdk install --build=Release binaryen-master-64bit
-

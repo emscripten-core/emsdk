@@ -1051,13 +1051,26 @@ def generate_dot_emscripten(active_tools):
   if embedded:
     cfg += "emsdk_path=os.path.dirname(os.environ.get('EM_CONFIG')).replace('\\\\', '/')\n"
 
+  # Different tools may provide the same activated configs; the latest to be
+  # activated is the relevant one.
+  activated_keys_in_order = []
+  activated_key_values = {}
+
   for tool in active_tools:
     tool_cfg = tool.activated_config()
     if tool_cfg:
-      tool_cfg = tool_cfg.replace(';', '\n')
-      if 'SPIDERMONKEY_ENGINE=' in tool_cfg: has_spidermonkey = True
-      if 'NODE_JS=' in tool_cfg: has_node = True
-      cfg += tool_cfg + '\n'
+      for specific_cfg in tool_cfg.split(';'):
+        name, value = specific_cfg.split('=')
+        if name not in activated_key_values:
+          activated_keys_in_order.append(name)
+        activated_key_values[name] = value
+
+  for name in activated_keys_in_order:
+    if name == 'SPIDERMONKEY_ENGINE':
+      has_spidermonkey = True
+    if name == 'NODE_JS':
+      has_node = True
+    cfg += name + ' = ' + activated_key_values[name] + '\n'
 
   # These two vars must always be defined, even though they might not exist.
   if not has_spidermonkey: cfg += "SPIDERMONKEY_ENGINE = ''\n"
