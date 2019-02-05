@@ -1078,9 +1078,21 @@
     "os": "win"
   },
   {
+    "version": "wasm-master",
+    "bitness": 32,
+    "uses": ["upstream-clang-master-32bit", "node-8.9.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-incoming-32bit", "binaryen-master-32bit"],
+    "os": "win"
+  },
+  {
     "version": "incoming",
     "bitness": 64,
     "uses": ["clang-incoming-64bit", "node-8.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-incoming-64bit", "binaryen-master-64bit"],
+    "os": "win"
+  },
+  {
+    "version": "wasm-master",
+    "bitness": 64,
+    "uses": ["upstream-clang-master-64bit", "node-8.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-incoming-64bit", "binaryen-master-64bit"],
     "os": "win"
   },
   {
@@ -1090,15 +1102,33 @@
     "os": "osx"
   },
   {
+    "version": "wasm-master",
+    "bitness": 64,
+    "uses": ["upstream-clang-master-64bit", "node-8.9.1-64bit", "emscripten-incoming-64bit", "binaryen-master-64bit"],
+    "os": "osx"
+  },
+  {
     "version": "incoming",
     "bitness": 32,
     "uses": ["clang-incoming-32bit", "node-8.9.1-32bit", "emscripten-incoming-32bit", "binaryen-master-32bit"],
     "os": "linux"
   },
   {
+    "version": "wasm-master",
+    "bitness": 32,
+    "uses": ["upstream-clang-master-32bit", "node-8.9.1-32bit", "emscripten-incoming-32bit", "binaryen-master-32bit"],
+    "os": "linux"
+  },
+  {
     "version": "incoming",
     "bitness": 64,
     "uses": ["clang-incoming-64bit", "node-8.9.1-64bit", "emscripten-incoming-64bit", "binaryen-master-64bit"],
+    "os": "linux"
+  },
+  {
+    "version": "wasm-master",
+    "bitness": 64,
+    "uses": ["upstream-clang-master-64bit", "node-8.9.1-64bit", "emscripten-incoming-64bit", "binaryen-master-64bit"],
     "os": "linux"
   },
   {
