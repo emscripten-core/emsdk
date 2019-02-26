@@ -8,7 +8,11 @@ services:
 before_install:
   - docker pull ubuntu:16.04
 
+install:
+  - pip install flake8==3.4.1
+
 script:
+  - flake8
   - set -o errexit
   - echo "running..."
   - docker build .
