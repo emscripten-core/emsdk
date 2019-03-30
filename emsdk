@@ -2,6 +2,20 @@
 
 from __future__ import print_function
 import sys, optparse, subprocess, os, os.path, errno, zipfile, string, json, platform, shutil, tarfile, tempfile, multiprocessing, re, stat, copy
+
+if 'SOCKS_PROXY' in os.environ:
+  try:
+    import socks
+  except ImportError:
+    print("SOCKS_PROXY environment variable is set, but failed to load PySocks.")
+    print("Please run 'pip install pysocks' to use a SOCKS proxy with emsdk.")
+    print("Giving up.")
+    sys.exit(1)
+  import socket
+  socket.socket = socks.socksocket # Replace standard sockets with SOCKS-ified ones
+  proxy_host, proxy_port = os.environ['SOCKS_PROXY'].split(':')
+  socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, proxy_host, int(proxy_port))
+
 if sys.version_info >= (3,):
   from urllib.parse import urljoin
   from urllib.request import urlopen
