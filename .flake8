@@ -1,0 +1,3 @@
+[flake8]
+ignore = E111,E114,E501,E261,E266,E121,E402,E241,E701
+filename = emsdk
