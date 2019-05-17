@@ -1653,15 +1653,16 @@ def find_latest_waterfall_sdk(which):
   if not waterfall_lkgr:
     print('Failed to find an upstream lkgr')
     sys.exit(1)
-  return 'sdk-%s-%s-64bit' % (which, waterfall_lkgr[0])
+  return 'sdk-watefall-%s-%s-64bit' % (which, waterfall_lkgr[0])
 
 
-def find_latest_upstream_sdk():
-  return find_latest_waterfall_sdk('upstream')
-
-
-def find_latest_fastcomp_sdk():
-  return find_latest_waterfall_sdk('fastcomp')
+def find_latest_releases_sdk(which):
+  releases_tags = load_releases_tags()
+  if not releases_tags:
+    print('Failed to find emscripten-releases tags')
+    sys.exit(1)
+  # assume the last one is the latest FIXME
+  return 'sdk-releases-%s-%s-64bit' % (which, releases_tags[-1])
 
 
 # Finds the best-matching python tool for use.
@@ -1865,6 +1866,23 @@ def load_waterfall_lkgr():
     return []
 
 
+def download_releases_tags():
+  releases_tags_url = 'https://storage.googleapis.com/wasm-llvm/emscripten-releases-builds/tags.json'
+  download_file(releases_tags_url, 'upstream', download_even_if_exists=True)
+
+
+def load_releases_tags():
+  try:
+    text = open(sdk_path(os.path.join('upstream', 'tags.json')), 'r').read()
+    data = json.loads(text)
+    lkgr = data['build']
+    return [lkgr]
+  except Exception as e:
+    print('Error parsing lkgr.json!')
+    print(str(e))
+    return []
+
+
 def is_string(s):
   if sys.version_info[0] >= 3:
     return isinstance(s, str)
@@ -1960,6 +1978,7 @@ def load_sdk_manifest():
       elif '%nightly-llvm-32bit%' in t.version: expand_category_param('%nightly-llvm-32bit%', llvm_32bit_nightlies, t, is_sdk=False)
       elif '%nightly-emscripten%' in t.version: expand_category_param('%nightly-emscripten%', emscripten_nightlies, t, is_sdk=False)
       elif '%waterfall-lkgr%' in t.version: expand_category_param('%waterfall-lkgr%', waterfall_lkgr, t, is_sdk=False)
+      elif '%releases-tag%' in t.version: expand_category_param('%releases-tag%', releases_tags, t, is_sdk=False)
       else:
         add_tool(t)
 
@@ -1978,6 +1997,7 @@ def load_sdk_manifest():
       elif '%nightly-llvm-32bit%' in sdk.version: expand_category_param('%nightly-llvm-32bit%', llvm_32bit_nightlies, sdk, is_sdk=True)
       elif '%nightly-emscripten%' in sdk.version: expand_category_param('%nightly-emscripten%', emscripten_nightlies, sdk, is_sdk=True)
       elif '%waterfall-lkgr%' in sdk.version: expand_category_param('%waterfall-lkgr%', waterfall_lkgr, sdk, is_sdk=True)
+      elif '%releases-tag%' in sdk.version: expand_category_param('%releases-tag%', releases_tags, sdk, is_sdk=True)
       else:
         add_sdk(sdk)
 
@@ -2387,10 +2407,14 @@ def main():
         sys.argv[i] = str(find_latest_nightly_32bit_sdk())
       elif sys.argv[i] == 'sdk-nightly-latest-64bit':
         sys.argv[i] = str(find_latest_nightly_64bit_sdk())
+      elif sys.argv[i] == 'latest-waterfall-upstream':
+        sys.argv[i] = str(find_latest_waterfall_sdk('upstream'))
+      elif sys.argv[i] == 'latest-waterfall-fastcomp':
+        sys.argv[i] = str(find_latest_waterfall_sdk('fastcomp'))
       elif sys.argv[i] == 'latest-upstream' or sys.argv[i] == 'latest-clang-upstream':
-        sys.argv[i] = str(find_latest_upstream_sdk())
+        sys.argv[i] = str(find_latest_releases_sdk('upstream'))
       elif sys.argv[i] == 'latest-fastcomp':
-        sys.argv[i] = str(find_latest_fastcomp_sdk())
+        sys.argv[i] = str(find_latest_releases_sdk('fastcomp'))
 
   if cmd == 'list':
     print('')
