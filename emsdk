@@ -1653,7 +1653,7 @@ def find_latest_waterfall_sdk(which):
   if not waterfall_lkgr:
     print('Failed to find an upstream lkgr')
     sys.exit(1)
-  return 'sdk-watefall-%s-%s-64bit' % (which, waterfall_lkgr[0])
+  return 'sdk-waterfall-%s-%s-64bit' % (which, waterfall_lkgr[0])
 
 
 def find_latest_releases_sdk(which):
@@ -1907,6 +1907,7 @@ def load_sdk_manifest():
   llvm_64bit_nightlies = list(reversed(load_llvm_64bit_nightlies()))
   emscripten_nightlies = list(reversed(load_emscripten_nightlies()))
   waterfall_lkgr = load_waterfall_lkgr()
+  releases_tags = load_releases_tags()
 
   def dependencies_exist(sdk):
     for tool_name in sdk.uses:
@@ -2407,13 +2408,13 @@ def main():
         sys.argv[i] = str(find_latest_nightly_32bit_sdk())
       elif sys.argv[i] == 'sdk-nightly-latest-64bit':
         sys.argv[i] = str(find_latest_nightly_64bit_sdk())
-      elif sys.argv[i] == 'latest-waterfall-upstream':
-        sys.argv[i] = str(find_latest_waterfall_sdk('upstream'))
-      elif sys.argv[i] == 'latest-waterfall-fastcomp':
-        sys.argv[i] = str(find_latest_waterfall_sdk('fastcomp'))
       elif sys.argv[i] == 'latest-upstream' or sys.argv[i] == 'latest-clang-upstream':
-        sys.argv[i] = str(find_latest_releases_sdk('upstream'))
+        sys.argv[i] = str(find_latest_waterfall_sdk('upstream'))
       elif sys.argv[i] == 'latest-fastcomp':
+        sys.argv[i] = str(find_latest_waterfall_sdk('fastcomp'))
+      elif sys.argv[i] == 'latest-releases-upstream':
+        sys.argv[i] = str(find_latest_releases_sdk('upstream'))
+      elif sys.argv[i] == 'latest-releases-fastcomp':
         sys.argv[i] = str(find_latest_releases_sdk('fastcomp'))
 
   if cmd == 'list':
