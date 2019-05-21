@@ -88,6 +88,14 @@ ENABLE_WASM = False
 ENABLE_LLVM_ASSERTIONS = 'auto'
 
 
+def os_name():
+  if WINDOWS: return 'win'
+  elif LINUX: return 'linux'
+  elif OSX: return 'osx'
+  else:
+    raise Exception('unknown OS')
+
+
 def to_unix_path(p):
   return p.replace('\\', '/')
 
@@ -1733,26 +1741,17 @@ def fetch_emscripten_tags():
     else:
       print('Done. No tagged Binaryen releases available.')
 
-  def os_name_for_llvm_location():
-    if WINDOWS: return 'win'
-    if LINUX: return 'linux'
-    if OSX: return 'osx'
-
-  def os_name_for_emscripten_location():
-    if WINDOWS: return 'win'
-    else: return 'linux'
-
 #  Emscripten Nightlies support has been removed, clear the list of known Nightlies locally.
 #  print('Fetching all precompiled Nightly versions..')
-#  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/nightly/' + os_name_for_llvm_location() + '_32bit/index.txt', 'llvm-nightlies-32bit.txt', download_even_if_exists=True)
-#  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/nightly/' + os_name_for_llvm_location() + '_64bit/index.txt', 'llvm-nightlies-64bit.txt', download_even_if_exists=True)
-#  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/emscripten/nightly/' + os_name_for_emscripten_location() + '/index.txt', 'emscripten-nightlies.txt', download_even_if_exists=True)
+#  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/nightly/' + os_name() + '_32bit/index.txt', 'llvm-nightlies-32bit.txt', download_even_if_exists=True)
+#  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/nightly/' + os_name() + '_64bit/index.txt', 'llvm-nightlies-64bit.txt', download_even_if_exists=True)
+#  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/emscripten/nightly/' + os_name() + '/index.txt', 'emscripten-nightlies.txt', download_even_if_exists=True)
   for f in ['llvm-nightlies-32bit.txt', 'llvm-nightlies-64bit.txt', 'emscripten-nightlies.txt']:
     if os.path.isfile(f): os.remove(f)
 
   print('Fetching all precompiled tagged releases..')
-  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/tag/' + os_name_for_llvm_location() + '_32bit/index.txt', 'llvm-tags-32bit.txt', download_even_if_exists=True)
-  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/tag/' + os_name_for_llvm_location() + '_64bit/index.txt', 'llvm-tags-64bit.txt', download_even_if_exists=True)
+  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/tag/' + os_name() + '_32bit/index.txt', 'llvm-tags-32bit.txt', download_even_if_exists=True)
+  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/tag/' + os_name() + '_64bit/index.txt', 'llvm-tags-64bit.txt', download_even_if_exists=True)
   download_waterfall_lkgr()
 
   if not git:
@@ -1850,7 +1849,7 @@ def load_llvm_precompiled_tags_64bit():
 
 
 def download_waterfall_lkgr():
-  lkgr_url = 'https://storage.googleapis.com/wasm-llvm/builds/linux/lkgr.json'
+  lkgr_url = 'https://storage.googleapis.com/wasm-llvm/builds/%s/lkgr.json' % os_name()
   download_file(lkgr_url, 'upstream', download_even_if_exists=True)
 
 
@@ -1867,7 +1866,7 @@ def load_waterfall_lkgr():
 
 
 def download_releases_tags():
-  releases_tags_url = 'https://storage.googleapis.com/wasm-llvm/emscripten-releases-builds/tags.json'
+  releases_tags_url = 'https://storage.googleapis.com/webassembly/emscripten-releases-builds/%s/latest.json' % os_name()
   download_file(releases_tags_url, 'upstream', download_even_if_exists=True)
 
 
