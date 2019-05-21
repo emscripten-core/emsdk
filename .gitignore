@@ -26,4 +26,4 @@ llvm-tags-32bit.txt
 llvm-tags-64bit.txt
 upstream
 !upstream/lkgr.json
-!upstream/tags.json
+!upstream/latest.json

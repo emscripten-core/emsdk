@@ -1665,12 +1665,12 @@ def find_latest_waterfall_sdk(which):
 
 
 def find_latest_releases_sdk(which):
-  releases_tags = load_releases_tags()
-  if not releases_tags:
+  releases_info = load_releases_info()
+  if not releases_info:
     print('Failed to find emscripten-releases tags')
     sys.exit(1)
   # assume the last one is the latest FIXME
-  return 'sdk-releases-%s-%s-64bit' % (which, releases_tags[-1])
+  return 'sdk-releases-%s-%s-64bit' % (which, releases_info[-1])
 
 
 # Finds the best-matching python tool for use.
@@ -1753,6 +1753,7 @@ def fetch_emscripten_tags():
   download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/tag/' + os_name() + '_32bit/index.txt', 'llvm-tags-32bit.txt', download_even_if_exists=True)
   download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/tag/' + os_name() + '_64bit/index.txt', 'llvm-tags-64bit.txt', download_even_if_exists=True)
   download_waterfall_lkgr()
+  download_releases_info()
 
   if not git:
     print('Update complete, however skipped fetching the Emscripten tags, since git was not found.')
@@ -1865,14 +1866,14 @@ def load_waterfall_lkgr():
     return []
 
 
-def download_releases_tags():
+def download_releases_info():
   releases_tags_url = 'https://storage.googleapis.com/webassembly/emscripten-releases-builds/%s/latest.json' % os_name()
   download_file(releases_tags_url, 'upstream', download_even_if_exists=True)
 
 
-def load_releases_tags():
+def load_releases_info():
   try:
-    text = open(sdk_path(os.path.join('upstream', 'tags.json')), 'r').read()
+    text = open(sdk_path(os.path.join('upstream', 'latest.json')), 'r').read()
     data = json.loads(text)
     lkgr = data['build']
     return [lkgr]
