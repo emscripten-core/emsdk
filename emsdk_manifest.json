@@ -1641,6 +1641,24 @@
     "os": "win"
   },
   {
+    "version": "releases-fastcomp-%releases-tag%",
+    "bitness": 64,
+    "uses": ["releases-fastcomp-%releases-tag%-64bit", "node-8.9.1-64bit"],
+    "os": "linux"
+  },
+  {
+    "version": "releases-fastcomp-%releases-tag%",
+    "bitness": 64,
+    "uses": ["releases-fastcomp-%releases-tag%-64bit", "node-8.9.1-64bit"],
+    "os": "osx"
+  },
+  {
+    "version": "releases-fastcomp-%releases-tag%",
+    "bitness": 64,
+    "uses": ["releases-fastcomp-%releases-tag%-64bit", "node-8.9.1-64bit"],
+    "os": "win"
+  },
+  {
     "version": "%precompiled_tag32%",
     "bitness": 32,
     "uses": ["clang-e%precompiled_tag32%-32bit", "node-4.1.1-32bit", "python-2.7.13.1-32bit", "java-7.45-32bit", "emscripten-%precompiled_tag32%"],
