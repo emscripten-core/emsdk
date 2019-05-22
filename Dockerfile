@@ -28,5 +28,14 @@ RUN cd /root/ \
  && source /root/emsdk/emsdk_env.sh --build=Release \
  && emcc hello_world.cpp \
  && emcc hello_world.cpp -s WASM=0 \
+ && echo "test latest-releases-upstream" \
+ && /root/emsdk/emsdk install latest-releases-upstream \
+ && /root/emsdk/emsdk activate latest-releases-upstream \
+ && source /root/emsdk/emsdk_env.sh --build=Release \
+ && echo "test latest-releases-fastcomp" \
+ && /root/emsdk/emsdk install latest-releases-fastcomp \
+ && /root/emsdk/emsdk activate latest-releases-fastcomp \
+ && source /root/emsdk/emsdk_env.sh --build=Release \
+ && emcc hello_world.cpp \
  && echo "test binaryen source build" \
  && /root/emsdk/emsdk install --build=Release binaryen-master-64bit
