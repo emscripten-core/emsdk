@@ -229,7 +229,7 @@
     "bitness": 64,
     "linux_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/linux/%releases-tag%/wasm-binaries.tbz2",
     "osx_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/mac/%releases-tag%/wasm-binaries.tbz2",
-    "windows_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/windows/%releases-tag%/wasm-binaries.tbz2",
+    "windows_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/windows/%releases-tag%/wasm-binaries.zip",
     "zipfile_prefix": "%releases-tag%-",
     "install_path": "fastcomp/%releases-tag%",
     "activated_path": "%installation_dir%/emscripten",
