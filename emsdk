@@ -1666,10 +1666,6 @@ def find_latest_waterfall_sdk(which):
 
 def find_latest_releases_sdk(which):
   releases_info = load_releases_info()
-  if not releases_info:
-    print('Failed to load emscripten-releases tags')
-    sys.exit(1)
-  # assume the last one is the latest FIXME
   return 'sdk-releases-%s-%s-64bit' % (which, releases_info['latest'])
 
 
@@ -1865,6 +1861,7 @@ def load_waterfall_lkgr():
     return []
 
 
+# Load the json info for emscripten-releases.
 def load_releases_info():
   try:
     text = open(sdk_path(os.path.join('emscripten-releases-tags.txt')), 'r').read()
@@ -1872,7 +1869,13 @@ def load_releases_info():
   except Exception as e:
     print('Error parsing emscripten-releases-tags.txt!')
     print(str(e))
-    return None
+    sys.exit(1)
+
+
+# Get a list of tags for emscripten-releases.
+def load_releases_tags():
+  info = load_releases_info()
+  return info.values()
 
 
 def is_string(s):
