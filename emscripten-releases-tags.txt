@@ -1,4 +1,4 @@
 {
-  "latest": "10b526ca58ef3030a369a9184b873cf1bc9a28f4"
+  "latest": "0ea08ee8a5f0524b4c9ac94de4f161ceeacb3e74"
 }
 
