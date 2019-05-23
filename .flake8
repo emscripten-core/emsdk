@@ -1,14 +1,19 @@
 [flake8]
-ignore = E111,E114,E501,E261,E266,E121,E402,E241,E701,
-   E722 # We have a bunch of base 'excepts' still
-filename = ./emsdk.py, ./test.py
-exclude = \
+ignore =
+   E111, # Indentation is not a multiple of four
+   E114, # Indentation is not a multiple of four (comment)
+   E501, # Line too long
+   E261, # At least two spaces before inline comment
+   E121, # Continuation line under-indented for hanging indent
+   E722  # bare excepts
+exclude =
   ./gnu
   ./upstream
   ./fastcomp
   ./releases
   ./clang
   ./emscripten
+  ./binaryen
   ./git
   ./node
   ./python
