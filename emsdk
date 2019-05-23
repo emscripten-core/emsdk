@@ -88,6 +88,14 @@ ENABLE_WASM = False
 ENABLE_LLVM_ASSERTIONS = 'auto'
 
 
+def os_name():
+  if WINDOWS: return 'win'
+  elif LINUX: return 'linux'
+  elif OSX: return 'osx'
+  else:
+    raise Exception('unknown OS')
+
+
 def to_unix_path(p):
   return p.replace('\\', '/')
 
@@ -1653,15 +1661,12 @@ def find_latest_waterfall_sdk(which):
   if not waterfall_lkgr:
     print('Failed to find an upstream lkgr')
     sys.exit(1)
-  return 'sdk-%s-%s-64bit' % (which, waterfall_lkgr[0])
+  return 'sdk-waterfall-%s-%s-64bit' % (which, waterfall_lkgr[0])
 
 
-def find_latest_upstream_sdk():
-  return find_latest_waterfall_sdk('upstream')
-
-
-def find_latest_fastcomp_sdk():
-  return find_latest_waterfall_sdk('fastcomp')
+def find_latest_releases_sdk(which):
+  releases_info = load_releases_info()
+  return 'sdk-releases-%s-%s-64bit' % (which, releases_info['latest'])
 
 
 # Finds the best-matching python tool for use.
@@ -1732,26 +1737,17 @@ def fetch_emscripten_tags():
     else:
       print('Done. No tagged Binaryen releases available.')
 
-  def os_name_for_llvm_location():
-    if WINDOWS: return 'win'
-    if LINUX: return 'linux'
-    if OSX: return 'osx'
-
-  def os_name_for_emscripten_location():
-    if WINDOWS: return 'win'
-    else: return 'linux'
-
 #  Emscripten Nightlies support has been removed, clear the list of known Nightlies locally.
 #  print('Fetching all precompiled Nightly versions..')
-#  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/nightly/' + os_name_for_llvm_location() + '_32bit/index.txt', 'llvm-nightlies-32bit.txt', download_even_if_exists=True)
-#  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/nightly/' + os_name_for_llvm_location() + '_64bit/index.txt', 'llvm-nightlies-64bit.txt', download_even_if_exists=True)
-#  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/emscripten/nightly/' + os_name_for_emscripten_location() + '/index.txt', 'emscripten-nightlies.txt', download_even_if_exists=True)
+#  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/nightly/' + os_name() + '_32bit/index.txt', 'llvm-nightlies-32bit.txt', download_even_if_exists=True)
+#  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/nightly/' + os_name() + '_64bit/index.txt', 'llvm-nightlies-64bit.txt', download_even_if_exists=True)
+#  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/emscripten/nightly/' + os_name() + '/index.txt', 'emscripten-nightlies.txt', download_even_if_exists=True)
   for f in ['llvm-nightlies-32bit.txt', 'llvm-nightlies-64bit.txt', 'emscripten-nightlies.txt']:
     if os.path.isfile(f): os.remove(f)
 
   print('Fetching all precompiled tagged releases..')
-  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/tag/' + os_name_for_llvm_location() + '_32bit/index.txt', 'llvm-tags-32bit.txt', download_even_if_exists=True)
-  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/tag/' + os_name_for_llvm_location() + '_64bit/index.txt', 'llvm-tags-64bit.txt', download_even_if_exists=True)
+  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/tag/' + os_name() + '_32bit/index.txt', 'llvm-tags-32bit.txt', download_even_if_exists=True)
+  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/tag/' + os_name() + '_64bit/index.txt', 'llvm-tags-64bit.txt', download_even_if_exists=True)
   download_waterfall_lkgr()
 
   if not git:
@@ -1849,7 +1845,7 @@ def load_llvm_precompiled_tags_64bit():
 
 
 def download_waterfall_lkgr():
-  lkgr_url = 'https://storage.googleapis.com/wasm-llvm/builds/linux/lkgr.json'
+  lkgr_url = 'https://storage.googleapis.com/wasm-llvm/builds/%s/lkgr.json' % os_name()
   download_file(lkgr_url, 'upstream', download_even_if_exists=True)
 
 
@@ -1863,6 +1859,23 @@ def load_waterfall_lkgr():
     print('Error parsing lkgr.json!')
     print(str(e))
     return []
+
+
+# Load the json info for emscripten-releases.
+def load_releases_info():
+  try:
+    text = open(sdk_path('emscripten-releases-tags.txt'), 'r').read()
+    return json.loads(text)
+  except Exception as e:
+    print('Error parsing emscripten-releases-tags.txt!')
+    print(str(e))
+    sys.exit(1)
+
+
+# Get a list of tags for emscripten-releases.
+def load_releases_tags():
+  info = load_releases_info()
+  return info.values()
 
 
 def is_string(s):
@@ -1889,6 +1902,7 @@ def load_sdk_manifest():
   llvm_64bit_nightlies = list(reversed(load_llvm_64bit_nightlies()))
   emscripten_nightlies = list(reversed(load_emscripten_nightlies()))
   waterfall_lkgr = load_waterfall_lkgr()
+  releases_tags = load_releases_tags()
 
   def dependencies_exist(sdk):
     for tool_name in sdk.uses:
@@ -1960,6 +1974,7 @@ def load_sdk_manifest():
       elif '%nightly-llvm-32bit%' in t.version: expand_category_param('%nightly-llvm-32bit%', llvm_32bit_nightlies, t, is_sdk=False)
       elif '%nightly-emscripten%' in t.version: expand_category_param('%nightly-emscripten%', emscripten_nightlies, t, is_sdk=False)
       elif '%waterfall-lkgr%' in t.version: expand_category_param('%waterfall-lkgr%', waterfall_lkgr, t, is_sdk=False)
+      elif '%releases-tag%' in t.version: expand_category_param('%releases-tag%', releases_tags, t, is_sdk=False)
       else:
         add_tool(t)
 
@@ -1978,6 +1993,7 @@ def load_sdk_manifest():
       elif '%nightly-llvm-32bit%' in sdk.version: expand_category_param('%nightly-llvm-32bit%', llvm_32bit_nightlies, sdk, is_sdk=True)
       elif '%nightly-emscripten%' in sdk.version: expand_category_param('%nightly-emscripten%', emscripten_nightlies, sdk, is_sdk=True)
       elif '%waterfall-lkgr%' in sdk.version: expand_category_param('%waterfall-lkgr%', waterfall_lkgr, sdk, is_sdk=True)
+      elif '%releases-tag%' in sdk.version: expand_category_param('%releases-tag%', releases_tags, sdk, is_sdk=True)
       else:
         add_sdk(sdk)
 
@@ -2388,9 +2404,13 @@ def main():
       elif sys.argv[i] == 'sdk-nightly-latest-64bit':
         sys.argv[i] = str(find_latest_nightly_64bit_sdk())
       elif sys.argv[i] == 'latest-upstream' or sys.argv[i] == 'latest-clang-upstream':
-        sys.argv[i] = str(find_latest_upstream_sdk())
+        sys.argv[i] = str(find_latest_waterfall_sdk('upstream'))
       elif sys.argv[i] == 'latest-fastcomp':
-        sys.argv[i] = str(find_latest_fastcomp_sdk())
+        sys.argv[i] = str(find_latest_waterfall_sdk('fastcomp'))
+      elif sys.argv[i] == 'latest-releases-upstream':
+        sys.argv[i] = str(find_latest_releases_sdk('upstream'))
+      elif sys.argv[i] == 'latest-releases-fastcomp':
+        sys.argv[i] = str(find_latest_releases_sdk('fastcomp'))
 
   if cmd == 'list':
     print('')
