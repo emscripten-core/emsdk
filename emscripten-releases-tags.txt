@@ -1,4 +1,7 @@
 {
-  "latest": "0ea08ee8a5f0524b4c9ac94de4f161ceeacb3e74"
+  "latest": "1.38.33",
+  "releases": {
+    "1.38.33": "3b8cff670e9233a6623563add831647e8689a86b"
+  }
 }
 

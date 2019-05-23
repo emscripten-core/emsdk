@@ -222,7 +222,7 @@
     "install_path": "upstream/%releases-tag%",
     "activated_path": "%installation_dir%/emscripten",
     "activated_cfg": "LLVM_ROOT='%installation_dir%/bin';BINARYEN_ROOT='%installation_dir%'",
-    "emscripten_version": "%releases-tag%"
+    "emscripten_releases_hash": "%releases-tag%"
   },
   {
     "id": "releases",
@@ -235,7 +235,7 @@
     "install_path": "fastcomp/%releases-tag%",
     "activated_path": "%installation_dir%/emscripten",
     "activated_cfg": "LLVM_ROOT='%installation_dir%/fastcomp/bin';BINARYEN_ROOT='%installation_dir%'",
-    "emscripten_version": "%releases-tag%"
+    "emscripten_releases_hash": "%releases-tag%"
   },
 
   {
