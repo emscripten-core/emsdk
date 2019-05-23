@@ -1501,11 +1501,17 @@ class Tool(object):
         if dst_file: success = True
         else: success = False
 
-      if success and hasattr(self, 'custom_install_script'):
-        if self.custom_install_script == 'build_optimizer': success = build_optimizer_tool(self)
-        elif self.custom_install_script == 'build_fastcomp': pass # 'build_fastcomp' is a special one that does the download on its own, others do the download manually.
-        elif self.custom_install_script == 'build_binaryen': success = build_binaryen_tool(self)
-        else: raise Exception('Unknown custom_install_script command "' + self.custom_install_script + '"!')
+      if success:
+        if hasattr(self, 'custom_install_script'):
+          if self.custom_install_script == 'build_optimizer': success = build_optimizer_tool(self)
+          elif self.custom_install_script == 'build_fastcomp': pass # 'build_fastcomp' is a special one that does the download on its own, others do the download manually.
+          elif self.custom_install_script == 'build_binaryen': success = build_binaryen_tool(self)
+          else: raise Exception('Unknown custom_install_script command "' + self.custom_install_script + '"!')
+
+        # Install an emscripten-version.txt file if told to.
+        if hasattr(self, 'emscripten_version'):
+          emscripten_version_file_path = os.path.join(to_native_path(self.expand_vars(self.activated_path)), 'emscripten-version.txt')
+          open(emscripten_version_file_path, 'w').write('"%s"' % self.emscripten_version)
 
       if not success:
         print("Installation failed!")
