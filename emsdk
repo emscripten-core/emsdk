@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 
 from __future__ import print_function
@@ -475,6 +476,8 @@ def unzip(source_filename, dest_dir, unpack_even_if_exists=False):
             if not os.path.isdir(d): os.mkdir(d)
           else:
             tmp_dst_filename = os.path.join(unzip_to_dir, member.filename)
+            if not os.path.exists(os.path.dirname(fix_potentially_long_windows_pathname(final_dst_filename))):
+              os.makedirs(os.path.dirname(fix_potentially_long_windows_pathname(final_dst_filename)))
             os.rename(fix_potentially_long_windows_pathname(tmp_dst_filename), fix_potentially_long_windows_pathname(final_dst_filename))
 
       if common_subdir:
