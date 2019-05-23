@@ -30,12 +30,12 @@ RUN cd /root/ \
  && emcc hello_world.cpp -s WASM=0 \
  && emcc --clear-cache \
  && echo "test latest-releases-upstream" \
- && /root/emsdk/emsdk install latest-releases-upstream \
+ && python2 /root/emsdk/emsdk install latest-releases-upstream \
  && /root/emsdk/emsdk activate latest-releases-upstream \
  && source /root/emsdk/emsdk_env.sh --build=Release \
  && emcc hello_world.cpp \
  && echo "test latest-releases-fastcomp" \
- && /root/emsdk/emsdk install latest-releases-fastcomp \
+ && python3 /root/emsdk/emsdk install latest-releases-fastcomp \
  && /root/emsdk/emsdk activate latest-releases-fastcomp \
  && source /root/emsdk/emsdk_env.sh --build=Release \
  && emcc hello_world.cpp \
