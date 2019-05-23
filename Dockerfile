@@ -8,7 +8,7 @@ COPY . /root/emsdk/
 RUN cd /root/ \
  && echo "int main() {}" > hello_world.cpp \
  && apt-get update \
- && apt-get install -y python2 python3 cmake build-essential openjdk-9-jre-headless \
+ && apt-get install -y python python3 cmake build-essential openjdk-9-jre-headless \
  && /root/emsdk/emsdk update-tags \
  && echo "test latest" \
  && /root/emsdk/emsdk install latest \
