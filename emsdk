@@ -43,6 +43,8 @@ emscripten_git_repo = 'https://github.com/kripken/emscripten.git'
 binaryen_git_repo = 'https://github.com/WebAssembly/binaryen.git'
 emscripten_releases_repo = 'https://chromium.googlesource.com/emscripten-releases'
 
+emscripten_releases_download_url_template = "https://storage.googleapis.com/webassembly/emscripten-releases-builds/%s/%s/wasm-binaries.%s"
+
 # Enable this to do very verbose printing about the different steps that are being run. Useful for debugging.
 VERBOSE = bool(os.getenv('EMSDK_VERBOSE')) if os.getenv('EMSDK_VERBOSE') is not None else False
 TTY_OUTPUT = sys.stdout.isatty()
@@ -1734,7 +1736,7 @@ def get_emscripten_releases_tot():
   # may not be a build for the most recent ones yet; find the last
   # that does.
   for release in recent_releases:
-    url = "https://storage.googleapis.com/webassembly/emscripten-releases-builds/%s/%s/wasm-binaries.%s" % (
+    url = emscripten_releases_download_url_template % (
       os_name_for_emscripten_releases(),
       release,
       'tbz2' if not WINDOWS else 'zip'
