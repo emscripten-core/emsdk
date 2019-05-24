@@ -25,6 +25,5 @@ llvm-nightlies-64bit.txt
 llvm-tags-32bit.txt
 llvm-tags-64bit.txt
 upstream
-!upstream/lkgr.json
 emscripten-releases-tot.txt
 
