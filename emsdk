@@ -2465,10 +2465,6 @@ def main():
         sys.argv[i] = str(find_latest_nightly_32bit_sdk())
       elif sys.argv[i] == 'sdk-nightly-latest-64bit':
         sys.argv[i] = str(find_latest_nightly_64bit_sdk())
-      elif sys.argv[i] == 'latest-upstream' or sys.argv[i] == 'latest-clang-upstream':
-        sys.argv[i] = str(find_latest_waterfall_sdk('upstream'))
-      elif sys.argv[i] == 'latest-fastcomp':
-        sys.argv[i] = str(find_latest_waterfall_sdk('fastcomp'))
       elif sys.argv[i] == 'latest-releases-upstream':
         sys.argv[i] = str(find_latest_releases_sdk('upstream'))
       elif sys.argv[i] == 'latest-releases-fastcomp':
