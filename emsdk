@@ -1687,14 +1687,6 @@ def find_latest_nightly_sdk():
     return find_latest_nightly_32bit_sdk()
 
 
-def find_latest_waterfall_sdk(which):
-  waterfall_lkgr = load_waterfall_lkgr()
-  if not waterfall_lkgr:
-    print('Failed to find an upstream lkgr')
-    sys.exit(1)
-  return 'sdk-waterfall-%s-%s-64bit' % (which, waterfall_lkgr[0])
-
-
 def find_latest_releases_sdk(which):
   releases_info = load_releases_info()
   latest = releases_info['latest']
@@ -1833,7 +1825,6 @@ def fetch_emscripten_tags():
   print('Fetching all precompiled tagged releases..')
   download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/tag/' + os_name() + '_32bit/index.txt', 'llvm-tags-32bit.txt', download_even_if_exists=True)
   download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/tag/' + os_name() + '_64bit/index.txt', 'llvm-tags-64bit.txt', download_even_if_exists=True)
-  download_waterfall_lkgr()
 
   if not git:
     print('Update complete, however skipped fetching the Emscripten tags, since git was not found.')
@@ -1929,23 +1920,6 @@ def load_llvm_precompiled_tags_64bit():
   return load_file_index_list('llvm-tags-64bit.txt')
 
 
-def download_waterfall_lkgr():
-  lkgr_url = 'https://storage.googleapis.com/wasm-llvm/builds/%s/lkgr.json' % os_name()
-  download_file(lkgr_url, 'upstream', download_even_if_exists=True)
-
-
-def load_waterfall_lkgr():
-  try:
-    text = open(sdk_path(os.path.join('upstream', 'lkgr.json')), 'r').read()
-    data = json.loads(text)
-    lkgr = data['build']
-    return [lkgr]
-  except Exception as e:
-    print('Error parsing lkgr.json!')
-    print(str(e))
-    return []
-
-
 # Load the json info for emscripten-releases.
 def load_releases_info():
   try:
@@ -1992,7 +1966,6 @@ def load_sdk_manifest():
   llvm_32bit_nightlies = list(reversed(load_llvm_32bit_nightlies()))
   llvm_64bit_nightlies = list(reversed(load_llvm_64bit_nightlies()))
   emscripten_nightlies = list(reversed(load_emscripten_nightlies()))
-  waterfall_lkgr = load_waterfall_lkgr()
   releases_tags = load_releases_tags()
 
   def dependencies_exist(sdk):
@@ -2064,7 +2037,6 @@ def load_sdk_manifest():
       elif '%nightly-llvm-64bit%' in t.version: expand_category_param('%nightly-llvm-64bit%', llvm_64bit_nightlies, t, is_sdk=False)
       elif '%nightly-llvm-32bit%' in t.version: expand_category_param('%nightly-llvm-32bit%', llvm_32bit_nightlies, t, is_sdk=False)
       elif '%nightly-emscripten%' in t.version: expand_category_param('%nightly-emscripten%', emscripten_nightlies, t, is_sdk=False)
-      elif '%waterfall-lkgr%' in t.version: expand_category_param('%waterfall-lkgr%', waterfall_lkgr, t, is_sdk=False)
       elif '%releases-tag%' in t.version: expand_category_param('%releases-tag%', releases_tags, t, is_sdk=False)
       else:
         add_tool(t)
@@ -2083,7 +2055,6 @@ def load_sdk_manifest():
       elif '%nightly-llvm-64bit%' in sdk.version: expand_category_param('%nightly-llvm-64bit%', llvm_64bit_nightlies, sdk, is_sdk=True)
       elif '%nightly-llvm-32bit%' in sdk.version: expand_category_param('%nightly-llvm-32bit%', llvm_32bit_nightlies, sdk, is_sdk=True)
       elif '%nightly-emscripten%' in sdk.version: expand_category_param('%nightly-emscripten%', emscripten_nightlies, sdk, is_sdk=True)
-      elif '%waterfall-lkgr%' in sdk.version: expand_category_param('%waterfall-lkgr%', waterfall_lkgr, sdk, is_sdk=True)
       elif '%releases-tag%' in sdk.version: expand_category_param('%releases-tag%', releases_tags, sdk, is_sdk=True)
       else:
         add_sdk(sdk)

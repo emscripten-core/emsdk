@@ -190,26 +190,6 @@
     "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%",
     "cmake_build_type": "Release"
   },
-  {
-    "id": "waterfall",
-    "version": "upstream-%waterfall-lkgr%",
-    "bitness": 64,
-    "linux_url": "https://storage.googleapis.com/wasm-llvm/builds/linux/%waterfall-lkgr%/wasm-binaries.tbz2",
-    "zipfile_prefix": "%waterfall-lkgr%-",
-    "install_path": "upstream/%waterfall-lkgr%",
-    "activated_path": "%installation_dir%/emscripten",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%/bin';BINARYEN_ROOT='%installation_dir%'"
-  },
-  {
-    "id": "waterfall",
-    "version": "fastcomp-%waterfall-lkgr%",
-    "bitness": 64,
-    "linux_url": "https://storage.googleapis.com/wasm-llvm/builds/linux/%waterfall-lkgr%/wasm-binaries.tbz2",
-    "zipfile_prefix": "%waterfall-lkgr%-",
-    "install_path": "fastcomp/%waterfall-lkgr%",
-    "activated_path": "%installation_dir%/emscripten",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%/fastcomp/bin';BINARYEN_ROOT='%installation_dir%'"
-  },
 
   {
     "id": "releases",
@@ -1611,18 +1591,6 @@
     "bitness": 64,
     "uses": ["clang-e1.37.1-64bit", "node-4.1.1-64bit", "python-2.7.13.1-64bit", "emscripten-1.37.1"],
     "os": "win"
-  },
-  {
-    "version": "waterfall-upstream-%waterfall-lkgr%",
-    "bitness": 64,
-    "uses": ["waterfall-upstream-%waterfall-lkgr%-64bit", "node-8.9.1-64bit"],
-    "os": "linux"
-  },
-  {
-    "version": "waterfall-fastcomp-%waterfall-lkgr%",
-    "bitness": 64,
-    "uses": ["waterfall-fastcomp-%waterfall-lkgr%-64bit", "node-8.9.1-64bit"],
-    "os": "linux"
   },
   {
     "version": "releases-upstream-%releases-tag%",
