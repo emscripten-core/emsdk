@@ -642,7 +642,7 @@ def git_repo_version(repo_path):
     return ""
 
 
-def git_recent_commits(repo_path, n=10):
+def git_recent_commits(repo_path, n=20):
   returncode, stdout, stderr = run_get_output([GIT(), 'log', '-n', str(n), '--pretty="%H"'], cwd=repo_path)
   if returncode == 0:
     return stdout.strip().replace('\r', '').replace('"', '').split('\n')
@@ -1708,7 +1708,7 @@ def find_tot_sdk(which):
     sys.exit(1)
   tot = open(tot_path()).read()
   if not tot:
-    print('Tip-of-tree build was not found, run emsdk update-tags and/or wait')
+    print('Tip-of-tree build was not found, run emsdk update-tags (however, if there is no recent tip-of-tree build, you may need to wait)')
     sys.exit(1)
   return 'sdk-releases-%s-%s-64bit' % (which, tot)
 
