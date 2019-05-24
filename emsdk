@@ -41,6 +41,7 @@ emsdk_packages_url = urljoin(emsdk_master_server, 'packages/')
 
 emscripten_git_repo = 'https://github.com/kripken/emscripten.git'
 binaryen_git_repo = 'https://github.com/WebAssembly/binaryen.git'
+emscripten_releases_repo = 'https://chromium.googlesource.com/emscripten-releases'
 
 # Enable this to do very verbose printing about the different steps that are being run. Useful for debugging.
 VERBOSE = bool(os.getenv('EMSDK_VERBOSE')) if os.getenv('EMSDK_VERBOSE') is not None else False
@@ -626,6 +627,14 @@ def GIT(must_succeed=True):
 
 def git_repo_version(repo_path):
   returncode, stdout, stderr = run_get_output([GIT(), 'log', '-n', '1', '--pretty="%aD %H"'], cwd=repo_path)
+  if returncode == 0:
+    return stdout.strip()
+  else:
+    return ""
+
+
+def git_recent_commits(repo_path, n=10):
+  returncode, stdout, stderr = run_get_output([GIT(), 'log', '-n', str(n), '--pretty="%H"'], cwd=repo_path)
   if returncode == 0:
     return stdout.strip()
   else:
@@ -1758,6 +1767,11 @@ def fetch_emscripten_tags():
       print('Done. ' + str(len(binaryen_tags)) + ' tagged Binaryen releases available, latest is ' + binaryen_tags[-1] + '.')
     else:
       print('Done. No tagged Binaryen releases available.')
+
+    print('Fetching emscripten-releases repository...')
+    git_clone_checkout_and_pull(emscripten_releases_repo, sdk_path('releases'), 'master')
+    recent_releases = git_recent_commits(sdk_path('releases'))
+    open(sdk_path('emscripten-releases-history.txt'), 'w').write(recent_releases)
 
 #  Emscripten Nightlies support has been removed, clear the list of known Nightlies locally.
 #  print('Fetching all precompiled Nightly versions..')
