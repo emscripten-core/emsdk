@@ -41,6 +41,9 @@ emsdk_packages_url = urljoin(emsdk_master_server, 'packages/')
 
 emscripten_git_repo = 'https://github.com/kripken/emscripten.git'
 binaryen_git_repo = 'https://github.com/WebAssembly/binaryen.git'
+emscripten_releases_repo = 'https://chromium.googlesource.com/emscripten-releases'
+
+emscripten_releases_download_url_template = "https://storage.googleapis.com/webassembly/emscripten-releases-builds/%s/%s/wasm-binaries.%s"
 
 # Enable this to do very verbose printing about the different steps that are being run. Useful for debugging.
 VERBOSE = bool(os.getenv('EMSDK_VERBOSE')) if os.getenv('EMSDK_VERBOSE') is not None else False
@@ -95,6 +98,13 @@ def os_name():
   else:
     raise Exception('unknown OS')
 
+
+def os_name_for_emscripten_releases():
+  if WINDOWS: return 'win'
+  elif LINUX: return 'linux'
+  elif OSX: return 'mac'
+  else:
+    raise Exception('unknown OS')
 
 def to_unix_path(p):
   return p.replace('\\', '/')
@@ -630,6 +640,14 @@ def git_repo_version(repo_path):
     return stdout.strip()
   else:
     return ""
+
+
+def git_recent_commits(repo_path, n=20):
+  returncode, stdout, stderr = run_get_output([GIT(), 'log', '-n', str(n), '--pretty="%H"'], cwd=repo_path)
+  if returncode == 0:
+    return stdout.strip().replace('\r', '').replace('"', '').split('\n')
+  else:
+    return []
 
 
 def git_clone(url, dstpath):
@@ -1511,10 +1529,14 @@ class Tool(object):
           elif self.custom_install_script == 'build_binaryen': success = build_binaryen_tool(self)
           else: raise Exception('Unknown custom_install_script command "' + self.custom_install_script + '"!')
 
-        # Install an emscripten-version.txt file if told to.
+        # Install an emscripten-version.txt file if told to, and if there is one.
+        # (If this is not an actual release, but some other build, then we do not
+        # write anything.)
         if hasattr(self, 'emscripten_releases_hash'):
           emscripten_version_file_path = os.path.join(to_native_path(self.expand_vars(self.activated_path)), 'emscripten-version.txt')
-          open(emscripten_version_file_path, 'w').write('"%s"' % get_emscripten_release_version(self.emscripten_releases_hash))
+          version = get_emscripten_release_version(self.emscripten_releases_hash)
+          if version:
+            open(emscripten_version_file_path, 'w').write('"%s"' % version)
 
       if not success:
         print("Installation failed!")
@@ -1680,15 +1702,51 @@ def find_latest_releases_sdk(which):
   return 'sdk-releases-%s-%s-64bit' % (which, ident)
 
 
+def find_tot_sdk(which):
+  if not os.path.exists(tot_path()):
+    print('Tip-of-tree information was not found, run emsdk update-tags')
+    sys.exit(1)
+  tot = open(tot_path()).read()
+  if not tot:
+    print('Tip-of-tree build was not found, run emsdk update-tags (however, if there is no recent tip-of-tree build, you may need to wait)')
+    sys.exit(1)
+  return 'sdk-releases-%s-%s-64bit' % (which, tot)
+
+
 # Given a git hash in emscripten-releases, find the emscripten
 # version for it. There may not be one if this is not the hash of
-# a release, in which case we just use the hash.
+# a release, in which case we return None.
 def get_emscripten_release_version(emscripten_releases_hash):
   releases_info = load_releases_info()
   for key, value in dict(releases_info['releases']).items():
     if value == emscripten_releases_hash:
       return key
-  return emscripten_releases_hash
+  return None
+
+
+def tot_path():
+  return sdk_path('emscripten-releases-tot.txt')
+
+
+# Get the tip-of-tree build identifier.
+def get_emscripten_releases_tot():
+  git_clone_checkout_and_pull(emscripten_releases_repo, sdk_path('releases'), 'master')
+  recent_releases = git_recent_commits(sdk_path('releases'))
+  # The recent releases are the latest hashes in the git repo. There
+  # may not be a build for the most recent ones yet; find the last
+  # that does.
+  for release in recent_releases:
+    url = emscripten_releases_download_url_template % (
+      os_name_for_emscripten_releases(),
+      release,
+      'tbz2' if not WINDOWS else 'zip'
+    )
+    try:
+      u = urlopen(url)
+    except:
+      continue
+    return release
+  return ''
 
 
 # Finds the best-matching python tool for use.
@@ -1758,6 +1816,11 @@ def fetch_emscripten_tags():
       print('Done. ' + str(len(binaryen_tags)) + ' tagged Binaryen releases available, latest is ' + binaryen_tags[-1] + '.')
     else:
       print('Done. No tagged Binaryen releases available.')
+
+    print('Fetching emscripten-releases repository...')
+    emscripten_releases_tot = get_emscripten_releases_tot()
+    if emscripten_releases_tot:
+      open(tot_path(), 'w').write(emscripten_releases_tot)
 
 #  Emscripten Nightlies support has been removed, clear the list of known Nightlies locally.
 #  print('Fetching all precompiled Nightly versions..')
@@ -1897,7 +1960,13 @@ def load_releases_info():
 # Get a list of tags for emscripten-releases.
 def load_releases_tags():
   info = load_releases_info()
-  return list(info['releases'].values())
+  tags = list(info['releases'].values())
+  # Add the tip-of-tree, if it exists.
+  if os.path.exists(tot_path()):
+    tot = open(tot_path()).read()
+    if tot:
+      tags.append(tot)
+  return tags
 
 
 def is_string(s):
@@ -2433,6 +2502,10 @@ def main():
         sys.argv[i] = str(find_latest_releases_sdk('upstream'))
       elif sys.argv[i] == 'latest-releases-fastcomp':
         sys.argv[i] = str(find_latest_releases_sdk('fastcomp'))
+      elif sys.argv[i] == 'tot-upstream':
+        sys.argv[i] = str(find_tot_sdk('upstream'))
+      elif sys.argv[i] == 'tot-fastcomp':
+        sys.argv[i] = str(find_tot_sdk('fastcomp'))
 
   if cmd == 'list':
     print('')

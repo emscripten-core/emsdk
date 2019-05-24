@@ -25,3 +25,5 @@ llvm-nightlies-64bit.txt
 llvm-tags-32bit.txt
 llvm-tags-64bit.txt
 upstream
+emscripten-releases-tot.txt
+
