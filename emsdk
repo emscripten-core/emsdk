@@ -1718,7 +1718,6 @@ def get_emscripten_releases_tot():
       release,
       'tbz2' if not WINDOWS else 'zip'
     )
-    print(url)
     try:
       u = urlopen(url)
     except:
