@@ -97,6 +97,13 @@ def os_name():
     raise Exception('unknown OS')
 
 
+def os_name_for_emscripten_releases():
+  if WINDOWS: return 'win'
+  elif LINUX: return 'linux'
+  elif OSX: return 'mac'
+  else:
+    raise Exception('unknown OS')
+
 def to_unix_path(p):
   return p.replace('\\', '/')
 
@@ -636,9 +643,9 @@ def git_repo_version(repo_path):
 def git_recent_commits(repo_path, n=10):
   returncode, stdout, stderr = run_get_output([GIT(), 'log', '-n', str(n), '--pretty="%H"'], cwd=repo_path)
   if returncode == 0:
-    return stdout.strip().replace('\r', '').replace('"', '')
+    return stdout.strip().replace('\r', '').replace('"', '').split('\n')
   else:
-    return ""
+    return []
 
 
 def git_clone(url, dstpath):
@@ -1699,6 +1706,25 @@ def get_emscripten_release_version(emscripten_releases_hash):
       return key
   return emscripten_releases_hash
 
+def get_emscripten_releases_tot():
+  git_clone_checkout_and_pull(emscripten_releases_repo, sdk_path('releases'), 'master')
+  recent_releases = git_recent_commits(sdk_path('releases'))
+  # The recent releases are the latest hashes in the git repo. There
+  # may not be a build for the most recent ones yet; find the last
+  # that does.
+  for release in recent_releases:
+    url = "https://storage.googleapis.com/webassembly/emscripten-releases-builds/%s/%s/wasm-binaries.%s" % (
+      os_name_for_emscripten_releases(),
+      release,
+      'tbz2' if not WINDOWS else 'zip'
+    )
+    print(url)
+    try:
+      u = urlopen(url)
+    except:
+      continue
+    return release
+  return ''
 
 # Finds the best-matching python tool for use.
 def find_used_python():
@@ -1769,9 +1795,9 @@ def fetch_emscripten_tags():
       print('Done. No tagged Binaryen releases available.')
 
     print('Fetching emscripten-releases repository...')
-    git_clone_checkout_and_pull(emscripten_releases_repo, sdk_path('releases'), 'master')
-    recent_releases = git_recent_commits(sdk_path('releases'))
-    open(sdk_path('emscripten-releases-history.txt'), 'w').write(recent_releases)
+    emscripten_releases_tot = get_emscripten_releases_tot()
+    if emscripten_releases_tot:
+      open(sdk_path('emscripten-releases-tot.txt'), 'w').write(emscripten_releases_tot)
 
 #  Emscripten Nightlies support has been removed, clear the list of known Nightlies locally.
 #  print('Fetching all precompiled Nightly versions..')
