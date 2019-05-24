@@ -15,18 +15,6 @@ RUN cd /root/ \
  && /root/emsdk/emsdk activate latest \
  && source /root/emsdk/emsdk_env.sh --build=Release \
  && emcc hello_world.cpp \
- && echo "test upstream (waterfall)" \
- && /root/emsdk/emsdk install latest-upstream \
- && /root/emsdk/emsdk activate latest-upstream \
- && source /root/emsdk/emsdk_env.sh --build=Release \
- && emcc hello_world.cpp \
- && python -c "import os ; assert open(os.path.expanduser('~/.emscripten')).read().count('LLVM_ROOT') == 1" \
- && python -c "import os ; assert 'upstream' in open(os.path.expanduser('~/.emscripten')).read()" \
- && echo "test fastcomp (waterfall)" \
- && /root/emsdk/emsdk install latest-fastcomp \
- && /root/emsdk/emsdk activate latest-fastcomp \
- && source /root/emsdk/emsdk_env.sh --build=Release \
- && emcc hello_world.cpp \
  && emcc hello_world.cpp -s WASM=0 \
  && emcc --clear-cache \
  && echo "test latest-releases-upstream" \
@@ -34,6 +22,8 @@ RUN cd /root/ \
  && /root/emsdk/emsdk activate latest-releases-upstream \
  && source /root/emsdk/emsdk_env.sh --build=Release \
  && emcc hello_world.cpp \
+ && python -c "import os ; assert open(os.path.expanduser('~/.emscripten')).read().count('LLVM_ROOT') == 1" \
+ && python -c "import os ; assert 'upstream' in open(os.path.expanduser('~/.emscripten')).read()" \
  && echo "test latest-releases-fastcomp" \
  && python3 /root/emsdk/emsdk install latest-releases-fastcomp \
  && /root/emsdk/emsdk activate latest-releases-fastcomp \
