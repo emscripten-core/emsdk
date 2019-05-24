@@ -636,7 +636,7 @@ def git_repo_version(repo_path):
 def git_recent_commits(repo_path, n=10):
   returncode, stdout, stderr = run_get_output([GIT(), 'log', '-n', str(n), '--pretty="%H"'], cwd=repo_path)
   if returncode == 0:
-    return stdout.strip()
+    return stdout.strip().replace('\r', '').replace('"', '')
   else:
     return ""
 
