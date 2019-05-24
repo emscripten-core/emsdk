@@ -39,5 +39,15 @@ RUN cd /root/ \
  && /root/emsdk/emsdk activate latest-releases-fastcomp \
  && source /root/emsdk/emsdk_env.sh --build=Release \
  && emcc hello_world.cpp \
+ && echo "test tot-upstream" \
+ && /root/emsdk/emsdk install tot-upstream \
+ && /root/emsdk/emsdk activate tot-upstream \
+ && source /root/emsdk/emsdk_env.sh --build=Release \
+ && emcc hello_world.cpp \
+ && echo "test tot-fastcomp" \
+ && /root/emsdk/emsdk install tot-fastcomp \
+ && /root/emsdk/emsdk activate tot-fastcomp \
+ && source /root/emsdk/emsdk_env.sh --build=Release \
+ && emcc hello_world.cpp \
  && echo "test binaryen source build" \
  && /root/emsdk/emsdk install --build=Release binaryen-master-64bit
