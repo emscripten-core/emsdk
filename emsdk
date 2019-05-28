@@ -2172,6 +2172,23 @@ def currently_active_tools():
   return active_tools
 
 
+# Get the list of tools to activate, that includes both already active
+# as well as specified to be activated from a command in the form of
+#   emsdk [install|activate|etc.] tool1 tool2 [--optional-flag-to-ignore]
+def get_tools_to_activate():
+  tools_to_activate = currently_active_tools()
+  argv = [x for x in sys.argv if not x.startswith('--')]
+  for i in range(2, len(argv)):
+    tool = find_tool(argv[i])
+    if tool is None:
+      tool = find_sdk(argv[i])
+    if tool is None:
+      print("Error: No tool or SDK found by name '" + argv[i] + "'.")
+      sys.exit(1)
+    tools_to_activate += [tool]
+  return tools_to_activate
+
+
 # http://stackoverflow.com/questions/480214/how-do-you-remove-duplicates-from-a-list-in-python-whilst-preserving-order
 def unique_items(seq):
   seen = set()
@@ -2470,7 +2487,7 @@ def main():
   sys.argv = [x for x in sys.argv if not len(x) == 0]
 
   # Replace meta-packages with the real package names.
-  if (cmd == 'update' or cmd == 'install' or cmd == 'activate'):
+  if cmd in ('update', 'install', 'activate', 'show-activated-paths'):
     for i in range(2, len(sys.argv)):
       if sys.argv[i] == 'latest' or sys.argv[i] == 'sdk-latest':
         sys.argv[i] = str(find_latest_sdk())
@@ -2610,15 +2627,7 @@ def main():
 
     sys.argv = [x for x in sys.argv if not x.startswith('--')]
 
-    tools_to_activate = currently_active_tools()
-    for i in range(2, len(sys.argv)):
-      tool = find_tool(sys.argv[i])
-      if tool is None:
-        tool = find_sdk(sys.argv[i])
-      if tool is None:
-        print("Error: No tool or SDK found by name '" + sys.argv[i] + "'.")
-        return 1
-      tools_to_activate += [tool]
+    tools_to_activate = get_tools_to_activate()
     if len(tools_to_activate) == 0:
       print('No tools/SDKs specified to activate! Usage:\n   emsdk activate tool/sdk1 [tool/sdk2] [...]')
       return 1
@@ -2681,6 +2690,14 @@ def main():
       print("Error: Tool by name '" + sys.argv[2] + "' was not found.")
       return 1
     tool.uninstall()
+  elif cmd == 'show-activated-paths':
+    sys.argv = [x for x in sys.argv if not x.startswith('--')]
+    tools_to_activate = get_tools_to_activate()
+    tools_to_activate = process_tool_list(tools_to_activate)
+    for tool in tools_to_activate:
+      if hasattr(tool, 'activated_path'):
+        print(tool.expand_vars(tool.activated_path))
+    return 0
   else:
     print("Unknown command '" + cmd + "' given! Type 'emsdk help' to get a list of commands.")
     return 1
