@@ -45,6 +45,8 @@ emscripten_releases_repo = 'https://chromium.googlesource.com/emscripten-release
 
 emscripten_releases_download_url_template = "https://storage.googleapis.com/webassembly/emscripten-releases-builds/%s/%s/wasm-binaries.%s"
 
+zips_subdir = 'zips/'
+
 # Enable this to do very verbose printing about the different steps that are being run. Useful for debugging.
 VERBOSE = bool(os.getenv('EMSDK_VERBOSE')) if os.getenv('EMSDK_VERBOSE') is not None else False
 TTY_OUTPUT = sys.stdout.isatty()
@@ -534,11 +536,7 @@ def get_content_length(download):
 
   return 0
 
-
-# On success, returns the filename on the disk pointing to the destination file that was produced
-# On failure, returns None.
-def download_file(url, dstpath, download_even_if_exists=False, filename_prefix=''):
-  if VERBOSE: print('download_file(url=' + url + ', dstpath=' + dstpath + ')')
+def get_download_target(url, dstpath, filename_prefix=''):
   file_name = filename_prefix + url.split('/')[-1]
   if path_points_to_directory(dstpath):
     file_name = os.path.join(dstpath, file_name)
@@ -547,6 +545,14 @@ def download_file(url, dstpath, download_even_if_exists=False, filename_prefix='
 
   # Treat all relative destination paths as relative to the SDK root directory, not the current working directory.
   file_name = sdk_path(file_name)
+
+  return file_name
+
+# On success, returns the filename on the disk pointing to the destination file that was produced
+# On failure, returns None.
+def download_file(url, dstpath, download_even_if_exists=False, filename_prefix=''):
+  if VERBOSE: print('download_file(url=' + url + ', dstpath=' + dstpath + ')')
+  file_name = get_download_target(url, dstpath, filename_prefix)
 
   if os.path.exists(file_name) and not download_even_if_exists:
     print("File '" + file_name + "' already downloaded, skipping.")
@@ -1082,16 +1088,29 @@ def build_binaryen_tool(tool):
 
 def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False, filename_prefix=''):
   if VERBOSE: print('download_and_unzip(zipfile=' + zipfile + ', dest_dir=' + dest_dir + ')')
-  if not download_even_if_exists and num_files_in_directory(dest_dir) > 0:
+
+  url = urljoin(emsdk_packages_url, zipfile)
+  download_target = get_download_target(url, zips_subdir, filename_prefix)
+
+  # If the archive was already downloaded, and the directory it would be
+  # unpacked to has contents, assume it's the same contents and skip.
+  if not download_even_if_exists and os.path.exists(download_target) and num_files_in_directory(dest_dir) > 0:
     print("The contents of file '" + zipfile + "' already exist in destination '" + dest_dir + "', skipping.")
     return True
-  dst_file = download_file(urljoin(emsdk_packages_url, zipfile), 'zips/', download_even_if_exists, filename_prefix)
-  if not dst_file:
+  # Otherwise, if the archive must be downloaded, always write into the
+  # target directory, since it may be a new version of a tool that gets
+  # installed to the same place (that is, a different download name
+  # indicates different contents).
+  download_even_if_exists = True
+
+  received_download_target = download_file(url, zips_subdir, download_even_if_exists, filename_prefix)
+  assert received_download_target == download_target
+  if not download_target:
     return False
   if zipfile.endswith('.zip'):
-    return unzip(dst_file, dest_dir, unpack_even_if_exists=download_even_if_exists)
+    return unzip(download_target, dest_dir, unpack_even_if_exists=download_even_if_exists)
   else:
-    return untargz(dst_file, dest_dir, unpack_even_if_exists=download_even_if_exists)
+    return untargz(download_target, dest_dir, unpack_even_if_exists=download_even_if_exists)
 
 
 def to_native_path(p):
