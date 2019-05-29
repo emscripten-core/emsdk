@@ -38,7 +38,7 @@ RUN cd /root/ \
  && source /root/emsdk/emsdk_env.sh --build=Release \
  && emcc hello_world.cpp \
  && echo "test specific release (old)" \
- && /root/emsdk/emsdk install 1.38.31 \
+ && /root/emsdk/emsdk install sdk-1.38.31-64bit \
  && /root/emsdk/emsdk activate tot-fastcomp \
  && echo "test specific release (new, short name)" \
  && /root/emsdk/emsdk install 1.38.33 \

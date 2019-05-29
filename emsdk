@@ -2442,6 +2442,7 @@ def main():
         # and if so use that by using the right hash. we support a few notations,
         #   x.y.z[-(upstream|fastcomp_])
         #   sdk-x.y.z[-(upstream|fastcomp_])-64bit
+        # TODO: support short notation for old builds too?
         upstream = False
         if '-upstream' in arg:
           arg = arg.replace('-upstream', '')
