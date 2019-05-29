@@ -37,5 +37,16 @@ RUN cd /root/ \
  && /root/emsdk/emsdk activate tot-fastcomp \
  && source /root/emsdk/emsdk_env.sh --build=Release \
  && emcc hello_world.cpp \
+ && echo "test specific release (old)" \
+ && /root/emsdk/emsdk install sdk-1.38.31-64bit \
+ && /root/emsdk/emsdk activate tot-fastcomp \
+ && echo "test specific release (new, short name)" \
+ && /root/emsdk/emsdk install 1.38.33 \
+ && /root/emsdk/emsdk activate tot-fastcomp \
+ && python -c "import os ; assert 'fastcomp' in open(os.path.expanduser('~/.emscripten')).read()" \
+ && python -c "import os ; assert 'upstream' not in open(os.path.expanduser('~/.emscripten')).read()" \
+ && echo "test specific release (new, full name)" \
+ && /root/emsdk/emsdk install sdk-1.38.33-upstream-64bit \
+ && /root/emsdk/emsdk activate sdk-1.38.33-upstream-64bit \
  && echo "test binaryen source build" \
  && /root/emsdk/emsdk install --build=Release binaryen-master-64bit

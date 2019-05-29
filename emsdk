@@ -2423,17 +2423,37 @@ def main():
         return 1
   sys.argv = [x for x in sys.argv if not len(x) == 0]
 
+  releases_info = load_releases_info()['releases']
+
   # Replace meta-packages with the real package names.
   if cmd in ('update', 'install', 'activate'):
     for i in range(2, len(sys.argv)):
-      if sys.argv[i] in ('latest', 'sdk-latest', 'latest-64bit', 'sdk-latest-64bit', 'latest-fastcomp', 'latest-releases-fastcomp'):
+      arg = sys.argv[i]
+      if arg in ('latest', 'sdk-latest', 'latest-64bit', 'sdk-latest-64bit', 'latest-fastcomp', 'latest-releases-fastcomp'):
         sys.argv[i] = str(find_latest_releases_sdk('fastcomp'))
-      elif sys.argv[i] in ('latest-upstream', 'latest-clang-upstream', 'latest-releases-upstream'):
+      elif arg in ('latest-upstream', 'latest-clang-upstream', 'latest-releases-upstream'):
         sys.argv[i] = str(find_latest_releases_sdk('upstream'))
-      elif sys.argv[i] == 'tot-upstream':
+      elif arg == 'tot-upstream':
         sys.argv[i] = str(find_tot_sdk('upstream'))
-      elif sys.argv[i] in ('tot-fastcomp', 'sdk-nightly-latest'):
+      elif arg in ('tot-fastcomp', 'sdk-nightly-latest'):
         sys.argv[i] = str(find_tot_sdk('fastcomp'))
+      else:
+        # check if it's a release handled by an emscripten-releases version,
+        # and if so use that by using the right hash. we support a few notations,
+        #   x.y.z[-(upstream|fastcomp_])
+        #   sdk-x.y.z[-(upstream|fastcomp_])-64bit
+        # TODO: support short notation for old builds too?
+        upstream = False
+        if '-upstream' in arg:
+          arg = arg.replace('-upstream', '')
+          upstream = True
+        elif '-fastcomp' in arg:
+          arg = arg.replace('-fastcomp', '')
+          upstream = False
+        arg = arg.replace('sdk-', '').replace('-64bit', '')
+        release_hash = releases_info.get(arg, None) or releases_info.get('sdk-' + arg + '-64bit')
+        if release_hash:
+          sys.argv[i] = 'sdk-releases-%s-%s-64bit' % ('upstream' if upstream else 'fastcomp', release_hash)
 
   if cmd == 'list':
     print('')
