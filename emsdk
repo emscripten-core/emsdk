@@ -1660,52 +1660,6 @@ def is_os_64bit(): # http://stackoverflow.com/questions/2208828/detect-64bit-os-
   return platform.machine().endswith('64')
 
 
-def find_latest_32bit_sdk():
-  for sdk in reversed(sdks): # Newest SDK is always at the end of the list.
-    if not hasattr(sdk, 'bitness') or sdk.bitness == 32: # If no 'bitness' field, it means the SDK is universal.
-      if 'nightly' not in sdk.version:
-        return sdk
-  return None
-
-
-def find_latest_64bit_sdk():
-  for sdk in reversed(sdks): # Newest SDK is always at the end of the list.
-    if not hasattr(sdk, 'bitness') or sdk.bitness == 64: # If no 'bitness' field, it means the SDK is universal.
-      if 'nightly' not in sdk.version:
-        return sdk
-  return None
-
-
-def find_latest_sdk():
-  if is_os_64bit():
-    return find_latest_64bit_sdk()
-  else:
-    return find_latest_32bit_sdk()
-
-
-def find_latest_nightly_32bit_sdk():
-  for sdk in reversed(sdks): # Newest SDK is always at the end of the list.
-    if not hasattr(sdk, 'bitness') or sdk.bitness == 32: # If no 'bitness' field, it means the SDK is universal.
-      if 'nightly' in sdk.version:
-        return sdk
-  return None
-
-
-def find_latest_nightly_64bit_sdk():
-  for sdk in reversed(sdks): # Newest SDK is always at the end of the list.
-    if not hasattr(sdk, 'bitness') or sdk.bitness == 64: # If no 'bitness' field, it means the SDK is universal.
-      if 'nightly' in sdk.version:
-        return sdk
-  return None
-
-
-def find_latest_nightly_sdk():
-  if is_os_64bit():
-    return find_latest_nightly_64bit_sdk()
-  else:
-    return find_latest_nightly_32bit_sdk()
-
-
 def find_latest_releases_sdk(which):
   releases_info = load_releases_info()
   latest = releases_info['latest']
@@ -2470,31 +2424,15 @@ def main():
   sys.argv = [x for x in sys.argv if not len(x) == 0]
 
   # Replace meta-packages with the real package names.
-  if (cmd == 'update' or cmd == 'install' or cmd == 'activate'):
+  if cmd in ('update', 'install', 'activate'):
     for i in range(2, len(sys.argv)):
-      if sys.argv[i] == 'latest' or sys.argv[i] == 'sdk-latest':
-        sys.argv[i] = str(find_latest_sdk())
-      elif sys.argv[i] == 'latest-32bit' or sys.argv[i] == 'sdk-latest-32bit':
-        sys.argv[i] = str(find_latest_32bit_sdk())
-      elif sys.argv[i] == 'latest-64bit' or sys.argv[i] == 'sdk-latest-64bit':
-        sys.argv[i] = str(find_latest_64bit_sdk())
-      elif sys.argv[i] == 'sdk-nightly-latest':
-        sys.argv[i] = str(find_latest_nightly_sdk())
-      elif sys.argv[i] == 'sdk-nightly-latest-32bit':
-        sys.argv[i] = str(find_latest_nightly_32bit_sdk())
-      elif sys.argv[i] == 'sdk-nightly-latest-64bit':
-        sys.argv[i] = str(find_latest_nightly_64bit_sdk())
-      elif sys.argv[i] == 'latest-upstream' or sys.argv[i] == 'latest-clang-upstream':
-        sys.argv[i] = str(find_latest_waterfall_sdk('upstream'))
-      elif sys.argv[i] == 'latest-fastcomp':
-        sys.argv[i] = str(find_latest_waterfall_sdk('fastcomp'))
-      elif sys.argv[i] == 'latest-releases-upstream':
-        sys.argv[i] = str(find_latest_releases_sdk('upstream'))
-      elif sys.argv[i] == 'latest-releases-fastcomp':
+      if sys.argv[i] in ('latest', 'sdk-latest', 'latest-64bit', 'sdk-latest-64bit', 'latest-fastcomp', 'latest-releases-fastcomp'):
         sys.argv[i] = str(find_latest_releases_sdk('fastcomp'))
+      elif sys.argv[i] in ('latest-upstream', 'latest-clang-upstream', 'latest-releases-upstream'):
+        sys.argv[i] = str(find_latest_releases_sdk('upstream'))
       elif sys.argv[i] == 'tot-upstream':
         sys.argv[i] = str(find_tot_sdk('upstream'))
-      elif sys.argv[i] == 'tot-fastcomp':
+      elif sys.argv[i] in ('tot-fastcomp', 'sdk-nightly-latest'):
         sys.argv[i] = str(find_tot_sdk('fastcomp'))
 
   if cmd == 'list':
