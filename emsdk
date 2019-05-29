@@ -2435,9 +2435,6 @@ def main():
       elif sys.argv[i] in ('tot-fastcomp', 'sdk-nightly-latest'):
         sys.argv[i] = str(find_tot_sdk('fastcomp'))
 
-      elif sys.argv[i] in ():
-      elif sys.argv[i] == 'sdk-nightly-latest-64bit':
-
   if cmd == 'list':
     print('')
     has_partially_active_tools = [False] # Use array to work around the lack of being able to mutate from enclosing function.
