@@ -468,9 +468,9 @@
     "id": "node",
     "version": "8.9.1",
     "bitness": 64,
-    "osx_url": "node-v8.9.1-darwin-x64.tar.gz",
-    "windows_url": "node-v8.9.1-win-x64.zip",
-    "linux_url": "node-v8.9.1-linux-x64.tar.xz",
+    "osx_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/deps/node-v8.9.1-darwin-x64.tar.gz",
+    "windows_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/deps/node-v8.9.1-win-x64.zip",
+    "linux_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/deps/node-v8.9.1-linux-x64.tar.xz",
     "activated_path": "%installation_dir%/bin",
     "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
     "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
@@ -528,28 +528,10 @@
     "id": "python",
     "version": "2.7.13.1",
     "bitness": 64,
-    "windows_url": "WinPython-64bit-2.7.13.1Zero.zip",
+    "windows_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/deps/WinPython-64bit-2.7.13.1Zero.zip",
     "activated_path": "%installation_dir%/python-2.7.13.amd64",
     "activated_cfg": "PYTHON='%installation_dir%/python-2.7.13.amd64/python%.exe%'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/python-2.7.13.amd64/python%.exe%"
-  },
-  {
-    "id": "python",
-    "version": "3.5.4",
-    "bitness": 32,
-    "windows_url": "WinPython-32bit-3.5.4.1Zero.zip",
-    "activated_path": "%installation_dir%/python-3.5.4",
-    "activated_cfg": "PYTHON='%installation_dir%/python-3.5.4/python%.exe%'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/python-3.5.4/python%.exe%"
-  },
-  {
-    "id": "python",
-    "version": "3.5.4",
-    "bitness": 64,
-    "windows_url": "WinPython-64bit-3.5.4.1Zero.zip",
-    "activated_path": "%installation_dir%/python-3.5.4.amd64",
-    "activated_cfg": "PYTHON='%installation_dir%/python-3.5.4.amd64/python%.exe%'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/python-3.5.4.amd64/python%.exe%"
   },
   {
     "id": "java",
@@ -582,7 +564,7 @@
     "id": "java",
     "version": "8.152",
     "bitness": 64,
-    "windows_url": "portable_jre_8_update_152_64bit.zip",
+    "windows_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/deps/portable_jre_8_update_152_64bit.zip",
     "activated_path": "%installation_dir%/bin",
     "activated_env": "JAVA_HOME=%installation_dir%",
     "activated_cfg": "JAVA='%installation_dir%/bin/java%.exe%'"
