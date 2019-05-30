@@ -1625,7 +1625,7 @@
   {
     "version": "releases-fastcomp-%releases-tag%",
     "bitness": 64,
-    "uses": ["releases-fastcomp-%releases-tag%-64bit", "node-8.9.1-64bit"],
+    "uses": ["releases-fastcomp-%releases-tag%-64bit", "node-8.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit"],
     "os": "win"
   },
   {
