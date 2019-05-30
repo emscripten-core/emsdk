@@ -469,8 +469,8 @@
     "version": "8.9.1",
     "bitness": 64,
     "osx_url": "node-v8.9.1-darwin-x64.tar.gz",
-    "windows_url": "node-v8.9.1-win-x64.zip",
-    "linux_url": "node-v8.9.1-linux-x64.tar.xz",
+    "windows_url": "node-v8.9.1-win-x86.zip",
+    "linux_url": "node-v8.9.1-linux-x86.tar.xz",
     "activated_path": "%installation_dir%/bin",
     "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
     "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"

@@ -33,11 +33,11 @@ EMSDK_DEV = bool(os.getenv('EMSDK_DEV')) if os.getenv('EMSDK_DEV') is not None e
 
 if EMSDK_DEV:
   print('EMSDK_DEV active.')
-  emsdk_master_server = 'http://clb.demon.fi/emscripten_dev/'
+  emsdk_master_server = 'http://clb.demon.fi/emscripten_dev/packages/'
 else:
   emsdk_master_server = 'https://storage.googleapis.com/webassembly/emscripten-releases-builds/deps/'
 
-emsdk_packages_url = urljoin(emsdk_master_server, 'packages/')
+emsdk_packages_url = emsdk_master_server
 
 emscripten_git_repo = 'https://github.com/kripken/emscripten.git'
 binaryen_git_repo = 'https://github.com/WebAssembly/binaryen.git'
