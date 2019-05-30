@@ -362,9 +362,9 @@
     "id": "clang",
     "version": "e%precompiled_tag64%",
     "bitness": 64,
-    "windows_url": "llvm/tag/win_64bit/emscripten-llvm-e%precompiled_tag64%.zip",
-    "osx_url": "llvm/tag/osx_64bit/emscripten-llvm-e%precompiled_tag64%.tar.gz",
-    "linux_url": "llvm/tag/linux_64bit/emscripten-llvm-e%precompiled_tag64%.tar.gz",
+    "windows_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/old/win/emscripten-llvm-e%precompiled_tag64%.zip",
+    "osx_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/old/mac/emscripten-llvm-e%precompiled_tag64%.tar.gz",
+    "linux_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/old/linux/emscripten-llvm-e%precompiled_tag64%.tar.gz",
     "activated_path": "%installation_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/optimizer%.exe%';BINARYEN_ROOT='%installation_dir%/binaryen'",
     "activated_env": "LLVM_ROOT=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%/optimizer%.exe%;BINARYEN_ROOT=%installation_dir%/binaryen"
