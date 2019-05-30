@@ -35,7 +35,7 @@ if EMSDK_DEV:
   print('EMSDK_DEV active.')
   emsdk_master_server = 'http://clb.demon.fi/emscripten_dev/'
 else:
-  emsdk_master_server = 'https://s3.amazonaws.com/mozilla-games/emscripten/'
+  emsdk_master_server = 'https://storage.googleapis.com/webassembly/emscripten-releases-builds/deps/'
 
 emsdk_packages_url = urljoin(emsdk_master_server, 'packages/')
 
