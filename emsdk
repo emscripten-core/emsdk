@@ -39,7 +39,7 @@ else:
 
 emsdk_packages_url = emsdk_master_server
 
-emscripten_git_repo = 'https://github.com/kripken/emscripten.git'
+emscripten_git_repo = 'https://github.com/emscripten-core/emscripten.git'
 binaryen_git_repo = 'https://github.com/WebAssembly/binaryen.git'
 emscripten_releases_repo = 'https://chromium.googlesource.com/emscripten-releases'
 
