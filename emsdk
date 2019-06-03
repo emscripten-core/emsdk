@@ -1795,17 +1795,17 @@ def update_emsdk():
   fetch_emscripten_tags()
 
 
-# Lists all tagged versions directly in the Git repositories. These we can pull and compile from source.
-def load_emscripten_tags():
+# Lists all legacy (pre-emscripten-releases) tagged versions directly in the Git repositories. These we can pull and compile from source.
+def load_legacy_emscripten_tags():
   try:
-    return open(sdk_path('emscripten-tags.txt'), 'r').read().split('\n')
+    return open(sdk_path('legacy-emscripten-tags.txt'), 'r').read().split('\n')
   except:
     return []
 
 
-def load_binaryen_tags():
+def load_legacy_binaryen_tags():
   try:
-    return open(sdk_path('binaryen-tags.txt'), 'r').read().split('\n')
+    return open(sdk_path('legacy-binaryen-tags.txt'), 'r').read().split('\n')
   except:
     return []
 
@@ -1893,11 +1893,11 @@ def load_sdk_manifest():
     print(str(e))
     return
 
-  emscripten_tags = load_emscripten_tags()
+  emscripten_tags = load_legacy_emscripten_tags()
   llvm_precompiled_tags_32bit = list(reversed(load_llvm_precompiled_tags_32bit()))
   llvm_precompiled_tags_64bit = list(reversed(load_llvm_precompiled_tags_64bit()))
   llvm_precompiled_tags = llvm_precompiled_tags_32bit + llvm_precompiled_tags_64bit
-  binaryen_tags = load_binaryen_tags()
+  binaryen_tags = load_legacy_binaryen_tags()
   llvm_32bit_nightlies = list(reversed(load_llvm_32bit_nightlies()))
   llvm_64bit_nightlies = list(reversed(load_llvm_64bit_nightlies()))
   emscripten_nightlies = list(reversed(load_emscripten_nightlies()))
