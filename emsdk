@@ -1744,44 +1744,6 @@ def fetch_emscripten_tags():
   git = GIT(must_succeed=False)
 
   if git:
-    print('Fetching all tags from Emscripten Github repository...')
-    tags = run_get_output([git, 'ls-remote', '--tags', emscripten_git_repo])
-    if tags[0] != 0: return False # failed to get tags?
-    tags = tags[1]
-    all_tags = []
-    for t in tags.split('\n'):
-      try:
-        t = t[t.index('refs/tags/') + len('refs/tags/'):].strip()
-        if version_key(t) >= version_key('1.28.2'):
-          all_tags += [t]
-      except:
-        pass
-    all_tags = sorted(all_tags, key=version_key)
-    open(sdk_path('emscripten-tags.txt'), 'w').write('\n'.join(all_tags))
-    if len(all_tags) > 0:
-      print('Done. ' + str(len(all_tags)) + ' tagged releases available, latest is ' + all_tags[-1] + '.')
-    else:
-      print('Done. No tagged releases available.')
-
-    print('Fetching all tags from Binaryen Github repository...')
-    tags = run_get_output([git, 'ls-remote', '--tags', binaryen_git_repo])
-    if tags[0] != 0: return False # failed to get tags?
-    tags = tags[1]
-    binaryen_tags = []
-    for t in tags.split('\n'):
-      try:
-        t = t[t.index('refs/tags/') + len('refs/tags/'):].strip()
-        if '.' in t:
-          binaryen_tags += [t]
-      except:
-        pass
-    binaryen_tags = sorted(binaryen_tags, key=version_key)
-    open(sdk_path('binaryen-tags.txt'), 'w').write('\n'.join(binaryen_tags))
-    if len(binaryen_tags) > 0:
-      print('Done. ' + str(len(binaryen_tags)) + ' tagged Binaryen releases available, latest is ' + binaryen_tags[-1] + '.')
-    else:
-      print('Done. No tagged Binaryen releases available.')
-
     print('Fetching emscripten-releases repository...')
     emscripten_releases_tot = get_emscripten_releases_tot()
     if emscripten_releases_tot:
