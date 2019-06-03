@@ -176,7 +176,8 @@ def vs_filewhere(installation_path, platform, file):
     return ''
 
 
-CMAKE_GENERATOR = 'Unix Makefiles'
+# Use ninja build tool if present
+CMAKE_GENERATOR = 'Ninja' if which('ninja') is not None else 'Unix Makefiles'
 if WINDOWS:
   # Detect which CMake generator to use when building on Windows
   if '--mingw' in sys.argv: CMAKE_GENERATOR = 'MinGW Makefiles'
@@ -870,7 +871,7 @@ def make_build(build_root, build_type, build_target_platform='x64'):
     else:
       make = ['mingw32-make', '-j' + str(CPU_CORES)]
   else:
-    make = ['make', '-j' + str(CPU_CORES)]
+    make = ['cmake', '--build', '.', '--', '-j' + str(CPU_CORES)]
 
   # Build
   try:
