@@ -1485,12 +1485,16 @@ class Tool(object):
   # If this tool can be installed on this system, this function returns True.
   # Otherwise, this function returns a string that describes the reason why this tool is not available.
   def can_be_installed(self):
+    if hasattr(self, 'bitness'):
+      if self.bitness == 64 and not is_os_64bit():
+        return "this tool is only provided for 64-bit OSes"
+
     if self.id == 'vs-tool':
       msbuild_dir = find_msbuild_dir()
       if len(msbuild_dir) > 0:
         return True
       else:
-        return "Visual Studio 2010 was not found!"
+        return "Visual Studio 2010 was not found"
     else:
       return True
 
@@ -1509,7 +1513,7 @@ class Tool(object):
       return None
 
   def install(self):
-    if not self.can_be_installed():
+    if self.can_be_installed() is not True:
       print("The tool '" + str(self) + "' is not available due to the reason: " + self.can_be_installed())
       return False
 
@@ -2435,7 +2439,7 @@ def main():
         for tool in t:
           if tool.is_old and not arg_old:
             continue
-          if tool.can_be_installed():
+          if tool.can_be_installed() is True:
             installed = '\tINSTALLED' if tool.is_installed() else ''
           else:
             installed = '\tNot available: ' + tool.can_be_installed()
