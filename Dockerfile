@@ -10,7 +10,7 @@ RUN cd /root/ \
  && apt-get update \
  && apt-get install -y python python3 cmake build-essential openjdk-9-jre-headless \
  && /root/emsdk/emsdk update-tags \
- && bash test.sh \
  && cd /root/emsdk/ \
+ && bash test.sh \
  && python test.py
 
