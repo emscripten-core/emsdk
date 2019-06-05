@@ -2414,7 +2414,7 @@ def main():
         elif '-fastcomp' in arg:
           arg = arg.replace('-fastcomp', '')
           upstream = False
-        arg = arg.replace('sdk-', '').replace('-64bit', '')
+        arg = arg.replace('sdk-', '').replace('-64bit', '').replace('tag-', '')
         release_hash = releases_info.get(arg, None) or releases_info.get('sdk-' + arg + '-64bit')
         if release_hash:
           sys.argv[i] = 'sdk-releases-%s-%s-64bit' % ('upstream' if upstream else 'fastcomp', release_hash)
