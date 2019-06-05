@@ -85,9 +85,6 @@ GIT_CLONE_SHALLOW = False
 # If true, LLVM backend is built with tests enabled, and Binaryen is built with Visual Studio static analyzer enabled.
 BUILD_FOR_TESTING = False
 
-# If true, we will try to build WebAssembly support
-ENABLE_WASM = False
-
 # If 'auto', assertions are decided by the build type (Release&MinSizeRel=disabled, Debug&RelWithDebInfo=enabled)
 # Other valid values are 'ON' and 'OFF'
 ENABLE_LLVM_ASSERTIONS = 'auto'
@@ -968,8 +965,6 @@ def build_llvm_tool(tool):
   if not only_supports_wasm:
     targets_to_build += ';JSBackend'
   args = ['-DLLVM_TARGETS_TO_BUILD=' + targets_to_build, '-DLLVM_INCLUDE_EXAMPLES=OFF', '-DCLANG_INCLUDE_EXAMPLES=OFF', '-DLLVM_INCLUDE_TESTS=' + tests_arg, '-DCLANG_INCLUDE_TESTS=' + tests_arg, '-DLLVM_ENABLE_ASSERTIONS=' + ('ON' if enable_assertions else 'OFF')]
-  if ENABLE_WASM or only_supports_wasm:
-    args += ['-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=WebAssembly']
   if os.environ.get('LLVM_CMAKE_ARGS'):
     extra_args = os.environ['LLVM_CMAKE_ARGS'].split(',')
     print('Passing the following extra arguments to LLVM CMake configuration: ' + str(extra_args))
@@ -1660,11 +1655,18 @@ def is_os_64bit(): # http://stackoverflow.com/questions/2208828/detect-64bit-os-
   return platform.machine().endswith('64')
 
 
-def find_latest_releases_sdk(which):
+def find_latest_releases_version():
   releases_info = load_releases_info()
-  latest = releases_info['latest']
-  ident = releases_info['releases'][latest]
-  return 'sdk-releases-%s-%s-64bit' % (which, ident)
+  return releases_info['latest']
+
+
+def find_latest_releases_hash():
+  releases_info = load_releases_info()
+  return releases_info['releases'][find_latest_releases_version()]
+
+
+def find_latest_releases_sdk(which):
+  return 'sdk-releases-%s-%s-64bit' % (which, find_latest_releases_hash())
 
 
 def find_tot_sdk(which):
@@ -2244,7 +2246,8 @@ def main():
                                   GitHub, call "git pull" instead to update emsdk.
 
    emsdk update-tags            - Fetches the most up to date list of available
-                                  Emscripten tagged and nightly releases.
+                                  Emscripten tagged and other releases from the
+                                  servers.
 
    emsdk install [options] <tool 1> <tool 2> <tool 3> ...
                                 - Downloads and installs given tools or SDKs.
@@ -2288,8 +2291,7 @@ def main():
                                   passed to the emsdk activate command to
                                   activate the desired version.
 
-                   --enable-wasm: Enable WebAssembly support in the
-                                  installed components.
+                                  Notes on building from source:
 
                                   To pass custom CMake directives when configuring
                                   LLVM build, specify the environment variable
@@ -2419,7 +2421,39 @@ def main():
 
   if cmd == 'list':
     print('')
+
+    print('The *recommended* precompiled SDK download is %s (%s).' % (find_latest_releases_version(), find_latest_releases_hash()))
+    print('To install/activate it, use one of:')
+    print('         latest                  [default (fastcomp) backend]')
+    print('         latest-upstream         [upstream LLVM wasm backend]')
+    print('')
+
     has_partially_active_tools = [False] # Use array to work around the lack of being able to mutate from enclosing function.
+
+    if len(sdks) > 0:
+      def find_sdks(needs_compilation):
+        s = []
+        for sdk in sdks:
+          if sdk.is_old and not arg_old:
+            continue
+          if sdk.needs_compilation() == needs_compilation:
+            s += [sdk]
+        return s
+
+      def print_sdks(s):
+        for sdk in s:
+          installed = '\tINSTALLED' if sdk.is_installed() else ''
+          active = '*' if sdk.is_active() else ' '
+          print('    ' + active + '    {0: <25}'.format(str(sdk)) + installed)
+          if arg_uses:
+            for dep in sdk.uses:
+              print('          - {0: <25}'.format(dep))
+        print('')
+      print('The additional following precompiled SDKs are also available for download:')
+      print_sdks(find_sdks(False))
+      print('The following SDKs can be compiled from source:')
+      print_sdks(find_sdks(True))
+
     if len(tools) > 0:
       def find_tools(needs_compilation):
         t = []
@@ -2450,9 +2484,9 @@ def main():
         print('')
 
       print('The following precompiled tool packages are available for download:')
-      print_tools(find_tools(False))
+      print_tools(find_tools(needs_compilation=False))
       print('The following tools can be compiled from source:')
-      print_tools(find_tools(True))
+      print_tools(find_tools(needs_compilation=True))
     else:
       if is_emsdk_sourced_from_github():
         print("There are no tools available. Run 'git pull' followed by 'emsdk update-tags' to fetch the latest set of tools.")
@@ -2460,40 +2494,19 @@ def main():
         print("There are no tools available. Run 'emsdk update' to fetch the latest set of tools.")
       print('')
 
-    if len(sdks) > 0:
-      def find_sdks(needs_compilation):
-        s = []
-        for sdk in sdks:
-          if sdk.is_old and not arg_old:
-            continue
-          if sdk.needs_compilation() == needs_compilation:
-            s += [sdk]
-        return s
+    print('Items marked with * are activated for the current user.')
+    if has_partially_active_tools[0]:
+      env_cmd = 'emsdk_env.bat' if WINDOWS else 'source ./emsdk_env.sh'
+      print('Items marked with (*) are selected for use, but your current shell environment is not configured to use them. Type "' + env_cmd + '" to set up your current shell to use them' + (', or call "emsdk activate --global <name_of_sdk>" to permanently activate them.' if WINDOWS else '.'))
+    if not arg_old:
+      print('')
+      print("To access the historical archived versions, type 'emsdk list --old'")
 
-      def print_sdks(s):
-        for sdk in s:
-          installed = '\tINSTALLED' if sdk.is_installed() else ''
-          active = '*' if sdk.is_active() else ' '
-          print('    ' + active + '    {0: <25}'.format(str(sdk)) + installed)
-          if arg_uses:
-            for dep in sdk.uses:
-              print('          - {0: <25}'.format(dep))
-        print('')
-      if is_emsdk_sourced_from_github():
-        print('The following precompiled SDKs are available for download: (Run "git pull" followed by "./emsdk update-tags" to pull in the latest list)')
-      else:
-        print('The following precompiled SDKs are available for download: (Run "./emsdk update" to pull in the latest list)')
-      print_sdks(find_sdks(False))
-      print('The following SDKs can be compiled from source:')
-      print_sdks(find_sdks(True))
-
-      print('Items marked with * are activated for the current user.')
-      if has_partially_active_tools[0]:
-        env_cmd = 'emsdk_env.bat' if WINDOWS else 'source ./emsdk_env.sh'
-        print('Items marked with (*) are selected for use, but your current shell environment is not configured to use them. Type "' + env_cmd + '" to set up your current shell to use them' + (', or call "emsdk activate --global <name_of_sdk>" to permanently activate them.' if WINDOWS else '.'))
-      if not arg_old:
-        print('')
-        print("To access the historical archived versions, type 'emsdk list --old'")
+    print('')
+    if is_emsdk_sourced_from_github():
+      print('Run "git pull" followed by "./emsdk update-tags" to pull in the latest list.')
+    else:
+      print('Run "./emsdk update" to pull in the latest list.')
 
     return 0
   elif cmd == 'construct_env':
@@ -2573,10 +2586,6 @@ def main():
         sys.argv[i] = ''
       elif sys.argv[i] == '--disable-assertions':
         ENABLE_LLVM_ASSERTIONS = 'OFF'
-        sys.argv[i] = ''
-      elif sys.argv[i] == '--enable-wasm':
-        global ENABLE_WASM
-        ENABLE_WASM = True
         sys.argv[i] = ''
     sys.argv = [x for x in sys.argv if not len(x) == 0]
     if len(sys.argv) <= 2:
