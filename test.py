@@ -51,5 +51,9 @@ print('test specific release (new, full name)')
 check_call('./emsdk install sdk-1.38.33-upstream-64bit')
 check_call('./emsdk activate sdk-1.38.33-upstream-64bit')
 
+print('test specific release (new, full name)')
+check_call('./emsdk install sdk-tag-1.38.33-64bit')
+check_call('./emsdk activate sdk-tag-1.38.33-64bit')
+
 print('test binaryen source build')
 check_call('./emsdk install --build=Release binaryen-master-64bit')
