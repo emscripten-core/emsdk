@@ -1880,6 +1880,12 @@ def load_releases_tags():
   return tags
 
 
+def load_releases_versions():
+  info = load_releases_info()
+  versions = list(info['releases'].keys())
+  return versions
+
+
 def is_string(s):
   if sys.version_info[0] >= 3:
     return isinstance(s, str)
@@ -2423,10 +2429,22 @@ def main():
     print('')
 
     print('The *recommended* precompiled SDK download is %s (%s).' % (find_latest_releases_version(), find_latest_releases_hash()))
+    print()
     print('To install/activate it, use one of:')
     print('         latest                  [default (fastcomp) backend]')
     print('         latest-upstream         [upstream LLVM wasm backend]')
     print('')
+    print('Those are equivalent to installing/activating the following:')
+    print('         %s' % find_latest_releases_version())
+    print('         %s-upstream' % find_latest_releases_version())
+    print('')
+    print('All recent (non-legacy) installable versions are:')
+    releases_versions = sorted(load_releases_versions())
+    releases_versions.reverse()
+    for ver in releases_versions:
+      print('         %s' % ver)
+      print('         %s-upstream' % ver)
+    print()
 
     has_partially_active_tools = [False] # Use array to work around the lack of being able to mutate from enclosing function.
 
@@ -2451,6 +2469,7 @@ def main():
         print('')
       print('The additional following precompiled SDKs are also available for download:')
       print_sdks(find_sdks(False))
+
       print('The following SDKs can be compiled from source:')
       print_sdks(find_sdks(True))
 
