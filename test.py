@@ -1,6 +1,8 @@
 import os
+import shutil
 import subprocess
 import sys
+import tempfile
 
 # Utilities
 
@@ -76,4 +78,16 @@ check_call('./emsdk install --build=Release binaryen-master-64bit')
 print('test 32-bit error')
 
 failing_call_with_output('python %s install latest' % hack_emsdk('not is_os_64bit()', 'True'), 'this tool is only provided for 64-bit OSes')
+
+print('test non-git update')
+
+temp_dir = tempfile.mkdtemp()
+
+for filename in os.listdir('.'):
+  if not filename.startswith('.') and not os.path.isdir(filename):
+    shutil.copyfile(filename, os.path.join(temp_dir, filename))
+
+os.chdir(temp_dir)
+
+check_call('python ./emsdk update')
 
