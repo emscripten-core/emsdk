@@ -1444,6 +1444,10 @@ class Tool(object):
 
       # If running in embedded mode, all paths are stored dynamically relative to the emsdk root, so normalize those first.
       dot_emscripten_key = dot_emscripten[key].replace("' + emsdk_path + '", emsdk_path())
+      if WINDOWS:
+        dot_emscripten_key = dot_emscripten_key.lower()
+        value = value.lower()
+        
       if dot_emscripten_key != value:
         if VERBOSE: print(str(self) + ' is not active, because key="' + key + '" has value "' + dot_emscripten_key + '" but should have value "' + value + '"')
         return False
