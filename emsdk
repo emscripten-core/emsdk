@@ -1,4 +1,7 @@
-#!/usr/bin/env python3
+#!/bin/sh
+# Following line is responsible for selecting the best python for current host
+# This script can be called directly: `./emsdk` or indirectly: `python ./emsdk` `sh ./emsdk` or `bash ./emsdk`
+"exec" "`dirname $0`/python_selector" "$0" "$@"
 
 from __future__ import print_function
 
