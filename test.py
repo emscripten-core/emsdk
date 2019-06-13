@@ -46,13 +46,12 @@ print('update')
 check_call('./emsdk update-tags')
 
 print('test latest')
-#assert 'fastcomp' in open(os.path.expanduser('~/.emscripten')).read()
-#assert 'upstream' not in open(os.path.expanduser('~/.emscripten')).read()
+assert 'fastcomp' in open(os.path.expanduser('~/.emscripten')).read()
+assert 'upstream' not in open(os.path.expanduser('~/.emscripten')).read()
 
 print('test latest-releases-upstream')
 
 check_call('python2 ./emsdk install latest-upstream')
-'''
 check_call('./emsdk activate latest-upstream')
 check_call('upstream/emscripten/emcc hello_world.cpp')
 assert open(os.path.expanduser('~/.emscripten')).read().count('LLVM_ROOT') == 1
@@ -93,7 +92,7 @@ check_call('./emsdk install --build=Release binaryen-master-64bit')
 print('test 32-bit error')
 
 failing_call_with_output('python %s install latest' % hack_emsdk('not is_os_64bit()', 'True'), 'this tool is only provided for 64-bit OSes')
-'''
+
 print('test redundant download')
 print('  a re-install of something from before will not re-download')
 checked_call_with_output('./emsdk install latest-upstream', expected='skipping', not_expected='Downloading')

@@ -1567,19 +1567,9 @@ class Tool(object):
     print("Done installing tool '" + str(self) + "'.")
 
     # Sanity check that the installation succeeded, and if so, remove unneeded leftover installation files.
-    if self.is_installed():
-      self.cleanup_temp_install_files()
-    else:
+    if not self.is_installed():
       print("Warning: The installation of '" + str(self) + "' seems to have failed, but no error was detected. Either something went wrong with the installation, or this may indicate an internal emsdk error.")
     return True
-
-  def cleanup_temp_install_files(self):
-    url = self.download_url()
-    if url.endswith(('zip', '.tar', '.gz', '.tbz2')):
-      filename_prefix = getattr(self, 'zipfile_prefix', '')
-      tempzipfile = get_download_target(url, 'zips', filename_prefix=filename_prefix)
-      if VERBOSE: print("Deleting temporary zip file " + tempzipfile)
-      rmfile(tempzipfile)
 
   def uninstall(self):
     if not self.is_installed():
