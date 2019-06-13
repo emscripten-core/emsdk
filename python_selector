@@ -16,7 +16,12 @@ def which(program):
   for path in [""] + os.environ.get("PATH", "").split(os.pathsep):
     exe_file = os.path.join(path, program)
     if os.path.isfile(exe_file) and os.access(exe_file, os.X_OK):
-      return exe_file
+      # in case of pyenv we might have `python3` command available, but it's just a stub
+      # https://github.com/emscripten-core/emscripten/issues/8792
+      p = subprocess.Popen([exe_file, "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+      p.communicate()
+      if p.returncode == 0:
+        return exe_file
   return None
 
 # Look for the best choice for python, favours Python3 over Python2
