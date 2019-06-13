@@ -6,14 +6,26 @@ import tempfile
 
 # Utilities
 
+
 def check_call(cmd):
   subprocess.check_call(cmd.split(' '))
+
 
 def failing_call_with_output(cmd, expected):
   proc = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE)
   stdout, stderr = proc.communicate()
   assert proc.returncode, 'call must have failed'
   assert expected in stdout, 'call did not have the right output'
+
+
+def checked_call_with_output(cmd, expected=None, not_expected=None):
+  proc = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE)
+  stdout, stderr = proc.communicate()
+  assert not proc.returncode, 'call must have succeeded'
+  if expected:
+    assert expected in stdout, 'call did not have the right output\n' + stdout
+  if not_expected:
+    assert not_expected not in stdout, 'call had the wrong output\n' + stdout
 
 def hack_emsdk(marker, replacement):
   src = open('emsdk').read()
@@ -22,6 +34,7 @@ def hack_emsdk(marker, replacement):
   name = '__test_emsdk'
   open(name, 'w').write(src)
   return name
+
 
 # Set up
 
@@ -33,11 +46,13 @@ print('update')
 check_call('./emsdk update-tags')
 
 print('test latest')
-assert 'fastcomp' in open(os.path.expanduser('~/.emscripten')).read()
-assert 'upstream' not in open(os.path.expanduser('~/.emscripten')).read()
+#assert 'fastcomp' in open(os.path.expanduser('~/.emscripten')).read()
+#assert 'upstream' not in open(os.path.expanduser('~/.emscripten')).read()
 
 print('test latest-releases-upstream')
+
 check_call('python2 ./emsdk install latest-upstream')
+'''
 check_call('./emsdk activate latest-upstream')
 check_call('upstream/emscripten/emcc hello_world.cpp')
 assert open(os.path.expanduser('~/.emscripten')).read().count('LLVM_ROOT') == 1
@@ -78,7 +93,28 @@ check_call('./emsdk install --build=Release binaryen-master-64bit')
 print('test 32-bit error')
 
 failing_call_with_output('python %s install latest' % hack_emsdk('not is_os_64bit()', 'True'), 'this tool is only provided for 64-bit OSes')
+'''
+print('test redundant download')
+print('  a re-install of something from before will not re-download')
+checked_call_with_output('./emsdk install latest-upstream', expected='skipping', not_expected='Downloading')
+print('  a re-install of something from before will not re-download (again)')
+checked_call_with_output('./emsdk install latest-upstream', expected='skipping', not_expected='Downloading')
+print('  clear zips; then we must re-download')
+for filename in os.listdir('zips/'):
+  os.unlink(os.path.join('zips', filename))
+checked_call_with_output('./emsdk install latest-upstream', not_expected='skipping', expected='Downloading')
+print('  a re-install of something from before will not re-download (yet again)')
+checked_call_with_output('./emsdk install latest-upstream', expected='skipping', not_expected='Downloading')
+print('  a new target though will download')
+checked_call_with_output('./emsdk install latest-fastcomp', expected='Downloading')
+print('  but not twice')
+checked_call_with_output('./emsdk install latest-fastcomp', not_expected='Downloading')
+print('  an older version than latest will download')
+checked_call_with_output('./emsdk install 1.38.33-fastcomp', expected='Downloading')
+print('  but not twice')
+checked_call_with_output('./emsdk install 1.38.33-fastcomp', expected='Downloading')
 
+1/0
 print('test non-git update')
 
 temp_dir = tempfile.mkdtemp()

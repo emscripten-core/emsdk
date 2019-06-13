@@ -1575,9 +1575,9 @@ class Tool(object):
 
   def cleanup_temp_install_files(self):
     url = self.download_url()
-    if url.endswith('zip') or url.endswith('.tar') or url.endswith('.gz'):
-      file_name = url.split('/')[-1]
-      tempzipfile = os.path.join('zips/', file_name)
+    if url.endswith(('zip', '.tar', '.gz', '.tbz2')):
+      filename_prefix = getattr(self, 'zipfile_prefix', '')
+      tempzipfile = get_download_target(url, 'zips', filename_prefix=filename_prefix)
       if VERBOSE: print("Deleting temporary zip file " + tempzipfile)
       rmfile(tempzipfile)
 
