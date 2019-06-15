@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import subprocess
@@ -8,6 +9,12 @@ import tempfile
 
 def check_call(cmd):
   subprocess.check_call(cmd.split(' '))
+
+def checked_call_with_output(cmd, expected, stderr=None):
+  proc = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=stderr)
+  stdout, stderr = proc.communicate()
+  assert not proc.returncode, 'call must have succeeded'
+  assert expected in (stdout + stderr), 'call did not have the right output: ' + stdout + stderr
 
 def failing_call_with_output(cmd, expected):
   proc = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE)
@@ -27,6 +34,8 @@ def hack_emsdk(marker, replacement):
 
 open('hello_world.cpp', 'w').write('int main() {}')
 
+TAGS = json.loads(open('emscripten-releases-tags.txt').read())
+
 # Tests
 
 print('update')
@@ -43,6 +52,9 @@ check_call('upstream/emscripten/emcc hello_world.cpp')
 assert open(os.path.expanduser('~/.emscripten')).read().count('LLVM_ROOT') == 1
 assert 'upstream' in open(os.path.expanduser('~/.emscripten')).read()
 assert 'fastcomp' not in open(os.path.expanduser('~/.emscripten')).read()
+
+print('verify version')
+checked_call_with_output('emcc -v', TAGS['latest'], stderr=subprocess.PIPE)
 
 print('test tot-upstream')
 check_call('./emsdk install tot-upstream')
@@ -90,4 +102,17 @@ for filename in os.listdir('.'):
 os.chdir(temp_dir)
 
 check_call('python ./emsdk update')
+print('second time')
+check_call('python ./emsdk update')
+
+print('verify downloads exist for all OSes')
+latest_hash = TAGS['releases'][TAGS['latest']]
+for os, suffix in [
+  ('linux', 'tbz2'),
+  ('mac', 'tbz2'),
+  ('win', 'zip')
+]:
+  url = 'https://storage.googleapis.com/webassembly/emscripten-releases-builds/%s/%s/wasm-binaries.%s' % (os, latest_hash, suffix)
+  print('  url: ' + url),
+  check_call('wget ' + url)
 
