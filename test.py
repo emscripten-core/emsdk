@@ -54,7 +54,7 @@ assert 'upstream' in open(os.path.expanduser('~/.emscripten')).read()
 assert 'fastcomp' not in open(os.path.expanduser('~/.emscripten')).read()
 
 print('verify version')
-checked_call_with_output('emcc -v', TAGS['latest'], stderr=subprocess.PIPE)
+checked_call_with_output('upstream/emscripten/emcc -v', TAGS['latest'], stderr=subprocess.PIPE)
 
 print('test tot-upstream')
 check_call('./emsdk install tot-upstream')
