@@ -11,10 +11,8 @@ def check_call(cmd):
   subprocess.check_call(cmd.split(' '))
 
 def checked_call_with_output(cmd, expected, stderr=None):
-  proc = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=stderr)
-  stdout, stderr = proc.communicate()
-  assert not proc.returncode, 'call must have succeeded'
-  assert expected in (stdout + stderr), 'call did not have the right output: ' + stdout + stderr
+  stdout = subprocess.check_output(cmd.split(' '), stderr=stderr)
+  assert expected in stdout, 'call did not have the right output: ' + stdout
 
 def failing_call_with_output(cmd, expected):
   proc = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE)
@@ -54,7 +52,7 @@ assert 'upstream' in open(os.path.expanduser('~/.emscripten')).read()
 assert 'fastcomp' not in open(os.path.expanduser('~/.emscripten')).read()
 
 print('verify version')
-checked_call_with_output('upstream/emscripten/emcc -v', TAGS['latest'], stderr=subprocess.PIPE)
+checked_call_with_output('upstream/emscripten/emcc -v', TAGS['latest'], stderr=subprocess.STDOUT)
 
 print('test tot-upstream')
 check_call('./emsdk install tot-upstream')
