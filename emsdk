@@ -666,7 +666,7 @@ def git_clone(url, dstpath):
   mkdir_p(dstpath)
   git_clone_args = []
   if GIT_CLONE_SHALLOW:
-    git_clone_args += ['--depth', '1']
+    git_clone_args += ['--depth', '1', '--no-single-branch']
   return run([GIT(), 'clone'] + git_clone_args + [url, dstpath]) == 0
 
 
