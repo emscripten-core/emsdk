@@ -2078,12 +2078,13 @@ def copy_pregenerated_cache(tools_to_activate):
       # Finish the install of an emscripten-releases build.
       install_path = to_native_path(sdk_path(tool.expand_vars(tool.install_path)))
       in_cache = os.path.join(install_path, 'lib', pregenerated_cache)
-      out_cache = os.path.join(emscripten_cache_directory(), pregenerated_cache)
-      os.makedirs(out_cache)
-      for filename in os.listdir(in_cache):
-        if VERBOSE: print('Copying ' + filename + ' to cache dir')
-        shutil.copy2(os.path.join(in_cache, filename),
-                     os.path.join(out_cache, filename))
+      if os.path.exists(in_cache):
+        out_cache = os.path.join(emscripten_cache_directory(), pregenerated_cache)
+        os.makedirs(out_cache)
+        for filename in os.listdir(in_cache):
+          if VERBOSE: print('Copying ' + filename + ' to cache dir')
+          shutil.copy2(os.path.join(in_cache, filename),
+                       os.path.join(out_cache, filename))
 
 
 # Reconfigure .emscripten to choose the currently activated toolset, set PATH and other environment variables.
@@ -2097,10 +2098,7 @@ def set_active_tools(tools_to_activate, permanently_activate):
   # copy in pregenerated cache contents afterwards.
   run_emcc(tools_to_activate)
 
-  #try:
   copy_pregenerated_cache(tools_to_activate)
-  #except:
-  #  print('Warning: failed to copy pregenerated cache files (emcc will build them itself on demand)')
 
   # Construct a .bat script that will be invoked to set env. vars and PATH
   if WINDOWS:
