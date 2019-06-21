@@ -34,6 +34,8 @@ open('hello_world.cpp', 'w').write('int main() {}')
 
 TAGS = json.loads(open('emscripten-releases-tags.txt').read())
 
+LIBC = os.path.expanduser('~/.emscripten_cache/wasm-obj/libc.a')
+
 # Tests
 
 print('update')
@@ -54,9 +56,15 @@ assert 'fastcomp' not in open(os.path.expanduser('~/.emscripten')).read()
 print('verify version')
 checked_call_with_output('upstream/emscripten/emcc -v', TAGS['latest'], stderr=subprocess.STDOUT)
 
+print('clear cache')
+check_call('upstream/emscripten/emcc --clear-cache')
+assert not os.path.exists(LIBC)
+
 print('test tot-upstream')
 check_call('./emsdk install tot-upstream')
+assert not os.path.exists(LIBC)
 check_call('./emsdk activate tot-upstream')
+assert os.path.exists(LIBC), 'activation supplies prebuilt libc' # TODO; test on latest as well
 check_call('upstream/emscripten/emcc hello_world.cpp')
 
 print('test tot-fastcomp')
