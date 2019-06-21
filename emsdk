@@ -2060,8 +2060,9 @@ def run_emcc(tools_to_activate):
       activated_path = to_native_path(tool.expand_vars(tool.activated_path))
       emcc_path = os.path.join(activated_path, 'emcc.py')
       if os.path.exists(emcc_path):
-        print('CALL ' + str([sys.executable, emcc_path]))
-        subprocess.call([sys.executable, emcc_path])
+        if VERBOSE: print('Calling emcc to initialize it')
+        subprocess.call([sys.executable, emcc_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return
 
 
 def emscripten_cache_directory():
@@ -2076,13 +2077,13 @@ def copy_pregenerated_cache(tools_to_activate):
     if pregenerated_cache:
       # Finish the install of an emscripten-releases build.
       install_path = to_native_path(sdk_path(tool.expand_vars(tool.install_path)))
-      cache_in_install = os.path.join(install_path, pregenerated_cache)
-      if not os.path.exists(emscripten_cache_directory()):
-        os.mkdirs(emscripten_cache_directory())
-      for filename in os.listdir(cache_in_install):
+      in_cache = os.path.join(install_path, 'lib', pregenerated_cache)
+      out_cache = os.path.join(emscripten_cache_directory(), pregenerated_cache)
+      os.makedirs(out_cache)
+      for filename in os.listdir(in_cache):
         if VERBOSE: print('Copying ' + filename + ' to cache dir')
-        shutil.copy2(os.path.join(cache_in_install, filename),
-                     os.path.join(emscripten_cache_directory(), filename))
+        shutil.copy2(os.path.join(in_cache, filename),
+                     os.path.join(out_cache, filename))
 
 
 # Reconfigure .emscripten to choose the currently activated toolset, set PATH and other environment variables.
@@ -2096,10 +2097,10 @@ def set_active_tools(tools_to_activate, permanently_activate):
   # copy in pregenerated cache contents afterwards.
   run_emcc(tools_to_activate)
 
-  try:
-    copy_pregenerated_cache(tools_to_activate)
-  except:
-    print('Warning: failed to copy pregenerated cache files (emcc will build them itself on demand)')
+  #try:
+  copy_pregenerated_cache(tools_to_activate)
+  #except:
+  #  print('Warning: failed to copy pregenerated cache files (emcc will build them itself on demand)')
 
   # Construct a .bat script that will be invoked to set env. vars and PATH
   if WINDOWS:
