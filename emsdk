@@ -2077,9 +2077,12 @@ def copy_pregenerated_cache(tools_to_activate):
       # Finish the install of an emscripten-releases build.
       install_path = to_native_path(sdk_path(tool.expand_vars(tool.install_path)))
       cache_in_install = os.path.join(install_path, pregenerated_cache)
+      if not os.path.exists(emscripten_cache_directory()):
+        os.mkdirs(emscripten_cache_directory())
       for filename in os.listdir(cache_in_install):
         if VERBOSE: print('Copying ' + filename + ' to cache dir')
-        shutil.copy2(os.path.join(cache_in_install, filename), emscripten_cache_directory())
+        shutil.copy2(os.path.join(cache_in_install, filename),
+                     os.path.join(emscripten_cache_directory(), filename))
 
 
 # Reconfigure .emscripten to choose the currently activated toolset, set PATH and other environment variables.
