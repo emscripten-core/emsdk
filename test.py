@@ -66,11 +66,11 @@ check_call('fastcomp/emscripten/emcc hello_world.cpp')
 
 print('test specific release (old)')
 check_call('./emsdk install sdk-1.38.31-64bit')
-check_call('./emsdk activate tot-fastcomp')
+check_call('./emsdk activate sdk-1.38.31-64bit')
 
 print('test specific release (new, short name)')
 check_call('./emsdk install 1.38.33')
-check_call('./emsdk activate tot-fastcomp')
+check_call('./emsdk activate 1.38.33')
 assert 'fastcomp' in open(os.path.expanduser('~/.emscripten')).read()
 assert 'upstream' not in open(os.path.expanduser('~/.emscripten')).read()
 
