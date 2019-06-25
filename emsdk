@@ -2053,12 +2053,55 @@ def process_tool_list(tools_to_activate, log_errors=True):
   return tools_to_activate
 
 
+def run_emcc(tools_to_activate):
+  for tool in tools_to_activate:
+    activated_path = getattr(tool, 'activated_path', None)
+    if activated_path and activated_path.endswith('/emscripten'):
+      activated_path = to_native_path(tool.expand_vars(tool.activated_path))
+      emcc_path = os.path.join(activated_path, 'emcc.py')
+      if os.path.exists(emcc_path):
+        if VERBOSE: print('Calling emcc to initialize it')
+        subprocess.call([sys.executable, emcc_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return
+
+
+def emscripten_cache_directory():
+  return os.path.join(emscripten_config_directory, ".emscripten_cache")
+
+
+# Copy over any emscripten cache contents that were pregenerated. This avoids the user
+# needing to immediately build libc etc. on first run.
+def copy_pregenerated_cache(tools_to_activate):
+  for tool in tools_to_activate:
+    pregenerated_cache = getattr(tool, 'pregenerated_cache', None)
+    if pregenerated_cache:
+      # Finish the install of an emscripten-releases build.
+      install_path = to_native_path(sdk_path(tool.expand_vars(tool.install_path)))
+      in_cache = os.path.join(install_path, 'lib', pregenerated_cache)
+      if os.path.exists(in_cache):
+        out_cache = os.path.join(emscripten_cache_directory(), pregenerated_cache)
+        os.makedirs(out_cache)
+        for filename in os.listdir(in_cache):
+          if VERBOSE: print('Copying ' + filename + ' to cache dir')
+          shutil.copy2(os.path.join(in_cache, filename),
+                       os.path.join(out_cache, filename))
+
+
 # Reconfigure .emscripten to choose the currently activated toolset, set PATH and other environment variables.
 # Returns the full list of deduced tools that are now active.
 def set_active_tools(tools_to_activate, permanently_activate):
   tools_to_activate = process_tool_list(tools_to_activate, log_errors=True)
 
   generate_dot_emscripten(tools_to_activate)
+
+  # Generating .emscripten will cause emcc to clear the cache on first run (emcc sees that the file has
+  # changed, since we write it here in the emsdk, and it never saw it before; so it clears the cache
+  # as it assumes a new config file means system libraries may need rebuilding). To avoid emcc's clearing
+  # wiping out the pregenerated cache contents we want to copy in, run emcc here, then copy the cache
+  # contents.
+  run_emcc(tools_to_activate)
+
+  copy_pregenerated_cache(tools_to_activate)
 
   # Construct a .bat script that will be invoked to set env. vars and PATH
   if WINDOWS:
@@ -2078,7 +2121,7 @@ def set_active_tools(tools_to_activate, permanently_activate):
 
   if len(tools_to_activate) > 0:
     tools = filter(lambda x: not x.is_sdk, tools_to_activate)
-    print('Set the following tools as active:\n   ' + '\n   '.join(map(lambda x: str(x), tools)))
+    print('\nSet the following tools as active:\n   ' + '\n   '.join(map(lambda x: str(x), tools)))
     print('')
   return tools_to_activate
 
