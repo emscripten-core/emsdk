@@ -2094,8 +2094,11 @@ def set_active_tools(tools_to_activate, permanently_activate):
 
   generate_dot_emscripten(tools_to_activate)
 
-  # Generating .emscripten will cause emcc to clear the cache on first run. Do that here so that we can
-  # copy in pregenerated cache contents afterwards.
+  # Generating .emscripten will cause emcc to clear the cache on first run (emcc sees that the file has
+  # changed, since we write it here in the emsdk, and it never saw it before; so it clears the cache
+  # as it assumes a new config file means system libraries may need rebuilding). To avoid emcc's clearing
+  # wiping out the pregenerated cache contents we want to copy in, run emcc here, then copy the cache
+  # contents.
   run_emcc(tools_to_activate)
 
   copy_pregenerated_cache(tools_to_activate)
