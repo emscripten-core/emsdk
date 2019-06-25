@@ -26,4 +26,5 @@ llvm-tags-32bit.txt
 llvm-tags-64bit.txt
 upstream
 emscripten-releases-tot.txt
-
+fastcomp
+releases
