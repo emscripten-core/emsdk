@@ -60,17 +60,24 @@ def test_build(args, expected=None, unexpected=None):
                            unexpected=unexpected,
                            stderr=subprocess.STDOUT)
 
-def test_build_libs(args):
-  test_build('',
-             expected='generating system library: libdlmalloc.',
-             unexpected=('generating system library: libc.',
-                         'generating system asset: generated_struct_info.json',
-                         'generating system asset: optimizer'))
+# by default we ship libc, struct_info, and the asm.js optimizer, as they
+# are important for various reasons (libc takes a long time to build;
+# struct_info is a bootstrap product so if the user's setup is broken it's
+# confusing; the asm.js optimizer is a native application so it needs a
+# working native local build environment). otherwise we don't ship every
+# single lib, so some building is expected on first run.
 
-test_build_libs('')
-test_build_libs(' -O2')
-test_build_libs(' -s WASM=0')
-test_build_libs(' -O2 -s WASM=0')
+unexpected_system_libs = ['generating system library: libc.',
+                          'generating system asset: generated_struct_info.json',
+                          'generating system asset: optimizer']
+
+first_time_system_libs = ['generating system library: libdlmalloc.']
+
+test_build('', expected=first_time_system_libs,
+               unexpected=unexpected_system_libs)
+test_build(' -O2', unexpected=unexpected_system_libs + first_time_system_libs)
+test_build(' -s WASM=0', unexpected=unexpected_system_libs + first_time_system_libs)
+test_build(' -O2 -s WASM=0', unexpected=unexpected_system_libs + first_time_system_libs)
 
 print('update')
 check_call('./emsdk update-tags')
