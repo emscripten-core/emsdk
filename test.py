@@ -7,12 +7,22 @@ import tempfile
 
 # Utilities
 
+def listify(x):
+  if type(x) == list or type(x) == tuple:
+    return x
+  return [x]
+
 def check_call(cmd):
   subprocess.check_call(cmd.split(' '))
 
-def checked_call_with_output(cmd, expected, stderr=None):
+def checked_call_with_output(cmd, expected=None, unexpected=None, stderr=None):
   stdout = subprocess.check_output(cmd.split(' '), stderr=stderr)
-  assert expected in stdout, 'call did not have the right output: ' + stdout
+  if expected:
+    for x in listify(expected):
+      assert x in stdout, 'call had the right output: ' + stdout + '\n[[[' + x + ']]]'
+  if unexpected:
+    for x in listify(unexpected):
+      assert x not in stdout, 'call had the wrong output: ' + stdout + '\n[[[' + x + ']]]'
 
 def failing_call_with_output(cmd, expected):
   proc = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE)
@@ -38,17 +48,48 @@ LIBC = os.path.expanduser('~/.emscripten_cache/wasm-obj/libc.a')
 
 # Tests
 
-print('update')
-check_call('./emsdk update-tags')
-
-print('test latest')
+print('test .emscripten contents (latest was installed/activated in test.sh)')
 assert 'fastcomp' in open(os.path.expanduser('~/.emscripten')).read()
 assert 'upstream' not in open(os.path.expanduser('~/.emscripten')).read()
+
+print('building proper system libraries')
+
+def test_lib_building(prefix, use_asmjs_optimizer):
+  def test_build(args, expected=None, unexpected=None):
+    checked_call_with_output(prefix + '/emscripten/emcc hello_world.cpp' + args,
+                             expected=expected,
+                             unexpected=unexpected,
+                             stderr=subprocess.STDOUT)
+
+  # by default we ship libc, struct_info, and the asm.js optimizer, as they
+  # are important for various reasons (libc takes a long time to build;
+  # struct_info is a bootstrap product so if the user's setup is broken it's
+  # confusing; the asm.js optimizer is a native application so it needs a
+  # working native local build environment). otherwise we don't ship every
+  # single lib, so some building is expected on first run.
+
+  unexpected_system_libs = ['generating system library: libc.',
+                            'generating system asset: optimizer']
+  if use_asmjs_optimizer:
+    unexpected_system_libs += ['generating system asset: generated_struct_info.json']
+
+  first_time_system_libs = ['generating system library: libdlmalloc.']
+
+  test_build('', expected=first_time_system_libs,
+                 unexpected=unexpected_system_libs)
+  test_build(' -O2', unexpected=unexpected_system_libs + first_time_system_libs)
+  test_build(' -s WASM=0', unexpected=unexpected_system_libs + first_time_system_libs)
+  test_build(' -O2 -s WASM=0', unexpected=unexpected_system_libs + first_time_system_libs)
+
+test_lib_building('fastcomp', use_asmjs_optimizer=True)
+
+print('update')
+check_call('./emsdk update-tags')
 
 print('test latest-releases-upstream')
 check_call('python2 ./emsdk install latest-upstream')
 check_call('./emsdk activate latest-upstream')
-check_call('upstream/emscripten/emcc hello_world.cpp')
+test_lib_building('upstream', use_asmjs_optimizer=False)
 assert open(os.path.expanduser('~/.emscripten')).read().count('LLVM_ROOT') == 1
 assert 'upstream' in open(os.path.expanduser('~/.emscripten')).read()
 assert 'fastcomp' not in open(os.path.expanduser('~/.emscripten')).read()
