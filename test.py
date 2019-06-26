@@ -7,12 +7,22 @@ import tempfile
 
 # Utilities
 
+def listify(x):
+  if type(x) == list or type(x) == tuple:
+    return x
+  return [x]
+
 def check_call(cmd):
   subprocess.check_call(cmd.split(' '))
 
-def checked_call_with_output(cmd, expected, stderr=None):
+def checked_call_with_output(cmd, expected=None, unexpected=None, stderr=None):
   stdout = subprocess.check_output(cmd.split(' '), stderr=stderr)
-  assert expected in stdout, 'call did not have the right output: ' + stdout
+  if expected:
+    for x in listify(expected):
+      assert x in stdout, 'call had the right output: ' + stdout + '\n[[[' + x + ']]]'
+  if unexpected:
+    for x in listify(unexpected):
+      assert x not in stdout, 'call had the wrong output: ' + stdout + '\n[[[' + x + ']]]'
 
 def failing_call_with_output(cmd, expected):
   proc = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE)
@@ -38,12 +48,32 @@ LIBC = os.path.expanduser('~/.emscripten_cache/wasm-obj/libc.a')
 
 # Tests
 
-print('update')
-check_call('./emsdk update-tags')
-
-print('test latest')
+print('test .emscripten contents (latest was installed/activated in test.sh)')
 assert 'fastcomp' in open(os.path.expanduser('~/.emscripten')).read()
 assert 'upstream' not in open(os.path.expanduser('~/.emscripten')).read()
+
+print('building proper system libraries')
+
+def test_build(args, expected=None, unexpected=None):
+  checked_call_with_output('upstream/emscripten/emcc hello_world.cpp' + args,
+                           expected=expected,
+                           unexpected=unexpected,
+                           stderr=subprocess.STDOUT)
+
+def test_build_libs(args):
+  test_build('',
+             expected='generating system library: libdlmalloc.',
+             unexpected=('generating system library: libc.',
+                         'generating system asset: generated_struct_info.json',
+                         'generating system asset: optimizer'))
+
+test_build_libs('')
+test_build_libs(' -O2')
+test_build_libs(' -s WASM=0')
+test_build_libs(' -O2 -s WASM=0')
+
+print('update')
+check_call('./emsdk update-tags')
 
 print('test latest-releases-upstream')
 check_call('python2 ./emsdk install latest-upstream')
