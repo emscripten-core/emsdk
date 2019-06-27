@@ -176,8 +176,7 @@ def vs_filewhere(installation_path, platform, file):
     return ''
 
 
-# Use ninja build tool if present
-CMAKE_GENERATOR = 'Ninja' if which('ninja') is not None else 'Unix Makefiles'
+CMAKE_GENERATOR = 'Unix Makefiles'
 if WINDOWS:
   # Detect which CMake generator to use when building on Windows
   if '--mingw' in sys.argv: CMAKE_GENERATOR = 'MinGW Makefiles'
@@ -197,8 +196,6 @@ if WINDOWS:
     else: CMAKE_GENERATOR = '' # No detected generator
 
 
-if VERBOSE:
-  print('CMAKE_GENERATOR: ' + CMAKE_GENERATOR)
 sys.argv = list(filter(lambda x: x not in ['--mingw', '--vs2013', '--vs2015', '--vs2017'], sys.argv))
 
 
@@ -2329,6 +2326,14 @@ def main():
                                   'Release' for LLVM master branch, and
                                   'RelWithDebInfo' for LLVM incoming branch.
 
+              --generator=<type>: Specifies the CMake Generator to be used
+                                  during the build. Possible values are the
+                                  same as what your CMake supports and whether
+                                  the generator is valid depends on the tools
+                                  you have installed. Defaults to 'Unix Makefiles'
+                                  on *nix systems. If generator name is multiple
+                                  words, enclose with single or double quotes.
+
                        --shallow: When installing tools from one of the git
                                   development branches 'master' or 'incoming',
                                   this parameter can be passed to perform a
@@ -2435,7 +2440,16 @@ def main():
 
   # Process global args
   for i in range(2, len(sys.argv)):
-    if sys.argv[i].startswith('--build='):
+    if sys.argv[i].startswith('--generator='):
+      build_generator = re.match(r'''^--generator=['"]?([^'"]+)['"]?$''', sys.argv[i])
+      if build_generator:
+        global CMAKE_GENERATOR
+        CMAKE_GENERATOR = build_generator.group(1)
+        sys.argv[i] = ''
+      else:
+        print("Cannot parse CMake generator string: " + sys.argv[i] + ". Try wrapping generator string with quotes", file=sys.stderr)
+        return 1
+    elif sys.argv[i].startswith('--build='):
       build_type = re.match(r'^--build=(.+)$', sys.argv[i])
       if build_type:
         global CMAKE_BUILD_TYPE_OVERRIDE
