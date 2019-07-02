@@ -33,7 +33,7 @@ def failing_call_with_output(cmd, expected):
   assert expected in stdout, 'call did not have the right output'
 
 def hack_emsdk(marker, replacement):
-  src = open('emsdk').read()
+  src = open('emsdk.py').read()
   assert marker in src
   src = src.replace(marker, replacement)
   name = '__test_emsdk'
@@ -89,7 +89,7 @@ print('update')
 check_call('./emsdk update-tags')
 
 print('test latest-releases-upstream')
-check_call('python2 ./emsdk install latest-upstream')
+check_call('python2 ./emsdk.py install latest-upstream')
 check_call('./emsdk activate latest-upstream')
 test_lib_building('upstream', use_asmjs_optimizer=False)
 assert open(os.path.expanduser('~/.emscripten')).read().count('LLVM_ROOT') == 1
