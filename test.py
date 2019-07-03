@@ -45,7 +45,9 @@ assert 'upstream' not in open(os.path.expanduser('~/.emscripten')).read()
 
 print('test latest-releases-upstream')
 check_call('python2 ./emsdk install latest-upstream')
+original_config = open(os.path.expanduser('~/.emscripten')).read()
 check_call('./emsdk activate latest-upstream')
+assert original_config == open(os.path.expanduser('~/.emscripten.old')).read()
 check_call('upstream/emscripten/emcc hello_world.cpp')
 assert open(os.path.expanduser('~/.emscripten')).read().count('LLVM_ROOT') == 1
 assert 'upstream' in open(os.path.expanduser('~/.emscripten')).read()
@@ -113,4 +115,3 @@ for os, suffix in [
   url = 'https://storage.googleapis.com/webassembly/emscripten-releases-builds/%s/%s/wasm-binaries.%s' % (os, latest_hash, suffix)
   print('  url: ' + url),
   check_call('wget ' + url)
-
