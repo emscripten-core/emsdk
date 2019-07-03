@@ -1232,6 +1232,11 @@ JS_ENGINES = [NODE_JS]
   if embedded:
     cfg = cfg.replace(emscripten_config_directory, "' + emsdk_path + '")
 
+  if os.path.exists(dot_emscripten_path()):
+    backup_path = dot_emscripten_path() + ".old"
+    print("Backing up old Emscripten configuration file in " + os.path.normpath(backup_path))
+    move_with_overwrite(dot_emscripten_path(), backup_path)
+
   with open(dot_emscripten_path(), "w") as text_file: text_file.write(cfg)
 
   # Clear old cached emscripten content.

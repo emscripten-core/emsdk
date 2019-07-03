@@ -104,7 +104,9 @@ assert not os.path.exists(LIBC)
 print('test tot-upstream')
 check_call('./emsdk install tot-upstream')
 assert not os.path.exists(LIBC)
+old_config = open(os.path.expanduser('~/.emscripten')).read()
 check_call('./emsdk activate tot-upstream')
+assert old_config == open(os.path.expanduser('~/.emscripten.old')).read()
 assert os.path.exists(LIBC), 'activation supplies prebuilt libc' # TODO; test on latest as well
 check_call('upstream/emscripten/emcc hello_world.cpp')
 
@@ -162,4 +164,3 @@ for os, suffix in [
   url = 'https://storage.googleapis.com/webassembly/emscripten-releases-builds/%s/%s/wasm-binaries.%s' % (os, latest_hash, suffix)
   print('  url: ' + url),
   check_call('wget ' + url)
-
