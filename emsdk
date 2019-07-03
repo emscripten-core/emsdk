@@ -445,6 +445,15 @@ def fix_potentially_long_windows_pathname(pathname):
   return '\\\\?\\' + os.path.normpath(pathname.replace('/', '\\'))
 
 
+# On windows, rename/move will fail if the destination exists, and there is no
+# race-free way to do it. This method removes the destination if it exists, so
+# the move always works
+def move_with_overwrite(src, dest):
+  if os.path.exists(dest):
+    os.remove(dest)
+  os.rename(src, dest)
+
+
 # http://stackoverflow.com/questions/12886768/simple-way-to-unzip-file-in-python-on-all-oses
 def unzip(source_filename, dest_dir, unpack_even_if_exists=False):
   if VERBOSE: print('unzip(source_filename=' + source_filename + ', dest_dir=' + dest_dir + ')')
@@ -492,7 +501,10 @@ def unzip(source_filename, dest_dir, unpack_even_if_exists=False):
             parent_dir = os.path.dirname(fix_potentially_long_windows_pathname(final_dst_filename))
             if parent_dir and not os.path.exists(parent_dir):
               os.makedirs(parent_dir)
-            os.rename(fix_potentially_long_windows_pathname(tmp_dst_filename), fix_potentially_long_windows_pathname(final_dst_filename))
+            target = fix_potentially_long_windows_pathname(final_dst_filename)
+            if os.path.exists(target):
+              os.remove(target)
+            move_with_overwrite(fix_potentially_long_windows_pathname(tmp_dst_filename), fix_potentially_long_windows_pathname(final_dst_filename))
 
       if common_subdir:
         try:
