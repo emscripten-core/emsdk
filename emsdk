@@ -501,9 +501,6 @@ def unzip(source_filename, dest_dir, unpack_even_if_exists=False):
             parent_dir = os.path.dirname(fix_potentially_long_windows_pathname(final_dst_filename))
             if parent_dir and not os.path.exists(parent_dir):
               os.makedirs(parent_dir)
-            target = fix_potentially_long_windows_pathname(final_dst_filename)
-            if os.path.exists(target):
-              os.remove(target)
             move_with_overwrite(fix_potentially_long_windows_pathname(tmp_dst_filename), fix_potentially_long_windows_pathname(final_dst_filename))
 
       if common_subdir:
