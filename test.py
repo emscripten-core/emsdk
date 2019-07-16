@@ -1,5 +1,6 @@
 import json
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -13,7 +14,7 @@ def listify(x):
   return [x]
 
 def check_call(cmd):
-  subprocess.check_call(cmd.split(' '))
+  subprocess.check_call(shlex.split(cmd))
 
 def checked_call_with_output(cmd, expected=None, unexpected=None, stderr=None):
   stdout = subprocess.check_output(cmd.split(' '), stderr=stderr)
@@ -134,7 +135,7 @@ check_call('./emsdk install sdk-tag-1.38.33-64bit')
 check_call('./emsdk activate sdk-tag-1.38.33-64bit')
 
 print('test binaryen source build')
-check_call('./emsdk install --build=Release binaryen-master-64bit')
+check_call('./emsdk install --build=Release --generator="Unix Makefiles" binaryen-master-64bit')
 
 print('test 32-bit error')
 

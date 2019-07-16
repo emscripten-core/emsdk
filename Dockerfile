@@ -13,4 +13,3 @@ RUN cd /root/ \
  && cd /root/emsdk/ \
  && bash test.sh \
  && python test.py
-
