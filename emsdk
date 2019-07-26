@@ -2603,13 +2603,17 @@ def main():
 
     return 0
   elif cmd == 'construct_env':
-    silentremove(EMSDK_SET_ENV) # Clean up old temp file up front, in case of failure later before we get to write out the new one.
+    if len(sys.argv) == 2:
+      outfile = EMSDK_SET_ENV
+      silentremove(EMSDK_SET_ENV) # Clean up old temp file up front, in case of failure later before we get to write out the new one.
+    else:
+      outfile = sys.argv[2]
     tools_to_activate = currently_active_tools()
     tools_to_activate = process_tool_list(tools_to_activate, log_errors=True)
     env_string = construct_env(tools_to_activate, len(sys.argv) >= 3 and 'perm' in sys.argv[2])
-    open(EMSDK_SET_ENV, 'w').write(env_string)
+    open(outfile, 'w').write(env_string)
     if LINUX or OSX:
-      os.chmod(EMSDK_SET_ENV, 0o755)
+      os.chmod(outfile, 0o755)
     return 0
   elif cmd == 'update':
     update_emsdk()
