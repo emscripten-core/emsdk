@@ -260,7 +260,7 @@ def win_set_environment_variable_direct(key, value, system=True):
 
   win32api.RegCloseKey(folder)
   os.environ['PATH'] = prev_path
-  win32api.SendMessage(win32con.HWND_BROADCAST, win32con.WM_SETTINGCHANGE, 0, 'Environment')
+  win32api.PostMessage(win32con.HWND_BROADCAST, win32con.WM_SETTINGCHANGE, 0, 'Environment')
 
 
 def win_get_environment_variable(key, system=True):
