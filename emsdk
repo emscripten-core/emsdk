@@ -79,6 +79,22 @@ if not OSX and (platform.system() == 'Linux' or os.name == 'posix'):
   LINUX = True
   ENVPATH_SEPARATOR = ':'
 
+UNIX = (OSX or LINUX)
+
+ARCH = 'unknown'
+machine = platform.machine()
+if machine.startswith('x64') or machine.startswith('amd64') or machine.startswith('x86_64'):
+  ARCH = 'x86_64'
+elif machine.endswith('86'):
+  ARCH = 'x86'
+elif machine.startswith('aarch64') or machine.lower().startswith('arm64'):
+  ARCH = 'aarch64'
+elif platform.machine().startswith('arm'):
+  ARCH = 'arm'
+else:
+  print("Warning: unknown machine architecture " + machine)
+  print()
+
 # Don't saturate all cores to not steal the whole system, but be aggressive.
 CPU_CORES = max(multiprocessing.cpu_count() - 1, 1)
 
@@ -973,9 +989,19 @@ def build_llvm_tool(tool):
   enable_assertions = ENABLE_LLVM_ASSERTIONS.lower() == 'on' or (ENABLE_LLVM_ASSERTIONS == 'auto' and build_type.lower() != 'release' and build_type.lower() != 'minsizerel')
 
   only_supports_wasm = hasattr(tool, 'only_supports_wasm')
-  targets_to_build = 'X86'
+  if ARCH == 'x86' or ARCH == 'x86_64':
+    targets_to_build = 'X86'
+  elif ARCH == 'arm':
+    targets_to_build = 'ARM'
+  elif ARCH == 'aarch64':
+    targets_to_build = 'AArch64'
+  else:
+    # May have problems with emconfigure
+    targets_to_build = ''
   if not only_supports_wasm:
-    targets_to_build += ';JSBackend'
+    if targets_to_build != '':
+      targets_to_build += ';'
+    targets_to_build += 'JSBackend'
   args = ['-DLLVM_TARGETS_TO_BUILD=' + targets_to_build, '-DLLVM_INCLUDE_EXAMPLES=OFF', '-DCLANG_INCLUDE_EXAMPLES=OFF', '-DLLVM_INCLUDE_TESTS=' + tests_arg, '-DCLANG_INCLUDE_TESTS=' + tests_arg, '-DLLVM_ENABLE_ASSERTIONS=' + ('ON' if enable_assertions else 'OFF')]
   if os.environ.get('LLVM_CMAKE_ARGS'):
     extra_args = os.environ['LLVM_CMAKE_ARGS'].split(',')
@@ -1370,11 +1396,17 @@ class Tool(object):
     else:
       return []
 
+  def compatible_with_this_arch(self):
+    if hasattr(self, 'arch'):
+      if self.arch != ARCH:
+        return False
+    return True
+
   def compatible_with_this_os(self):
     if hasattr(self, 'os'):
       if self.os == 'all':
         return True
-      if (WINDOWS and 'win' in self.os) or (LINUX and ('linux' in self.os or 'unix' in self.os)) or (OSX and ('osx' in self.os or 'unix' in self.os)):
+      if self.compatible_with_this_arch() and ((WINDOWS and 'win' in self.os) or (LINUX and ('linux' in self.os or 'unix' in self.os)) or (OSX and ('osx' in self.os or 'unix' in self.os))):
         return True
       else:
         return False
@@ -1382,16 +1414,16 @@ class Tool(object):
       if not hasattr(self, 'osx_url') and not hasattr(self, 'windows_url') and not hasattr(self, 'unix_url') and not hasattr(self, 'linux_url'):
         return True
 
-    if OSX and hasattr(self, 'osx_url'):
+    if OSX and hasattr(self, 'osx_url') and self.compatible_with_this_arch():
       return True
 
-    if LINUX and hasattr(self, 'linux_url'):
+    if LINUX and hasattr(self, 'linux_url') and self.compatible_with_this_arch():
       return True
 
-    if WINDOWS and (hasattr(self, 'windows_url') or hasattr(self, 'windows_install_path')):
+    if WINDOWS and (hasattr(self, 'windows_url') or hasattr(self, 'windows_install_path')) and self.compatible_with_this_arch():
       return True
 
-    if (LINUX or OSX) and hasattr(self, 'unix_url'):
+    if UNIX and hasattr(self, 'unix_url'):
       return True
 
     return hasattr(self, 'url')
@@ -1517,7 +1549,7 @@ class Tool(object):
       return self.osx_url
     elif LINUX and hasattr(self, 'linux_url'):
       return self.linux_url
-    elif (OSX or LINUX) and hasattr(self, 'unix_url'):
+    elif UNIX and hasattr(self, 'unix_url'):
       return self.unix_url
     elif hasattr(self, 'url'):
       return self.url
@@ -2502,16 +2534,22 @@ def main():
   if cmd == 'list':
     print('')
 
-    print('The *recommended* precompiled SDK download is %s (%s).' % (find_latest_releases_version(), find_latest_releases_hash()))
-    print()
-    print('To install/activate it, use one of:')
-    print('         latest                  [default (fastcomp) backend]')
-    print('         latest-upstream         [upstream LLVM wasm backend]')
-    print('')
-    print('Those are equivalent to installing/activating the following:')
-    print('         %s' % find_latest_releases_version())
-    print('         %s-upstream' % find_latest_releases_version())
-    print('')
+    if (LINUX or OSX or WINDOWS) and (ARCH == 'x86' or ARCH == 'x86_64'):
+      print('The *recommended* precompiled SDK download is %s (%s).' % (find_latest_releases_version(), find_latest_releases_hash()))
+      print()
+      print('To install/activate it, use one of:')
+      print('         latest                  [default (fastcomp) backend]')
+      print('         latest-upstream         [upstream LLVM wasm backend]')
+      print('')
+      print('Those are equivalent to installing/activating the following:')
+      print('         %s' % find_latest_releases_version())
+      print('         %s-upstream' % find_latest_releases_version())
+      print('')
+    else:
+      print('Warning: your platform does not have precompiled SDKs available.')
+      print('You may install components from source.')
+      print('')
+
     print('All recent (non-legacy) installable versions are:')
     releases_versions = sorted(load_releases_versions())
     releases_versions.reverse()
@@ -2612,7 +2650,7 @@ def main():
     tools_to_activate = process_tool_list(tools_to_activate, log_errors=True)
     env_string = construct_env(tools_to_activate, len(sys.argv) >= 3 and 'perm' in sys.argv[2])
     open(outfile, 'w').write(env_string)
-    if LINUX or OSX:
+    if UNIX:
       os.chmod(outfile, 0o755)
     return 0
   elif cmd == 'update':
