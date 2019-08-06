@@ -83,7 +83,7 @@ UNIX = (OSX or LINUX)
 
 ARCH = 'unknown'
 machine = platform.machine()
-if machine.startswith('x64') or machine.startswith('amd64') or machine.startswith('x86_64'):
+if machine.startswith('x64') or machine.lower().startswith('amd64') or machine.startswith('x86_64'):
   ARCH = 'x86_64'
 elif machine.endswith('86'):
   ARCH = 'x86'
