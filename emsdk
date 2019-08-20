@@ -1624,9 +1624,9 @@ class Tool(object):
     url = self.download_url()
     if url.endswith(ARCHIVE_SUFFIXES):
       file_name = url.split('/')[-1]
-      tempzipfile = os.path.join('zips/', file_name)
-      if VERBOSE: print("Deleting temporary zip file " + tempzipfile)
-      rmfile(tempzipfile)
+      download_target = get_download_target(url, zips_subdir, getattr(self, 'zipfile_prefix', ''))
+      if VERBOSE: print("Deleting temporary zip file " + download_target)
+      rmfile(download_target)
 
   def uninstall(self):
     if not self.is_installed():
