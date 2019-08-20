@@ -122,6 +122,8 @@ check_call('./emsdk activate sdk-1.38.31-64bit')
 
 print('test specific release (new, short name)')
 check_call('./emsdk install 1.38.33')
+print('another install must re-download')
+checked_call_with_output('./emsdk install 1.38.33', expected='Downloading:', unexpected='already exist in destination')
 check_call('./emsdk activate 1.38.33')
 assert 'fastcomp' in open(os.path.expanduser('~/.emscripten')).read()
 assert 'upstream' not in open(os.path.expanduser('~/.emscripten')).read()
