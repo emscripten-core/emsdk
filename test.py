@@ -148,7 +148,7 @@ temp_dir = tempfile.mkdtemp()
 
 for filename in os.listdir('.'):
   if not filename.startswith('.') and not os.path.isdir(filename):
-    shutil.copyfile(filename, os.path.join(temp_dir, filename))
+    shutil.copy2(filename, os.path.join(temp_dir, filename))
 
 os.chdir(temp_dir)
 
