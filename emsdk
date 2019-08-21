@@ -503,6 +503,10 @@ def unzip(source_filename, dest_dir, unpack_even_if_exists=False):
       # Now do the actual decompress.
       for member in zf.infolist():
         zf.extract(member, fix_potentially_long_windows_pathname(unzip_to_dir))
+        unix_attributes = member.external_attr >> 16
+        if unix_attributes:
+          target = os.path.join(unzip_to_dir, member.filename)
+          os.chmod(target, unix_attributes)
 
         # Move the extracted file to its final location without the base directory name, if we are stripping that away.
         if common_subdir:
