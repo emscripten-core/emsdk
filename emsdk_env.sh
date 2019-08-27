@@ -23,7 +23,7 @@ cd "$(dirname "$SRC")"
 unset SRC
 
 tmpfile=`mktemp` || exit 1
-./emsdk construct_env "$@" $tmpfile
+./emsdk construct_env $tmpfile
 . $tmpfile
 rm -f $tmpfile
 

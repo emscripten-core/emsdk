@@ -8,7 +8,7 @@ set -l dir (dirname $script)
 
 pushd $dir > /dev/null
 
-./emsdk construct_env "$argv"
+./emsdk construct_env
 . ./emsdk_set_env.sh
 
 set -e -l script
