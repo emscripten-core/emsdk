@@ -513,7 +513,49 @@
     "version": "8.9.1",
     "arch": "aarch64",
     "bitness": 64,
-    "linux_url": "https://nodejs.org/dist/v8.9.1/node-v8.9.1-linux-arm64.tar.xz",
+    "linux_url": "node-v8.9.1-linux-arm64.tar.xz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+  },
+  {
+    "id": "node",
+    "version": "10.16.3",
+    "bitness": 32,
+    "arch": "x86",
+    "windows_url": "node-v10.16.3-win-x86.zip",
+    "activated_path": "%installation_dir%/bin",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+  },
+  {
+    "id": "node",
+    "version": "10.16.3",
+    "arch": "arm",
+    "bitness": 32,
+    "linux_url": "node-v10.16.3-linux-armv7l.tar.xz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+  },
+  {
+    "id": "node",
+    "version": "10.16.3",
+    "bitness": 64,
+    "arch": "x86_64",
+    "osx_url": "node-v10.16.3-darwin-x64.tar.gz",
+    "windows_url": "node-v10.16.3-win-x64.zip",
+    "linux_url": "node-v10.16.3-linux-x64.tar.xz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+  },
+  {
+    "id": "node",
+    "version": "10.16.3",
+    "arch": "aarch64",
+    "bitness": 64,
+    "linux_url": "node-v10.16.3-linux-arm64.tar.xz",
     "activated_path": "%installation_dir%/bin",
     "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
     "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
@@ -1144,61 +1186,61 @@
   {
     "version": "incoming",
     "bitness": 32,
-    "uses": ["clang-incoming-32bit", "node-8.9.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-incoming-32bit", "binaryen-master-32bit"],
+    "uses": ["clang-incoming-32bit", "node-10.16.3-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-incoming-32bit", "binaryen-master-32bit"],
     "os": "win"
   },
   {
     "version": "incoming",
     "bitness": 64,
-    "uses": ["clang-incoming-64bit", "node-8.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-incoming-64bit", "binaryen-master-64bit"],
+    "uses": ["clang-incoming-64bit", "node-10.16.3-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-incoming-64bit", "binaryen-master-64bit"],
     "os": "win"
   },
   {
     "version": "incoming",
     "bitness": 64,
-    "uses": ["clang-incoming-64bit", "node-8.9.1-64bit", "emscripten-incoming-64bit", "binaryen-master-64bit"],
+    "uses": ["clang-incoming-64bit", "node-10.16.3-64bit", "emscripten-incoming-64bit", "binaryen-master-64bit"],
     "os": "osx"
   },
   {
     "version": "incoming",
     "bitness": 32,
-    "uses": ["clang-incoming-32bit", "node-8.9.1-32bit", "emscripten-incoming-32bit", "binaryen-master-32bit"],
+    "uses": ["clang-incoming-32bit", "node-10.16.3-32bit", "emscripten-incoming-32bit", "binaryen-master-32bit"],
     "os": "linux"
   },
   {
     "version": "incoming",
     "bitness": 64,
-    "uses": ["clang-incoming-64bit", "node-8.9.1-64bit", "emscripten-incoming-64bit", "binaryen-master-64bit"],
+    "uses": ["clang-incoming-64bit", "node-10.16.3-64bit", "emscripten-incoming-64bit", "binaryen-master-64bit"],
     "os": "linux"
   },
   {
     "version": "master",
     "bitness": 32,
-    "uses": ["clang-master-32bit", "node-4.1.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-master-32bit", "binaryen-master-32bit"],
+    "uses": ["clang-master-32bit", "node-10.16.3-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-master-32bit", "binaryen-master-32bit"],
     "os": "win"
   },
   {
     "version": "master",
     "bitness": 64,
-    "uses": ["clang-master-64bit", "node-4.1.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
+    "uses": ["clang-master-64bit", "node-10.16.3-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
     "os": "win"
   },
   {
     "version": "master",
     "bitness": 64,
-    "uses": ["clang-master-64bit", "node-4.1.1-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
+    "uses": ["clang-master-64bit", "node-10.16.3-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
     "os": "osx"
   },
   {
     "version": "master",
     "bitness": 32,
-    "uses": ["clang-master-32bit", "node-4.1.1-32bit", "emscripten-master-32bit", "binaryen-master-32bit"],
+    "uses": ["clang-master-32bit", "node-10.16.3-32bit", "emscripten-master-32bit", "binaryen-master-32bit"],
     "os": "linux"
   },
   {
     "version": "master",
     "bitness": 64,
-    "uses": ["clang-master-64bit", "node-4.1.1-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
+    "uses": ["clang-master-64bit", "node-10.16.3-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
     "os": "linux"
   },
   {
@@ -1625,37 +1667,37 @@
   {
     "version": "releases-upstream-%releases-tag%",
     "bitness": 64,
-    "uses": ["releases-upstream-%releases-tag%-64bit", "node-8.9.1-64bit"],
+    "uses": ["releases-upstream-%releases-tag%-64bit", "node-10.16.3-64bit"],
     "os": "linux"
   },
   {
     "version": "releases-upstream-%releases-tag%",
     "bitness": 64,
-    "uses": ["releases-upstream-%releases-tag%-64bit", "node-8.9.1-64bit"],
+    "uses": ["releases-upstream-%releases-tag%-64bit", "node-10.16.3-64bit"],
     "os": "osx"
   },
   {
     "version": "releases-upstream-%releases-tag%",
     "bitness": 64,
-    "uses": ["releases-upstream-%releases-tag%-64bit", "node-8.9.1-64bit"],
+    "uses": ["releases-upstream-%releases-tag%-64bit", "node-10.16.3-64bit"],
     "os": "win"
   },
   {
     "version": "releases-fastcomp-%releases-tag%",
     "bitness": 64,
-    "uses": ["releases-fastcomp-%releases-tag%-64bit", "node-8.9.1-64bit"],
+    "uses": ["releases-fastcomp-%releases-tag%-64bit", "node-10.16.3-64bit"],
     "os": "linux"
   },
   {
     "version": "releases-fastcomp-%releases-tag%",
     "bitness": 64,
-    "uses": ["releases-fastcomp-%releases-tag%-64bit", "node-8.9.1-64bit"],
+    "uses": ["releases-fastcomp-%releases-tag%-64bit", "node-10.16.3-64bit"],
     "os": "osx"
   },
   {
     "version": "releases-fastcomp-%releases-tag%",
     "bitness": 64,
-    "uses": ["releases-fastcomp-%releases-tag%-64bit", "node-8.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit"],
+    "uses": ["releases-fastcomp-%releases-tag%-64bit", "node-10.16.3-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit"],
     "os": "win"
   },
   {
