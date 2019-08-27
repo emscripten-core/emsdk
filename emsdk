@@ -951,10 +951,10 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
 
 def xcode_sdk_version():
   try:
+    output = subprocess.check_output(['xcrun', '--show-sdk-version'])
     if sys.version_info >= (3,):
-      return subprocess.check_output(['xcrun', '--show-sdk-version']).decode('utf8').strip().split('.')
-    else:
-      return subprocess.check_output(['xcrun', '--show-sdk-version']).strip().split('.')
+      output = output.decode('utf8')
+    return output.strip().split('.')
   except:
     return subprocess.checkplatform.mac_ver()[0].split('.')
 
