@@ -503,6 +503,12 @@ def unzip(source_filename, dest_dir, unpack_even_if_exists=False):
       # Now do the actual decompress.
       for member in zf.infolist():
         zf.extract(member, fix_potentially_long_windows_pathname(unzip_to_dir))
+        dst_filename = os.path.join(unzip_to_dir, member.filename)
+
+        # See: https://stackoverflow.com/questions/42326428/zipfile-in-python-file-permission
+        unix_attributes = member.external_attr >> 16
+        if unix_attributes:
+          os.chmod(dst_filename, unix_attributes)
 
         # Move the extracted file to its final location without the base directory name, if we are stripping that away.
         if common_subdir:
@@ -514,11 +520,10 @@ def unzip(source_filename, dest_dir, unpack_even_if_exists=False):
             d = fix_potentially_long_windows_pathname(final_dst_filename)
             if not os.path.isdir(d): os.mkdir(d)
           else:
-            tmp_dst_filename = os.path.join(unzip_to_dir, member.filename)
             parent_dir = os.path.dirname(fix_potentially_long_windows_pathname(final_dst_filename))
             if parent_dir and not os.path.exists(parent_dir):
               os.makedirs(parent_dir)
-            move_with_overwrite(fix_potentially_long_windows_pathname(tmp_dst_filename), fix_potentially_long_windows_pathname(final_dst_filename))
+            move_with_overwrite(fix_potentially_long_windows_pathname(dst_filename), fix_potentially_long_windows_pathname(final_dst_filename))
 
       if common_subdir:
         try:
