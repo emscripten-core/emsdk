@@ -128,6 +128,7 @@ def os_name_for_emscripten_releases():
   else:
     raise Exception('unknown OS')
 
+
 def to_unix_path(p):
   return p.replace('\\', '/')
 
@@ -298,7 +299,7 @@ def win_get_environment_variable(key, system=True):
       else: # Register locally from CURRENT USER section.
         folder = win32api.RegOpenKey(win32con.HKEY_CURRENT_USER, 'Environment')
       value = str(win32api.RegQueryValueEx(folder, key)[0])
-    except Exception as e:
+    except Exception:
       # PyWin32 is not available - read via os.environ. This has the drawback that expansion items such as %PROGRAMFILES% will have been expanded, so
       # need to be precise not to set these back to system registry, or expansion items would be lost.
       return os.environ[key]
@@ -308,7 +309,7 @@ def win_get_environment_variable(key, system=True):
       print(str(e), file=sys.stderr)
     try:
       win32api.RegCloseKey(folder)
-    except Exception as e:
+    except Exception:
       pass
     os.environ['PATH'] = prev_path
     return None
@@ -344,7 +345,7 @@ def win_set_environment_variable(key, value, system=True):
         cmd = ['REG', 'DELETE', 'HKCU\\Environment', '/V', key, '/f']
       if VERBOSE: print(str(cmd))
       value = subprocess.call(cmd, stdout=subprocess.PIPE)
-    except Exception as e:
+    except Exception:
       return
     return
 
@@ -359,7 +360,7 @@ def win_set_environment_variable(key, value, system=True):
     cmd = ['SETX', key, value]
     if VERBOSE: print(str(cmd))
     retcode = subprocess.call(cmd, stdout=subprocess.PIPE)
-    if retcode is not 0:
+    if retcode != 0:
       print('ERROR! Failed to set environment variable ' + key + '=' + value + '. You may need to set it manually.', file=sys.stderr)
   except Exception as e:
     print('ERROR! Failed to set environment variable ' + key + '=' + value + ':', file=sys.stderr)
@@ -570,6 +571,7 @@ def get_content_length(download):
 
   return 0
 
+
 def get_download_target(url, dstpath, filename_prefix=''):
   file_name = filename_prefix + url.split('/')[-1]
   if path_points_to_directory(dstpath):
@@ -581,6 +583,7 @@ def get_download_target(url, dstpath, filename_prefix=''):
   file_name = sdk_path(file_name)
 
   return file_name
+
 
 # On success, returns the filename on the disk pointing to the destination file that was produced
 # On failure, returns None.
@@ -629,7 +632,7 @@ def download_file(url, dstpath, download_even_if_exists=False, filename_prefix='
     print("Error downloading URL '" + url + "': " + str(e))
     rmfile(file_name)
     return None
-  except KeyboardInterrupt as e:
+  except KeyboardInterrupt:
     print("Aborted by User, exiting")
     rmfile(file_name)
     sys.exit(1)
@@ -1327,11 +1330,11 @@ def get_installed_vstool_version(installed_path):
 class Tool(object):
   def __init__(self, data):
     # Convert the dictionary representation of the tool in 'data' to members of this class for convenience.
-    for key in data:
-      if sys.version_info < (3,) and isinstance(data[key], unicode):
-        setattr(self, key, data[key].encode('Latin-1'))
-      else:
-        setattr(self, key, data[key])
+    for key, value in data.items():
+      # Python2 compat, convert unicode to str
+      if sys.version_info < (3,) and isinstance(value, unicode): # noqa
+        value = value.encode('Latin-1')
+      setattr(self, key, value)
 
     # Cache the name ID of this Tool (these are read very often)
     self.name = self.id + '-' + self.version
@@ -1638,7 +1641,6 @@ class Tool(object):
   def cleanup_temp_install_files(self):
     url = self.download_url()
     if url.endswith(ARCHIVE_SUFFIXES):
-      file_name = url.split('/')[-1]
       download_target = get_download_target(url, zips_subdir, getattr(self, 'zipfile_prefix', ''))
       if VERBOSE: print("Deleting temporary zip file " + download_target)
       rmfile(download_target)
@@ -1780,7 +1782,7 @@ def get_emscripten_releases_tot():
       'tbz2' if not WINDOWS else 'zip'
     )
     try:
-      u = urlopen(url)
+      urlopen(url)
     except:
       continue
     return release
@@ -1951,8 +1953,11 @@ def load_releases_versions():
 
 
 def is_string(s):
-  if sys.version_info[0] >= 3:
-    return isinstance(s, str)
+  # Python3 compat
+  try:
+    basestring
+  except NameError:
+    basestring = str
   return isinstance(s, basestring)
 
 

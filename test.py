@@ -4,18 +4,20 @@ import os
 import shlex
 import shutil
 import subprocess
-import sys
 import tempfile
 
 # Utilities
+
 
 def listify(x):
   if type(x) == list or type(x) == tuple:
     return x
   return [x]
 
+
 def check_call(cmd):
   subprocess.check_call(shlex.split(cmd))
+
 
 def checked_call_with_output(cmd, expected=None, unexpected=None, stderr=None):
   stdout = subprocess.check_output(cmd.split(' '), stderr=stderr)
@@ -26,11 +28,13 @@ def checked_call_with_output(cmd, expected=None, unexpected=None, stderr=None):
     for x in listify(unexpected):
       assert x not in stdout, 'call had the wrong output: ' + stdout + '\n[[[' + x + ']]]'
 
+
 def failing_call_with_output(cmd, expected):
   proc = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE)
   stdout, stderr = proc.communicate()
   assert proc.returncode, 'call must have failed'
   assert expected in stdout, 'call did not have the right output'
+
 
 def hack_emsdk(marker, replacement):
   src = open('emsdk.py').read()
@@ -39,6 +43,7 @@ def hack_emsdk(marker, replacement):
   name = '__test_emsdk'
   open(name, 'w').write(src)
   return name
+
 
 # Set up
 
@@ -55,6 +60,7 @@ assert 'fastcomp' in open(os.path.expanduser('~/.emscripten')).read()
 assert 'upstream' not in open(os.path.expanduser('~/.emscripten')).read()
 
 print('building proper system libraries')
+
 
 def test_lib_building(prefix, use_asmjs_optimizer):
   def test_build(args, expected=None, unexpected=None):
@@ -78,10 +84,11 @@ def test_lib_building(prefix, use_asmjs_optimizer):
   first_time_system_libs = ['generating system library: libdlmalloc.']
 
   test_build('', expected=first_time_system_libs,
-                 unexpected=unexpected_system_libs)
+             unexpected=unexpected_system_libs)
   test_build(' -O2', unexpected=unexpected_system_libs + first_time_system_libs)
   test_build(' -s WASM=0', unexpected=unexpected_system_libs + first_time_system_libs)
   test_build(' -O2 -s WASM=0', unexpected=unexpected_system_libs + first_time_system_libs)
+
 
 test_lib_building('fastcomp', use_asmjs_optimizer=True)
 
@@ -160,11 +167,11 @@ check_call('./emsdk update')
 
 print('verify downloads exist for all OSes')
 latest_hash = TAGS['releases'][TAGS['latest']]
-for os, suffix in [
+for osname, suffix in [
   ('linux', 'tbz2'),
   ('mac', 'tbz2'),
   ('win', 'zip')
 ]:
-  url = 'https://storage.googleapis.com/webassembly/emscripten-releases-builds/%s/%s/wasm-binaries.%s' % (os, latest_hash, suffix)
+  url = 'https://storage.googleapis.com/webassembly/emscripten-releases-builds/%s/%s/wasm-binaries.%s' % (osname, latest_hash, suffix)
   print('  url: ' + url),
   check_call('wget ' + url)
