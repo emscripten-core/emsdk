@@ -43,8 +43,6 @@ else:
 
 emsdk_packages_url = emsdk_master_server
 
-emscripten_git_repo = 'https://github.com/emscripten-core/emscripten.git'
-binaryen_git_repo = 'https://github.com/WebAssembly/binaryen.git'
 emscripten_releases_repo = 'https://chromium.googlesource.com/emscripten-releases'
 
 emscripten_releases_download_url_template = "https://storage.googleapis.com/webassembly/emscripten-releases-builds/%s/%s/wasm-binaries.%s"
@@ -54,8 +52,8 @@ emsdk_zip_download_url = 'https://github.com/emscripten-core/emsdk/archive/maste
 zips_subdir = 'zips/'
 
 # Enable this to do very verbose printing about the different steps that are being run. Useful for debugging.
-VERBOSE = bool(os.getenv('EMSDK_VERBOSE')) if os.getenv('EMSDK_VERBOSE') is not None else False
-TTY_OUTPUT = sys.stdout.isatty()
+VERBOSE = int(os.getenv('EMSDK_VERBOSE', '0'))
+TTY_OUTPUT = not os.getenv('EMSDK_NOTTY', not sys.stdout.isatty())
 
 POWERSHELL = bool(os.getenv('EMSDK_POWERSHELL'))
 
@@ -98,7 +96,7 @@ else:
   print()
 
 # Don't saturate all cores to not steal the whole system, but be aggressive.
-CPU_CORES = max(multiprocessing.cpu_count() - 1, 1)
+CPU_CORES = int(os.environ.get('EMSDK_NUM_CORES', max(multiprocessing.cpu_count() - 1, 1)))
 
 CMAKE_BUILD_TYPE_OVERRIDE = None
 
@@ -627,7 +625,8 @@ def download_file(url, dstpath, download_even_if_exists=False, filename_prefix='
                       sys.stdout.flush()
                       progress_shown += 1
       if not TTY_OUTPUT:
-          print(']')
+        print(']')
+        sys.stdout.flush()
   except Exception as e:
     print("Error downloading URL '" + url + "': " + str(e))
     rmfile(file_name)
@@ -918,7 +917,8 @@ def make_build(build_root, build_type, build_target_platform='x64'):
 def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_args=[]):
   if VERBOSE: print('cmake_configure(generator=' + str(generator) + ', build_root=' + str(build_root) + ', src_root=' + str(src_root) + ', build_type=' + str(build_type) + ', extra_cmake_args=' + str(extra_cmake_args) + ')')
   # Configure
-  if not os.path.isdir(build_root): os.mkdir(build_root) # Create build output directory if it doesn't yet exist.
+  if not os.path.isdir(build_root):
+    os.mkdir(build_root) # Create build output directory if it doesn't yet exist.
   try:
     if generator: generator = ['-G', generator]
     else: generator = []
@@ -1463,7 +1463,8 @@ class Tool(object):
 
       def each_path_exists(pathlist):
         for path in pathlist:
-          if not os.path.exists(path): return False
+          if not os.path.exists(path):
+            return False
         return True
 
       content_exists = os.path.exists(self.installation_path()) and each_path_exists(activated_path) and (os.path.isfile(self.installation_path()) or num_files_in_directory(self.installation_path()) > 0)
@@ -1953,12 +1954,9 @@ def load_releases_versions():
 
 
 def is_string(s):
-  # Python3 compat
-  try:
-    basestring
-  except NameError:
-    basestring = str
-  return isinstance(s, basestring)
+  if sys.version_info[0] >= 3:
+    return isinstance(s, str)
+  return isinstance(s, basestring)  # noqa
 
 
 def load_sdk_manifest():
@@ -2759,6 +2757,7 @@ def main():
       success = tool.install()
       if not success:
         return 1
+    return 0
   elif cmd == 'uninstall':
     if len(sys.argv) <= 2:
       print("Syntax error. Call 'emsdk uninstall <tool name>'. Call 'emsdk list' to obtain a list of available tools.")
@@ -2768,9 +2767,10 @@ def main():
       print("Error: Tool by name '" + sys.argv[2] + "' was not found.")
       return 1
     tool.uninstall()
-  else:
-    print("Unknown command '" + cmd + "' given! Type 'emsdk help' to get a list of commands.")
-    return 1
+    return 0
+
+  print("Unknown command '" + cmd + "' given! Type 'emsdk help' to get a list of commands.")
+  return 1
 
 
 if __name__ == '__main__':
