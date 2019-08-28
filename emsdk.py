@@ -128,6 +128,7 @@ def os_name_for_emscripten_releases():
   else:
     raise Exception('unknown OS')
 
+
 def to_unix_path(p):
   return p.replace('\\', '/')
 
@@ -359,7 +360,7 @@ def win_set_environment_variable(key, value, system=True):
     cmd = ['SETX', key, value]
     if VERBOSE: print(str(cmd))
     retcode = subprocess.call(cmd, stdout=subprocess.PIPE)
-    if retcode is not 0:
+    if retcode != 0:
       print('ERROR! Failed to set environment variable ' + key + '=' + value + '. You may need to set it manually.', file=sys.stderr)
   except Exception as e:
     print('ERROR! Failed to set environment variable ' + key + '=' + value + ':', file=sys.stderr)
@@ -570,6 +571,7 @@ def get_content_length(download):
 
   return 0
 
+
 def get_download_target(url, dstpath, filename_prefix=''):
   file_name = filename_prefix + url.split('/')[-1]
   if path_points_to_directory(dstpath):
@@ -581,6 +583,7 @@ def get_download_target(url, dstpath, filename_prefix=''):
   file_name = sdk_path(file_name)
 
   return file_name
+
 
 # On success, returns the filename on the disk pointing to the destination file that was produced
 # On failure, returns None.
@@ -1638,7 +1641,6 @@ class Tool(object):
   def cleanup_temp_install_files(self):
     url = self.download_url()
     if url.endswith(ARCHIVE_SUFFIXES):
-      file_name = url.split('/')[-1]
       download_target = get_download_target(url, zips_subdir, getattr(self, 'zipfile_prefix', ''))
       if VERBOSE: print("Deleting temporary zip file " + download_target)
       rmfile(download_target)
@@ -1780,7 +1782,7 @@ def get_emscripten_releases_tot():
       'tbz2' if not WINDOWS else 'zip'
     )
     try:
-      u = urlopen(url)
+      urlopen(url)
     except:
       continue
     return release
