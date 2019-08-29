@@ -133,9 +133,9 @@ def os_name_for_emscripten_releases():
     raise Exception('unknown OS')
 
 
-def debug_print(**args):
+def debug_print(msg, **args):
   if VERBOSE:
-    print(**args)
+    print(msg, **args)
 
 
 def to_unix_path(p):
