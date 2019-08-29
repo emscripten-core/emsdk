@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import json
 import os
-import shlex
 import shutil
 import subprocess
+import sys
 import tempfile
 
 # Utilities
@@ -15,12 +15,17 @@ def listify(x):
   return [x]
 
 
-def check_call(cmd):
-  subprocess.check_call(shlex.split(cmd))
+def check_call(cmd, **args):
+  if type(cmd) != list:
+    cmd = cmd.split()
+  print('running: %s' % cmd)
+  subprocess.check_call(cmd, **args)
 
 
 def checked_call_with_output(cmd, expected=None, unexpected=None, stderr=None):
-  stdout = subprocess.check_output(cmd.split(' '), stderr=stderr)
+  cmd = cmd.split(' ')
+  print('running: %s' % cmd)
+  stdout = subprocess.check_output(cmd, stderr=stderr)
   if expected:
     for x in listify(expected):
       assert x in stdout, 'call had the right output: ' + stdout + '\n[[[' + x + ']]]'
@@ -62,9 +67,9 @@ assert 'upstream' not in open(os.path.expanduser('~/.emscripten')).read()
 print('building proper system libraries')
 
 
-def test_lib_building(prefix, use_asmjs_optimizer):
+def test_lib_building(emcc, use_asmjs_optimizer):
   def test_build(args, expected=None, unexpected=None):
-    checked_call_with_output(prefix + '/emscripten/emcc hello_world.cpp' + args,
+    checked_call_with_output(emcc + ' hello_world.cpp' + args,
                              expected=expected,
                              unexpected=unexpected,
                              stderr=subprocess.STDOUT)
@@ -90,62 +95,81 @@ def test_lib_building(prefix, use_asmjs_optimizer):
   test_build(' -O2 -s WASM=0', unexpected=unexpected_system_libs + first_time_system_libs)
 
 
-test_lib_building('fastcomp', use_asmjs_optimizer=True)
+def run_emsdk(cmd):
+  if type(cmd) != list:
+    cmd = cmd.split()
+  check_call([emsdk] + cmd)
+
+
+WINDOWS = sys.platform.startswith('win')
+
+upstream_emcc = os.path.join('upstream', 'emscripten', 'emcc')
+fastcomp_emcc = os.path.join('fastcomp', 'emscripten', 'emcc')
+emsdk = './emsdk'
+if WINDOWS:
+  upstream_emcc += '.bat'
+  fastcomp_emcc += '.bat'
+  emsdk = 'emsdk.bat'
+else:
+  emsdk = './emsdk'
+
+test_lib_building(fastcomp_emcc, use_asmjs_optimizer=True)
 
 print('update')
-check_call('./emsdk update-tags')
+run_emsdk('update-tags')
 
 print('test latest-releases-upstream')
-check_call('python2 ./emsdk.py install latest-upstream')
-check_call('./emsdk activate latest-upstream')
-test_lib_building('upstream', use_asmjs_optimizer=False)
+run_emsdk('install latest-upstream')
+run_emsdk('activate latest-upstream')
+test_lib_building(upstream_emcc, use_asmjs_optimizer=False)
 assert open(os.path.expanduser('~/.emscripten')).read().count('LLVM_ROOT') == 1
 assert 'upstream' in open(os.path.expanduser('~/.emscripten')).read()
 assert 'fastcomp' not in open(os.path.expanduser('~/.emscripten')).read()
 
+
 print('verify version')
-checked_call_with_output('upstream/emscripten/emcc -v', TAGS['latest'], stderr=subprocess.STDOUT)
+checked_call_with_output(upstream_emcc + ' -v', TAGS['latest'], stderr=subprocess.STDOUT)
 
 print('clear cache')
-check_call('upstream/emscripten/emcc --clear-cache')
+check_call(upstream_emcc + ' --clear-cache')
 assert not os.path.exists(LIBC)
 
 print('test tot-upstream')
-check_call('./emsdk install tot-upstream')
+run_emsdk('install tot-upstream')
 assert not os.path.exists(LIBC)
 old_config = open(os.path.expanduser('~/.emscripten')).read()
-check_call('./emsdk activate tot-upstream')
+run_emsdk('activate tot-upstream')
 assert old_config == open(os.path.expanduser('~/.emscripten.old')).read()
 assert os.path.exists(LIBC), 'activation supplies prebuilt libc' # TODO; test on latest as well
-check_call('upstream/emscripten/emcc hello_world.cpp')
+check_call(upstream_emcc + ' hello_world.cpp')
 
 print('test tot-fastcomp')
-check_call('./emsdk install tot-fastcomp')
-check_call('./emsdk activate tot-fastcomp')
-check_call('fastcomp/emscripten/emcc hello_world.cpp')
+run_emsdk('install tot-fastcomp')
+run_emsdk('activate tot-fastcomp')
+check_call(fastcomp_emcc + ' hello_world.cpp')
 
 print('test specific release (old)')
-check_call('./emsdk install sdk-1.38.31-64bit')
-check_call('./emsdk activate sdk-1.38.31-64bit')
+run_emsdk('install sdk-1.38.31-64bit')
+run_emsdk('activate sdk-1.38.31-64bit')
 
 print('test specific release (new, short name)')
-check_call('./emsdk install 1.38.33')
+run_emsdk('install 1.38.33')
 print('another install must re-download')
-checked_call_with_output('./emsdk install 1.38.33', expected='Downloading:', unexpected='already exist in destination')
-check_call('./emsdk activate 1.38.33')
+checked_call_with_output(emsdk + ' install 1.38.33', expected='Downloading:', unexpected='already exist in destination')
+run_emsdk('activate 1.38.33')
 assert 'fastcomp' in open(os.path.expanduser('~/.emscripten')).read()
 assert 'upstream' not in open(os.path.expanduser('~/.emscripten')).read()
 
 print('test specific release (new, full name)')
-check_call('./emsdk install sdk-1.38.33-upstream-64bit')
-check_call('./emsdk activate sdk-1.38.33-upstream-64bit')
+run_emsdk('install sdk-1.38.33-upstream-64bit')
+run_emsdk('activate sdk-1.38.33-upstream-64bit')
 
 print('test specific release (new, full name)')
-check_call('./emsdk install sdk-tag-1.38.33-64bit')
-check_call('./emsdk activate sdk-tag-1.38.33-64bit')
+run_emsdk('install sdk-tag-1.38.33-64bit')
+run_emsdk('activate sdk-tag-1.38.33-64bit')
 
 print('test binaryen source build')
-check_call('./emsdk install --build=Release --generator="Unix Makefiles" binaryen-master-64bit')
+run_emsdk(['install', '--build=Release', '--generator=Unix Makefiles', 'binaryen-master-64bit'])
 
 print('test 32-bit error')
 
@@ -161,9 +185,9 @@ for filename in os.listdir('.'):
 
 os.chdir(temp_dir)
 
-check_call('./emsdk update')
+run_emsdk('update')
 print('second time')
-check_call('./emsdk update')
+run_emsdk('update')
 
 print('verify downloads exist for all OSes')
 latest_hash = TAGS['releases'][TAGS['latest']]
@@ -173,5 +197,5 @@ for osname, suffix in [
   ('win', 'zip')
 ]:
   url = 'https://storage.googleapis.com/webassembly/emscripten-releases-builds/%s/%s/wasm-binaries.%s' % (osname, latest_hash, suffix)
-  print('  url: ' + url),
-  check_call('wget ' + url)
+  print('  checking url: ' + url),
+  check_call('curl --fail --head --silent ' + url, stdout=subprocess.PIPE)
