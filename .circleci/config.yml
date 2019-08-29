@@ -51,7 +51,9 @@ jobs:
           name: Install cmake
           command: brew install cmake
       - run: ./test.sh
-      - run: ./test.py
+      # TODO(sbc): Re-enable once the upstream emscripten fix makes it into
+      # a relase: https://github.com/emscripten-core/emscripten/pull/9347
+      #- run: ./test.py
   test-windows:
     executor:
       name: win/vs2019
