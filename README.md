@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/emscripten-core/emsdk.svg?style=svg)](https://circleci.com/gh/emscripten-core/emsdk/tree/master)
+[![CircleCI](https://circleci.com/gh/emscripten-core/emsdk/tree/master.svg?style=svg)](https://circleci.com/gh/emscripten-core/emsdk/tree/master)
 
 # Emscripten SDK
 
