@@ -102,6 +102,7 @@ def run_emsdk(cmd):
 
 
 WINDOWS = sys.platform.startswith('win')
+MACOS = sys.platform == 'darwin'
 
 upstream_emcc = os.path.join('upstream', 'emscripten', 'emcc')
 fastcomp_emcc = os.path.join('fastcomp', 'emscripten', 'emcc')
@@ -121,7 +122,13 @@ run_emsdk('update-tags')
 print('test latest-releases-upstream')
 run_emsdk('install latest-upstream')
 run_emsdk('activate latest-upstream')
-test_lib_building(upstream_emcc, use_asmjs_optimizer=False)
+
+# TODO(sbc): Re-enable this part of the test once this upstream emscripten fix
+# makes it into a release:
+# https://github.com/emscripten-core/emscripten/pull/9347
+if not MACOS:
+  test_lib_building(upstream_emcc, use_asmjs_optimizer=False)
+
 assert open(os.path.expanduser('~/.emscripten')).read().count('LLVM_ROOT') == 1
 assert 'upstream' in open(os.path.expanduser('~/.emscripten')).read()
 assert 'fastcomp' not in open(os.path.expanduser('~/.emscripten')).read()
