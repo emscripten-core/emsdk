@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/emscripten-core/emsdk.svg?style=svg)](https://circleci.com/gh/emscripten-core/emsdk/tree/master)
+
 # Emscripten SDK
 
 Emscripten toolchain is distributed as a standalone Emscripten SDK. The SDK
