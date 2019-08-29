@@ -1,6 +1,6 @@
-[![CircleCI](https://circleci.com/gh/emscripten-core/emsdk/tree/master.svg?style=svg)](https://circleci.com/gh/emscripten-core/emsdk/tree/master)
-
 # Emscripten SDK
+
+[![CircleCI](https://circleci.com/gh/emscripten-core/emsdk/tree/master.svg?style=svg)](https://circleci.com/gh/emscripten-core/emsdk/tree/master)
 
 Emscripten toolchain is distributed as a standalone Emscripten SDK. The SDK
 provides all the required tools, such as Clang, Python and Node.js along with an
