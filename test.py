@@ -125,6 +125,12 @@ test_lib_building(fastcomp_emcc, use_asmjs_optimizer=True)
 print('update')
 run_emsdk('update-tags')
 
+# TODO(sbc): Re-enable once latest-upstream is built using the waterfall script
+# that includes this change:
+# https://github.com/WebAssembly/waterfall/pull/571
+if MACOS:
+  sys.exit(0)
+
 print('test latest-releases-upstream')
 run_emsdk('install latest-upstream')
 run_emsdk('activate latest-upstream')
