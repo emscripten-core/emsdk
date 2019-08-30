@@ -68,12 +68,6 @@ print('building proper system libraries')
 
 
 def test_lib_building(emcc, use_asmjs_optimizer):
-  # TODO(sbc): Re-enable this part of the test once this upstream emscripten fix
-  # makes it into a release:
-  # https://github.com/emscripten-core/emscripten/pull/9347
-  if MACOS:
-    return
-
   def test_build(args, expected=None, unexpected=None):
     checked_call_with_output(emcc + ' hello_world.cpp' + args,
                              expected=expected,
