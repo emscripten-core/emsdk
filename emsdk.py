@@ -1931,7 +1931,8 @@ def update_emsdk():
     print('You seem to have bootstrapped Emscripten SDK by cloning from GitHub. In this case, use "git pull" instead of "emsdk update" to update emsdk. (Not doing that automatically in case you have local changes)', file=sys.stderr)
     print('Alternatively, use "emsdk update-tags" to refresh the latest list of tags from the different Git repositories.', file=sys.stderr)
     sys.exit(1)
-  download_and_unzip(emsdk_zip_download_url, emsdk_path(), download_even_if_exists=True)
+  if not download_and_unzip(emsdk_zip_download_url, emsdk_path(), download_even_if_exists=True):
+    sys.exit(1)
   fetch_emscripten_tags()
 
 
