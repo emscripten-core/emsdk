@@ -674,15 +674,10 @@ def download_file(url, dstpath, download_even_if_exists=False, filename_prefix='
   return file_name
 
 
-def download_text_file(url, dstpath, download_even_if_exists=False, filename_prefix=''):
-  filename = download_file(url, dstpath, download_even_if_exists, filename_prefix)
-  fix_lineendings(os.path.join(emsdk_path(), filename))
-
-
 def run_get_output(cmd, cwd=None):
   debug_print('run_get_output(cmd=' + str(cmd) + ', cwd=' + str(cwd) + ')')
   process = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE, env=os.environ.copy(), universal_newlines=True)
-  (stdout, stderr) = process.communicate()
+  stdout, stderr = process.communicate()
   return (process.returncode, stdout, stderr)
 
 
@@ -694,7 +689,7 @@ def GIT(must_succeed=True):
   gits = ['git/1.9.4/bin/git.exe', which('git')]
   for git in gits:
     try:
-      (ret, stdout, stderr) = run_get_output([git, '--version'])
+      ret, stdout, stderr = run_get_output([git, '--version'])
       if ret == 0:
         return git
     except:
@@ -1213,9 +1208,9 @@ def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False, filenam
   download_even_if_exists = True
 
   received_download_target = download_file(url, zips_subdir, download_even_if_exists, filename_prefix)
-  assert received_download_target == download_target
-  if not download_target:
+  if not received_download_target:
     return False
+  assert received_download_target == download_target
   if zipfile.endswith('.zip'):
     return unzip(download_target, dest_dir, unpack_even_if_exists=download_even_if_exists)
   else:
@@ -1268,7 +1263,7 @@ def load_dot_emscripten():
     pass
   for line in lines:
     try:
-      (key, value) = parse_key_value(line)
+      key, value = parse_key_value(line)
       if value != '':
         dot_emscripten[key] = value
 #        print("Got '" + key + "' = '" + value + "'")
@@ -1568,7 +1563,7 @@ class Tool(object):
     activated_cfg = activated_cfg.split(';')
     for cfg in activated_cfg:
       cfg = cfg.strip()
-      (key, value) = parse_key_value(cfg)
+      key, value = parse_key_value(cfg)
       if key not in dot_emscripten:
         debug_print(str(self) + ' is not active, because key="' + key + '" does not exist in .emscripten')
         return False
@@ -1936,7 +1931,8 @@ def update_emsdk():
     print('You seem to have bootstrapped Emscripten SDK by cloning from GitHub. In this case, use "git pull" instead of "emsdk update" to update emsdk. (Not doing that automatically in case you have local changes)', file=sys.stderr)
     print('Alternatively, use "emsdk update-tags" to refresh the latest list of tags from the different Git repositories.', file=sys.stderr)
     sys.exit(1)
-  download_and_unzip(emsdk_zip_download_url, emsdk_path(), download_even_if_exists=True)
+  if not download_and_unzip(emsdk_zip_download_url, emsdk_path(), download_even_if_exists=True):
+    sys.exit(1)
   fetch_emscripten_tags()
 
 
@@ -2425,7 +2421,7 @@ def construct_env(tools_to_activate, permanent):
   for tool in tools_to_activate:
     envs = tool.activated_environment()
     for env in envs:
-      (key, value) = parse_key_value(env)
+      key, value = parse_key_value(env)
       value = to_native_path(tool.expand_vars(value))
       if key not in os.environ or to_unix_path(os.environ[key]) != to_unix_path(value): # Don't set env. vars which are already set to the correct value.
         env_vars_to_add += [(key, value)]
