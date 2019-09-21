@@ -50,6 +50,9 @@ jobs:
       - run:
           name: Install cmake
           command: brew install cmake
+      - run:
+          name: Install python3
+          command: brew install python3
       - run: ./test.sh
       - run: ./test.py
   test-windows:
