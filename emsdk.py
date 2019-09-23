@@ -1895,19 +1895,6 @@ def fetch_emscripten_tags():
     if emscripten_releases_tot:
       open(tot_path(), 'w').write(emscripten_releases_tot)
 
-#  Emscripten Nightlies support has been removed, clear the list of known Nightlies locally.
-#  print('Fetching all precompiled Nightly versions..')
-#  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/nightly/' + os_name() + '_32bit/index.txt', 'llvm-nightlies-32bit.txt', download_even_if_exists=True)
-#  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/nightly/' + os_name() + '_64bit/index.txt', 'llvm-nightlies-64bit.txt', download_even_if_exists=True)
-#  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/emscripten/nightly/' + os_name() + '/index.txt', 'emscripten-nightlies.txt', download_even_if_exists=True)
-  for f in ['llvm-nightlies-32bit.txt', 'llvm-nightlies-64bit.txt', 'emscripten-nightlies.txt']:
-    if os.path.isfile(f):
-      os.remove(f)
-
-  print('Fetching all precompiled tagged releases..')
-  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/tag/' + os_name() + '_32bit/index.txt', 'llvm-tags-32bit.txt', download_even_if_exists=True)
-  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/tag/' + os_name() + '_64bit/index.txt', 'llvm-tags-64bit.txt', download_even_if_exists=True)
-
   if not git:
     print('Update complete, however skipped fetching the Emscripten tags, since git was not found.')
     if WINDOWS:

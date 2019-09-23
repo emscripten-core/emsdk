@@ -241,38 +241,3 @@ Emscripten SDK releases are no longer packaged or maintained for 32-bit Windows.
 If you want to run Emscripten on a 32-bit system, you can try manually building
 the compiler for 32-bit mode. Follow the steps in the above section "Building an
 Emscripten tag or branch from source" to get started.
-
-### Archived Releases
-
-You can always install old SDK and compiler toolchains via the latest emsdk. If
-you need to fall back to an old version, download the Portable SDK version and
-use that to install a previous version of a tool. All old tool versions are
-available by typing `emsdk list --old`.
-
-On Windows, you can install one of the **old versions** via an offline NSIS
-installer:
-
- - [emsdk-1.5.6.1-full.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.5.6.1-full.exe) (32-bit, first emsdk release)
- - [emsdk-1.5.6.2-full-32bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.5.6.2-full-32bit.exe)
- - [emsdk-1.5.6.2-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.5.6.2-full-64bit.exe)
- - [emsdk-1.7.8-full-32bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.7.8-full-32bit.exe)
- - [emsdk-1.7.8-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.7.8-full-64bit.exe)
- - [emsdk-1.8.2-full-32bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.8.2-full-32bit.exe)
- - [emsdk-1.8.2-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.8.2-full-64bit.exe)
- - [emsdk-1.12.0-full-32bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.12.0-full-32bit.exe)
- - [emsdk-1.12.0-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.12.0-full-64bit.exe) (the last non-fastcomp version with Clang 3.2)
- - [emsdk-1.13.0-full-32bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.13.0-full-64bit.exe) (a unstable first fastcomp release with Clang 3.3)
- - [emsdk-1.16.0-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.16.0-full-64bit.exe) (first stable fastcomp release)
- - [emsdk-1.21.0-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.21.0-full-64bit.exe)
- - [emsdk-1.22.0-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.22.0-full-64bit.exe)
- - [emsdk-1.25.0-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.25.0-full-64bit.exe)
- - [emsdk-1.27.0-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.27.0-full-64bit.exe) (last release based on Clang 3.3)
- - [emsdk-1.29.0-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.29.0-full-64bit.exe) (the only release based on Clang 3.4)
- - [emsdk-1.30.0-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.30.0-full-64bit.exe) (the only release based on Clang 3.5)
- - [emsdk-1.34.1-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.34.1-full-64bit.exe) (first release based on Clang 3.7)
- - [emsdk-1.35.0-full-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.35.0-full-64bit.exe)
- - [emsdk-1.35.0-web-64bit.exe](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.35.0-web-64bit.exe)
- - [emsdk-1.35.0-portable-64bit.zip](https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.35.0-portable-64bit.zip)
-
-Snapshots of all tagged Emscripten compiler releases (not full SDKs) can be
-found at [emscripten/releases](https://github.com/kripken/emscripten/releases).
