@@ -1894,31 +1894,16 @@ def fetch_emscripten_tags():
     emscripten_releases_tot = get_emscripten_releases_tot()
     if emscripten_releases_tot:
       open(tot_path(), 'w').write(emscripten_releases_tot)
-
-#  Emscripten Nightlies support has been removed, clear the list of known Nightlies locally.
-#  print('Fetching all precompiled Nightly versions..')
-#  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/nightly/' + os_name() + '_32bit/index.txt', 'llvm-nightlies-32bit.txt', download_even_if_exists=True)
-#  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/nightly/' + os_name() + '_64bit/index.txt', 'llvm-nightlies-64bit.txt', download_even_if_exists=True)
-#  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/emscripten/nightly/' + os_name() + '/index.txt', 'emscripten-nightlies.txt', download_even_if_exists=True)
-  for f in ['llvm-nightlies-32bit.txt', 'llvm-nightlies-64bit.txt', 'emscripten-nightlies.txt']:
-    if os.path.isfile(f):
-      os.remove(f)
-
-  print('Fetching all precompiled tagged releases..')
-  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/tag/' + os_name() + '_32bit/index.txt', 'llvm-tags-32bit.txt', download_even_if_exists=True)
-  download_file('https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/tag/' + os_name() + '_64bit/index.txt', 'llvm-tags-64bit.txt', download_even_if_exists=True)
-
-  if not git:
-    print('Update complete, however skipped fetching the Emscripten tags, since git was not found.')
+  else:
+    print('Update complete, however skipped fetching the Emscripten tags, since git was not found, which is necessary for update-tags.')
     if WINDOWS:
-      print("If you want to compile one of the tagged releases from source, please install git by typing 'emsdk install git-1.9.4', or alternatively by installing it manually from http://git-scm.com/downloads . If you install git manually, remember to add it to PATH.")
+      print("Please install git by typing 'emsdk install git-1.9.4', or alternatively by installing it manually from http://git-scm.com/downloads . If you install git manually, remember to add it to PATH.")
     elif OSX:
-      print("If you want to compile one of the tagged releases from source, please install git from http://git-scm.com/ , or by installing XCode and then the XCode Command Line Tools (see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools ).")
+      print("Please install git from http://git-scm.com/ , or by installing XCode and then the XCode Command Line Tools (see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools ).")
     elif LINUX:
-      print("If you want to compile one of the tagged releases from source, please install git using your package manager, see http://git-scm.com/book/en/Getting-Started-Installing-Git .")
+      print("Pease install git using your package manager, see http://git-scm.com/book/en/Getting-Started-Installing-Git .")
     else:
-      print("If you want to compile one of the tagged releases from source, please install git.")
-    print("If you are not looking to build Emscripten from source, you can safely ignore this message.")
+      print("Please install git.")
     return
 
 

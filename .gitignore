@@ -9,11 +9,6 @@
 /emsdk_set_env.sh
 
 # Tags files that get generated at runtime
-/emscripten-nightlies.txt
-/llvm-nightlies-32bit.txt
-/llvm-nightlies-64bit.txt
-/llvm-tags-32bit.txt
-/llvm-tags-64bit.txt
 /emscripten-releases-tot.txt
 
 # File that get download/extracted by emsdk itself
