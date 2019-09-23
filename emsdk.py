@@ -1894,18 +1894,16 @@ def fetch_emscripten_tags():
     emscripten_releases_tot = get_emscripten_releases_tot()
     if emscripten_releases_tot:
       open(tot_path(), 'w').write(emscripten_releases_tot)
-
-  if not git:
-    print('Update complete, however skipped fetching the Emscripten tags, since git was not found.')
+  else:
+    print('Update complete, however skipped fetching the Emscripten tags, since git was not found, which is necessary for update-tags.')
     if WINDOWS:
-      print("If you want to compile one of the tagged releases from source, please install git by typing 'emsdk install git-1.9.4', or alternatively by installing it manually from http://git-scm.com/downloads . If you install git manually, remember to add it to PATH.")
+      print("Please install git by typing 'emsdk install git-1.9.4', or alternatively by installing it manually from http://git-scm.com/downloads . If you install git manually, remember to add it to PATH.")
     elif OSX:
-      print("If you want to compile one of the tagged releases from source, please install git from http://git-scm.com/ , or by installing XCode and then the XCode Command Line Tools (see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools ).")
+      print("Please install git from http://git-scm.com/ , or by installing XCode and then the XCode Command Line Tools (see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools ).")
     elif LINUX:
-      print("If you want to compile one of the tagged releases from source, please install git using your package manager, see http://git-scm.com/book/en/Getting-Started-Installing-Git .")
+      print("Pease install git using your package manager, see http://git-scm.com/book/en/Getting-Started-Installing-Git .")
     else:
-      print("If you want to compile one of the tagged releases from source, please install git.")
-    print("If you are not looking to build Emscripten from source, you can safely ignore this message.")
+      print("Please install git.")
     return
 
 
