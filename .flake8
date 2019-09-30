@@ -3,7 +3,6 @@ ignore =
    E111, # Indentation is not a multiple of four
    E114, # Indentation is not a multiple of four (comment)
    E501, # Line too long
-   E261, # At least two spaces before inline comment
    E121, # Continuation line under-indented for hanging indent
    E722  # bare excepts
 exclude =
