@@ -35,7 +35,7 @@ else:
 # first deployed to the staging source for testing, before being published to
 # the public. Don't enable this unless you develop EMSDK itself and need to
 # access the staging source repository instead.
-EMSDK_DEV = bool(os.environ.get('EMSDK_DEV', '0'))
+EMSDK_DEV = int(os.environ.get('EMSDK_DEV', '0'))
 
 if EMSDK_DEV:
   print('EMSDK_DEV active.')
