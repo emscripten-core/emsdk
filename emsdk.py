@@ -62,6 +62,8 @@ if os.name == 'nt' or (os.getenv('SYSTEMROOT') is not None and 'windows' in os.g
   WINDOWS = True
   ENVPATH_SEPARATOR = ';'
 
+SHELL = 'sh'  # this may change by the construct_env command
+
 MSYS = False
 if os.getenv('MSYSTEM'):
   MSYS = True
@@ -2381,6 +2383,8 @@ def construct_env(tools_to_activate, permanent):
       env_string += '$env:PATH="' + newpath + '"\n'
     elif WINDOWS and not MSYS:
       env_string += 'SET PATH=' + newpath + '\n'
+    elif SHELL == 'csh':
+      env_string += 'setenv PATH "' + newpath + '"\n'
     else:
       env_string += 'export PATH="' + newpath + '"\n'
     if len(added_path) > 0:
@@ -2421,6 +2425,8 @@ def construct_env(tools_to_activate, permanent):
           env_string += 'SETX ' + key + ' "' + value + '"\n'
         else:
           env_string += 'SET ' + key + '=' + value + '\n'
+      elif SHELL == 'csh':
+        env_string += 'setenv ' + key + ' "' + value + '"\n'
       else:
         env_string += 'export ' + key + '="' + value + '"\n'
       print(key + ' = ' + value)
@@ -2761,6 +2767,10 @@ def main():
 
     return 0
   elif cmd == 'construct_env':
+    if len(sys.argv) > 2 and sys.argv[2] == '--csh':
+      global SHELL
+      SHELL = 'csh'
+      del sys.argv[2]
     if len(sys.argv) == 2:
       outfile = EMSDK_SET_ENV
       silentremove(EMSDK_SET_ENV) # Clean up old temp file up front, in case of failure later before we get to write out the new one.
