@@ -56,6 +56,7 @@ VERBOSE = int(os.getenv('EMSDK_VERBOSE', '0'))
 TTY_OUTPUT = not os.getenv('EMSDK_NOTTY', not sys.stdout.isatty())
 
 POWERSHELL = bool(os.getenv('EMSDK_POWERSHELL'))
+CSH = bool(os.getenv('EMSDK_CSH'))
 
 WINDOWS = False
 if os.name == 'nt' or (os.getenv('SYSTEMROOT') is not None and 'windows' in os.getenv('SYSTEMROOT').lower()) or (os.getenv('COMSPEC') is not None and 'windows' in os.getenv('COMSPEC').lower()):
@@ -151,7 +152,10 @@ emscripten_config_directory = os.path.expanduser("~/")
 if os.path.exists(os.path.join(emsdk_path(), '.emscripten')):
   emscripten_config_directory = emsdk_path()
 
-EMSDK_SET_ENV = 'emsdk_set_env.ps1' if POWERSHELL else 'emsdk_set_env.bat' if (WINDOWS and not MSYS) else 'emsdk_set_env.sh'
+EMSDK_SET_ENV = 'emsdk_set_env.ps1' if POWERSHELL \
+           else 'emsdk_set_env.bat' if (WINDOWS and not MSYS) \
+           else 'emsdk_set_env.csh' if CSH \
+           else 'emsdk_set_env.sh'
 
 ARCHIVE_SUFFIXES = ('zip', '.tar', '.gz', '.xz', '.tbz2', '.bz2')
 
@@ -2381,6 +2385,8 @@ def construct_env(tools_to_activate, permanent):
       env_string += '$env:PATH="' + newpath + '"\n'
     elif WINDOWS and not MSYS:
       env_string += 'SET PATH=' + newpath + '\n'
+    elif CSH:
+      env_string += 'setenv PATH "' + newpath + '"\n'
     else:
       env_string += 'export PATH="' + newpath + '"\n'
     if len(added_path) > 0:
@@ -2421,6 +2427,8 @@ def construct_env(tools_to_activate, permanent):
           env_string += 'SETX ' + key + ' "' + value + '"\n'
         else:
           env_string += 'SET ' + key + '=' + value + '\n'
+      elif CSH:
+        env_string += 'setenv ' + key + ' "' + value + '"\n'
       else:
         env_string += 'export ' + key + '="' + value + '"\n'
       print(key + ' = ' + value)
