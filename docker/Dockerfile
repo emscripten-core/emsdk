@@ -101,25 +101,9 @@ RUN echo "## Create transferable entrypoint" \
     \
 &&  echo "## Done"
 
-RUN echo "## Create Testing Script" \
-    &&  printf '#!/bin/sh\n'                                   >  ${EMSDK}/test.sh \
-    &&  printf 'set -e\n'                                      >> ${EMSDK}/test.sh \
-    &&  printf 'which asm2wasm\n'                              >> ${EMSDK}/test.sh \
-    &&  printf 'which llvm-ar\n'                               >> ${EMSDK}/test.sh \
-    &&  printf 'which emsdk\n'                                 >> ${EMSDK}/test.sh \
-    &&  printf 'node --version\n'                              >> ${EMSDK}/test.sh \
-    &&  printf 'npm --version\n'                               >> ${EMSDK}/test.sh \
-    &&  printf 'python --version\n'                            >> ${EMSDK}/test.sh \
-    &&  printf 'pip --version\n'                               >> ${EMSDK}/test.sh \
-    &&  printf 'python3 --version\n'                           >> ${EMSDK}/test.sh \
-    &&  printf 'pip3 --version\n'                              >> ${EMSDK}/test.sh \
-    &&  printf 'em++ --version\n'                              >> ${EMSDK}/test.sh \
-    &&  printf 'emcc --version\n'                              >> ${EMSDK}/test.sh \
-    &&  printf 'find ${EMSDK} -name "*.pyc" -exec rm {} \\;\n' >> ${EMSDK}/test.sh \
-    \
-    &&  chmod +x ${EMSDK}/test.sh \
-    \
-&&  echo "## Done"
+
+COPY test_dockerimage.sh /emsdk_portable/
+
 
 # Create symbolic links for critical Emscripten Tools
 # This is important for letting people using Emscripten in Dockerfiles without activation
@@ -138,7 +122,8 @@ RUN echo "## Create symbolic links" \
     &&  echo "## Done"
 
 # Clean up emscripten installation and strip some symbols
-RUN apt-get -qq -y update && apt-get -qq install -y --no-install-recommends \
+RUN echo "## Aggresive optimization: Remove debug symbols" \
+&&  apt-get -qq -y update && apt-get -qq install -y --no-install-recommends \
         binutils \
     && . ${EMSDK}/emsdk_set_env.sh \
     # Remove debugging symbols from embedded node (extra 7MB)
@@ -263,12 +248,12 @@ RUN	echo "## Installing CMake" \
 
 RUN echo "## Internal Testing of image (activated)" \
     &&  . ${EMSDK}/emsdk_set_env.sh \
-    &&  ${EMSDK}/test.sh \
+    &&  ${EMSDK}/test_dockerimage.sh  \
     \
 &&  echo "## Done"
 
 RUN echo "## Internal Testing of image (not-activated)" \
-    &&  ${EMSDK}/test.sh \
+    &&  ${EMSDK}/test_dockerimage.sh  \
     \
 &&  echo "## Done"
 
