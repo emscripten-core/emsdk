@@ -664,7 +664,9 @@ def download_file(url, dstpath, download_even_if_exists=False, filename_prefix='
         print(']')
         sys.stdout.flush()
   except Exception as e:
-    print("Error downloading URL '" + url + "': " + str(e))
+    print("Error: Downloading URL '" + url + "': " + str(e))
+    if "SSL: CERTIFICATE_VERIFY_FAILED" in str(e) or "urlopen error unknown url type: https" in str(e):
+      print("Warning: Possibly SSL/TLS issue. Update or install Python SSL root certificates (2048-bit or greater) supplied in Python folder or https://pypi.org/project/certifi/ and try again.")
     rmfile(file_name)
     return None
   except KeyboardInterrupt:
