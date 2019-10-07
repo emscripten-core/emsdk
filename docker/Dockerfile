@@ -2,9 +2,8 @@ FROM debian:stretch AS stage_build
 
 # ------------------------------------------------------------------------------
 
-# ATM 1.38.40+ is supported, older will fail with missing /b/s/w/ir/k/install/fastcomp/bin/llc
+# Supports only 1.38.40+, accpets also '-upstream' variants
 ARG EMSCRIPTEN_VERSION=1.38.43
-ARG EMSCRIPTEN_SDK=${EMSCRIPTEN_VERSION}-upstream
 ARG EMSDK_CHANGESET=master
 
 # ------------------------------------------------------------------------------
@@ -21,8 +20,6 @@ RUN echo "## Start building" \
     \
 &&	echo "## Update and install packages" \
     &&	apt-get -qq -y update \
-    # mitigate problem with create symlink to man
-    &&  mkdir -p /usr/share/man/man1/ \
     &&  apt-get -qq install -y --no-install-recommends \
             libxml2 \
             wget \
@@ -44,7 +41,7 @@ RUN  echo "## Get EMSDK" \
 
 RUN  echo "## Install Emscripten" \
     &&  cd ${EMSDK} \
-    && ./emsdk install ${EMSCRIPTEN_SDK} \
+    && ./emsdk install ${EMSCRIPTEN_VERSION} \
     \
 &&  echo "## Done"
 
@@ -52,14 +49,14 @@ RUN  echo "## Install Emscripten" \
 RUN cd ${EMSDK} \
     &&  echo "## Generate standard configuration" \
     \
-    &&  ./emsdk activate ${EMSCRIPTEN_SDK} --embedded \
+    &&  ./emsdk activate ${EMSCRIPTEN_VERSION} --embedded \
     &&  ./emsdk construct_env > /dev/null \
     &&  cat ${EMSDK}/emsdk_set_env.sh \
     \
     # remove wrongly created entry with EM_CACHE, variable will be picked up from ENV
     &&  sed -i -e "/EM_CACHE/d" ${EMSDK}/emsdk_set_env.sh \
     # add a link to tools like asm2wasm in a system path \
-    &&  printf "export PATH=${EMSDK}/upstream/bin:\$PATH\n" >> ${EMSDK}/emsdk_set_env.sh \
+    &&  printf "export PATH=${EMSDK}/fastcomp/bin:\$PATH\n" >> ${EMSDK}/emsdk_set_env.sh \
     \
 &&  echo "## Done"
 
@@ -104,7 +101,6 @@ RUN echo "## Create transferable entrypoint" \
     \
 &&  echo "## Done"
 
-
 RUN echo "## Create Testing Script" \
     &&  printf '#!/bin/sh\n'                                   >  ${EMSDK}/test.sh \
     &&  printf 'set -e\n'                                      >> ${EMSDK}/test.sh \
@@ -125,18 +121,33 @@ RUN echo "## Create Testing Script" \
     \
 &&  echo "## Done"
 
-# Clean up emscripten installation and strip some symbols
+# Create symbolic links for critical Emscripten Tools
+# This is important for letting people using Emscripten in Dockerfiles without activation
+# As each Emscripten release is placed to a different folder (i.e. /emsdk_portable/emscripten/tag-1.38.31)
+# The ultimate goal is to simplify a way to use Emscripten SDK without a need to activate it.
+RUN echo "## Create symbolic links" \
+    &&  . ${EMSDK}/emsdk_set_env.sh \
+    \
+    &&  mkdir -p ${EMSDK}/llvm ${EMSDK}/emscripten ${EMSDK}/binaryen \
+    \
+    &&  ln -s $(dirname $(which node))/..       ${EMSDK}/node/current \
+    &&  ln -s $(dirname $(which clang))/..      ${EMSDK}/llvm/clang \
+    &&  ln -s $(dirname $(which emcc))          ${EMSDK}/emscripten/sdk \
+    &&  ln -s $(dirname $(which asm2wasm))      ${EMSDK}/binaryen/bin \
+    \
+    &&  echo "## Done"
 
+# Clean up emscripten installation and strip some symbols
 RUN apt-get -qq -y update && apt-get -qq install -y --no-install-recommends \
         binutils \
     && . ${EMSDK}/emsdk_set_env.sh \
     # Remove debugging symbols from embedded node (extra 7MB)
     && strip -s `which node` \
     # Tests consume ~80MB disc space
-    && rm -fr ${EMSDK}/upstream/emscripten/tests \
-    # strip out symbols from clang (extra 50MB!)
-    && find ${EMSDK}/upstream/bin -type f -exec strip -s {} + || true \
-    && find ${EMSDK}/upstream/fastcomp/bin -type f -exec strip -s {} + || true \
+    && rm -fr ${EMSDK}/llvm/clang/emscripten/tests \
+    # strip out symbols from clang (~extra 50MB disc space)
+    && find ${EMSDK}/llvm/clang/bin -type f -exec strip -s {} + || true \
+    && find ${EMSDK}/llvm/clang/fastcomp/bin -type f -exec strip -s {} + || true \
 &&  echo "## Done"
 
 # Populate Emscripten SDK cache with libc++, to improve further compilation times.
@@ -162,24 +173,6 @@ RUN echo "## Pre-populate cache" \
     \
     &&  echo "## Done"
 
-
-# Create symbolic links for critical Emscripten Tools
-# This is important for letting people using Emscripten in Dockerfiles without activation
-# As each Emscripten release is placed to a different folder (i.e. /emsdk_portable/emscripten/tag-1.38.31)
-# The ultimate goal is to simplify a way to use Emscripten SDK without a need to activate it.
-RUN echo "## Create symbolic links" \
-    &&  . ${EMSDK}/emsdk_set_env.sh \
-    \
-    &&  mkdir -p ${EMSDK}/llvm ${EMSDK}/emscripten ${EMSDK}/binaryen \
-    \
-    &&  ln -s $(dirname $(which node))/..       ${EMSDK}/node/current \
-    &&  ln -s $(dirname $(which clang))/..      ${EMSDK}/llvm/clang \
-    &&  ln -s $(dirname $(which emcc))          ${EMSDK}/emscripten/sdk \
-    &&  ln -s $(dirname $(which asm2wasm))      ${EMSDK}/binaryen/bin \
-    \
-    &&  echo "## Done"
-
-
 # ------------------------------------------------------------------------------
 # -------------------------------- STAGE DEPLOY --------------------------------
 # ------------------------------------------------------------------------------
@@ -200,7 +193,7 @@ ENV EM_PORTS ${EM_DATA}/ports
 
 # Fallback in case Emscripten isn't activated
 # Expose Major tools to system PATH, so that emcc, node, asm2wasm etc can be used without activation
-ENV PATH="${EMSDK}:${EMSDK}/upstream/bin:${EMSDK}/emscripten/sdk:${EMSDK}/llvm/clang/bin:${EMSDK}/node/current/bin:${EMSDK}/binaryen/bin:${PATH}"
+ENV PATH="${EMSDK}:${EMSDK}/emscripten/sdk:${EMSDK}/llvm/clang/bin:${EMSDK}/node/current/bin:${EMSDK}/binaryen/bin:${PATH}"
 
 # Use entrypoint that's coming from emscripten-slim image. It sets all required system paths and variables
 ENTRYPOINT ["/emsdk_portable/entrypoint"]
@@ -222,8 +215,10 @@ RUN echo "## Create emscripten user (1000:1000)" \
 # ------------------------------------------------------------------------------
 
 RUN echo "## Update and install packages" \
-&&  mkdir -p /usr/share/man/man1/ \
-&&  apt-get -qq -y update && apt-get -qq install -y --no-install-recommends \
+# mitigate problem with create symlink to man for base debian image
+    &&  mkdir -p /usr/share/man/man1/ \
+    \
+    &&  apt-get -qq -y update && apt-get -qq install -y --no-install-recommends \
         libxml2 \
         ca-certificates \
         python \
@@ -279,13 +274,13 @@ RUN echo "## Internal Testing of image (not-activated)" \
 
 # ------------------------------------------------------------------------------
 # Copy this Dockerimage into image, so that it will be possible to recreate it later
-COPY Dockerfile /emsdk_portable/dockerfiles/trzeci/emscripten-upstream/
+COPY Dockerfile /emsdk_portable/dockerfiles/emscripten-core/emsdk/
 
 LABEL maintainer="kontakt@trzeci.eu" \
       org.label-schema.name="emscripten" \
       org.label-schema.description="Regular version of Emscripten compiler what should be suitable to compile majority of C++ projects for Emscripten, ASM.js and WebAssembly." \
-      org.label-schema.url="https://trzeci.eu" \
-      org.label-schema.vcs-url="https://github.com/trzecieu/emscripten-docker" \
-      org.label-schema.docker.dockerfile="/docker/trzeci/emscripten/Dockerfile"
+      org.label-schema.url="https://emscripten.org" \
+      org.label-schema.vcs-url="https://github.com/emscripten-core/emsdk" \
+      org.label-schema.docker.dockerfile="/docker/Dockerfile"
 
 # ------------------------------------------------------------------------------
