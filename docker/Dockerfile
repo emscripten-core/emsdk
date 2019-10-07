@@ -8,6 +8,7 @@ ARG EMSDK_CHANGESET=master
 
 # ------------------------------------------------------------------------------
 
+# NOTE: Any change of following variables should be reflected in ./entrypoint file
 ENV EMSDK /emsdk_portable
 ENV EM_DATA ${EMSDK}/.data
 ENV EM_CONFIG ${EMSDK}/.emscripten
@@ -70,45 +71,16 @@ RUN cd ${EMSDK} \
         \
 &&  echo "## Done"
 
+# Create an entrypoint that activates Emscripten SDK and helps running this image as non-root user
+COPY entrypoint ${EMSDK}/
 
-RUN echo "## Create transferable entrypoint" \
-    &&  printf '#!/bin/sh\n'                                            >  ${EMSDK}/entrypoint \
-    # In case when mapped user id by `docker run -u` is not created inside docker image
-    # The `$HOME` variable points to `/` - which prevents any tool to write to, as it requires root access
-    # In such case we set `$HOME` to `/tmp` as it should r/w for everyone
-    &&  printf 'if [ "$HOME" = "/" ] ; then\n'                          >> ${EMSDK}/entrypoint \
-    &&  printf '    export HOME=/tmp\n'                                 >> ${EMSDK}/entrypoint \
-    &&  printf 'fi\n'                                                   >> ${EMSDK}/entrypoint \
-    &&  printf '\n'                                                     >> ${EMSDK}/entrypoint \
-    # In case of running as root, use `umask` to reduce problem of file permission on host
-    &&  printf 'if [ "$(id -g)" = "0" ] && [ "$(id -u)" = "0" ] ;\n'    >> ${EMSDK}/entrypoint \
-    &&  printf 'then\n'                                                 >> ${EMSDK}/entrypoint \
-    &&  printf '    umask 0000\n'                                       >> ${EMSDK}/entrypoint \
-    &&  printf 'fi\n'                                                   >> ${EMSDK}/entrypoint \
-    # Export this image specific Environment variables
-    # Those variables are important to use dedicated folder for all cache and predefined config file
-    &&  printf "export EMSDK=${EMSDK}\n"                                >> ${EMSDK}/entrypoint \
-    &&  printf "export EM_DATA=${EM_DATA}\n"                            >> ${EMSDK}/entrypoint \
-    &&  printf "export EM_CONFIG=${EM_CONFIG}\n"                        >> ${EMSDK}/entrypoint \
-    &&  printf "export EM_CACHE=${EM_CACHE}\n"                          >> ${EMSDK}/entrypoint \
-    &&  printf "export EM_PORTS=${EM_PORTS}\n"                          >> ${EMSDK}/entrypoint \
-    # Activate Emscripten SDK
-    &&  printf '. ${EMSDK}/emsdk_set_env.sh > /dev/null\n'              >> ${EMSDK}/entrypoint \
-    # Evaluate a command that's coming after `docker run` / `docker exec`
-    &&  printf '"$@"\n'                                                 >> ${EMSDK}/entrypoint \
-    \
-    &&  chmod +x ${EMSDK}/entrypoint \
-    \
-&&  echo "## Done"
-
-
-COPY test_dockerimage.sh /emsdk_portable/
+# Internal test suite of tools that this image provides
+COPY test_dockerimage.sh ${EMSDK}/
 
 
 # Create symbolic links for critical Emscripten Tools
 # This is important for letting people using Emscripten in Dockerfiles without activation
 # As each Emscripten release is placed to a different folder (i.e. /emsdk_portable/emscripten/tag-1.38.31)
-# The ultimate goal is to simplify a way to use Emscripten SDK without a need to activate it.
 RUN echo "## Create symbolic links" \
     &&  . ${EMSDK}/emsdk_set_env.sh \
     \
@@ -185,10 +157,9 @@ ENTRYPOINT ["/emsdk_portable/entrypoint"]
 
 
 # ------------------------------------------------------------------------------
-
 # Create a 'standard` 1000:1000 user
 # Thanks to that this image can be executed as non-root user and created files will not require root access level on host machine
-# Please note that this solution even if widely spread (even node Dockerimages use that) is far from perfect as user 1000:1000 might not exist on
+# Please note that this solution even if widely spread (i.e. Node.js uses it) is far from perfect as user 1000:1000 might not exist on
 # host machine, and in this case running any docker image will cause other random problems (mostly due `$HOME` pointing to `/`)
 # This extra user works nicely with entrypoint provided in `/emsdk_portable/entrypoint` as it detects case explained before.
 RUN echo "## Create emscripten user (1000:1000)" \
@@ -263,7 +234,7 @@ COPY Dockerfile /emsdk_portable/dockerfiles/emscripten-core/emsdk/
 
 LABEL maintainer="kontakt@trzeci.eu" \
       org.label-schema.name="emscripten" \
-      org.label-schema.description="Regular version of Emscripten compiler what should be suitable to compile majority of C++ projects for Emscripten, ASM.js and WebAssembly." \
+      org.label-schema.description="The official container with Emscripten SDK" \
       org.label-schema.url="https://emscripten.org" \
       org.label-schema.vcs-url="https://github.com/emscripten-core/emsdk" \
       org.label-schema.docker.dockerfile="/docker/Dockerfile"
