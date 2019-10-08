@@ -56,8 +56,9 @@ RUN cd ${EMSDK} \
     \
     # remove wrongly created entry with EM_CACHE, variable will be picked up from ENV
     &&  sed -i -e "/EM_CACHE/d" ${EMSDK}/emsdk_set_env.sh \
-    # add a link to tools like asm2wasm in a system path \
-    &&  printf "export PATH=${EMSDK}/fastcomp/bin:\$PATH\n" >> ${EMSDK}/emsdk_set_env.sh \
+    # add a link to tools like asm2wasm in a system path
+    # asm2wasm (and friends might be places either in ./upstream of ./fastcomp folder, hence detection is needed)
+    &&  printf "export PATH=$(dirname $(find . -name asm2wasm -exec readlink -f {} +)):\$PATH\n" >> ${EMSDK}/emsdk_set_env.sh \
     \
 &&  echo "## Done"
 
@@ -89,6 +90,7 @@ RUN echo "## Create symbolic links" \
     &&  ln -s $(dirname $(which node))/..       ${EMSDK}/node/current \
     &&  ln -s $(dirname $(which clang))/..      ${EMSDK}/llvm/clang \
     &&  ln -s $(dirname $(which emcc))          ${EMSDK}/emscripten/sdk \
+    \
     &&  ln -s $(dirname $(which asm2wasm))      ${EMSDK}/binaryen/bin \
     \
     &&  echo "## Done"
