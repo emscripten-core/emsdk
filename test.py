@@ -142,7 +142,8 @@ assert not os.path.exists(LIBC)
 old_config = open(os.path.expanduser('~/.emscripten')).read()
 run_emsdk('activate tot-upstream')
 assert old_config == open(os.path.expanduser('~/.emscripten.old')).read()
-assert os.path.exists(LIBC), 'activation supplies prebuilt libc' # TODO; test on latest as well
+# TODO; test on latest as well
+assert os.path.exists(LIBC), 'activation supplies prebuilt libc'
 check_call(upstream_emcc + ' hello_world.cpp')
 
 print('test tot-fastcomp')
