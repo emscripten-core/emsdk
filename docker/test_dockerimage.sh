@@ -6,8 +6,6 @@ which llvm-ar
 which emsdk
 node --version
 npm --version
-python --version
-pip --version
 python3 --version
 pip3 --version
 em++ --version

@@ -113,6 +113,8 @@ RUN echo "## Aggresive optimization: Remove debug symbols" \
 RUN echo "## Pre-populate cache" \
     &&  . ${EMSDK}/emsdk_set_env.sh \
     \
+    &&  embuilder.py build SYSTEM \
+    \
     &&  mkdir -p /tmp/emscripten_test \
     &&  cd /tmp/emscripten_test \
     \
@@ -179,8 +181,6 @@ RUN echo "## Update and install packages" \
     &&  apt-get -qq -y update && apt-get -qq install -y --no-install-recommends \
         libxml2 \
         ca-certificates \
-        python \
-        python-pip \
         python3 \
         python3-pip \
         wget \

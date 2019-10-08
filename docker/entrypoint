@@ -16,14 +16,12 @@ fi
 
 # Export this image specific Environment variables
 # Those variables are important to use dedicated folder for all cache and predefined config file
-export EMSDK=/emsdk_portable
-export EM_DATA=/emsdk_portable/.data
 export EM_CONFIG=/emsdk_portable/.emscripten
 export EM_CACHE=/emsdk_portable/.data/cache
 export EM_PORTS=/emsdk_portable/.data/ports
 
 # Activate Emscripten SDK
-. ${EMSDK}/emsdk_set_env.sh > /dev/null
+. ${EMSDK}/emsdk_set_env.sh
 
 # Evaluate a command that's coming after `docker run` / `docker exec`
 "$@"
