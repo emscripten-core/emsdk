@@ -9,7 +9,7 @@ ARG EMSDK_CHANGESET=master
 # ------------------------------------------------------------------------------
 
 # NOTE: Any change of following variables should be reflected in ./entrypoint file
-ENV EMSDK /emsdk_portable
+ENV EMSDK /emsdk
 ENV EM_DATA ${EMSDK}/.data
 ENV EM_CONFIG ${EMSDK}/.emscripten
 ENV EM_CACHE ${EM_DATA}/cache
@@ -78,7 +78,7 @@ COPY entrypoint ${EMSDK}/
 
 # Create symbolic links for critical Emscripten Tools
 # This is important for letting people using Emscripten in Dockerfiles without activation
-# As each Emscripten release is placed to a different folder (i.e. /emsdk_portable/emscripten/tag-1.38.31)
+# As each Emscripten release is placed to a different folder (i.e. /emsdk/emscripten/tag-1.38.31)
 RUN echo "## Create symbolic links" \
     &&  . ${EMSDK}/emsdk_set_env.sh \
     \
@@ -137,11 +137,11 @@ RUN echo "## Pre-populate cache" \
 
 FROM debian:buster-slim AS stage_deploy
 
-COPY --from=stage_build /emsdk_portable /emsdk_portable
+COPY --from=stage_build /emsdk /emsdk
 
 # Fallback in case Emscripten isn't activated.
 # This will let use tools offered by this image inside other Docker images (sub-stages) or with custom / no entrypoint
-ENV EMSDK /emsdk_portable
+ENV EMSDK /emsdk
 ENV EMSCRIPTEN=${EMSDK}/emscripten/sdk
 
 ENV EM_DATA ${EMSDK}/.data
@@ -154,7 +154,7 @@ ENV EM_PORTS ${EM_DATA}/ports
 ENV PATH="${EMSDK}:${EMSDK}/emscripten/sdk:${EMSDK}/llvm/clang/bin:${EMSDK}/node/current/bin:${EMSDK}/binaryen/bin:${PATH}"
 
 # Use entrypoint that's coming from emscripten-slim image. It sets all required system paths and variables
-ENTRYPOINT ["/emsdk_portable/entrypoint"]
+ENTRYPOINT ["/emsdk/entrypoint"]
 
 
 # ------------------------------------------------------------------------------
@@ -162,7 +162,7 @@ ENTRYPOINT ["/emsdk_portable/entrypoint"]
 # Thanks to that this image can be executed as non-root user and created files will not require root access level on host machine
 # Please note that this solution even if widely spread (i.e. Node.js uses it) is far from perfect as user 1000:1000 might not exist on
 # host machine, and in this case running any docker image will cause other random problems (mostly due `$HOME` pointing to `/`)
-# This extra user works nicely with entrypoint provided in `/emsdk_portable/entrypoint` as it detects case explained before.
+# This extra user works nicely with entrypoint provided in `/emsdk/entrypoint` as it detects case explained before.
 RUN echo "## Create emscripten user (1000:1000)" \
     &&  groupadd --gid 1000 emscripten \
     &&  useradd --uid 1000 --gid emscripten --shell /bin/bash --create-home emscripten \
@@ -223,7 +223,7 @@ RUN echo "## Internal Testing of image (not-activated)" \
 
 # ------------------------------------------------------------------------------
 # Copy this Dockerimage into image, so that it will be possible to recreate it later
-COPY Dockerfile /emsdk_portable/dockerfiles/emscripten-core/emsdk/
+COPY Dockerfile /emsdk/dockerfiles/emscripten-core/emsdk/
 
 LABEL maintainer="kontakt@trzeci.eu" \
       org.label-schema.name="emscripten" \

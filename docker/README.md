@@ -1,5 +1,9 @@
-### About this Dockerfile
-... to be added
+# Dockerfile for EMSDK
+
+This Dockerfile builds a self-contained version of emsdk that enables emscripten to be used without any
+other installation on the host system.
+
+It is published at https://hub.docker.com/u/emscripten/emsdk
 
 ### Usage
 
