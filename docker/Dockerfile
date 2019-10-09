@@ -75,9 +75,6 @@ RUN cd ${EMSDK} \
 # Create an entrypoint that activates Emscripten SDK and helps running this image as non-root user
 COPY entrypoint ${EMSDK}/
 
-# Internal test suite of tools that this image provides
-COPY test_dockerimage.sh ${EMSDK}/
-
 
 # Create symbolic links for critical Emscripten Tools
 # This is important for letting people using Emscripten in Dockerfiles without activation
@@ -181,7 +178,9 @@ RUN echo "## Update and install packages" \
     &&  apt-get -qq -y update && apt-get -qq install -y --no-install-recommends \
         libxml2 \
         ca-certificates \
+        python \
         python3 \
+        python-pip \
         python3-pip \
         wget \
         curl \
@@ -208,6 +207,8 @@ RUN echo "## Update and install packages" \
 &&  echo "## Done"
 
 # ------------------------------------------------------------------------------
+# Internal test suite of tools that this image provides
+COPY test_dockerimage.sh ${EMSDK}/
 
 RUN echo "## Internal Testing of image (activated)" \
     &&  . ${EMSDK}/emsdk_set_env.sh \
