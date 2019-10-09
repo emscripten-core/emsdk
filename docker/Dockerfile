@@ -193,6 +193,7 @@ RUN echo "## Update and install packages" \
         make \
         ant \
         libidn11 \
+        cmake \
         openjdk-11-jre-headless \
     \
     # Standard Cleanup on Debian images
@@ -205,17 +206,6 @@ RUN echo "## Update and install packages" \
     &&  rm -rf /usr/share/man/?? \
     &&  rm -rf /usr/share/man/??_* \
 &&  echo "## Done"
-
-RUN	echo "## Installing CMake" \
-    &&	wget https://cmake.org/files/v3.14/cmake-3.14.3-Linux-x86_64.sh -q \
-    &&	mkdir /opt/cmake \
-    &&	printf "y\nn\n" | sh cmake-3.14.3-Linux-x86_64.sh --prefix=/opt/cmake > /dev/null \
-    &&		rm -fr cmake*.sh /opt/cmake/doc \
-    &&		rm -fr /opt/cmake/bin/cmake-gui \
-    &&		rm -fr /opt/cmake/bin/ccmake \
-    &&		rm -fr /opt/cmake/bin/cpack \
-    &&	ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
-    &&	ln -s /opt/cmake/bin/ctest /usr/local/bin/ctest
 
 # ------------------------------------------------------------------------------
 
