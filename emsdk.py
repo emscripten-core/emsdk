@@ -159,9 +159,9 @@ if os.path.exists(os.path.join(emsdk_path(), '.emscripten')):
   emscripten_config_directory = emsdk_path()
 
 EMSDK_SET_ENV = 'emsdk_set_env.ps1' if POWERSHELL \
-           else 'emsdk_set_env.bat' if (WINDOWS and not MSYS) \
-           else 'emsdk_set_env.csh' if CSH \
-           else 'emsdk_set_env.sh'
+    else 'emsdk_set_env.bat' if (WINDOWS and not MSYS) \
+    else 'emsdk_set_env.csh' if CSH \
+    else 'emsdk_set_env.sh'
 
 ARCHIVE_SUFFIXES = ('zip', '.tar', '.gz', '.xz', '.tbz2', '.bz2')
 
