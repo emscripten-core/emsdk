@@ -61,8 +61,8 @@ LIBC = os.path.expanduser('~/.emscripten_cache/wasm-obj/libc.a')
 # Tests
 
 print('test .emscripten contents (latest was installed/activated in test.sh)')
-assert 'fastcomp' in open(os.path.expanduser('~/.emscripten')).read()
-assert 'upstream' not in open(os.path.expanduser('~/.emscripten')).read()
+assert 'fastcomp' not in open(os.path.expanduser('~/.emscripten')).read()
+assert 'upstream' in open(os.path.expanduser('~/.emscripten')).read()
 
 print('building proper system libraries')
 
@@ -114,23 +114,22 @@ if WINDOWS:
 else:
   emsdk = './emsdk'
 
-test_lib_building(fastcomp_emcc, use_asmjs_optimizer=True)
+test_lib_building(upstream_emcc, use_asmjs_optimizer=True)
 
 print('update')
 run_emsdk('update-tags')
 
-print('test latest-releases-upstream')
-run_emsdk('install latest-upstream')
-run_emsdk('activate latest-upstream')
+print('test latest-releases-fastcomp')
+run_emsdk('install latest-fastcomp')
+run_emsdk('activate latest-fastcomp')
 
-test_lib_building(upstream_emcc, use_asmjs_optimizer=False)
+test_lib_building(fastcomp_emcc, use_asmjs_optimizer=False)
 assert open(os.path.expanduser('~/.emscripten')).read().count('LLVM_ROOT') == 1
-assert 'upstream' in open(os.path.expanduser('~/.emscripten')).read()
-assert 'fastcomp' not in open(os.path.expanduser('~/.emscripten')).read()
-
+assert 'upstream' not in open(os.path.expanduser('~/.emscripten')).read()
+assert 'fastcomp' in open(os.path.expanduser('~/.emscripten')).read()
 
 print('verify version')
-checked_call_with_output(upstream_emcc + ' -v', TAGS['latest'], stderr=subprocess.STDOUT)
+checked_call_with_output(fastcomp_emcc + ' -v', TAGS['latest'], stderr=subprocess.STDOUT)
 
 print('clear cache')
 check_call(upstream_emcc + ' --clear-cache')
@@ -160,8 +159,8 @@ run_emsdk('install 1.38.33')
 print('another install must re-download')
 checked_call_with_output(emsdk + ' install 1.38.33', expected='Downloading:', unexpected='already exist in destination')
 run_emsdk('activate 1.38.33')
-assert 'fastcomp' in open(os.path.expanduser('~/.emscripten')).read()
-assert 'upstream' not in open(os.path.expanduser('~/.emscripten')).read()
+assert 'upstream' in open(os.path.expanduser('~/.emscripten')).read()
+assert 'fastcomp' not in open(os.path.expanduser('~/.emscripten')).read()
 
 print('test specific release (new, full name)')
 run_emsdk('install sdk-1.38.33-upstream-64bit')

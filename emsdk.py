@@ -1941,7 +1941,7 @@ def find_used_python():
 
 
 def version_key(ver):
-  return list(map(int, re.split('[._-]', ver)))
+  return tuple(map(int, re.split('[._-]', ver)))
 
 
 # A sort function that is compatible with both Python 2 and Python 3 using a
@@ -2710,14 +2710,29 @@ def main():
 
   releases_info = load_releases_info()['releases']
 
+  def report_upstream_by_default():
+    print('''\
+** NOTICE **: The default SDK changed from `fastcomp` to `upstream`.
+If you have problems, or wish to revert back to fastcomp for some other reason
+you can add `-fastcomp` to explitly install that fastcomp-based
+SDK. .e.g ./emsdk install latest-fastcomp.
+''', file=sys.stderr)
+
   # Replace meta-packages with the real package names.
   if cmd in ('update', 'install', 'activate'):
     for i in range(2, len(sys.argv)):
       arg = sys.argv[i]
-      if arg in ('latest', 'sdk-latest', 'latest-64bit', 'sdk-latest-64bit', 'latest-fastcomp', 'latest-releases-fastcomp'):
+      if arg in ('latest', 'sdk-latest', 'latest-64bit', 'sdk-latest-64bit'):
+        # This is effectly the default SDK
+        report_upstream_by_default()
+        sys.argv[i] = str(find_latest_releases_sdk('upstream'))
+      elif arg in ('latest-fastcomp', 'latest-releases-fastcomp'):
         sys.argv[i] = str(find_latest_releases_sdk('fastcomp'))
       elif arg in ('latest-upstream', 'latest-clang-upstream', 'latest-releases-upstream'):
         sys.argv[i] = str(find_latest_releases_sdk('upstream'))
+      elif arg in ('tot', 'sdk-tot'):
+        report_upstream_by_default()
+        sys.argv[i] = str(find_tot_sdk('upstream'))
       elif arg == 'tot-upstream':
         sys.argv[i] = str(find_tot_sdk('upstream'))
       elif arg in ('tot-fastcomp', 'sdk-nightly-latest'):
@@ -2728,17 +2743,23 @@ def main():
         #   x.y.z[-(upstream|fastcomp_])
         #   sdk-x.y.z[-(upstream|fastcomp_])-64bit
         # TODO: support short notation for old builds too?
-        upstream = False
+        backend = None
         if '-upstream' in arg:
           arg = arg.replace('-upstream', '')
-          upstream = True
+          backend = 'upstream'
         elif '-fastcomp' in arg:
           arg = arg.replace('-fastcomp', '')
-          upstream = False
+          backend = 'fastcomp'
         arg = arg.replace('sdk-', '').replace('-64bit', '').replace('tag-', '')
         release_hash = releases_info.get(arg, None) or releases_info.get('sdk-' + arg + '-64bit')
         if release_hash:
-          sys.argv[i] = 'sdk-releases-%s-%s-64bit' % ('upstream' if upstream else 'fastcomp', release_hash)
+          if backend is None:
+            if version_key(arg) >= (1, 39, 0):
+              report_upstream_by_default()
+              backend = 'upstream'
+            else:
+              backend = 'fastcomp'
+          sys.argv[i] = 'sdk-releases-%s-%s-64bit' % (backend, release_hash)
 
   if cmd == 'list':
     print('')
@@ -2747,12 +2768,12 @@ def main():
       print('The *recommended* precompiled SDK download is %s (%s).' % (find_latest_releases_version(), find_latest_releases_hash()))
       print()
       print('To install/activate it, use one of:')
-      print('         latest                  [default (fastcomp) backend]')
-      print('         latest-upstream         [upstream LLVM wasm backend]')
+      print('         latest                  [default (llvm) backend]')
+      print('         latest-fastcomp         [legacy (fastcomp) backend]')
       print('')
       print('Those are equivalent to installing/activating the following:')
       print('         %s' % find_latest_releases_version())
-      print('         %s-upstream' % find_latest_releases_version())
+      print('         %s-fastcomp' % find_latest_releases_version())
       print('')
     else:
       print('Warning: your platform does not have precompiled SDKs available.')
@@ -2764,7 +2785,6 @@ def main():
     releases_versions.reverse()
     for ver in releases_versions:
       print('         %s' % ver)
-      print('         %s-upstream' % ver)
     print()
 
     # Use array to work around the lack of being able to mutate from enclosing
