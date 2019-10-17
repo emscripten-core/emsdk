@@ -1874,11 +1874,15 @@ def find_latest_releases_sdk(which):
   return 'sdk-releases-%s-%s-64bit' % (which, find_latest_releases_hash())
 
 
+def find_tot():
+  return open(tot_path()).read().strip()
+
+
 def find_tot_sdk(which):
   if not os.path.exists(tot_path()):
     print('Tip-of-tree information was not found, run emsdk update-tags')
     sys.exit(1)
-  tot = open(tot_path()).read()
+  tot = find_tot()
   if not tot:
     print('Tip-of-tree build was not found, run emsdk update-tags (however, if there is no recent tip-of-tree build, you may need to wait)')
     sys.exit(1)
@@ -2070,7 +2074,7 @@ def load_releases_tags():
   tags = list(info['releases'].values())
   # Add the tip-of-tree, if it exists.
   if os.path.exists(tot_path()):
-    tot = open(tot_path()).read()
+    tot = find_tot()
     if tot:
       tags.append(tot)
   return tags
