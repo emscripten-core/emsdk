@@ -1679,7 +1679,7 @@
   {
     "version": "releases-upstream-%releases-tag%",
     "bitness": 64,
-    "uses": ["releases-upstream-%releases-tag%-64bit", "node-12.9.1-64bit"],
+    "uses": ["releases-upstream-%releases-tag%-64bit", "node-12.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit"],
     "os": "win"
   },
   {
