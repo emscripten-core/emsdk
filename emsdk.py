@@ -2519,6 +2519,14 @@ def silentremove(filename):
       raise
 
 
+def error_on_missing_tool(name):
+  if name.endswith('-64bit') and not is_os_64bit():
+    print("Error: '%s' is only provided for 64-bit OSes." % name)
+  else:
+    print("Error: No tool or SDK found by name '%s'." % name)
+  return 1
+
+
 def main():
   global emscripten_config_directory, BUILD_FOR_TESTING, ENABLE_LLVM_ASSERTIONS, TTY_OUTPUT
 
@@ -2893,8 +2901,7 @@ def main():
       if tool is None:
         tool = find_sdk(arg)
       if tool is None:
-        print("Error: No tool or SDK found by name '" + arg + "'.")
-        return 1
+        return error_on_missing_tool(arg)
       tools_to_activate += [tool]
     if len(tools_to_activate) == 0:
       print('No tools/SDKs specified to activate! Usage:\n   emsdk activate tool/sdk1 [tool/sdk2] [...]')
@@ -2940,8 +2947,7 @@ def main():
       if tool is None:
         tool = find_sdk(t)
       if tool is None:
-        print("Error: No tool or SDK found by name '" + t + "'.")
-        return 1
+        return error_on_missing_tool(t)
       success = tool.install()
       if not success:
         return 1
