@@ -2714,8 +2714,8 @@ def main():
     print('''\
 ** NOTICE **: The default SDK changed from `fastcomp` to `upstream`.
 If you have problems, or wish to revert back to fastcomp for some other reason
-you can add `-fastcomp` to explitly install that fastcomp-based
-SDK. .e.g ./emsdk install latest-fastcomp.
+you can add `-fastcomp` to explicitly install that fastcomp-based
+SDK, .e.g ./emsdk install latest-fastcomp.
 ''', file=sys.stderr)
 
   # Replace meta-packages with the real package names.
