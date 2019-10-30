@@ -15,4 +15,4 @@ if [ $? != 0 ]; then
   python=python
 fi
 
-exec $python $0.py "$@"
+exec "$python" "$0.py" "$@"
