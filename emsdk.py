@@ -30,18 +30,7 @@ else:
   from urlparse import urljoin
   from urllib2 import urlopen
 
-# EMSDK_DEV is a developer mode flag, which, if true, the SDK is downloaded from
-# a 'staging' online source, instead of the public source. New releases are
-# first deployed to the staging source for testing, before being published to
-# the public. Don't enable this unless you develop EMSDK itself and need to
-# access the staging source repository instead.
-EMSDK_DEV = int(os.environ.get('EMSDK_DEV', '0'))
-
-if EMSDK_DEV:
-  print('EMSDK_DEV active.')
-  emsdk_master_server = 'http://clb.demon.fi/emscripten_dev/packages/'
-else:
-  emsdk_master_server = 'https://storage.googleapis.com/webassembly/emscripten-releases-builds/deps/'
+emsdk_master_server = 'https://storage.googleapis.com/webassembly/emscripten-releases-builds/deps/'
 
 emsdk_packages_url = emsdk_master_server
 
