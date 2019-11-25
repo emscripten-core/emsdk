@@ -1709,6 +1709,12 @@ class Tool(object):
       print("Done installing SDK '" + str(self) + "'.")
       return True
     else:
+      # We should not force reinstallation of python if it already exists, since that very python
+      # may be interpreting the current emsdk.py script we are executing. On Windows this would
+      # lead to a failure to uncompress the python zip file as the python executable files are in use.
+      if self.id == 'python' and self.is_installed():
+        print("Skipped installing " + self.name + ", already installed.")
+        return True
       print("Installing tool '" + str(self) + "'..")
       url = self.download_url()
 
