@@ -16,7 +16,7 @@
     "cmake_build_type": "Release"
   },
   {
-    "id": "clang",
+    "id": "fastcomp-clang",
     "version": "tag-e%tag%",
     "bitness": 64,
     "append_bitness": false,
@@ -31,7 +31,7 @@
     "cmake_build_type": "Release"
   },
   {
-    "id": "clang",
+    "id": "fastcomp-clang",
     "version": "nightly-e%nightly-llvm-64bit%",
     "bitness": 64,
     "arch": "x86_64",
@@ -44,7 +44,7 @@
     "activated_env": "LLVM_ROOT=%installation_dir%"
   },
   {
-    "id": "clang",
+    "id": "fastcomp-clang",
     "version": "incoming",
     "bitness": 32,
     "install_path": "clang/fastcomp",
@@ -58,7 +58,7 @@
     "cmake_build_type": "Release"
   },
   {
-    "id": "clang",
+    "id": "fastcomp-clang",
     "version": "incoming",
     "bitness": 64,
     "install_path": "clang/fastcomp",
@@ -72,7 +72,7 @@
     "cmake_build_type": "Release"
   },
   {
-    "id": "clang",
+    "id": "fastcomp-clang",
     "version": "master",
     "bitness": 32,
     "install_path": "clang/fastcomp",
@@ -86,7 +86,7 @@
     "cmake_build_type": "Release"
   },
   {
-    "id": "clang",
+    "id": "fastcomp-clang",
     "version": "master",
     "bitness": 64,
     "install_path": "clang/fastcomp",
@@ -144,7 +144,7 @@
     "activated_env": "LLVM_ROOT=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%/optimizer%.exe%;BINARYEN_ROOT=%installation_dir%/binaryen"
   },
   {
-    "id": "clang",
+    "id": "fastcomp-clang",
     "version": "e%precompiled_tag64%",
     "bitness": 64,
     "arch": "x86_64",
@@ -541,183 +541,183 @@
 
   "sdks": [
   {
-    "version": "incoming",
+    "version": "fastcomp-incoming",
     "bitness": 32,
-    "uses": ["clang-incoming-32bit", "node-12.9.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-incoming-32bit", "binaryen-master-32bit"],
+    "uses": ["fastcomp-clang-incoming-32bit", "node-12.9.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-incoming-32bit", "binaryen-master-32bit"],
     "os": "win"
   },
   {
-    "version": "incoming",
+    "version": "fastcomp-incoming",
     "bitness": 64,
-    "uses": ["clang-incoming-64bit", "node-12.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-incoming-64bit", "binaryen-master-64bit"],
+    "uses": ["fastcomp-clang-incoming-64bit", "node-12.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-incoming-64bit", "binaryen-master-64bit"],
     "os": "win"
   },
   {
-    "version": "incoming",
+    "version": "fastcomp-incoming",
     "bitness": 64,
-    "uses": ["clang-incoming-64bit", "node-12.9.1-64bit", "emscripten-incoming-64bit", "binaryen-master-64bit"],
+    "uses": ["fastcomp-clang-incoming-64bit", "node-12.9.1-64bit", "emscripten-incoming-64bit", "binaryen-master-64bit"],
     "os": "osx"
   },
   {
-    "version": "incoming",
+    "version": "fastcomp-incoming",
     "bitness": 32,
-    "uses": ["clang-incoming-32bit", "node-12.9.1-32bit", "emscripten-incoming-32bit", "binaryen-master-32bit"],
+    "uses": ["fastcomp-clang-incoming-32bit", "node-12.9.1-32bit", "emscripten-incoming-32bit", "binaryen-master-32bit"],
     "os": "linux"
   },
   {
-    "version": "incoming",
+    "version": "fastcomp-incoming",
     "bitness": 64,
-    "uses": ["clang-incoming-64bit", "node-12.9.1-64bit", "emscripten-incoming-64bit", "binaryen-master-64bit"],
+    "uses": ["fastcomp-clang-incoming-64bit", "node-12.9.1-64bit", "emscripten-incoming-64bit", "binaryen-master-64bit"],
     "os": "linux"
   },
   {
-    "version": "master",
+    "version": "fastcomp-master",
     "bitness": 32,
-    "uses": ["clang-master-32bit", "node-12.9.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-master-32bit", "binaryen-master-32bit"],
+    "uses": ["fastcomp-clang-master-32bit", "node-12.9.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-master-32bit", "binaryen-master-32bit"],
     "os": "win"
   },
   {
-    "version": "master",
+    "version": "fastcomp-master",
     "bitness": 64,
-    "uses": ["clang-master-64bit", "node-12.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
+    "uses": ["fastcomp-clang-master-64bit", "node-12.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
     "os": "win"
   },
   {
-    "version": "master",
+    "version": "fastcomp-master",
     "bitness": 64,
-    "uses": ["clang-master-64bit", "node-12.9.1-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
+    "uses": ["fastcomp-clang-master-64bit", "node-12.9.1-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
     "os": "osx"
   },
   {
-    "version": "master",
+    "version": "fastcomp-master",
     "bitness": 32,
-    "uses": ["clang-master-32bit", "node-12.9.1-32bit", "emscripten-master-32bit", "binaryen-master-32bit"],
+    "uses": ["fastcomp-clang-master-32bit", "node-12.9.1-32bit", "emscripten-master-32bit", "binaryen-master-32bit"],
     "os": "linux"
   },
   {
-    "version": "master",
+    "version": "fastcomp-master",
     "bitness": 64,
-    "uses": ["clang-master-64bit", "node-12.9.1-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
+    "uses": ["fastcomp-clang-master-64bit", "node-12.9.1-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
     "os": "linux"
   },
   {
-    "version": "tag-%tag%",
+    "version": "fastcomp-tag-%tag%",
     "bitness": 32,
-    "uses": ["clang-tag-e%tag%-32bit", "node-4.1.1-32bit", "python-2.7.13.1-32bit", "java-7.45-32bit", "emscripten-tag-%tag%-32bit", "binaryen-tag-%tag%-32bit"],
+    "uses": ["fastcomp-clang-tag-e%tag%-32bit", "node-4.1.1-32bit", "python-2.7.13.1-32bit", "java-7.45-32bit", "emscripten-tag-%tag%-32bit", "binaryen-tag-%tag%-32bit"],
     "os": "win",
     "version_filter": [
       ["%tag%", "<=", "1.37.22"]
     ]
   },
   {
-    "version": "tag-%tag%",
+    "version": "fastcomp-tag-%tag%",
     "bitness": 64,
-    "uses": ["clang-tag-e%tag%-64bit", "node-4.1.1-64bit", "python-2.7.13.1-64bit", "java-7.45-64bit", "emscripten-tag-%tag%-64bit", "binaryen-tag-%tag%-64bit"],
+    "uses": ["fastcomp-clang-tag-e%tag%-64bit", "node-4.1.1-64bit", "python-2.7.13.1-64bit", "java-7.45-64bit", "emscripten-tag-%tag%-64bit", "binaryen-tag-%tag%-64bit"],
     "os": "win",
     "version_filter": [
       ["%tag%", "<=", "1.37.22"]
     ]
   },
   {
-    "version": "tag-%tag%",
+    "version": "fastcomp-tag-%tag%",
     "bitness": 32,
-    "uses": ["clang-tag-e%tag%-32bit", "node-4.1.1-32bit", "emscripten-tag-%tag%-32bit", "binaryen-tag-%tag%-32bit"],
+    "uses": ["fastcomp-clang-tag-e%tag%-32bit", "node-4.1.1-32bit", "emscripten-tag-%tag%-32bit", "binaryen-tag-%tag%-32bit"],
     "os": "linux",
     "version_filter": [
       ["%tag%", "<=", "1.37.22"]
     ]
   },
   {
-    "version": "tag-%tag%",
+    "version": "fastcomp-tag-%tag%",
     "bitness": 64,
-    "uses": ["clang-tag-e%tag%-64bit", "node-4.1.1-64bit", "emscripten-tag-%tag%-64bit", "binaryen-tag-%tag%-64bit"],
+    "uses": ["fastcomp-clang-tag-e%tag%-64bit", "node-4.1.1-64bit", "emscripten-tag-%tag%-64bit", "binaryen-tag-%tag%-64bit"],
     "os": "unix",
     "version_filter": [
       ["%tag%", "<=", "1.37.22"]
     ]
   },
   {
-    "version": "tag-%tag%",
+    "version": "fastcomp-tag-%tag%",
     "bitness": 32,
-    "uses": ["clang-tag-e%tag%-32bit", "node-8.9.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-tag-%tag%-32bit", "binaryen-tag-%tag%-32bit"],
+    "uses": ["fastcomp-clang-tag-e%tag%-32bit", "node-8.9.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-tag-%tag%-32bit", "binaryen-tag-%tag%-32bit"],
     "os": "win",
     "version_filter": [
       ["%tag%", ">", "1.37.22"]
     ]
   },
   {
-    "version": "tag-%tag%",
+    "version": "fastcomp-tag-%tag%",
     "bitness": 64,
-    "uses": ["clang-tag-e%tag%-64bit", "node-8.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-tag-%tag%-64bit", "binaryen-tag-%tag%-64bit"],
+    "uses": ["fastcomp-clang-tag-e%tag%-64bit", "node-8.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-tag-%tag%-64bit", "binaryen-tag-%tag%-64bit"],
     "os": "win",
     "version_filter": [
       ["%tag%", ">", "1.37.22"]
     ]
   },
   {
-    "version": "tag-%tag%",
+    "version": "fastcomp-tag-%tag%",
     "bitness": 32,
-    "uses": ["clang-tag-e%tag%-32bit", "node-8.9.1-32bit", "emscripten-tag-%tag%-32bit", "binaryen-tag-%tag%-32bit"],
+    "uses": ["fastcomp-clang-tag-e%tag%-32bit", "node-8.9.1-32bit", "emscripten-tag-%tag%-32bit", "binaryen-tag-%tag%-32bit"],
     "os": "linux",
     "version_filter": [
       ["%tag%", ">", "1.37.22"]
     ]
   },
   {
-    "version": "tag-%tag%",
+    "version": "fastcomp-tag-%tag%",
     "bitness": 64,
-    "uses": ["clang-tag-e%tag%-64bit", "node-8.9.1-64bit", "emscripten-tag-%tag%-64bit", "binaryen-tag-%tag%-64bit"],
+    "uses": ["fastcomp-clang-tag-e%tag%-64bit", "node-8.9.1-64bit", "emscripten-tag-%tag%-64bit", "binaryen-tag-%tag%-64bit"],
     "os": "unix",
     "version_filter": [
       ["%tag%", ">", "1.37.22"]
     ]
   },  
   {
-    "version": "nightly-%nightly-llvm-32bit%",
+    "version": "fastcomp-nightly-%nightly-llvm-32bit%",
     "bitness": 32,
-    "uses": ["clang-nightly-e%nightly-llvm-32bit%-32bit", "node-4.1.1-32bit", "python-2.7.13.1-32bit", "java-7.45-32bit", "emscripten-nightly-%nightly-llvm-32bit%"],
+    "uses": ["fastcomp-clang-nightly-e%nightly-llvm-32bit%-32bit", "node-4.1.1-32bit", "python-2.7.13.1-32bit", "java-7.45-32bit", "emscripten-nightly-%nightly-llvm-32bit%"],
     "os": "win",
     "version_filter": [
       ["%nightly-llvm-32bit%", "<=", "1.37.22-2017_11_05"]
     ]
   },
   {
-    "version": "nightly-%nightly-llvm-64bit%",
+    "version": "fastcomp-nightly-%nightly-llvm-64bit%",
     "bitness": 64,
-    "uses": ["clang-nightly-e%nightly-llvm-64bit%-64bit", "node-4.1.1-64bit", "python-2.7.13.1-64bit", "java-7.45-64bit", "emscripten-nightly-%nightly-llvm-64bit%"],
+    "uses": ["fastcomp-clang-nightly-e%nightly-llvm-64bit%-64bit", "node-4.1.1-64bit", "python-2.7.13.1-64bit", "java-7.45-64bit", "emscripten-nightly-%nightly-llvm-64bit%"],
     "os": "win",
     "version_filter": [
       ["%nightly-llvm-64bit%", "<=", "1.37.22-2017_11_05"]
     ]
   },
   {
-    "version": "nightly-%nightly-llvm-32bit%",
+    "version": "fastcomp-nightly-%nightly-llvm-32bit%",
     "bitness": 32,
-    "uses": ["clang-nightly-e%nightly-llvm-32bit%-32bit", "node-4.1.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-nightly-%nightly-llvm-32bit%"],
+    "uses": ["fastcomp-clang-nightly-e%nightly-llvm-32bit%-32bit", "node-4.1.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-nightly-%nightly-llvm-32bit%"],
     "os": "win",
     "version_filter": [
       ["%nightly-llvm-32bit%", ">", "1.37.22-2017_11_05"]
     ]
   },
   {
-    "version": "nightly-%nightly-llvm-64bit%",
+    "version": "fastcomp-nightly-%nightly-llvm-64bit%",
     "bitness": 64,
-    "uses": ["clang-nightly-e%nightly-llvm-64bit%-64bit", "node-4.1.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-nightly-%nightly-llvm-64bit%"],
+    "uses": ["fastcomp-clang-nightly-e%nightly-llvm-64bit%-64bit", "node-4.1.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-nightly-%nightly-llvm-64bit%"],
     "os": "win",
     "version_filter": [
       ["%nightly-llvm-64bit%", ">", "1.37.22-2017_11_05"]
     ]
   },
   {
-    "version": "nightly-%nightly-llvm-32bit%",
+    "version": "fastcomp-nightly-%nightly-llvm-32bit%",
     "bitness": 32,
-    "uses": ["clang-nightly-e%nightly-llvm-32bit%-32bit", "node-4.1.1-64bit", "emscripten-nightly-%nightly-llvm-32bit%"],
+    "uses": ["fastcomp-clang-nightly-e%nightly-llvm-32bit%-32bit", "node-4.1.1-64bit", "emscripten-nightly-%nightly-llvm-32bit%"],
     "os": "unix"
   },
   {
-    "version": "nightly-%nightly-llvm-64bit%",
+    "version": "fastcomp-nightly-%nightly-llvm-64bit%",
     "bitness": 64,
-    "uses": ["clang-nightly-e%nightly-llvm-64bit%-64bit", "node-4.1.1-64bit", "emscripten-nightly-%nightly-llvm-64bit%"],
+    "uses": ["fastcomp-clang-nightly-e%nightly-llvm-64bit%-64bit", "node-4.1.1-64bit", "emscripten-nightly-%nightly-llvm-64bit%"],
     "os": "unix"
   },
   {
@@ -763,108 +763,108 @@
     "os": "win"
   },
   {
-    "version": "%precompiled_tag32%",
+    "version": "fastcomp-%precompiled_tag32%",
     "bitness": 32,
-    "uses": ["clang-e%precompiled_tag32%-32bit", "node-4.1.1-32bit", "python-2.7.13.1-32bit", "java-7.45-32bit", "emscripten-%precompiled_tag32%"],
+    "uses": ["fastcomp-clang-e%precompiled_tag32%-32bit", "node-4.1.1-32bit", "python-2.7.13.1-32bit", "java-7.45-32bit", "emscripten-%precompiled_tag32%"],
     "os": "win",
     "version_filter": [
       ["%precompiled_tag32%", "<=", "1.37.22"]
     ]
   },
   {
-    "version": "%precompiled_tag64%",
+    "version": "fastcomp-%precompiled_tag64%",
     "bitness": 64,
-    "uses": ["clang-e%precompiled_tag64%-64bit", "node-4.1.1-64bit", "python-2.7.13.1-64bit", "java-7.45-64bit", "emscripten-%precompiled_tag64%"],
+    "uses": ["fastcomp-clang-e%precompiled_tag64%-64bit", "node-4.1.1-64bit", "python-2.7.13.1-64bit", "java-7.45-64bit", "emscripten-%precompiled_tag64%"],
     "os": "win",
     "version_filter": [
       ["%precompiled_tag64%", "<=", "1.37.22"]
     ]
   },
   {
-    "version": "%precompiled_tag32%",
+    "version": "fastcomp-%precompiled_tag32%",
     "bitness": 32,
-    "uses": ["clang-e%precompiled_tag32%-32bit", "node-4.1.1-32bit", "emscripten-%precompiled_tag32%"],
+    "uses": ["fastcomp-clang-e%precompiled_tag32%-32bit", "node-4.1.1-32bit", "emscripten-%precompiled_tag32%"],
     "os": "linux",
     "version_filter": [
       ["%precompiled_tag32%", "<=", "1.37.22"]
     ]
   },
   {
-    "version": "%precompiled_tag64%",
+    "version": "fastcomp-%precompiled_tag64%",
     "bitness": 64,
-    "uses": ["clang-e%precompiled_tag64%-64bit", "node-4.1.1-64bit", "emscripten-%precompiled_tag64%"],
+    "uses": ["fastcomp-clang-e%precompiled_tag64%-64bit", "node-4.1.1-64bit", "emscripten-%precompiled_tag64%"],
     "os": "linux",
     "version_filter": [
       ["%precompiled_tag64%", "<=", "1.37.22"]
     ]
   },
   {
-    "version": "%precompiled_tag32%",
+    "version": "fastcomp-%precompiled_tag32%",
     "bitness": 32,
-    "uses": ["clang-e%precompiled_tag32%-32bit", "node-4.1.1-32bit", "emscripten-%precompiled_tag32%"],
+    "uses": ["fastcomp-clang-e%precompiled_tag32%-32bit", "node-4.1.1-32bit", "emscripten-%precompiled_tag32%"],
     "os": "osx",
     "version_filter": [
       ["%precompiled_tag32%", "<=", "1.37.22"]
     ]
   },
   {
-    "version": "%precompiled_tag64%",
+    "version": "fastcomp-%precompiled_tag64%",
     "bitness": 64,
-    "uses": ["clang-e%precompiled_tag64%-64bit", "node-4.1.1-64bit", "emscripten-%precompiled_tag64%"],
+    "uses": ["fastcomp-clang-e%precompiled_tag64%-64bit", "node-4.1.1-64bit", "emscripten-%precompiled_tag64%"],
     "os": "osx",
     "version_filter": [
       ["%precompiled_tag64%", "<=", "1.37.22"]
     ]
   },
   {
-    "version": "%precompiled_tag32%",
+    "version": "fastcomp-%precompiled_tag32%",
     "bitness": 32,
-    "uses": ["clang-e%precompiled_tag32%-32bit", "node-8.9.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-%precompiled_tag32%"],
+    "uses": ["fastcomp-clang-e%precompiled_tag32%-32bit", "node-8.9.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-%precompiled_tag32%"],
     "os": "win",
     "version_filter": [
       ["%precompiled_tag32%", ">", "1.37.22"]
     ]
   },
   {
-    "version": "%precompiled_tag64%",
+    "version": "fastcomp-%precompiled_tag64%",
     "bitness": 64,
-    "uses": ["clang-e%precompiled_tag64%-64bit", "node-8.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-%precompiled_tag64%"],
+    "uses": ["fastcomp-clang-e%precompiled_tag64%-64bit", "node-8.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-%precompiled_tag64%"],
     "os": "win",
     "version_filter": [
       ["%precompiled_tag64%", ">", "1.37.22"]
     ]
   },
   {
-    "version": "%precompiled_tag32%",
+    "version": "fastcomp-%precompiled_tag32%",
     "bitness": 32,
-    "uses": ["clang-e%precompiled_tag32%-32bit", "node-8.9.1-32bit", "emscripten-%precompiled_tag32%"],
+    "uses": ["fastcomp-clang-e%precompiled_tag32%-32bit", "node-8.9.1-32bit", "emscripten-%precompiled_tag32%"],
     "os": "linux",
     "version_filter": [
       ["%precompiled_tag32%", ">", "1.37.22"]
     ]
   },
   {
-    "version": "%precompiled_tag64%",
+    "version": "fastcomp-%precompiled_tag64%",
     "bitness": 64,
-    "uses": ["clang-e%precompiled_tag64%-64bit", "node-8.9.1-64bit", "emscripten-%precompiled_tag64%"],
+    "uses": ["fastcomp-clang-e%precompiled_tag64%-64bit", "node-8.9.1-64bit", "emscripten-%precompiled_tag64%"],
     "os": "linux",
     "version_filter": [
       ["%precompiled_tag64%", ">", "1.37.22"]
     ]
   },
   {
-    "version": "%precompiled_tag32%",
+    "version": "fastcomp-%precompiled_tag32%",
     "bitness": 32,
-    "uses": ["clang-e%precompiled_tag32%-32bit", "node-8.9.1-32bit", "emscripten-%precompiled_tag32%"],
+    "uses": ["fastcomp-clang-e%precompiled_tag32%-32bit", "node-8.9.1-32bit", "emscripten-%precompiled_tag32%"],
     "os": "osx",
     "version_filter": [
       ["%precompiled_tag32%", ">", "1.37.22"]
     ]
   },
   {
-    "version": "%precompiled_tag64%",
+    "version": "fastcomp-%precompiled_tag64%",
     "bitness": 64,
-    "uses": ["clang-e%precompiled_tag64%-64bit", "node-8.9.1-64bit", "emscripten-%precompiled_tag64%"],
+    "uses": ["fastcomp-clang-e%precompiled_tag64%-64bit", "node-8.9.1-64bit", "emscripten-%precompiled_tag64%"],
     "os": "osx",
     "version_filter": [
       ["%precompiled_tag64%", ">", "1.37.22"]
