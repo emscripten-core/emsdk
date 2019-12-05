@@ -1,6 +1,35 @@
 {
   "tools": [
   {
+    "id": "llvm-git",
+    "version": "master",
+    "bitness": 32,
+    "install_path": "llvm/git",
+    "git_branch": "master",
+    "url": "https://github.com/llvm/llvm-project.git",
+    "custom_install_script": "build_llvm_monorepo",
+    "only_supports_wasm": true,
+    "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%;EMCC_WASM_BACKEND=1",
+    "cmake_build_type": "Release"
+  },
+  {
+    "id": "llvm-git",
+    "version": "master",
+    "bitness": 64,
+    "install_path": "llvm/git",
+    "git_branch": "master",
+    "url": "https://github.com/llvm/llvm-project.git",
+    "custom_install_script": "build_llvm_monorepo",
+    "only_supports_wasm": true,
+    "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%;EMCC_WASM_BACKEND=1",
+    "cmake_build_type": "Release"
+  },
+
+  {
     "id": "clang",
     "version": "tag-e%tag%",
     "bitness": 32,
@@ -540,6 +569,12 @@
   ],
 
   "sdks": [
+  {
+    "version": "wasm-git-master",
+    "bitness": 64,
+    "uses": ["llvm-git-master-64bit", "node-12.9.1-64bit", "python-2.7.13.1-64bit", "emscripten-incoming-64bit"],
+    "os": "win"
+  },
   {
     "version": "fastcomp-incoming",
     "bitness": 32,

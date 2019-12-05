@@ -1061,10 +1061,11 @@ def build_llvm_tool(tool):
     success = git_clone_checkout_and_pull(tool.download_url(), fastcomp_src_root, tool.git_branch)
     if not success:
       return False
-    clang_root = os.path.join(fastcomp_src_root, 'tools/clang')
-    success = git_clone_checkout_and_pull(tool.clang_url, clang_root, tool.git_branch)
-    if not success:
-      return False
+    if hasattr(tool, 'clang_url'):
+      clang_root = os.path.join(fastcomp_src_root, 'tools/clang')
+      success = git_clone_checkout_and_pull(tool.clang_url, clang_root, tool.git_branch)
+      if not success:
+        return False
     if hasattr(tool, 'lld_url'):
       lld_root = os.path.join(fastcomp_src_root, 'tools/lld')
       success = git_clone_checkout_and_pull(tool.lld_url, lld_root, tool.git_branch)
@@ -1128,6 +1129,58 @@ def build_llvm_tool(tool):
   success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'Win32')
   return success
 
+
+# LLVM git source tree migrated to a single repository instead of multiple ones, build_llvm_monorepo() builds via that repository structure
+def build_llvm_monorepo(tool):
+  debug_print('build_llvm_monorepo(' + str(tool) + ')')
+  fastcomp_root = tool.installation_path()
+  fastcomp_src_root = os.path.join(fastcomp_root, 'src')
+  success = git_clone_checkout_and_pull(tool.download_url(), fastcomp_src_root, tool.git_branch)
+  if not success:
+    return False
+
+  build_dir = fastcomp_build_dir(tool)
+  build_root = os.path.join(fastcomp_root, build_dir)
+
+  build_type = decide_cmake_build_type(tool)
+
+  # Configure
+  global BUILD_FOR_TESTING, ENABLE_LLVM_ASSERTIONS
+  tests_arg = 'ON' if BUILD_FOR_TESTING else 'OFF'
+
+  enable_assertions = ENABLE_LLVM_ASSERTIONS.lower() == 'on' or (ENABLE_LLVM_ASSERTIONS == 'auto' and build_type.lower() != 'release' and build_type.lower() != 'minsizerel')
+
+  if ARCH == 'x86' or ARCH == 'x86_64':
+    targets_to_build = 'WebAssembly;X86'
+  elif ARCH == 'arm':
+    targets_to_build = 'WebAssembly;ARM'
+  elif ARCH == 'aarch64':
+    targets_to_build = 'WebAssembly;AArch64'
+  else:
+    targets_to_build = 'WebAssembly'
+  args = ['-DLLVM_TARGETS_TO_BUILD=' + targets_to_build, '-DLLVM_INCLUDE_EXAMPLES=OFF', '-DCLANG_INCLUDE_EXAMPLES=OFF', '-DLLVM_INCLUDE_TESTS=' + tests_arg, '-DCLANG_INCLUDE_TESTS=' + tests_arg, '-DLLVM_ENABLE_ASSERTIONS=' + ('ON' if enable_assertions else 'OFF')]
+  # LLVM build system bug: whatever is passed in LLVM_ENABLE_PROJECTS first is ignored, so specify clang twice to enable it.
+  args += ['-DLLVM_ENABLE_PROJECTS="clang;clang;lld"']
+#  args += ['-DLLVM_ENABLE_PROJECTS="clang;clang;libcxx;libcxxabi;libunwind;compiler-rt"']
+# clang-tools-extra;
+  cmake_generator = CMAKE_GENERATOR
+  if 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
+    cmake_generator += ' Win64'
+    args += ['-Thost=x64']
+
+  if os.environ.get('LLVM_CMAKE_ARGS'):
+    extra_args = os.environ['LLVM_CMAKE_ARGS'].split(',')
+    print('Passing the following extra arguments to LLVM CMake configuration: ' + str(extra_args))
+    args += extra_args
+
+  cmakelists_dir = os.path.join(fastcomp_src_root, 'llvm')
+  success = cmake_configure(cmake_generator, build_root, cmakelists_dir, build_type, args)
+  if not success:
+    return False
+
+  # Make
+  success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'Win32')
+  return success
 
 # Emscripten asm.js optimizer build scripts:
 def optimizer_build_root(tool):
@@ -1719,6 +1772,8 @@ class Tool(object):
 
       if hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_fastcomp':
         success = build_llvm_tool(self)
+      elif hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_llvm_monorepo':
+        success = build_llvm_monorepo(self)
       elif hasattr(self, 'git_branch'):
         success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch)
       elif url.endswith(ARCHIVE_SUFFIXES):
@@ -1742,7 +1797,7 @@ class Tool(object):
         if hasattr(self, 'custom_install_script'):
           if self.custom_install_script == 'build_optimizer':
             success = build_optimizer_tool(self)
-          elif self.custom_install_script == 'build_fastcomp':
+          elif self.custom_install_script == 'build_fastcomp' or self.custom_install_script == 'build_llvm_monorepo':
             # 'build_fastcomp' is a special one that does the download on its
             # own, others do the download manually.
             pass
