@@ -1159,10 +1159,15 @@ def build_llvm_monorepo(tool):
   else:
     targets_to_build = 'WebAssembly'
   args = ['-DLLVM_TARGETS_TO_BUILD=' + targets_to_build, '-DLLVM_INCLUDE_EXAMPLES=OFF', '-DCLANG_INCLUDE_EXAMPLES=OFF', '-DLLVM_INCLUDE_TESTS=' + tests_arg, '-DCLANG_INCLUDE_TESTS=' + tests_arg, '-DLLVM_ENABLE_ASSERTIONS=' + ('ON' if enable_assertions else 'OFF')]
-  # LLVM build system bug: whatever is passed in LLVM_ENABLE_PROJECTS first is ignored, so specify clang twice to enable it.
-  args += ['-DLLVM_ENABLE_PROJECTS="clang;clang;lld"']
-#  args += ['-DLLVM_ENABLE_PROJECTS="clang;clang;libcxx;libcxxabi;libunwind;compiler-rt"']
-# clang-tools-extra;
+  # LLVM build system bug: looks like everything needs to be passed to LLVM_ENABLE_PROJECTS twice. (or every second field is ignored?)
+
+  # LLVM build system bug #2: compiler-rt does not build on Windows. It insists on performing a CMake install step that writes to C:\Program Files. Attempting
+  # to reroute that to build_root directory then fails on an error
+  #  file INSTALL cannot find
+  #  "C:/code/emsdk/llvm/git/build_master_vs2017_64/$(Configuration)/lib/clang/10.0.0/lib/windows/clang_rt.ubsan_standalone-x86_64.lib".
+  # (there instead of $(Configuration), one would need ${CMAKE_BUILD_TYPE} ?)
+  # It looks like compiler-rt is not compatible to build on Windows?
+  args += ['-DLLVM_ENABLE_PROJECTS="clang;clang;lld;lld"']
   cmake_generator = CMAKE_GENERATOR
   if 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
     cmake_generator += ' Win64'
@@ -1181,6 +1186,7 @@ def build_llvm_monorepo(tool):
   # Make
   success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'Win32')
   return success
+
 
 # Emscripten asm.js optimizer build scripts:
 def optimizer_build_root(tool):
