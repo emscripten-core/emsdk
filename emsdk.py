@@ -1446,6 +1446,8 @@ class Tool(object):
     if '%generator_prefix%' in str:
       str = str.replace('%generator_prefix%', cmake_generator_prefix())
     str = str.replace('%.exe%', '.exe' if WINDOWS else '')
+    str = str.replace('%.cmd%', '.cmd' if WINDOWS else '')
+    str = str.replace('%.bat%', '.bat' if WINDOWS else '')
     if '%fastcomp_build_dir%' in str:
       str = str.replace('%fastcomp_build_dir%', fastcomp_build_dir(self))
     if '%fastcomp_build_bin_dir%' in str:

@@ -344,6 +344,15 @@
     "activated_cfg": "JAVA='%installation_dir%/bin/java%.exe%'"
   },
   {
+    "id": "closure-compiler",
+    "version": "20191111",
+    "bitness": 64,
+    "url": "google-closure-compiler-20191111.zip",
+    "activated_path": "%installation_dir%/.bin",
+    "activated_cfg": "CLOSURE_COMPILER='%installation_dir%/.bin/google-closure-compiler%.cmd%'",
+    "activated_env": "NODE_PATH=%installation_dir%"
+  },
+  {
     "id": "emscripten",
     "version": "tag-%tag%",
     "bitness": 32,
@@ -729,19 +738,19 @@
   {
     "version": "releases-upstream-%releases-tag%",
     "bitness": 64,
-    "uses": ["releases-upstream-%releases-tag%-64bit", "node-12.9.1-64bit"],
+    "uses": ["releases-upstream-%releases-tag%-64bit", "node-12.9.1-64bit", "closure-compiler-20191111"],
     "os": "linux"
   },
   {
     "version": "releases-upstream-%releases-tag%",
     "bitness": 64,
-    "uses": ["releases-upstream-%releases-tag%-64bit", "node-12.9.1-64bit"],
+    "uses": ["releases-upstream-%releases-tag%-64bit", "node-12.9.1-64bit", "closure-compiler-20191111"],
     "os": "osx"
   },
   {
     "version": "releases-upstream-%releases-tag%",
     "bitness": 64,
-    "uses": ["releases-upstream-%releases-tag%-64bit", "node-12.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit"],
+    "uses": ["releases-upstream-%releases-tag%-64bit", "node-12.9.1-64bit", "python-2.7.13.1-64bit", "closure-compiler-20191111"],
     "os": "win"
   },
   {
