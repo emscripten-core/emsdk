@@ -1245,8 +1245,20 @@ def is_optimizer_installed(tool):
   return os.path.exists(build_root)
 
 
-def build_optimizer_tool(tool):
-  debug_print('build_optimizer_tool(' + str(tool) + ')')
+# Finds newest tool of given name that is active, or if none are active, finds the newest one that is installed.
+def find_latest_active_or_installed_tool(name):
+  global tools
+  for t in reversed(tools):
+    if t.id == name and t.is_active():
+      return t
+
+  for t in reversed(tools):
+    if t.id == name and t.is_installed():
+      return t
+
+
+def build_optimizer_and_npm(tool):
+  debug_print('build_optimizer_and_npm(' + str(tool) + ')')
   src_root = os.path.join(tool.installation_path(), 'tools', 'optimizer')
   build_root = optimizer_build_root(tool)
   build_type = decide_cmake_build_type(tool)
@@ -1269,7 +1281,21 @@ def build_optimizer_tool(tool):
 
   # Make
   success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'Win32')
-  return success
+  if not success:
+    return False
+
+  # npm install in Emscripten root directory
+  node_tool = find_latest_active_or_installed_tool('node')
+  if not node_tool:
+    print('Failed to run "npm install" in installed Emscripten root directory ' + tool.installation_path() + '! Please install node.js first!')
+    return False
+  else:
+    npm = os.path.join(node_tool.installation_path(), 'npm' + ('.cmd' if WINDOWS else ''))
+    npm_ret = subprocess.check_call([npm, 'install'], cwd=tool.installation_path())
+    if npm_ret != 0:
+      return False
+
+  return True
 
 
 # Binaryen build scripts:
@@ -1846,7 +1872,7 @@ class Tool(object):
 
       if success:
         if hasattr(self, 'custom_install_script'):
-          if self.custom_install_script == 'build_optimizer':
+          if self.custom_install_script == 'build_optimizer_and_npm':
             success = build_optimizer_tool(self)
           elif self.custom_install_script in ('build_fastcomp', 'build_llvm_monorepo'):
             # 'build_fastcomp' is a special one that does the download on its

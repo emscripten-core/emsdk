@@ -384,7 +384,7 @@
     "activated_path": "%installation_dir%",
     "activated_env": "EMSCRIPTEN=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%%generator_prefix%_32bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%",
     "cmake_build_type": "Release",
-    "custom_install_script": "build_optimizer",
+    "custom_install_script": "build_optimizer_and_npm",
     "custom_is_installed_script": "is_optimizer_installed",
     "custom_uninstall_script": "uninstall_optimizer"
   },
@@ -399,7 +399,7 @@
     "activated_path": "%installation_dir%",
     "activated_env": "EMSCRIPTEN=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%%generator_prefix%_64bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%",
     "cmake_build_type": "Release",
-    "custom_install_script": "build_optimizer",
+    "custom_install_script": "build_optimizer_and_npm",
     "custom_is_installed_script": "is_optimizer_installed",
     "custom_uninstall_script": "uninstall_optimizer"
   },
@@ -464,7 +464,7 @@
     "activated_path": "%installation_dir%",
     "activated_env": "EMSCRIPTEN=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%%generator_prefix%_32bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%",
     "cmake_build_type": "Release",
-    "custom_install_script": "build_optimizer",
+    "custom_install_script": "build_optimizer_and_npm",
     "custom_is_installed_script": "is_optimizer_installed",
     "custom_uninstall_script": "uninstall_optimizer"
   },
@@ -479,7 +479,7 @@
     "activated_path": "%installation_dir%",
     "activated_env": "EMSCRIPTEN=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%%generator_prefix%_32bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%",
     "cmake_build_type": "Release",
-    "custom_install_script": "build_optimizer",
+    "custom_install_script": "build_optimizer_and_npm",
     "custom_is_installed_script": "is_optimizer_installed",
     "custom_uninstall_script": "uninstall_optimizer"
   },
@@ -494,7 +494,7 @@
     "activated_path": "%installation_dir%",
     "activated_env": "EMSCRIPTEN=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%%generator_prefix%_64bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%",
     "cmake_build_type": "Release",
-    "custom_install_script": "build_optimizer",
+    "custom_install_script": "build_optimizer_and_npm",
     "custom_is_installed_script": "is_optimizer_installed",
     "custom_uninstall_script": "uninstall_optimizer"
   },
@@ -509,7 +509,7 @@
     "activated_path": "%installation_dir%",
     "activated_env": "EMSCRIPTEN=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%%generator_prefix%_64bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%",
     "cmake_build_type": "Release",
-    "custom_install_script": "build_optimizer",
+    "custom_install_script": "build_optimizer_and_npm",
     "custom_is_installed_script": "is_optimizer_installed",
     "custom_uninstall_script": "uninstall_optimizer"
   },
