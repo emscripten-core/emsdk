@@ -1052,8 +1052,8 @@ def xcode_sdk_version():
     return subprocess.checkplatform.mac_ver()[0].split('.')
 
 
-def build_llvm_tool(tool):
-  debug_print('build_llvm_tool(' + str(tool) + ')')
+def build_llvm_fastcomp(tool):
+  debug_print('build_llvm_fastcomp(' + str(tool) + ')')
   fastcomp_root = tool.installation_path()
   fastcomp_src_root = os.path.join(fastcomp_root, 'src')
   # Does this tool want to be git cloned from github?
@@ -1782,7 +1782,7 @@ class Tool(object):
       url = self.download_url()
 
       if hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_fastcomp':
-        success = build_llvm_tool(self)
+        success = build_llvm_fastcomp(self)
       elif hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_llvm_monorepo':
         success = build_llvm_monorepo(self)
       elif hasattr(self, 'git_branch'):
