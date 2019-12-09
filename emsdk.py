@@ -805,7 +805,7 @@ def decide_cmake_build_type(tool):
 
 
 # The root directory of the build.
-def fastcomp_build_dir(tool):
+def llvm_build_dir(tool):
   generator_suffix = ''
   if CMAKE_GENERATOR == 'Visual Studio 10':
     generator_suffix = '_vs2010'
@@ -838,7 +838,7 @@ def exe_suffix(filename):
 # The directory where the binaries are produced. (relative to the installation
 # root directory of the tool)
 def fastcomp_build_bin_dir(tool):
-  build_dir = fastcomp_build_dir(tool)
+  build_dir = llvm_build_dir(tool)
   if WINDOWS and 'Visual Studio' in CMAKE_GENERATOR:
     old_llvm_bin_dir = os.path.join(build_dir, 'bin', decide_cmake_build_type(tool))
 
@@ -1084,7 +1084,7 @@ def build_llvm_tool(tool):
   if 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
     cmake_generator += ' Win64'
 
-  build_dir = fastcomp_build_dir(tool)
+  build_dir = llvm_build_dir(tool)
   build_root = os.path.join(fastcomp_root, build_dir)
 
   build_type = decide_cmake_build_type(tool)
@@ -1133,14 +1133,14 @@ def build_llvm_tool(tool):
 # LLVM git source tree migrated to a single repository instead of multiple ones, build_llvm_monorepo() builds via that repository structure
 def build_llvm_monorepo(tool):
   debug_print('build_llvm_monorepo(' + str(tool) + ')')
-  fastcomp_root = tool.installation_path()
-  fastcomp_src_root = os.path.join(fastcomp_root, 'src')
-  success = git_clone_checkout_and_pull(tool.download_url(), fastcomp_src_root, tool.git_branch)
+  llvm_root = tool.installation_path()
+  llvm_src_root = os.path.join(llvm_root, 'src')
+  success = git_clone_checkout_and_pull(tool.download_url(), llvm_src_root, tool.git_branch)
   if not success:
     return False
 
-  build_dir = fastcomp_build_dir(tool)
-  build_root = os.path.join(fastcomp_root, build_dir)
+  build_dir = llvm_build_dir(tool)
+  build_root = os.path.join(llvm_root, build_dir)
 
   build_type = decide_cmake_build_type(tool)
 
@@ -1158,7 +1158,12 @@ def build_llvm_monorepo(tool):
     targets_to_build = 'WebAssembly;AArch64'
   else:
     targets_to_build = 'WebAssembly'
-  args = ['-DLLVM_TARGETS_TO_BUILD=' + targets_to_build, '-DLLVM_INCLUDE_EXAMPLES=OFF', '-DCLANG_INCLUDE_EXAMPLES=OFF', '-DLLVM_INCLUDE_TESTS=' + tests_arg, '-DCLANG_INCLUDE_TESTS=' + tests_arg, '-DLLVM_ENABLE_ASSERTIONS=' + ('ON' if enable_assertions else 'OFF')]
+  args = ['-DLLVM_TARGETS_TO_BUILD=' + targets_to_build,
+          '-DLLVM_INCLUDE_EXAMPLES=OFF',
+          '-DCLANG_INCLUDE_EXAMPLES=OFF',
+          '-DLLVM_INCLUDE_TESTS=' + tests_arg,
+          '-DCLANG_INCLUDE_TESTS=' + tests_arg,
+          '-DLLVM_ENABLE_ASSERTIONS=' + ('ON' if enable_assertions else 'OFF')]
   # LLVM build system bug: looks like everything needs to be passed to LLVM_ENABLE_PROJECTS twice. (or every second field is ignored?)
 
   # LLVM build system bug #2: compiler-rt does not build on Windows. It insists on performing a CMake install step that writes to C:\Program Files. Attempting
@@ -1178,7 +1183,7 @@ def build_llvm_monorepo(tool):
     print('Passing the following extra arguments to LLVM CMake configuration: ' + str(extra_args))
     args += extra_args
 
-  cmakelists_dir = os.path.join(fastcomp_src_root, 'llvm')
+  cmakelists_dir = os.path.join(llvm_src_root, 'llvm')
   success = cmake_configure(cmake_generator, build_root, cmakelists_dir, build_type, args)
   if not success:
     return False
@@ -1513,7 +1518,7 @@ class Tool(object):
       str = str.replace('%generator_prefix%', cmake_generator_prefix())
     str = str.replace('%.exe%', '.exe' if WINDOWS else '')
     if '%fastcomp_build_dir%' in str:
-      str = str.replace('%fastcomp_build_dir%', fastcomp_build_dir(self))
+      str = str.replace('%fastcomp_build_dir%', llvm_build_dir(self))
     if '%fastcomp_build_bin_dir%' in str:
       str = str.replace('%fastcomp_build_bin_dir%', fastcomp_build_bin_dir(self))
     return str
