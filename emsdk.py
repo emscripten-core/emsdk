@@ -473,11 +473,8 @@ def run(cmd, cwd=None):
 
 
 # http://pythonicprose.blogspot.fi/2009/10/python-extract-targz-archive.html
-def untargz(source_filename, dest_dir, unpack_even_if_exists=False):
+def untargz(source_filename, dest_dir):
   debug_print('untargz(source_filename=' + source_filename + ', dest_dir=' + dest_dir + ')')
-  if not unpack_even_if_exists and num_files_in_directory(dest_dir) > 0:
-    print("File '" + source_filename + "' has already been unpacked, skipping.")
-    return True
   print("Unpacking '" + source_filename + "' to '" + dest_dir + "'")
   mkdir_p(dest_dir)
   run(['tar', '-xvf' if VERBOSE else '-xf', sdk_path(source_filename), '--strip', '1'], cwd=dest_dir)
@@ -511,11 +508,8 @@ def move_with_overwrite(src, dest):
 
 
 # http://stackoverflow.com/questions/12886768/simple-way-to-unzip-file-in-python-on-all-oses
-def unzip(source_filename, dest_dir, unpack_even_if_exists=False):
+def unzip(source_filename, dest_dir):
   debug_print('unzip(source_filename=' + source_filename + ', dest_dir=' + dest_dir + ')')
-  if not unpack_even_if_exists and num_files_in_directory(dest_dir) > 0:
-    print("File '" + source_filename + "' has already been unpacked, skipping.")
-    return True
   print("Unpacking '" + source_filename + "' to '" + dest_dir + "'")
   mkdir_p(dest_dir)
   common_subdir = None
@@ -636,11 +630,11 @@ def get_download_target(url, dstpath, filename_prefix=''):
 
 # On success, returns the filename on the disk pointing to the destination file that was produced
 # On failure, returns None.
-def download_file(url, dstpath, download_even_if_exists=False, filename_prefix=''):
+def download_file(url, dstpath, force_download=False, filename_prefix=''):
   debug_print('download_file(url=' + url + ', dstpath=' + dstpath + ')')
   file_name = get_download_target(url, dstpath, filename_prefix)
 
-  if os.path.exists(file_name) and not download_even_if_exists:
+  if os.path.exists(file_name) and not force_download:
     print("File '" + file_name + "' already downloaded, skipping.")
     return file_name
   try:
@@ -1232,31 +1226,61 @@ def build_binaryen_tool(tool):
   return success
 
 
-def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False, filename_prefix=''):
+CACHE_MAX_FILES = 20
+
+
+def cleanup_downloads():
+  """To prevent the downloads directory growing unboudndedly we only keep the
+  most recent N download.
+  """
+  if not os.path.exists(zips_subdir):
+    return
+  files = [os.path.join(zips_subdir, f) for f in os.listdir(zips_subdir)]
+  files = [f for f in files if os.path.isfile(f)]
+  if len(files) < CACHE_MAX_FILES:
+    return
+
+  # Sort files, oldest files first
+  files = [(f, os.path.getmtime(f)) for f in files]
+  files.sort(key=lambda f: f[1])
+
+  # Delete from head of the list, leaving CACHE_MAX_FILES remaining
+  for f, _ in files[:-CACHE_MAX_FILES]:
+    debug_print("purging old downloaded file: %s" % f)
+    rmfile(f)
+
+
+def download_and_unzip(zipfile, dest_dir, force_download=False, force_extract=False, filename_prefix=''):
   debug_print('download_and_unzip(zipfile=' + zipfile + ', dest_dir=' + dest_dir + ')')
+
+  # In case we are overwriting
+  if os.path.exists(dest_dir):
+    if force_extract:
+      remove_tree(dest_dir)
+    else:
+      print("File '" + zipfile + "' has already been unpacked, skipping.")
+      return True
+
+  cleanup_downloads()
 
   url = urljoin(emsdk_packages_url, zipfile)
   download_target = get_download_target(url, zips_subdir, filename_prefix)
 
   # If the archive was already downloaded, and the directory it would be
   # unpacked to has contents, assume it's the same contents and skip.
-  if not download_even_if_exists and os.path.exists(download_target) and num_files_in_directory(dest_dir) > 0:
+  if not force_download and os.path.exists(download_target) and num_files_in_directory(dest_dir) > 0:
     print("The contents of file '" + zipfile + "' already exist in destination '" + dest_dir + "', skipping.")
     return True
-  # Otherwise, if the archive must be downloaded, always write into the
-  # target directory, since it may be a new version of a tool that gets
-  # installed to the same place (that is, a different download name
-  # indicates different contents).
-  download_even_if_exists = True
 
-  received_download_target = download_file(url, zips_subdir, download_even_if_exists, filename_prefix)
+  received_download_target = download_file(url, zips_subdir, force_download, filename_prefix)
   if not received_download_target:
     return False
+
   assert received_download_target == download_target
   if zipfile.endswith('.zip'):
-    return unzip(download_target, dest_dir, unpack_even_if_exists=download_even_if_exists)
+    return unzip(download_target, dest_dir)
   else:
-    return untargz(download_target, dest_dir, unpack_even_if_exists=download_even_if_exists)
+    return untargz(download_target, dest_dir)
 
 
 def to_native_path(p):
@@ -1716,14 +1740,17 @@ class Tool(object):
         success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch)
       elif url.endswith(ARCHIVE_SUFFIXES):
         # TODO: explain the vs-tool special-casing
-        download_even_if_exists = (self.id == 'vs-tool')
-        # if we are downloading a zip, we will unpack and delete it after immediately anyhow,
-        # so there is no need to look for an existing one (which may have been left behind
-        # due to an error in the past)
-        if url.endswith(ARCHIVE_SUFFIXES):
-          download_even_if_exists = True
+        force_download = (self.id == 'vs-tool')
+        # The 'releases' sdk is doesn't include a verion number in the directory
+        # name and insteah only one version can be install at the time and each
+        # one will clobber the other.  This means we alwasy need to extract this
+        # archive even when the target directory exists.
+        force_extract = (self.id == 'releases')
         filename_prefix = getattr(self, 'zipfile_prefix', '')
-        success = download_and_unzip(url, self.installation_path(), download_even_if_exists=download_even_if_exists, filename_prefix=filename_prefix)
+        success = download_and_unzip(url, self.installation_path(),
+                                     force_download=force_download,
+                                     force_extract=force_extract,
+                                     filename_prefix=filename_prefix)
       else:
         dst_file = download_file(urljoin(emsdk_packages_url, self.download_url()), self.installation_path())
         if dst_file:
@@ -1758,20 +1785,9 @@ class Tool(object):
         return False
     print("Done installing tool '" + str(self) + "'.")
 
-    # Sanity check that the installation succeeded, and if so, remove unneeded
-    # leftover installation files.
-    if self.is_installed():
-      self.cleanup_temp_install_files()
-    else:
+    if not self.is_installed():
       print("Warning: The installation of '" + str(self) + "' seems to have failed, but no error was detected. Either something went wrong with the installation, or this may indicate an internal emsdk error.")
     return True
-
-  def cleanup_temp_install_files(self):
-    url = self.download_url()
-    if url.endswith(ARCHIVE_SUFFIXES):
-      download_target = get_download_target(url, zips_subdir, getattr(self, 'zipfile_prefix', ''))
-      debug_print("Deleting temporary zip file " + download_target)
-      rmfile(download_target)
 
   def uninstall(self):
     if not self.is_installed():
@@ -1981,7 +1997,7 @@ def update_emsdk():
     print('You seem to have bootstrapped Emscripten SDK by cloning from GitHub. In this case, use "git pull" instead of "emsdk update" to update emsdk. (Not doing that automatically in case you have local changes)', file=sys.stderr)
     print('Alternatively, use "emsdk update-tags" to refresh the latest list of tags from the different Git repositories.', file=sys.stderr)
     sys.exit(1)
-  if not download_and_unzip(emsdk_zip_download_url, emsdk_path(), download_even_if_exists=True):
+  if not download_and_unzip(emsdk_zip_download_url, emsdk_path(), force_download=True):
     sys.exit(1)
   fetch_emscripten_tags()
 
