@@ -35,7 +35,7 @@ jobs:
       - run:
           name: Install debian packages
           command: apt-get update -q && apt-get install -q -y cmake build-essential openjdk-8-jre-headless
-      - run: python test_emsdk.py
+      - run: python3 test_emsdk.py
       - run: ./test.sh
       - run: ./test.py
   test-mac:
