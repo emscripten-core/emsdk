@@ -1,3 +1,6 @@
+*.pyc
+__pycache__
+
 # Support for --embedded configs
 /.emscripten
 /.emscripten_cache
