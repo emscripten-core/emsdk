@@ -1,4 +1,5 @@
-# Emscripten SDK
+Emscripten SDK
+==============
 
 [![CircleCI](https://circleci.com/gh/emscripten-core/emsdk/tree/master.svg?style=svg)](https://circleci.com/gh/emscripten-core/emsdk/tree/master)
 
@@ -14,8 +15,6 @@ You can also set up Emscripten from source, without the pre-built SDK, see
 
 To get started with Emscripten development, see the [Emscripten website
 documentation](https://emscripten.org/docs/getting_started/downloads.html).
-
-**Old Releases** are available in the **Archived Releases** section below.
 
 ## SDK Concepts
 
@@ -40,15 +39,49 @@ important concepts to help understanding the internals of the SDK:
   accessed through. Most operations are of the form `emsdk command`. To access
   the emsdk script, launch the Emscripten Command Prompt.
 
+## System Requirements
+
+Using the emsdk pre-compiled packages requires only the minimal set of
+dependenencies lists below.  When building from source a wider set of tools
+include git, cmake, and a host compiler are required. See:
+https://emscripten.org/docs/building_from_source/toolchain_what_is_needed.html.
+
+### Mac OS X
+
+- `python`: Version 2.7.0 or above.
+- `java`: For running closure compiler (optional).  After installing emscripten
+  via emsdk, typing 'emcc --help' should pop up a OS X dialog "Java is not
+  installed. To open java, you need a Java SE 6 runtime. Would you like to
+  install one now?" that will automatically download a Java runtime to the
+  system.
+
+### Linux
+
+- `python`: Version 2.7.0 or above.
+- `java`: For running closure compiler (optional)
+
+The emsdk pre-compiled binaries are built aginst Ubuntu/Xenial 16.04 LTS and
+therefore depend on system libraryes compatiable with versions of `glibc` and
+`libstdc++` present in that release.  If your linux distribution is very old
+you may not be able to use the pre-compiled binaries packages.
+
+### Windows
+
+- `java`: For running closure compiler (optional)
+
+## Uninstalling the Emscripten SDK
+
+To remove the Emscripten SDK, simply delete the emsdk directory.
+
 ## SDK Maintenance
 
 The following tasks are common with the Emscripten SDK:
 
-##### How do I work the emsdk utility?
+### How do I work the emsdk utility?
 
 Run `emsdk help` or just `emsdk` to get information about all available commands.
 
-##### How do I check the installation status and version of the SDK and tools?
+### How do I check the installation status and version of the SDK and tools?
 
 To get a list of all currently installed tools and SDK versions, and all
 available tools, run `emsdk list`.
@@ -62,34 +95,30 @@ available tools, run `emsdk list`.
   `source ./emsdk_env.sh` (Linux and OS X) to set up the environment for the
   calling terminal.
 
-##### How do I install a tool/SDK version?
+### How do I install a tool/SDK version?
 
 Run the command `emsdk install <tool/sdk name>` to download and install a new
 tool or an SDK version.
 
-##### How do I remove a tool or an SDK?
+### How do I remove a tool or an SDK?
 
 Run the command `emsdk uninstall <tool/sdk name>` to delete the given tool or
 SDK from the local hard drive completely.
 
-##### How do I check for updates to the Emscripten SDK?
+### How do I check for updates to the Emscripten SDK?
 
 The command `emsdk update` will fetch package information for all new tools and
 SDK versions. After that, run `emsdk install <tool/sdk name>` to install a new
 version. The command `emsdk update-tags` obtains a list of all new tagged
 releases from GitHub without updating Emscripten SDK itself.
 
-##### How do I install an old Emscripten compiler version?
+### How do I install an old Emscripten compiler version?
 
 Emsdk contains a history of old compiler versions that you can use to maintain
 your migration path. Type `emsdk list --old` to get a list of archived tool and
 SDK versions, and `emsdk install <name_of_tool>` to install it.
 
-On Windows, you can directly install an old SDK version by using one of the
-archived offline NSIS installers. See the **Archived Releases** section down
-below.
-
-##### When working on git branches compiled from source, how do I update to a newer compiler version?
+### When working on git branches compiled from source, how do I update to a newer compiler version?
 
 Unlike tags and precompiled versions, a few of the SDK packages are based on
 "moving" git branches and compiled from source (sdk-incoming, sdk-master,
@@ -108,7 +137,7 @@ any odd compilation errors, it is advised to try deleting the intermediate build
 directory to clear the build (e.g. "emsdk/clang/fastcomp/build_xxx/") before
 reissuing `emsdk install`.
 
-##### How do I change the currently active SDK version?
+### How do I change the currently active SDK version?
 
 You can toggle between different tools and SDK versions by running `emsdk
 activate <tool/sdk name>`. Activating a tool will set up `~/.emscripten` to
@@ -116,7 +145,7 @@ point to that particular tool. On Windows, you can pass the option `--global` to
 the `activate` command to register the environment permanently to the system
 registry for all users.
 
-##### How do I build multiple projects with different SDK versions in parallel?
+### How do I build multiple projects with different SDK versions in parallel?
 
 By default, Emscripten locates all configuration files in the home directory of
 the user. This may be a problem if you need to simultaneously build with
@@ -128,7 +157,7 @@ root directory instead of the user home directory. Use this option also when it
 is desirable to run emsdk in a fully portable mode that does not touch any files
 outside the emsdk directory.
 
-##### How do I track the latest Emscripten development with the SDK?
+### How do I track the latest Emscripten development with the SDK?
 
 A common and supported use case of the Emscripten SDK is to enable the workflow
 where you directly interact with the github repositories. This allows you to
@@ -144,7 +173,7 @@ latest upstream git development branch `incoming`, run the following:
 If you want to use the upstream stable branch `master`, then replace
 `-incoming-` with `-master-` above.
 
-##### How do I use my own Emscripten github fork with the SDK?
+### How do I use my own Emscripten github fork with the SDK?
 
 It is also possible to use your own fork of the Emscripten repository via the
 SDK. This is achieved with standard git machinery, so there if you are already
@@ -167,7 +196,7 @@ In this way you can utilize the Emscripten SDK tools while using your own git
 fork. You can switch back and forth between remotes via the `git checkout`
 command as usual.
 
-##### How do I use Emscripten SDK with a custom version of python, java, node.js or some other tool?
+### How do I use Emscripten SDK with a custom version of python, java, node.js or some other tool?
 
 The provided Emscripten SDK targets are metapackages that refer to a specific
 set of tools that have been tested to work together. For example,
@@ -181,7 +210,7 @@ clang-e1.35.0-64bit emscripten-1.35.0` will only install the Emscripten
 LLVM/Clang compiler and the Emscripten frontend without supplying python and
 node.js.
 
-##### My installation fails with "fatal error: ld terminated with signal 9 [Killed]"?
+### My installation fails with "fatal error: ld terminated with signal 9 [Killed]"?
 
 This may happen if the system runs out of memory. If you are attempting to build
 one of the packages from source and are running in a virtual OS or have
@@ -190,54 +219,9 @@ feeding your computer more memory. Another thing to try is to force emsdk
 install to build in a singlethreaded mode, which will require less RAM
 simultaneously. To do this, pass the `-j1` flag to the `emsdk install` command.
 
-## Uninstalling the Emscripten SDK
+### How do I run Emscripten on 32-bit systems or non-x86-64 systems?
 
-If you installed the SDK using an NSIS installer on Windows, launch 'Control
-Panel' -> 'Uninstall a program' -> 'Emscripten SDK'.
-
-If you want to remove a Portable SDK, just delete the directory where you put
-the Portable SDK into.
-
-## Platform-Specific Notes
-
-##### Mac OS X
-
-* On OS X (and Linux), the git tool will not be installed automatically. Git is
-  not a required core component, and is only needed if you want to use one of
-  the development branches emscripten-incoming or emscripten-master directly,
-  instead of the fixed releases. To install git on OS X, you can
-
-  1. Install XCode, and in XCode, install XCode Command Line Tools. This will
-     provide git to the system PATH. For more help on this step, see
-     http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools
-  2. Install git directly from http://git-scm.com/
-
-* Also, on OS X, `java` is not bundled with the Emscripten SDK. After installing
-  emscripten via emsdk, typing 'emcc --help' should pop up a OS X dialog "Java
-  is not installed. To open java, you need a Java SE 6 runtime. Would you like
-  to install one now?" that will automatically download a Java runtime to the
-  system.
-
-##### Linux
-
-* On Linux, emsdk does not interact with Linux package managers on the behalf of
-  the user, nor does it install any tools to the system. All file changes are
-  done inside the `emsdk/` directory.
-
-* Emsdk does not provide `python`, `node` or `java` on Linux. The user is
-  expected to install these beforehand with the system package manager.
-
-##### Windows
-
-* On Windows, if you want to build any of the packages from source (instead of
-  using the precompiled ones), you will need git, CMake and Visual Studio 2015.
-  Git can be installed via emsdk by typing "emsdk install git-1.9.4", CMake can
-  be found from http://www.cmake.org/, and Visual Studio can be installed from
-  https://www.visualstudio.com.
-
-###### How do I run Emscripten on 32-bit Windows?
-
-Emscripten SDK releases are no longer packaged or maintained for 32-bit Windows.
+Emscripten SDK releases are no longer packaged or maintained for 32-bit systems.
 If you want to run Emscripten on a 32-bit system, you can try manually building
-the compiler for 32-bit mode. Follow the steps in the above section "Building an
-Emscripten tag or branch from source" to get started.
+the compiler. Follow the steps in the above section "Building an Emscripten tag
+or branch from source" to get started.
