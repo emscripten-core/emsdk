@@ -1241,7 +1241,7 @@ def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False,
 
   # If the archive was already downloaded, and the directory it would be
   # unpacked to has contents, assume it's the same contents and skip.
-  if not download_even_if_exists and os.path.exists(download_target) and num_files_in_directory(dest_dir) > 0:
+  if not download_even_if_exists and num_files_in_directory(dest_dir) > 0:
     print("The contents of file '" + zipfile + "' already exist in destination '" + dest_dir + "', skipping.")
     return True
   # Otherwise, if the archive must be downloaded, always write into the
@@ -1724,11 +1724,11 @@ class Tool(object):
       elif url.endswith(ARCHIVE_SUFFIXES):
         # TODO: explain the vs-tool special-casing
         download_even_if_exists = (self.id == 'vs-tool')
-        # if we are downloading a zip, we will unpack and delete it after immediately anyhow,
-        # so there is no need to look for an existing one (which may have been left behind
-        # due to an error in the past)
-        if url.endswith(ARCHIVE_SUFFIXES):
-          download_even_if_exists = True
+        # The 'releases' sdk is doesn't include a verion number in the directory
+        # name and instead only one version can be install at the time and each
+        # one will clobber the other.  This means we always need to extract this
+        # archive even when the target directory exists.
+        download_even_if_exists = (self.id == 'releases')
         filename_prefix = getattr(self, 'zipfile_prefix', '')
         success = download_and_unzip(url, self.installation_path(), download_even_if_exists=download_even_if_exists, filename_prefix=filename_prefix)
       else:
