@@ -1253,6 +1253,11 @@ def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False, filenam
   if not received_download_target:
     return False
   assert received_download_target == download_target
+
+  # Remove the old directory, since we have some SDKs that install into the
+  # same directory.  If we didn't do this contents of the previous install
+  # could remain.
+  remove_tree(dest_dir)
   if zipfile.endswith('.zip'):
     return unzip(download_target, dest_dir, unpack_even_if_exists=download_even_if_exists)
   else:
