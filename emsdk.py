@@ -1808,7 +1808,7 @@ class Tool(object):
         if hasattr(self, 'custom_install_script'):
           if self.custom_install_script == 'build_optimizer':
             success = build_optimizer_tool(self)
-          elif self.custom_install_script in ('build_fastcomp' , 'build_llvm_monorepo'):
+          elif self.custom_install_script in ('build_fastcomp', 'build_llvm_monorepo'):
             # 'build_fastcomp' is a special one that does the download on its
             # own, others do the download manually.
             pass

@@ -570,7 +570,7 @@
 
   "sdks": [
   {
-    "version": "wasm-git-master",
+    "version": "upstream-incoming",
     "bitness": 64,
     "uses": ["llvm-git-master-64bit", "node-12.9.1-64bit", "python-2.7.13.1-64bit", "emscripten-incoming-64bit"],
     "os": "win"
