@@ -1232,7 +1232,8 @@ def build_binaryen_tool(tool):
   return success
 
 
-def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False, filename_prefix=''):
+def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False,
+                       filename_prefix='', clobber=True):
   debug_print('download_and_unzip(zipfile=' + zipfile + ', dest_dir=' + dest_dir + ')')
 
   url = urljoin(emsdk_packages_url, zipfile)
@@ -1253,6 +1254,12 @@ def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False, filenam
   if not received_download_target:
     return False
   assert received_download_target == download_target
+
+  # Remove the old directory, since we have some SDKs that install into the
+  # same directory.  If we didn't do this contents of the previous install
+  # could remain.
+  if clobber:
+    remove_tree(dest_dir)
   if zipfile.endswith('.zip'):
     return unzip(download_target, dest_dir, unpack_even_if_exists=download_even_if_exists)
   else:
@@ -1981,7 +1988,7 @@ def update_emsdk():
     print('You seem to have bootstrapped Emscripten SDK by cloning from GitHub. In this case, use "git pull" instead of "emsdk update" to update emsdk. (Not doing that automatically in case you have local changes)', file=sys.stderr)
     print('Alternatively, use "emsdk update-tags" to refresh the latest list of tags from the different Git repositories.', file=sys.stderr)
     sys.exit(1)
-  if not download_and_unzip(emsdk_zip_download_url, emsdk_path(), download_even_if_exists=True):
+  if not download_and_unzip(emsdk_zip_download_url, emsdk_path(), download_even_if_exists=True, clobber=False):
     sys.exit(1)
   fetch_emscripten_tags()
 
