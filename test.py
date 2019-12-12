@@ -157,8 +157,8 @@ run_emsdk('activate tot-fastcomp')
 check_call(fastcomp_emcc + ' hello_world.cpp')
 
 print('test specific release (old)')
-run_emsdk('install sdk-1.38.31-64bit')
-run_emsdk('activate sdk-1.38.31-64bit')
+run_emsdk('install sdk-fastcomp-1.38.31-64bit')
+run_emsdk('activate sdk-fastcomp-1.38.31-64bit')
 
 print('test specific release (new, short name)')
 run_emsdk('install 1.38.33')
