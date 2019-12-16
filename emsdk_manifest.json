@@ -1,6 +1,35 @@
 {
   "tools": [
   {
+    "id": "llvm-git",
+    "version": "master",
+    "bitness": 32,
+    "install_path": "llvm/git",
+    "git_branch": "master",
+    "url": "https://github.com/llvm/llvm-project.git",
+    "custom_install_script": "build_llvm_monorepo",
+    "only_supports_wasm": true,
+    "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%;EMCC_WASM_BACKEND=1",
+    "cmake_build_type": "Release"
+  },
+  {
+    "id": "llvm-git",
+    "version": "master",
+    "bitness": 64,
+    "install_path": "llvm/git",
+    "git_branch": "master",
+    "url": "https://github.com/llvm/llvm-project.git",
+    "custom_install_script": "build_llvm_monorepo",
+    "only_supports_wasm": true,
+    "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%;EMCC_WASM_BACKEND=1",
+    "cmake_build_type": "Release"
+  },
+
+  {
     "id": "clang",
     "version": "tag-e%tag%",
     "bitness": 32,
@@ -12,7 +41,7 @@
     "custom_install_script": "build_fastcomp",
     "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
-    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%;EMCC_WASM_BACKEND=0",
     "cmake_build_type": "Release"
   },
   {
@@ -27,7 +56,7 @@
     "custom_install_script": "build_fastcomp",
     "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
-    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%;EMCC_WASM_BACKEND=0",
     "cmake_build_type": "Release"
   },
   {
@@ -41,7 +70,7 @@
     "linux_url": "llvm/nightly/linux_64bit/emscripten-llvm-e%nightly-llvm-64bit%.tar.gz",
     "activated_path": "%installation_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%'",
-    "activated_env": "LLVM_ROOT=%installation_dir%"
+    "activated_env": "LLVM_ROOT=%installation_dir%;EMCC_WASM_BACKEND=0"
   },
   {
     "id": "fastcomp-clang",
@@ -54,7 +83,7 @@
     "custom_install_script": "build_fastcomp",
     "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
-    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%;EMCC_WASM_BACKEND=0",
     "cmake_build_type": "Release"
   },
   {
@@ -68,7 +97,7 @@
     "custom_install_script": "build_fastcomp",
     "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
-    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%;EMCC_WASM_BACKEND=0",
     "cmake_build_type": "Release"
   },
   {
@@ -82,7 +111,7 @@
     "custom_install_script": "build_fastcomp",
     "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
-    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%;EMCC_WASM_BACKEND=0",
     "cmake_build_type": "Release"
   },
   {
@@ -96,7 +125,7 @@
     "custom_install_script": "build_fastcomp",
     "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
-    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%;EMCC_WASM_BACKEND=0",
     "cmake_build_type": "Release"
   },
 
@@ -141,7 +170,7 @@
     "linux_url": "llvm/tag/linux_64bit/emscripten-llvm-e%precompiled_tag32%.tar.gz",
     "activated_path": "%installation_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/optimizer%.exe%';BINARYEN_ROOT='%installation_dir%/binaryen'",
-    "activated_env": "LLVM_ROOT=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%/optimizer%.exe%;BINARYEN_ROOT=%installation_dir%/binaryen"
+    "activated_env": "LLVM_ROOT=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%/optimizer%.exe%;BINARYEN_ROOT=%installation_dir%/binaryen;EMCC_WASM_BACKEND=0"
   },
   {
     "id": "fastcomp-clang",
@@ -153,7 +182,7 @@
     "linux_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/old/linux/emscripten-llvm-e%precompiled_tag64%.tar.gz",
     "activated_path": "%installation_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/optimizer%.exe%';BINARYEN_ROOT='%installation_dir%/binaryen'",
-    "activated_env": "LLVM_ROOT=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%/optimizer%.exe%;BINARYEN_ROOT=%installation_dir%/binaryen"
+    "activated_env": "LLVM_ROOT=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%/optimizer%.exe%;BINARYEN_ROOT=%installation_dir%/binaryen;EMCC_WASM_BACKEND=0"
   },
   {
     "id": "node",
@@ -540,6 +569,12 @@
   ],
 
   "sdks": [
+  {
+    "version": "upstream-incoming",
+    "bitness": 64,
+    "uses": ["llvm-git-master-64bit", "node-12.9.1-64bit", "python-2.7.13.1-64bit", "emscripten-incoming-64bit"],
+    "os": "win"
+  },
   {
     "version": "fastcomp-incoming",
     "bitness": 32,

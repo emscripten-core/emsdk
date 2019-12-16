@@ -118,11 +118,37 @@ Emsdk contains a history of old compiler versions that you can use to maintain
 your migration path. Type `emsdk list --old` to get a list of archived tool and
 SDK versions, and `emsdk install <name_of_tool>` to install it.
 
+### I want to build from source/I want to download a precompiled build!
+
+Some Emsdk Tool and SDK targets refer to packages that are precompiled, and
+no compilation is needed when installing them. Other Emsdk Tools and SDK
+targets come "from source", meaning that they will fetch the source repositories
+using git, and compile the package on demand.
+
+When you run `emsdk list`, it will group the Tools and SDKs under these two
+categories.
+
+To obtain and build latest upstream wasm SDK from source, run
+
+```
+emsdk install sdk-upstream-incoming-64bit
+```
+
+You can use this target for example to bootstrap developing patches to LLVM,
+Binaryen or Emscripten. (After initial installation, use `git remote add`
+in the cloned tree to add your own fork to push changes as patches)
+
+If you only intend to contribute to Emscripten repository, and not to LLVM
+or Binaryen, you can also use precompiled versions of them, and only git
+clone the Emscripten repository. For more details, see
+
+https://emscripten.org/docs/contributing/developers_guide.html?highlight=developer#setting-up
+
 ### When working on git branches compiled from source, how do I update to a newer compiler version?
 
 Unlike tags and precompiled versions, a few of the SDK packages are based on
-"moving" git branches and compiled from source (sdk-incoming, sdk-master,
-emscripten-incoming, emscripten-master, binaryen-master). Because of that, the
+"moving" git branches and compiled from source (e.g. sdk-upstream-incoming,
+sdk-incoming, emscripten-incoming, binaryen-master). Because of that, the
 compiled versions will eventually go out of date as new commits are introduced
 to the development branches. To update an old compiled installation of one of
 this branches, simply reissue the "emsdk install" command on that tool/SDK. This
