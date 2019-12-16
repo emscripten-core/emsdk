@@ -138,6 +138,12 @@ You can use this target for example to bootstrap developing patches to LLVM,
 Binaryen or Emscripten. (After initial installation, use `git remote add`
 in the cloned tree to add your own fork to push changes as patches)
 
+If you only intend to contribute to Emscripten repository, and not to LLVM
+or Binaryen, you can also use precompiled versions of them, and only git
+clone the Emscripten repository. For more details, see
+
+https://emscripten.org/docs/contributing/developers_guide.html?highlight=developer#setting-up
+
 ### When working on git branches compiled from source, how do I update to a newer compiler version?
 
 Unlike tags and precompiled versions, a few of the SDK packages are based on
