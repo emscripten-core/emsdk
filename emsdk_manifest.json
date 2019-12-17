@@ -576,6 +576,18 @@
     "os": "win"
   },
   {
+    "version": "upstream-incoming",
+    "bitness": 64,
+    "uses": ["llvm-git-master-64bit", "node-12.9.1-64bit", "emscripten-incoming-64bit"],
+    "os": "osx"
+  },
+  {
+    "version": "upstream-incoming",
+    "bitness": 64,
+    "uses": ["llvm-git-master-64bit", "node-12.9.1-64bit", "emscripten-incoming-64bit"],
+    "os": "linux"
+  },
+  {
     "version": "fastcomp-incoming",
     "bitness": 32,
     "uses": ["fastcomp-clang-incoming-32bit", "node-12.9.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-incoming-32bit", "binaryen-master-32bit"],
