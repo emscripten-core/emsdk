@@ -216,6 +216,8 @@ if WINDOWS:
     CMAKE_GENERATOR = 'Visual Studio 14'
   elif '--vs2017' in sys.argv:
     CMAKE_GENERATOR = 'Visual Studio 15'
+  elif '--vs2019' in sys.argv:
+    CMAKE_GENERATOR = 'Visual Studio 16'
   else:
     program_files = os.environ['ProgramFiles(x86)'] if 'ProgramFiles(x86)' in os.environ else os.environ['ProgramFiles']
     vs2017_exists = len(vswhere(15)) > 0
@@ -239,11 +241,13 @@ if WINDOWS:
       CMAKE_GENERATOR = ''
 
 
-sys.argv = [a for a in sys.argv if a not in ('--mingw', '--vs2013', '--vs2015', '--vs2017')]
+sys.argv = [a for a in sys.argv if a not in ('--mingw', '--vs2013', '--vs2015', '--vs2017', '--vs2019')]
 
 
 # Computes a suitable path prefix to use when building with a given generator.
 def cmake_generator_prefix():
+  if CMAKE_GENERATOR == 'Visual Studio 16':
+    return '_vs2019'
   if CMAKE_GENERATOR == 'Visual Studio 15':
     return '_vs2017'
   elif CMAKE_GENERATOR == 'Visual Studio 14':
@@ -817,6 +821,8 @@ def llvm_build_dir(tool):
     generator_suffix = '_vs2015'
   elif CMAKE_GENERATOR == 'Visual Studio 15':
     generator_suffix = '_vs2017'
+  elif CMAKE_GENERATOR == 'Visual Studio 16':
+    generator_suffix = '_vs2019'
   elif CMAKE_GENERATOR == 'MinGW Makefiles':
     generator_suffix = '_mingw'
 
@@ -896,6 +902,8 @@ def build_env(generator):
 
 def get_generator_for_sln_file(sln_file):
   contents = open(sln_file, 'r').read()
+  if '# Visual Studio 16' in contents:
+    return 'Visual Studio 16'
   if '# Visual Studio 15' in contents:
     return 'Visual Studio 15'
   if '# Visual Studio Express 2015' in contents or '# Visual Studio 2015' in contents or '# Visual Studio 14' in contents:
@@ -927,7 +935,12 @@ def find_msbuild(sln_file):
   search_paths_old = [os.path.join(os.environ["WINDIR"], 'Microsoft.NET/Framework/v4.0.30319')]
   generator = get_generator_for_sln_file(sln_file)
   debug_print('find_msbuild looking for generator ' + str(generator))
-  if generator == 'Visual Studio 15':
+  if generator == 'Visual Studio 16':
+    path = vswhere(16)
+    search_paths = [os.path.join(path, 'MSBuild/Current/Bin'),
+                    os.path.join(path, 'MSBuild/15.0/Bin/amd64'),
+                    os.path.join(path, 'MSBuild/15.0/Bin')]
+  elif generator == 'Visual Studio 15':
     path = vswhere(15)
     search_paths = [os.path.join(path, 'MSBuild/15.0/Bin/amd64'),
                     os.path.join(path, 'MSBuild/15.0/Bin')]
@@ -1080,8 +1093,15 @@ def build_llvm_fastcomp(tool):
     if not success:
       return False
 
+  args = []
+
   cmake_generator = CMAKE_GENERATOR
-  if 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
+  if 'Visual Studio 16' in CMAKE_GENERATOR:
+    # With Visual Studio 16 2019, CMake changed the way they specify target arch.
+    # Instead of appending it into the CMake generator line, it is specified
+    # with a -A arch parameter.
+    args += ['-A', 'x64' if tool.bitness == 64 else 'x86']
+  elif 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
     cmake_generator += ' Win64'
 
   build_dir = llvm_build_dir(tool)
@@ -1109,7 +1129,7 @@ def build_llvm_fastcomp(tool):
     if targets_to_build != '':
       targets_to_build += ';'
     targets_to_build += 'JSBackend'
-  args = ['-DLLVM_TARGETS_TO_BUILD=' + targets_to_build, '-DLLVM_INCLUDE_EXAMPLES=OFF', '-DCLANG_INCLUDE_EXAMPLES=OFF', '-DLLVM_INCLUDE_TESTS=' + tests_arg, '-DCLANG_INCLUDE_TESTS=' + tests_arg, '-DLLVM_ENABLE_ASSERTIONS=' + ('ON' if enable_assertions else 'OFF')]
+  args += ['-DLLVM_TARGETS_TO_BUILD=' + targets_to_build, '-DLLVM_INCLUDE_EXAMPLES=OFF', '-DCLANG_INCLUDE_EXAMPLES=OFF', '-DLLVM_INCLUDE_TESTS=' + tests_arg, '-DCLANG_INCLUDE_TESTS=' + tests_arg, '-DLLVM_ENABLE_ASSERTIONS=' + ('ON' if enable_assertions else 'OFF')]
   if os.environ.get('LLVM_CMAKE_ARGS'):
     extra_args = os.environ['LLVM_CMAKE_ARGS'].split(',')
     print('Passing the following extra arguments to LLVM CMake configuration: ' + str(extra_args))
@@ -1174,7 +1194,13 @@ def build_llvm_monorepo(tool):
   # It looks like compiler-rt is not compatible to build on Windows?
   args += ['-DLLVM_ENABLE_PROJECTS="clang;clang;lld;lld"']
   cmake_generator = CMAKE_GENERATOR
-  if 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
+  if 'Visual Studio 16' in CMAKE_GENERATOR:
+    # With Visual Studio 16 2019, CMake changed the way they specify target arch.
+    # Instead of appending it into the CMake generator line, it is specified
+    # with a -A arch parameter.
+    args += ['-A', 'x64' if tool.bitness == 64 else 'x86']
+    args += ['-Thost=x64']
+  elif 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
     cmake_generator += ' Win64'
     args += ['-Thost=x64']
 
@@ -1225,11 +1251,19 @@ def build_optimizer_tool(tool):
   build_root = optimizer_build_root(tool)
   build_type = decide_cmake_build_type(tool)
 
+  args = []
+
   # Configure
   cmake_generator = CMAKE_GENERATOR
-  if 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
+  if 'Visual Studio 16' in CMAKE_GENERATOR:
+    # With Visual Studio 16 2019, CMake changed the way they specify target arch.
+    # Instead of appending it into the CMake generator line, it is specified
+    # with a -A arch parameter.
+    args += ['-A', 'x64' if tool.bitness == 64 else 'x86']
+  elif 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
     cmake_generator += ' Win64'
-  success = cmake_configure(cmake_generator, build_root, src_root, build_type)
+
+  success = cmake_configure(cmake_generator, build_root, src_root, build_type, args)
   if not success:
     return False
 
@@ -1274,9 +1308,15 @@ def build_binaryen_tool(tool):
   args = []
 
   cmake_generator = CMAKE_GENERATOR
+  if 'Visual Studio 16' in CMAKE_GENERATOR:
+    # With Visual Studio 16 2019, CMake changed the way they specify target arch.
+    # Instead of appending it into the CMake generator line, it is specified
+    # with a -A arch parameter.
+    args += ['-A', 'x64' if tool.bitness == 64 else 'x86']
+  elif 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
+    cmake_generator += ' Win64'
+
   if 'Visual Studio' in CMAKE_GENERATOR:
-    if tool.bitness == 64:
-      cmake_generator += ' Win64'
     if BUILD_FOR_TESTING:
       args += ['-DRUN_STATIC_ANALYZER=1']
 
