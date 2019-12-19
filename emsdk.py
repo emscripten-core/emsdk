@@ -1263,7 +1263,7 @@ def emscripten_npm_install(tool, directory):
     print('Failed to run "npm install" in installed Emscripten root directory ' + tool.installation_path() + '! Please install node.js first!')
     return False
 
-  npm = os.path.join(node_tool.installation_path(), 'npm' + ('.cmd' if WINDOWS else ''))
+  npm = os.path.join(node_tool.installation_path(), 'bin', 'npm' + ('.cmd' if WINDOWS else ''))
   subprocess.check_call([npm, 'install'], cwd=directory)
   return True
 
