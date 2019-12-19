@@ -1256,6 +1256,18 @@ def find_latest_active_or_installed_tool(name):
       return t
 
 
+# npm install in Emscripten root directory
+def emscripten_npm_install(tool, directory):
+  node_tool = find_latest_active_or_installed_tool('node')
+  if not node_tool:
+    print('Failed to run "npm install" in installed Emscripten root directory ' + tool.installation_path() + '! Please install node.js first!')
+    return False
+
+  npm = os.path.join(node_tool.installation_path(), 'npm' + ('.cmd' if WINDOWS else ''))
+  subprocess.check_call([npm, 'install'], cwd=directory)
+  return True
+
+
 def emscripten_post_install(tool):
   debug_print('emscripten_post_install(' + str(tool) + ')')
   src_root = os.path.join(tool.installation_path(), 'tools', 'optimizer')
@@ -1283,16 +1295,7 @@ def emscripten_post_install(tool):
   if not success:
     return False
 
-  # npm install in Emscripten root directory
-  node_tool = find_latest_active_or_installed_tool('node')
-  if not node_tool:
-    print('Failed to run "npm install" in installed Emscripten root directory ' + tool.installation_path() + '! Please install node.js first!')
-    return False
-
-  npm = os.path.join(node_tool.installation_path(), 'npm' + ('.cmd' if WINDOWS else ''))
-  npm_ret = subprocess.check_call([npm, 'install'], cwd=tool.installation_path())
-  if npm_ret != 0:
-    return False
+  success = emscripten_npm_install(tool, tool.installation_path())
 
   return True
 
@@ -1831,6 +1834,12 @@ class Tool(object):
         success = tool.install()
         if not success:
           return False
+      if hasattr(self, 'custom_install_script') and self.custom_install_script == 'emscripten_npm_install':
+        # upstream tools have hardcoded paths that are not stored in emsdk_manifest.json registry
+        install_path = 'upstream' if 'releases-upstream' in self.version else 'fastcomp'
+        success = emscripten_npm_install(self, os.path.join(emsdk_path(), install_path, 'emscripten'))
+        if not success:
+          return False
       print("Done installing SDK '" + str(self) + "'.")
       return True
     else:
@@ -1872,7 +1881,9 @@ class Tool(object):
       if success:
         if hasattr(self, 'custom_install_script'):
           if self.custom_install_script == 'emscripten_post_install':
-            success = build_optimizer_tool(self)
+            success = emscripten_post_install(self)
+          elif self.custom_install_script == 'emscripten_npm_install':
+            success = emscripten_npm_install(self, self.installation_path())
           elif self.custom_install_script in ('build_fastcomp', 'build_llvm_monorepo'):
             # 'build_fastcomp' is a special one that does the download on its
             # own, others do the download manually.
