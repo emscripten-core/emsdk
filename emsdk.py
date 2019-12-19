@@ -2477,20 +2477,6 @@ def adjusted_path(tools_to_activate, log_additions=False, system_path_only=False
       if current_user_path:
         existing_path += ENVPATH_SEPARATOR + current_user_path
     existing_path = existing_path.split(ENVPATH_SEPARATOR)
-
-    # Fix up after potential changes made by bug https://github.com/kripken/emscripten/issues/4121
-    system_root = os.environ['SystemRoot'].lower()
-    for i in range(len(existing_path)):
-      p = existing_path[i]
-      if p.lower() == system_root:
-        p = '%SystemRoot%'
-      elif (system_root + '\\system32') in p.lower():
-        p = '%SystemRoot%\\system32'
-      elif (system_root + '\\system32\\wbem') in p.lower():
-        p = '%SystemRoot%\\System32\\Wbem'
-      elif (system_root + '\\system32\\windowspowershell\v1.0') in p.lower():
-        p = '%SystemRoot%\\System32\\WindowsPowerShell\v1.0\\'
-      existing_path[i] = p
   else:
     existing_path = os.environ['PATH'].split(ENVPATH_SEPARATOR)
   emsdk_root_path = to_unix_path(emsdk_path())
