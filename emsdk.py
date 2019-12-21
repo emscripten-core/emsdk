@@ -1837,7 +1837,7 @@ class Tool(object):
         success = tool.install()
         if not success:
           return False
-      if hasattr(self, 'custom_install_script') and self.custom_install_script == 'emscripten_npm_install':
+      if getattr(self, 'custom_install_script', None) == 'emscripten_npm_install':
         # upstream tools have hardcoded paths that are not stored in emsdk_manifest.json registry
         install_path = 'upstream' if 'releases-upstream' in self.version else 'fastcomp'
         success = emscripten_npm_install(self, os.path.join(emsdk_path(), install_path, 'emscripten'))
