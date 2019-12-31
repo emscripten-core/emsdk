@@ -19,6 +19,7 @@ import shutil
 import stat
 import subprocess
 import sys
+import sysconfig
 import tempfile
 import zipfile
 
@@ -55,9 +56,15 @@ if os.name == 'nt' or (os.getenv('SYSTEMROOT') is not None and 'windows' in os.g
   WINDOWS = True
   ENVPATH_SEPARATOR = ';'
 
+MINGW = False
 MSYS = False
 if os.getenv('MSYSTEM'):
   MSYS = True
+  # Some functions like os.path.normpath() exhibit different behavior between
+  # different versions of Python, so we need to distinguish between the MinGW
+  # and MSYS versions of Python
+  if sysconfig.get_platform() == 'mingw':
+    MINGW = True
   if os.getenv('MSYSTEM') != 'MSYS' and os.getenv('MSYSTEM') != 'MINGW64':
     # https://stackoverflow.com/questions/37460073/msys-vs-mingw-internal-environment-variables
     print('Warning: MSYSTEM environment variable is present, and is set to "' + os.getenv('MSYSTEM') + '". This shell has not been tested with emsdk and may not work.')
@@ -502,7 +509,13 @@ def fix_potentially_long_windows_pathname(pathname):
     print('Warning: Seeing a relative path "' + pathname + '" which is dangerously long for being referenced as a short Windows path name. Refactor emsdk to be able to handle this!')
   if pathname.startswith('\\\\?\\'):
     return pathname
-  return '\\\\?\\' + os.path.normpath(pathname.replace('/', '\\'))
+  pathname = os.path.normpath(pathname.replace('/', '\\'))
+  if MINGW:
+    # MinGW versions of Python return normalized paths with backslashes
+    # converted to forward slashes, so we must use forward slashes in our
+    # prefix
+    return '//?/' + pathname
+  return '\\\\?\\' + pathname
 
 
 # On windows, rename/move will fail if the destination exists, and there is no
