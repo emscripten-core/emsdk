@@ -384,7 +384,7 @@
     "activated_path": "%installation_dir%",
     "activated_env": "EMSCRIPTEN=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%%generator_prefix%_32bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%",
     "cmake_build_type": "Release",
-    "custom_install_script": "build_optimizer",
+    "custom_install_script": "emscripten_post_install",
     "custom_is_installed_script": "is_optimizer_installed",
     "custom_uninstall_script": "uninstall_optimizer"
   },
@@ -399,7 +399,7 @@
     "activated_path": "%installation_dir%",
     "activated_env": "EMSCRIPTEN=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%%generator_prefix%_64bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%",
     "cmake_build_type": "Release",
-    "custom_install_script": "build_optimizer",
+    "custom_install_script": "emscripten_post_install",
     "custom_is_installed_script": "is_optimizer_installed",
     "custom_uninstall_script": "uninstall_optimizer"
   },
@@ -464,7 +464,7 @@
     "activated_path": "%installation_dir%",
     "activated_env": "EMSCRIPTEN=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%%generator_prefix%_32bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%",
     "cmake_build_type": "Release",
-    "custom_install_script": "build_optimizer",
+    "custom_install_script": "emscripten_post_install",
     "custom_is_installed_script": "is_optimizer_installed",
     "custom_uninstall_script": "uninstall_optimizer"
   },
@@ -479,7 +479,7 @@
     "activated_path": "%installation_dir%",
     "activated_env": "EMSCRIPTEN=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%%generator_prefix%_32bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%",
     "cmake_build_type": "Release",
-    "custom_install_script": "build_optimizer",
+    "custom_install_script": "emscripten_post_install",
     "custom_is_installed_script": "is_optimizer_installed",
     "custom_uninstall_script": "uninstall_optimizer"
   },
@@ -494,7 +494,7 @@
     "activated_path": "%installation_dir%",
     "activated_env": "EMSCRIPTEN=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%%generator_prefix%_64bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%",
     "cmake_build_type": "Release",
-    "custom_install_script": "build_optimizer",
+    "custom_install_script": "emscripten_post_install",
     "custom_is_installed_script": "is_optimizer_installed",
     "custom_uninstall_script": "uninstall_optimizer"
   },
@@ -509,7 +509,7 @@
     "activated_path": "%installation_dir%",
     "activated_env": "EMSCRIPTEN=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%%generator_prefix%_64bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%",
     "cmake_build_type": "Release",
-    "custom_install_script": "build_optimizer",
+    "custom_install_script": "emscripten_post_install",
     "custom_is_installed_script": "is_optimizer_installed",
     "custom_uninstall_script": "uninstall_optimizer"
   },
@@ -776,38 +776,44 @@
   {
     "version": "releases-upstream-%releases-tag%",
     "bitness": 64,
-    "uses": ["releases-upstream-%releases-tag%-64bit", "node-12.9.1-64bit"],
-    "os": "linux"
+    "uses": ["node-12.9.1-64bit", "releases-upstream-%releases-tag%-64bit"],
+    "os": "linux",
+    "custom_install_script": "emscripten_npm_install"
   },
   {
     "version": "releases-upstream-%releases-tag%",
     "bitness": 64,
-    "uses": ["releases-upstream-%releases-tag%-64bit", "node-12.9.1-64bit"],
-    "os": "osx"
+    "uses": ["node-12.9.1-64bit", "releases-upstream-%releases-tag%-64bit"],
+    "os": "osx",
+    "custom_install_script": "emscripten_npm_install"
   },
   {
     "version": "releases-upstream-%releases-tag%",
     "bitness": 64,
-    "uses": ["releases-upstream-%releases-tag%-64bit", "node-12.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit"],
-    "os": "win"
+    "uses": ["node-12.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "releases-upstream-%releases-tag%-64bit"],
+    "os": "win",
+    "custom_install_script": "emscripten_npm_install"
   },
   {
     "version": "releases-fastcomp-%releases-tag%",
     "bitness": 64,
-    "uses": ["releases-fastcomp-%releases-tag%-64bit", "node-12.9.1-64bit"],
-    "os": "linux"
+    "uses": ["node-12.9.1-64bit", "releases-fastcomp-%releases-tag%-64bit"],
+    "os": "linux",
+    "custom_install_script": "emscripten_npm_install"
   },
   {
     "version": "releases-fastcomp-%releases-tag%",
     "bitness": 64,
-    "uses": ["releases-fastcomp-%releases-tag%-64bit", "node-12.9.1-64bit"],
-    "os": "osx"
+    "uses": ["node-12.9.1-64bit", "releases-fastcomp-%releases-tag%-64bit"],
+    "os": "osx",
+    "custom_install_script": "emscripten_npm_install"
   },
   {
     "version": "releases-fastcomp-%releases-tag%",
     "bitness": 64,
-    "uses": ["releases-fastcomp-%releases-tag%-64bit", "node-12.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit"],
-    "os": "win"
+    "uses": ["node-12.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "releases-fastcomp-%releases-tag%-64bit"],
+    "os": "win",
+    "custom_install_script": "emscripten_npm_install"
   },
   {
     "version": "fastcomp-%precompiled_tag32%",

@@ -1258,8 +1258,34 @@ def is_optimizer_installed(tool):
   return os.path.exists(build_root)
 
 
-def build_optimizer_tool(tool):
-  debug_print('build_optimizer_tool(' + str(tool) + ')')
+# Finds newest tool of given name that is active, or if none are active, finds the newest one that is installed.
+def find_latest_active_or_installed_tool(name):
+  for t in reversed(tools):
+    if t.id == name and t.is_active():
+      return t
+
+  for t in reversed(tools):
+    if t.id == name and t.is_installed():
+      return t
+
+
+# npm install in Emscripten root directory
+def emscripten_npm_install(tool, directory):
+  node_tool = find_latest_active_or_installed_tool('node')
+  if not node_tool:
+    print('Failed to run "npm install" in installed Emscripten root directory ' + tool.installation_path() + '! Please install node.js first!')
+    return False
+
+  node_path = os.path.join(node_tool.installation_path(), 'bin')
+  npm = os.path.join(node_path, 'npm' + ('.cmd' if WINDOWS else ''))
+  env = os.environ.copy()
+  env["PATH"] = node_path + os.pathsep + env["PATH"]
+  subprocess.check_call([npm, 'install', '--production'], cwd=directory, env=env)
+  return True
+
+
+def emscripten_post_install(tool):
+  debug_print('emscripten_post_install(' + str(tool) + ')')
   src_root = os.path.join(tool.installation_path(), 'tools', 'optimizer')
   build_root = optimizer_build_root(tool)
   build_type = decide_cmake_build_type(tool)
@@ -1282,7 +1308,12 @@ def build_optimizer_tool(tool):
 
   # Make
   success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'Win32')
-  return success
+  if not success:
+    return False
+
+  success = emscripten_npm_install(tool, tool.installation_path())
+
+  return True
 
 
 # Binaryen build scripts:
@@ -1819,6 +1850,12 @@ class Tool(object):
         success = tool.install()
         if not success:
           return False
+      if getattr(self, 'custom_install_script', None) == 'emscripten_npm_install':
+        # upstream tools have hardcoded paths that are not stored in emsdk_manifest.json registry
+        install_path = 'upstream' if 'releases-upstream' in self.version else 'fastcomp'
+        success = emscripten_npm_install(self, os.path.join(emsdk_path(), install_path, 'emscripten'))
+        if not success:
+          return False
       print("Done installing SDK '" + str(self) + "'.")
       return True
     else:
@@ -1859,8 +1896,10 @@ class Tool(object):
 
       if success:
         if hasattr(self, 'custom_install_script'):
-          if self.custom_install_script == 'build_optimizer':
-            success = build_optimizer_tool(self)
+          if self.custom_install_script == 'emscripten_post_install':
+            success = emscripten_post_install(self)
+          elif self.custom_install_script == 'emscripten_npm_install':
+            success = emscripten_npm_install(self, self.installation_path())
           elif self.custom_install_script in ('build_fastcomp', 'build_llvm_monorepo'):
             # 'build_fastcomp' is a special one that does the download on its
             # own, others do the download manually.
