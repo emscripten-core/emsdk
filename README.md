@@ -193,8 +193,8 @@ need a github account or a fork of Emscripten to do this. To switch to using the
 latest upstream git development branch `master`, run the following:
 
     emsdk install git-1.9.4 # Install git. Skip if the system already has it.
-    emsdk install sdk-master-64bit # Clone+pull the latest emscripten-core/emscripten/master.
-    emsdk activate sdk-master-64bit # Set the master SDK as the currently active one.
+    emsdk install sdk-upstream-master-64bit # Clone+pull the latest emscripten-core/emscripten/master.
+    emsdk activate sdk-upstream-master-64bit # Set the master SDK as the currently active one.
 
 ### How do I use my own Emscripten github fork with the SDK?
 
