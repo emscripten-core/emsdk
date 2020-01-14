@@ -74,34 +74,6 @@
   },
   {
     "id": "fastcomp-clang",
-    "version": "incoming",
-    "bitness": 32,
-    "install_path": "clang/fastcomp",
-    "url": "https://github.com/kripken/emscripten-fastcomp.git",
-    "clang_url": "https://github.com/kripken/emscripten-fastcomp-clang.git",
-    "git_branch": "incoming",
-    "custom_install_script": "build_fastcomp",
-    "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
-    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%;EMCC_WASM_BACKEND=0",
-    "cmake_build_type": "Release"
-  },
-  {
-    "id": "fastcomp-clang",
-    "version": "incoming",
-    "bitness": 64,
-    "install_path": "clang/fastcomp",
-    "git_branch": "incoming",
-    "url": "https://github.com/kripken/emscripten-fastcomp.git",
-    "clang_url": "https://github.com/kripken/emscripten-fastcomp-clang.git",
-    "custom_install_script": "build_fastcomp",
-    "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
-    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%;EMCC_WASM_BACKEND=0",
-    "cmake_build_type": "Release"
-  },
-  {
-    "id": "fastcomp-clang",
     "version": "master",
     "bitness": 32,
     "install_path": "clang/fastcomp",
@@ -455,25 +427,10 @@
   },
   {
     "id": "emscripten",
-    "version": "incoming",
-    "bitness": 32,
-    "append_bitness": false,
-    "url": "https://github.com/kripken/emscripten.git",
-    "git_branch": "incoming",
-    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%%generator_prefix%_32bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%'",
-    "activated_path": "%installation_dir%",
-    "activated_env": "EMSCRIPTEN=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%%generator_prefix%_32bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%",
-    "cmake_build_type": "Release",
-    "custom_install_script": "emscripten_post_install",
-    "custom_is_installed_script": "is_optimizer_installed",
-    "custom_uninstall_script": "uninstall_optimizer"
-  },
-  {
-    "id": "emscripten",
     "version": "master",
     "bitness": 32,
     "append_bitness": false,
-    "url": "https://github.com/kripken/emscripten.git",
+    "url": "https://github.com/emscripten-core/emscripten.git",
     "git_branch": "master",
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%%generator_prefix%_32bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%'",
     "activated_path": "%installation_dir%",
@@ -485,25 +442,10 @@
   },
   {
     "id": "emscripten",
-    "version": "incoming",
-    "bitness": 64,
-    "append_bitness": false,
-    "url": "https://github.com/kripken/emscripten.git",
-    "git_branch": "incoming",
-    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%%generator_prefix%_64bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%'",
-    "activated_path": "%installation_dir%",
-    "activated_env": "EMSCRIPTEN=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%%generator_prefix%_64bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%",
-    "cmake_build_type": "Release",
-    "custom_install_script": "emscripten_post_install",
-    "custom_is_installed_script": "is_optimizer_installed",
-    "custom_uninstall_script": "uninstall_optimizer"
-  },
-  {
-    "id": "emscripten",
     "version": "master",
     "bitness": 64,
     "append_bitness": false,
-    "url": "https://github.com/kripken/emscripten.git",
+    "url": "https://github.com/emscripten-core/emscripten.git",
     "git_branch": "master",
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%%generator_prefix%_64bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%'",
     "activated_path": "%installation_dir%",
@@ -570,51 +512,21 @@
 
   "sdks": [
   {
-    "version": "upstream-incoming",
+    "version": "upstream-master",
     "bitness": 64,
-    "uses": ["llvm-git-master-64bit", "node-12.9.1-64bit", "python-2.7.13.1-64bit", "emscripten-incoming-64bit"],
+    "uses": ["llvm-git-master-64bit", "node-12.9.1-64bit", "python-2.7.13.1-64bit", "emscripten-master-64bit"],
     "os": "win"
   },
   {
-    "version": "upstream-incoming",
+    "version": "upstream-master",
     "bitness": 64,
-    "uses": ["llvm-git-master-64bit", "node-12.9.1-64bit", "emscripten-incoming-64bit"],
+    "uses": ["llvm-git-master-64bit", "node-12.9.1-64bit", "emscripten-master-64bit"],
     "os": "osx"
   },
   {
-    "version": "upstream-incoming",
+    "version": "upstream-master",
     "bitness": 64,
-    "uses": ["llvm-git-master-64bit", "node-12.9.1-64bit", "emscripten-incoming-64bit"],
-    "os": "linux"
-  },
-  {
-    "version": "fastcomp-incoming",
-    "bitness": 32,
-    "uses": ["fastcomp-clang-incoming-32bit", "node-12.9.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-incoming-32bit", "binaryen-master-32bit"],
-    "os": "win"
-  },
-  {
-    "version": "fastcomp-incoming",
-    "bitness": 64,
-    "uses": ["fastcomp-clang-incoming-64bit", "node-12.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-incoming-64bit", "binaryen-master-64bit"],
-    "os": "win"
-  },
-  {
-    "version": "fastcomp-incoming",
-    "bitness": 64,
-    "uses": ["fastcomp-clang-incoming-64bit", "node-12.9.1-64bit", "emscripten-incoming-64bit", "binaryen-master-64bit"],
-    "os": "osx"
-  },
-  {
-    "version": "fastcomp-incoming",
-    "bitness": 32,
-    "uses": ["fastcomp-clang-incoming-32bit", "node-12.9.1-32bit", "emscripten-incoming-32bit", "binaryen-master-32bit"],
-    "os": "linux"
-  },
-  {
-    "version": "fastcomp-incoming",
-    "bitness": 64,
-    "uses": ["fastcomp-clang-incoming-64bit", "node-12.9.1-64bit", "emscripten-incoming-64bit", "binaryen-master-64bit"],
+    "uses": ["llvm-git-master-64bit", "node-12.9.1-64bit", "emscripten-master-64bit"],
     "os": "linux"
   },
   {

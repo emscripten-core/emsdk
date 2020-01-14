@@ -1711,7 +1711,7 @@ class Tool(object):
     # directory where the compiler is built to, and installation_path is
     # the directory where the source tree exists. To distinguish between
     # multiple packages sharing the same source (clang-master-32bit,
-    # clang-master-64bit, clang-incoming-32bit and clang-incoming-64bit each
+    # clang-master-64bit, clang-master-32bit and clang-master-64bit each
     # share the same git repo), require that in addition to the installation
     # directory, each item in the activated PATH must exist.
     activated_path = self.expand_vars(self.activated_path).split(';') if hasattr(self, 'activated_path') else [self.installation_path()]
@@ -2713,8 +2713,7 @@ def main():
                   --build=<type>: Controls what kind of build of LLVM to
                                   perform. Pass either 'Debug', 'Release',
                                   'MinSizeRel' or 'RelWithDebInfo'. Default:
-                                  'Release' for LLVM master branch, and
-                                  'RelWithDebInfo' for LLVM incoming branch.
+                                  'RelWithDebInfo'.
 
               --generator=<type>: Specifies the CMake Generator to be used
                                   during the build. Possible values are the
@@ -2725,15 +2724,15 @@ def main():
                                   words, enclose with single or double quotes.
 
                        --shallow: When installing tools from one of the git
-                                  development branches 'master' or 'incoming',
-                                  this parameter can be passed to perform a
-                                  shallow git clone instead of a full one.
-                                  This reduces the amount of network transfer
-                                  that is needed. This option should only be
-                                  used when you are interested in downloading
-                                  one of the development branches, but are not
-                                  looking to develop Emscripten yourself.
-                                  Default: disabled, i.e. do a full clone.
+                                  development branches, this parameter can be
+                                  passed to perform a shallow git clone instead
+                                  of a full one.  This reduces the amount of
+                                  network transfer that is needed. This option
+                                  should only be used when you are interested in
+                                  downloading one of the development branches,
+                                  but are not looking to develop Emscripten
+                                  yourself.  Default: disabled, i.e. do a full
+                                  clone.
 
                    --build-tests: If enabled, LLVM is built with internal tests
                                   included. Pass this to enable running test
@@ -2741,8 +2740,7 @@ def main():
                                   suite. Default: disabled.
              --enable-assertions: If specified, LLVM is built with assert()
                                   checks enabled. Useful for development
-                                  purposes. Default: Enabled for 'incoming'
-                                  branch, disabled for 'master' branch.
+                                  purposes. Default: Enabled
             --disable-assertions: Forces assertions off during the build.
 
       --vs2013/--vs2015/--vs2017: If building from source, overrides to build
@@ -2800,9 +2798,8 @@ def main():
        MinSizeRel or RelWithDebInfo. Note: When overriding a custom build type,
        be sure to match the same --build= option to both 'install' and
        'activate' commands and the invocation of 'emsdk_env', or otherwise
-       these commands will default to operating on the default build types,
-       which are Release for the 'master' SDK, and RelWithDebInfo for the
-       'incoming' SDK.''')
+       these commands will default to operating on the default build type
+       which in and RelWithDebInfo.''')
     return 1
 
   # Extracts a boolean command line argument from sys.argv and returns True if it was present
@@ -2859,28 +2856,18 @@ def main():
 
   releases_info = load_releases_info()['releases']
 
-  def report_upstream_by_default():
-    print('''\
-** NOTICE **: The default SDK changed from `fastcomp` to `upstream`.
-If you have problems, or wish to revert back to fastcomp for some other reason
-you can add `-fastcomp` to explicitly install that fastcomp-based
-SDK, .e.g ./emsdk install latest-fastcomp.
-''', file=sys.stderr)
-
   # Replace meta-packages with the real package names.
   if cmd in ('update', 'install', 'activate'):
     for i in range(2, len(sys.argv)):
       arg = sys.argv[i]
       if arg in ('latest', 'sdk-latest', 'latest-64bit', 'sdk-latest-64bit'):
         # This is effectly the default SDK
-        report_upstream_by_default()
         sys.argv[i] = str(find_latest_releases_sdk('upstream'))
       elif arg in ('latest-fastcomp', 'latest-releases-fastcomp'):
         sys.argv[i] = str(find_latest_releases_sdk('fastcomp'))
       elif arg in ('latest-upstream', 'latest-clang-upstream', 'latest-releases-upstream'):
         sys.argv[i] = str(find_latest_releases_sdk('upstream'))
       elif arg in ('tot', 'sdk-tot'):
-        report_upstream_by_default()
         sys.argv[i] = str(find_tot_sdk('upstream'))
       elif arg == 'tot-upstream':
         sys.argv[i] = str(find_tot_sdk('upstream'))
@@ -2904,7 +2891,6 @@ SDK, .e.g ./emsdk install latest-fastcomp.
         if release_hash:
           if backend is None:
             if version_key(arg) >= (1, 39, 0):
-              report_upstream_by_default()
               backend = 'upstream'
             else:
               backend = 'fastcomp'
