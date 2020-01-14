@@ -131,7 +131,7 @@ categories.
 To obtain and build latest upstream wasm SDK from source, run
 
 ```
-emsdk install sdk-master-incoming-64bit
+emsdk install sdk-upstream-master-64bit
 ```
 
 You can use this target for example to bootstrap developing patches to LLVM,
