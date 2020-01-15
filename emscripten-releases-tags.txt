@@ -1,6 +1,7 @@
 {
-  "latest": "1.39.5",
+  "latest": "1.39.6",
   "releases": {
+    "1.39.6":  "967836071d96d9b7894e492382f5fcb96423fc07",
     "1.39.5":  "b3ddcab6efd749d3ed937fb452ace4e39a825842",
     "1.39.4":  "8bb7b0bbbca74cc58741416cc955011f22ff5ccb",
     "1.39.3":  "b024b71038d1291ed7ec23ecd553bf2c0c8d6da6",
