@@ -1280,7 +1280,7 @@ def emscripten_npm_install(tool, directory):
   npm = os.path.join(node_path, 'npm' + ('.cmd' if WINDOWS else ''))
   env = os.environ.copy()
   env["PATH"] = node_path + os.pathsep + env["PATH"]
-  subprocess.check_call([npm, 'install', '--production'], cwd=directory, env=env)
+  subprocess.check_call([npm, 'install', '--production', '--no-audit'], cwd=directory, env=env)
   return True
 
 
