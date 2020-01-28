@@ -1258,12 +1258,8 @@ def is_optimizer_installed(tool):
   return os.path.exists(build_root)
 
 
-# Finds newest tool of given name that is active, or if none are active, finds the newest one that is installed.
-def find_latest_active_or_installed_tool(name):
-  for t in reversed(tools):
-    if t.id == name and t.is_active():
-      return t
-
+# Finds the newest installed version of a given tool
+def find_latest_installed_tool(name):
   for t in reversed(tools):
     if t.id == name and t.is_installed():
       return t
@@ -1271,16 +1267,16 @@ def find_latest_active_or_installed_tool(name):
 
 # npm install in Emscripten root directory
 def emscripten_npm_install(tool, directory):
-  node_tool = find_latest_active_or_installed_tool('node')
+  node_tool = find_latest_installed_tool('node')
   if not node_tool:
-    print('Failed to run "npm install" in installed Emscripten root directory ' + tool.installation_path() + '! Please install node.js first!')
+    print('Failed to run "npm ci" in installed Emscripten root directory ' + tool.installation_path() + '! Please install node.js first!')
     return False
 
   node_path = os.path.join(node_tool.installation_path(), 'bin')
   npm = os.path.join(node_path, 'npm' + ('.cmd' if WINDOWS else ''))
   env = os.environ.copy()
   env["PATH"] = node_path + os.pathsep + env["PATH"]
-  subprocess.check_call([npm, 'install', '--production', '--no-audit'], cwd=directory, env=env)
+  subprocess.check_call([npm, 'ci', '--production'], cwd=directory, env=env)
   return True
 
 
