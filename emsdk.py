@@ -1842,85 +1842,95 @@ class Tool(object):
       return False
 
     if self.id == 'sdk':
-      print("Installing SDK '" + str(self) + "'..")
-      for tool_name in self.uses:
-        tool = find_tool(tool_name)
-        if tool is None:
-          print("Manifest error: No tool by name '" + tool_name + "' found! This may indicate an internal SDK error!")
-        success = tool.install()
-        if not success:
-          return False
-      if getattr(self, 'custom_install_script', None) == 'emscripten_npm_install':
-        # upstream tools have hardcoded paths that are not stored in emsdk_manifest.json registry
-        install_path = 'upstream' if 'releases-upstream' in self.version else 'fastcomp'
-        success = emscripten_npm_install(self, os.path.join(emsdk_path(), install_path, 'emscripten'))
-        if not success:
-          return False
-      print("Done installing SDK '" + str(self) + "'.")
-      return True
+      return self.install_sdk()
     else:
-      # We should not force reinstallation of python if it already exists, since that very python
-      # may be interpreting the current emsdk.py script we are executing. On Windows this would
-      # lead to a failure to uncompress the python zip file as the python executable files are in use.
-      # TODO: Refactor codebase to avoid needing this kind of special case check by being more
-      # careful about reinstallation, see https://github.com/emscripten-core/emsdk/pull/394#issuecomment-559386468
-      # for a scheme that would work.
-      if self.id == 'python' and self.is_installed():
-        print("Skipped installing " + self.name + ", already installed.")
-        return True
-      print("Installing tool '" + str(self) + "'..")
-      url = self.download_url()
+      return self.install_tool()
 
-      if hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_fastcomp':
-        success = build_llvm_fastcomp(self)
-      elif hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_llvm_monorepo':
-        success = build_llvm_monorepo(self)
-      elif hasattr(self, 'git_branch'):
-        success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch)
-      elif url.endswith(ARCHIVE_SUFFIXES):
-        # TODO: explain the vs-tool special-casing
-        download_even_if_exists = (self.id == 'vs-tool')
-        # The 'releases' sdk is doesn't include a verion number in the directory
-        # name and instead only one version can be install at the time and each
-        # one will clobber the other.  This means we always need to extract this
-        # archive even when the target directory exists.
-        download_even_if_exists = (self.id == 'releases')
-        filename_prefix = getattr(self, 'zipfile_prefix', '')
-        success = download_and_unzip(url, self.installation_path(), download_even_if_exists=download_even_if_exists, filename_prefix=filename_prefix)
-      else:
-        dst_file = download_file(urljoin(emsdk_packages_url, self.download_url()), self.installation_path())
-        if dst_file:
-          success = True
-        else:
-          success = False
+  def install_sdk(self):
+    print("Installing SDK '" + str(self) + "'..")
 
-      if success:
-        if hasattr(self, 'custom_install_script'):
-          if self.custom_install_script == 'emscripten_post_install':
-            success = emscripten_post_install(self)
-          elif self.custom_install_script == 'emscripten_npm_install':
-            success = emscripten_npm_install(self, self.installation_path())
-          elif self.custom_install_script in ('build_fastcomp', 'build_llvm_monorepo'):
-            # 'build_fastcomp' is a special one that does the download on its
-            # own, others do the download manually.
-            pass
-          elif self.custom_install_script == 'build_binaryen':
-            success = build_binaryen_tool(self)
-          else:
-            raise Exception('Unknown custom_install_script command "' + self.custom_install_script + '"!')
-
-        # Install an emscripten-version.txt file if told to, and if there is one.
-        # (If this is not an actual release, but some other build, then we do not
-        # write anything.)
-        if hasattr(self, 'emscripten_releases_hash'):
-          emscripten_version_file_path = os.path.join(to_native_path(self.expand_vars(self.activated_path)), 'emscripten-version.txt')
-          version = get_emscripten_release_version(self.emscripten_releases_hash)
-          if version:
-            open(emscripten_version_file_path, 'w').write('"%s"' % version)
-
+    for tool_name in self.uses:
+      tool = find_tool(tool_name)
+      if tool is None:
+        print("Manifest error: No tool by name '" + tool_name + "' found! This may indicate an internal SDK error!")
+      success = tool.install()
       if not success:
-        print("Installation failed!")
         return False
+    if getattr(self, 'custom_install_script', None) == 'emscripten_npm_install':
+      # upstream tools have hardcoded paths that are not stored in emsdk_manifest.json registry
+      install_path = 'upstream' if 'releases-upstream' in self.version else 'fastcomp'
+      success = emscripten_npm_install(self, os.path.join(emsdk_path(), install_path, 'emscripten'))
+      if not success:
+        return False
+
+    print("Done installing SDK '" + str(self) + "'.")
+    return True
+
+  def install_tool(self):
+    # We should not force reinstallation of python if it already exists, since that very python
+    # may be interpreting the current emsdk.py script we are executing. On Windows this would
+    # lead to a failure to uncompress the python zip file as the python executable files are in use.
+    # TODO: Refactor codebase to avoid needing this kind of special case check by being more
+    # careful about reinstallation, see https://github.com/emscripten-core/emsdk/pull/394#issuecomment-559386468
+    # for a scheme that would work.
+    if self.id == 'python' and self.is_installed():
+      print("Skipped installing " + self.name + ", already installed.")
+      return True
+
+    print("Installing tool '" + str(self) + "'..")
+    url = self.download_url()
+
+    if hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_fastcomp':
+      success = build_llvm_fastcomp(self)
+    elif hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_llvm_monorepo':
+      success = build_llvm_monorepo(self)
+    elif hasattr(self, 'git_branch'):
+      success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch)
+    elif url.endswith(ARCHIVE_SUFFIXES):
+      # TODO: explain the vs-tool special-casing
+      download_even_if_exists = (self.id == 'vs-tool')
+      # The 'releases' sdk is doesn't include a verion number in the directory
+      # name and instead only one version can be install at the time and each
+      # one will clobber the other.  This means we always need to extract this
+      # archive even when the target directory exists.
+      download_even_if_exists = (self.id == 'releases')
+      filename_prefix = getattr(self, 'zipfile_prefix', '')
+      success = download_and_unzip(url, self.installation_path(), download_even_if_exists=download_even_if_exists, filename_prefix=filename_prefix)
+    else:
+      dst_file = download_file(urljoin(emsdk_packages_url, self.download_url()), self.installation_path())
+      if dst_file:
+        success = True
+      else:
+        success = False
+
+    if success:
+      if hasattr(self, 'custom_install_script'):
+        if self.custom_install_script == 'emscripten_post_install':
+          success = emscripten_post_install(self)
+        elif self.custom_install_script == 'emscripten_npm_install':
+          success = emscripten_npm_install(self, self.installation_path())
+        elif self.custom_install_script in ('build_fastcomp', 'build_llvm_monorepo'):
+          # 'build_fastcomp' is a special one that does the download on its
+          # own, others do the download manually.
+          pass
+        elif self.custom_install_script == 'build_binaryen':
+          success = build_binaryen_tool(self)
+        else:
+          raise Exception('Unknown custom_install_script command "' + self.custom_install_script + '"!')
+
+      # Install an emscripten-version.txt file if told to, and if there is one.
+      # (If this is not an actual release, but some other build, then we do not
+      # write anything.)
+      if hasattr(self, 'emscripten_releases_hash'):
+        emscripten_version_file_path = os.path.join(to_native_path(self.expand_vars(self.activated_path)), 'emscripten-version.txt')
+        version = get_emscripten_release_version(self.emscripten_releases_hash)
+        if version:
+          open(emscripten_version_file_path, 'w').write('"%s"' % version)
+
+    if not success:
+      print("Installation failed!")
+      return False
+
     print("Done installing tool '" + str(self) + "'.")
 
     # Sanity check that the installation succeeded, and if so, remove unneeded
