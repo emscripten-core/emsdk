@@ -1276,7 +1276,17 @@ def emscripten_npm_install(tool, directory):
   npm = os.path.join(node_path, 'npm' + ('.cmd' if WINDOWS else ''))
   env = os.environ.copy()
   env["PATH"] = node_path + os.pathsep + env["PATH"]
-  subprocess.check_call([npm, 'ci', '--production'], cwd=directory, env=env)
+  print('Running post-install step: npm ci ...')
+  try:
+    subprocess.check_output(
+        [npm, 'ci', '--production'],
+        cwd=directory, stderr=subprocess.STDOUT, env=env,
+        universal_newlines=True)
+  except subprocess.CalledProcessError as e:
+    print('Error running %s:\n%s' % (e.cmd, e.output))
+    return False
+
+  print('Done running: npm ci')
   return True
 
 

@@ -9,6 +9,7 @@ exclude =
   ./gnu
   ./upstream
   ./fastcomp
+  ./fastcomp-clang
   ./releases
   ./clang
   ./emscripten
