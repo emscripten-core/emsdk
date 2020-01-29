@@ -514,19 +514,19 @@
   {
     "version": "upstream-master",
     "bitness": 64,
-    "uses": ["llvm-git-master-64bit", "node-12.9.1-64bit", "python-2.7.13.1-64bit", "emscripten-master-64bit"],
+    "uses": ["llvm-git-master-64bit", "node-12.9.1-64bit", "python-2.7.13.1-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
     "os": "win"
   },
   {
     "version": "upstream-master",
     "bitness": 64,
-    "uses": ["llvm-git-master-64bit", "node-12.9.1-64bit", "emscripten-master-64bit"],
+    "uses": ["llvm-git-master-64bit", "node-12.9.1-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
     "os": "osx"
   },
   {
     "version": "upstream-master",
     "bitness": 64,
-    "uses": ["llvm-git-master-64bit", "node-12.9.1-64bit", "emscripten-master-64bit"],
+    "uses": ["llvm-git-master-64bit", "node-12.9.1-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
     "os": "linux"
   },
   {
