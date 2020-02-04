@@ -1433,8 +1433,7 @@ def get_required_path(active_tools):
   path_add = [to_native_path(emsdk_path())]
   for tool in active_tools:
     if hasattr(tool, 'activated_path'):
-      path = to_native_path(tool.expand_vars(tool.activated_path))
-      path_add.append(path)
+      path_add += [to_native_path(tool.expand_vars(tool.activated_path))]
   return path_add
 
 
@@ -1721,13 +1720,13 @@ class Tool(object):
     # clang-master-64bit, clang-master-32bit and clang-master-64bit each
     # share the same git repo), require that in addition to the installation
     # directory, each item in the activated PATH must exist.
-    if hasattr(self, 'activated_path'):
-      activated_path = self.expand_vars(self.activated_path).split(';')
-    else:
-      activated_path = [self.installation_path()]
+    activated_path = self.expand_vars(self.activated_path).split(';') if hasattr(self, 'activated_path') else [self.installation_path()]
 
     def each_path_exists(pathlist):
-      return all(os.path.exists(p) for p in pathlist)
+      for path in pathlist:
+        if not os.path.exists(path):
+          return False
+      return True
 
     content_exists = os.path.exists(self.installation_path()) and each_path_exists(activated_path) and (os.path.isfile(self.installation_path()) or num_files_in_directory(self.installation_path()) > 0)
 
@@ -1942,11 +1941,10 @@ class Tool(object):
 
     # Sanity check that the installation succeeded, and if so, remove unneeded
     # leftover installation files.
-    if not self.is_installed():
-      print("Installation of '" + str(self) + "' failed, but no error was detected. Either something went wrong with the installation, or this may indicate an internal emsdk error.")
-      return False
-
-    self.cleanup_temp_install_files()
+    if self.is_installed():
+      self.cleanup_temp_install_files()
+    else:
+      print("Warning: The installation of '" + str(self) + "' seems to have failed, but no error was detected. Either something went wrong with the installation, or this may indicate an internal emsdk error.")
     return True
 
   def cleanup_temp_install_files(self):
@@ -2591,24 +2589,22 @@ def adjusted_path(tools_to_activate, log_additions=False, system_path_only=False
     existing_path = os.environ['PATH'].split(ENVPATH_SEPARATOR)
   emsdk_root_path = to_unix_path(emsdk_path())
 
-  existing_emsdk_tools = [i for i in existing_path if to_unix_path(i).startswith(emsdk_root_path)]
-  new_emsdk_tools = [i for i in path_add if not normalized_contains(existing_emsdk_tools, i)]
+  existing_emsdk_tools = [item for item in existing_path if to_unix_path(item).startswith(emsdk_root_path)]
+  new_emsdk_tools = [item for item in path_add if not normalized_contains(existing_emsdk_tools, item)]
 
   # Existing non-emsdk tools
-  existing_path = [i for i in existing_path if not to_unix_path(i).startswith(emsdk_root_path)]
-
-  new_path = [i for i in path_add if not normalized_contains(existing_path, i)]
+  existing_path = [item for item in existing_path if not to_unix_path(item).startswith(emsdk_root_path)]
+  new_path = [item for item in path_add if not normalized_contains(existing_path, item)]
   whole_path = unique_items(new_path + existing_path)
   if MSYS:
     # XXX Hack: If running native Windows Python in MSYS prompt where PATH
     # entries look like "/c/Windows/System32", os.environ['PATH']
     # in Python will transform to show them as "C:\\Windows\\System32", so need
     # to reconvert path delimiter back to forward slashes.
-    whole_path = [to_msys_path(p) for p in whole_path]
-    new_emsdk_tools = [to_msys_path(p) for p in new_emsdk_tools]
+    whole_path = list(map(to_msys_path, whole_path))
+    new_emsdk_tools = list(map(to_msys_path, new_emsdk_tools))
 
-  separator = ':' if MSYS else ENVPATH_SEPARATOR
-  return (separator.join(whole_path), new_emsdk_tools)
+  return ((':' if MSYS else ENVPATH_SEPARATOR).join(whole_path), new_emsdk_tools)
 
 
 def construct_env(tools_to_activate, permanent):

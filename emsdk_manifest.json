@@ -309,7 +309,7 @@
     "version": "3.7.4",
     "bitness": 32,
     "arch": "x86",
-    "windows_url": "python-3.7.4-embed-win32.zip",
+    "windows_url": "python-3.7.4-embed-win32-patched.zip",
     "activated_path": "%installation_dir%",
     "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
@@ -319,7 +319,7 @@
     "version": "3.7.4",
     "bitness": 64,
     "arch": "x86_64",
-    "windows_url": "python-3.7.4-embed-amd64.zip",
+    "windows_url": "python-3.7.4-embed-amd64-patched.zip",
     "activated_path": "%installation_dir%",
     "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
