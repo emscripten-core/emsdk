@@ -49,7 +49,7 @@ jobs:
       - checkout
       - run:
           name: Install cmake
-          command: brew install cmake
+          command: brew install cmake python
       - run: ./test.sh
       - run: ./test.py
   test-windows:
