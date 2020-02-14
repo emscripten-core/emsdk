@@ -51,8 +51,8 @@ jobs:
           name: Install cmake
           command: brew install cmake
       - run:
-          name: Upgrade python
-          command: brew upgrade python
+          name: Install python 3
+          command: brew install python@3.8
       - run: ./test.sh
       - run: ./test.py
   test-windows:
