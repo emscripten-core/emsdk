@@ -3,7 +3,7 @@ Emscripten SDK
 
 [![CircleCI](https://circleci.com/gh/emscripten-core/emsdk/tree/master.svg?style=svg)](https://circleci.com/gh/emscripten-core/emsdk/tree/master)
 
-Emscripten toolchain is distributed as a standalone Emscripten SDK. The SDK
+The Emscripten toolchain is distributed as a standalone Emscripten SDK. The SDK
 provides all the required tools, such as Clang, Python and Node.js along with an
 update mechanism that enables migrating to newer Emscripten versions as they are
 released.
@@ -61,7 +61,7 @@ https://emscripten.org/docs/building_from_source/toolchain_what_is_needed.html.
 - `java`: For running closure compiler (optional)
 
 The emsdk pre-compiled binaries are built aginst Ubuntu/Xenial 16.04 LTS and
-therefore depend on system libraryes compatiable with versions of `glibc` and
+therefore depend on system libraries compatiable with versions of `glibc` and
 `libstdc++` present in that release.  If your linux distribution is very old
 you may not be able to use the pre-compiled binaries packages.
 
@@ -107,7 +107,7 @@ SDK from the local hard drive completely.
 
 ### How do I check for updates to the Emscripten SDK?
 
-The command `emsdk update` will fetch package information for all new tools and
+`emsdk update` will fetch package information for all the new tools and
 SDK versions. After that, run `emsdk install <tool/sdk name>` to install a new
 version. The command `emsdk update-tags` obtains a list of all new tagged
 releases from GitHub without updating Emscripten SDK itself.
@@ -236,7 +236,7 @@ node.js.
 ### My installation fails with "fatal error: ld terminated with signal 9 [Killed]"?
 
 This may happen if the system runs out of memory. If you are attempting to build
-one of the packages from source and are running in a virtual OS or have
+one of the packages from source and are running in a virtual OS or may have
 relatively little RAM and disk space available, then the build might fail. Try
 feeding your computer more memory. Another thing to try is to force emsdk
 install to build in a singlethreaded mode, which will require less RAM
