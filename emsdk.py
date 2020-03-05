@@ -268,6 +268,8 @@ def cmake_generator_prefix():
 # Removes a directory tree even if it was readonly, and doesn't throw exception on failure.
 def remove_tree(d):
   debug_print('remove_tree(' + str(d) + ')')
+  if not os.path.exists(d):
+    return
   try:
     def remove_readonly_and_try_again(func, path, exc_info):
       if not (os.stat(path).st_mode & stat.S_IWRITE):
@@ -2478,17 +2480,20 @@ def emscripten_cache_directory():
 def copy_pregenerated_cache(tools_to_activate):
   for tool in tools_to_activate:
     pregenerated_cache = getattr(tool, 'pregenerated_cache', None)
-    if pregenerated_cache:
+    if not pregenerated_cache:
+      continue
+    for cache_dir in pregenerated_cache:
       # Finish the install of an emscripten-releases build.
       install_path = to_native_path(sdk_path(tool.expand_vars(tool.install_path)))
-      in_cache = os.path.join(install_path, 'lib', pregenerated_cache)
-      if os.path.exists(in_cache):
-        out_cache = os.path.join(emscripten_cache_directory(), pregenerated_cache)
-        os.makedirs(out_cache)
-        for filename in os.listdir(in_cache):
-          debug_print('Copying ' + filename + ' to cache dir')
-          shutil.copy2(os.path.join(in_cache, filename),
-                       os.path.join(out_cache, filename))
+      in_cache = os.path.join(install_path, 'lib', cache_dir)
+      if not os.path.exists(in_cache):
+        continue
+      out_cache = os.path.join(emscripten_cache_directory(), cache_dir)
+      os.makedirs(out_cache)
+      for filename in os.listdir(in_cache):
+        debug_print('Copying %s to cache: %s' % (filename, out_cache))
+        shutil.copy2(os.path.join(in_cache, filename),
+                     os.path.join(out_cache, filename))
 
 
 # Reconfigure .emscripten to choose the currently activated toolset, set PATH

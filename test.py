@@ -56,7 +56,7 @@ open('hello_world.cpp', 'w').write('int main() {}')
 
 TAGS = json.loads(open('emscripten-releases-tags.txt').read())
 
-LIBC = os.path.expanduser('~/.emscripten_cache/wasm-obj/libc.a')
+LIBC = os.path.expanduser('~/.emscripten_cache/wasm/libc.a')
 
 # Tests
 
