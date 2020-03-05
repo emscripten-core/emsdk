@@ -557,7 +557,7 @@ def unzip(source_filename, dest_dir, unpack_even_if_exists=False):
 
       unzip_to_dir = dest_dir
       if common_subdir:
-        unzip_to_dir = os.path.join('/'.join(dest_dir.split('/')[:-1]), 'unzip_temp')
+        unzip_to_dir = os.path.join(os.path.dirname(dest_dir), 'unzip_temp')
 
       # Now do the actual decompress.
       for member in zf.infolist():
