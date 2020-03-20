@@ -52,7 +52,14 @@ def hack_emsdk(marker, replacement):
 
 # Set up
 
-open('hello_world.cpp', 'w').write('int main() {}')
+open('hello_world.c', 'w').write('''\
+#include <stdio.h>
+
+int main() {
+   printf("Hello, world!\\n");
+   return 0;
+}
+''')
 
 TAGS = json.loads(open('emscripten-releases-tags.txt').read())
 
@@ -69,7 +76,7 @@ print('building proper system libraries')
 
 def test_lib_building(emcc, use_asmjs_optimizer):
   def test_build(args, expected=None, unexpected=None):
-    checked_call_with_output(emcc + ' hello_world.cpp' + args,
+    checked_call_with_output(emcc + ' hello_world.c' + args,
                              expected=expected,
                              unexpected=unexpected,
                              stderr=subprocess.STDOUT)
@@ -149,12 +156,12 @@ run_emsdk('activate tot-upstream')
 assert old_config == open(os.path.expanduser('~/.emscripten.old')).read()
 # TODO; test on latest as well
 assert os.path.exists(LIBC), 'activation supplies prebuilt libc'
-check_call(upstream_emcc + ' hello_world.cpp')
+check_call(upstream_emcc + ' hello_world.c')
 
 print('test tot-fastcomp')
 run_emsdk('install tot-fastcomp')
 run_emsdk('activate tot-fastcomp')
-check_call(fastcomp_emcc + ' hello_world.cpp')
+check_call(fastcomp_emcc + ' hello_world.c')
 
 print('test specific release (old)')
 run_emsdk('install sdk-fastcomp-1.38.31-64bit')
