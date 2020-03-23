@@ -18,6 +18,7 @@ __pycache__
 /gnu
 /upstream
 /fastcomp
+/llvm
 /releases
 /clang
 /emscripten
