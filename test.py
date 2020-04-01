@@ -6,6 +6,19 @@ import subprocess
 import sys
 import tempfile
 
+WINDOWS = sys.platform.startswith('win')
+MACOS = sys.platform == 'darwin'
+
+upstream_emcc = os.path.join('upstream', 'emscripten', 'emcc')
+fastcomp_emcc = os.path.join('fastcomp', 'emscripten', 'emcc')
+emsdk = './emsdk'
+if WINDOWS:
+  upstream_emcc += '.bat'
+  fastcomp_emcc += '.bat'
+  emsdk = 'emsdk.bat'
+else:
+  emsdk = './emsdk'
+
 # Utilities
 
 
@@ -102,20 +115,6 @@ def run_emsdk(cmd):
   if type(cmd) != list:
     cmd = cmd.split()
   check_call([emsdk] + cmd)
-
-
-WINDOWS = sys.platform.startswith('win')
-MACOS = sys.platform == 'darwin'
-
-upstream_emcc = os.path.join('upstream', 'emscripten', 'emcc')
-fastcomp_emcc = os.path.join('fastcomp', 'emscripten', 'emcc')
-emsdk = './emsdk'
-if WINDOWS:
-  upstream_emcc += '.bat'
-  fastcomp_emcc += '.bat'
-  emsdk = 'emsdk.bat'
-else:
-  emsdk = './emsdk'
 
 test_lib_building(upstream_emcc, use_asmjs_optimizer=True)
 
