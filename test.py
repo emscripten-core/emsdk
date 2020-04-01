@@ -64,6 +64,9 @@ print('test .emscripten contents (latest was installed/activated in test.sh)')
 assert 'fastcomp' not in open(os.path.expanduser('~/.emscripten')).read()
 assert 'upstream' in open(os.path.expanduser('~/.emscripten')).read()
 
+# Test we don't re-download unnecessarily
+checked_call_with_output(emsdk + ' install latest', expected='already installed', unexpected='Downloading:')
+
 print('building proper system libraries')
 
 
