@@ -1886,13 +1886,12 @@ class Tool(object):
       return True
 
     version_hash = self.name
-    try:
-      with open(os.path.join(self.installation_path(), '.emsdk_version'), 'r') as version_file:
+    version_file_path = os.path.join(self.installation_path(), '.emsdk_version')
+    if os.path.isfile(version_file_path):
+      with open(version_file_path, 'r') as version_file:
         if version_hash == version_file.read():
           print("Skipped installing " + self.name + ", already installed.")
           return True
-    except FileNotFoundError:
-      pass
 
     print("Installing tool '" + str(self) + "'..")
     url = self.download_url()
@@ -1954,8 +1953,8 @@ class Tool(object):
     # leftover installation files.
     if self.is_installed():
       self.cleanup_temp_install_files()
-      with open(os.path.join(self.installation_path(), '.emsdk_version'), 'w') as version_file:
-        version_file.write(self.name)
+      with open(version_file_path, 'w') as version_file:
+        version_file.write(version_hash)
     else:
       print("Warning: The installation of '" + str(self) + "' seems to have failed, but no error was detected. Either something went wrong with the installation, or this may indicate an internal emsdk error.")
     return True
