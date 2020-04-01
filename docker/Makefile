@@ -11,11 +11,11 @@ ifndef version
 endif
 
 build: .TEST
-	docker build --build-arg=EMSCRIPTEN_VERSION=${version} --tag emscripten/emscripten:${version} .
+	docker build --build-arg=EMSCRIPTEN_VERSION=${version} --tag emscripten/emsdk:${version} .
 
 push: .TEST
-	docker push emscripten/emscripten:${version}
+	docker push emscripten/emsdk:${version}
 ifdef alias
-	docker tag emscripten/emscripten:${version} emscripten/emscripten:${alias}
-	docker push emscripten/emscripten:${alias}
+	docker tag emscripten/emsdk:${version} emscripten/emsdk:${alias}
+	docker push emscripten/emsdk:${alias}
 endif

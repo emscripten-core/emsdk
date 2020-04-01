@@ -3,7 +3,7 @@
 This Dockerfile builds a self-contained version of emsdk that enables emscripten to be used without any
 other installation on the host system.
 
-It is published at https://hub.docker.com/u/emscripten/emscripten
+It is published at https://hub.docker.com/u/emscripten/emsdk
 
 ### Usage
 
@@ -25,7 +25,7 @@ docker run \
   --rm \
   -v $(pwd):$(pwd) \
   -u $(id -u):$(id -g) \
-  emscripten/emscripten \
+  emscripten/emsdk \
   emcc helloworld.cpp -o helloworld.js
 
 # execute on host machine
@@ -40,7 +40,7 @@ Teardown of compilation command:
 |`--rm`|remove a container after execution (optimization)|
 |`-v $(pwd):$(pwd)`|Mounting current folder from the host system into mirrored path on the container<br>TIP: This helps to investigate possible problem as we preserve exactly the same paths like in host. In such case modern editors (like Sublime, Atom, VS Code) let us to CTRL+Click on a problematic file |
 |`-u $(id -u):$(id -g)`| Run the container as a non-root user with the same UID and GID as local user. Hence all files produced by this are accessible to non-root users|
-|`emscripten/emscripten`|Get the latest tag of this container|
+|`emscripten/emsdk`|Get the latest tag of this container|
 |`emcc helloworld.cpp -o helloworld.js`|Execute `emcc` command with following arguments inside container, effectively compile our source code|
 
 
@@ -60,7 +60,7 @@ This step will build Dockerfile as given tag on local machine
 # using docker
 docker build \
     --build-arg=EMSCRIPTEN_VERSION=1.38.43-upstream \
-    --tag emscripten/emscripten:1.38.43-upstream \
+    --tag emscripten/emsdk:1.38.43-upstream \
     .
 ```
 ```bash
@@ -78,7 +78,7 @@ This step will take local image and push to default docker registry. You need to
 
 ```bash
 # using docker
-docker push emscripten/emscripten:1.38.43-upstream
+docker push emscripten/emsdk:1.38.43-upstream
 ```
 ```bash
 # using predefined make target
@@ -90,12 +90,12 @@ In case of pushing the most recent version, this version should be also tagged a
 # using docker cli
 
 # in case of fastcomp variant (default backend)
-docker tag emscripten/emscripten:1.38.43 emscripten/emscripten:latest
-docker push emscripten/emscripten:latest
+docker tag emscripten/emsdk:1.38.43 emscripten/emsdk:latest
+docker push emscripten/emsdk:latest
 
 # in case of upstream variant
-docker tag emscripten/emscripten:1.38.43-upstream emscripten/emscripten:latest-upstream
-docker push emscripten/emscripten:latest-upstream
+docker tag emscripten/emsdk:1.38.43-upstream emscripten/emsdk:latest-upstream
+docker push emscripten/emsdk:latest-upstream
 
 ```
 
@@ -116,7 +116,7 @@ If your project uses packages that this image doesn't provide you might want to:
 1. create own Dockerfile that holds:
     ```dockerfile
     # Point at any base image that you find suitable to extend.
-    FROM emscripten/emscripten:1.38.25
+    FROM emscripten/emsdk:1.38.25
 
     # Install required tools that are useful for your project i.e. ninja-build
     RUN apt update && apt install -y ninja-build
