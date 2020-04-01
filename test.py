@@ -116,6 +116,7 @@ def run_emsdk(cmd):
     cmd = cmd.split()
   check_call([emsdk] + cmd)
 
+
 test_lib_building(upstream_emcc, use_asmjs_optimizer=True)
 
 print('update')
