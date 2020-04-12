@@ -231,12 +231,10 @@ if WINDOWS:
     vs2015_exists = 'VS140COMNTOOLS' in os.environ or 'VSSDK140Install' in os.environ or os.path.isdir(os.path.join(program_files, 'Microsoft Visual Studio 14.0'))
     vs2013_exists = 'VS120COMNTOOLS' in os.environ or os.path.isdir(os.path.join(program_files, 'Microsoft Visual Studio 12.0'))
     mingw_exists = which('mingw32-make') is not None and which('g++') is not None
-    if vs2015_exists:
-      CMAKE_GENERATOR = 'Visual Studio 14'
-    elif vs2017_exists:
-      # VS2017 has an LLVM build issue, see
-      # https://github.com/kripken/emscripten-fastcomp/issues/185
+    if vs2017_exists:
       CMAKE_GENERATOR = 'Visual Studio 15'
+    elif vs2015_exists:
+      CMAKE_GENERATOR = 'Visual Studio 14'
     elif mingw_exists:
       CMAKE_GENERATOR = 'MinGW Makefiles'
     elif vs2013_exists:
