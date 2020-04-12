@@ -2480,7 +2480,7 @@ def to_msys_path(p):
 
 # Looks at the current PATH and adds and removes entries so that the PATH reflects
 # the set of given active tools.
-def adjusted_path(tools_to_activate, log_additions=False, system=False):
+def adjusted_path(tools_to_activate, system=False):
   # These directories should be added to PATH
   path_add = get_required_path(tools_to_activate)
   # These already exist.
