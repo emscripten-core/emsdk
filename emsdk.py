@@ -1800,18 +1800,13 @@ class Tool(object):
           return False
     return True
 
-  def win_activate_env_vars(self, permanently_activate):
+  def win_activate_env_vars(self, system):
     if WINDOWS:
       envs = self.activated_environment()
       for env in envs:
         key, value = parse_key_value(env)
 
-        if permanently_activate:
-          # If there is an env var for the LOCAL USER with same name, it will
-          # hide the system var, so must remove that first.
-          win_delete_environment_variable(key, False)
-
-        win_set_environment_variable(key, value, permanently_activate)
+        win_set_environment_variable(key, value, system)
 
   # If this tool can be installed on this system, this function returns True.
   # Otherwise, this function returns a string that describes the reason why this
@@ -2509,7 +2504,7 @@ def copy_pregenerated_cache(tools_to_activate):
 # Reconfigure .emscripten to choose the currently activated toolset, set PATH
 # and other environment variables.
 # Returns the full list of deduced tools that are now active.
-def set_active_tools(tools_to_activate, permanently_activate):
+def set_active_tools(tools_to_activate, permanently_activate, system):
   tools_to_activate = process_tool_list(tools_to_activate, log_errors=True)
 
   generate_dot_emscripten(tools_to_activate)
@@ -2533,13 +2528,13 @@ def set_active_tools(tools_to_activate, permanently_activate):
   if WINDOWS and permanently_activate:
     # Individual env. vars
     for tool in tools_to_activate:
-      tool.win_activate_env_vars(permanently_activate=True)
+      tool.win_activate_env_vars(system=system)
 
     # PATH variable
-    newpath, added_items = adjusted_path(tools_to_activate, system_path_only=True)
+    newpath, added_items = adjusted_path(tools_to_activate, system=system)
     # Are there any actual changes?
     if newpath != os.environ['PATH']:
-      win_set_environment_variable('PATH', newpath, system=True)
+      win_set_environment_variable('PATH', newpath, system=system)
 
   if len(tools_to_activate) > 0:
     tools = [x for x in tools_to_activate if not x.is_sdk]
@@ -2589,17 +2584,12 @@ def to_msys_path(p):
 
 # Looks at the current PATH and adds and removes entries so that the PATH reflects
 # the set of given active tools.
-def adjusted_path(tools_to_activate, log_additions=False, system_path_only=False):
+def adjusted_path(tools_to_activate, log_additions=False, system=False):
   # These directories should be added to PATH
   path_add = get_required_path(tools_to_activate)
   # These already exist.
   if WINDOWS and not MSYS:
-    existing_path = win_get_environment_variable('PATH', system=True)
-    if not system_path_only:
-      current_user_path = win_get_environment_variable('PATH', system=False)
-      if current_user_path:
-        existing_path += ENVPATH_SEPARATOR + current_user_path
-    existing_path = existing_path.split(ENVPATH_SEPARATOR)
+    existing_path = win_get_environment_variable('PATH', system=system).split(ENVPATH_SEPARATOR)
   else:
     existing_path = os.environ['PATH'].split(ENVPATH_SEPARATOR)
   emsdk_root_path = to_unix_path(emsdk_path())
@@ -2842,6 +2832,7 @@ def main():
   arg_old = extract_bool_arg('--old')
   arg_uses = extract_bool_arg('--uses')
   arg_global = extract_bool_arg('--global')
+  arg_system = extract_bool_arg('--system')
   arg_embedded = extract_bool_arg('--embedded')
   arg_notty = extract_bool_arg('--notty')
   if arg_notty:
@@ -3092,7 +3083,7 @@ def main():
     if len(tools_to_activate) == 0:
       print('No tools/SDKs specified to activate! Usage:\n   emsdk activate tool/sdk1 [tool/sdk2] [...]')
       return 1
-    tools_to_activate = set_active_tools(tools_to_activate, permanently_activate=arg_global)
+    tools_to_activate = set_active_tools(tools_to_activate, permanently_activate=arg_global, system=arg_system)
     if len(tools_to_activate) == 0:
       print('No tools/SDKs found to activate! Usage:\n   emsdk activate tool/sdk1 [tool/sdk2] [...]')
       return 1
