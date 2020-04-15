@@ -2760,15 +2760,15 @@ def main():
 
     if WINDOWS:
       print('''
-   emsdk activate [--global] [--embedded] [--build=type] [--vs2017/--vs2019] <tool/sdk>
+   emsdk activate [--global] [--[no-]embedded] [--build=type] [--vs2017/--vs2019] <tool/sdk>
 
                                 - Activates the given tool or SDK in the
                                   environment of the current shell. If the
                                   --global option is passed, the registration
                                   is done globally to all users in the system
-                                  environment. If the --embedded option is
-                                  passed, all Emcripten configuration files as
-                                  well as the temp, cache and ports directories
+                                  environment. In embedded mode (the default)
+                                  all Emcripten configuration files as well as
+                                  the temp, cache and ports directories
                                   are located inside the Emscripten SDK
                                   directory rather than the user home
                                   directory. If a custom compiler version was
@@ -2779,11 +2779,11 @@ def main():
    emcmdprompt.bat              - Spawns a new command prompt window with the
                                   Emscripten environment active.''')
     else:
-      print('''   emsdk activate [--embedded] [--build=type] <tool/sdk>
+      print('''   emsdk activate [--[no-]embedded] [--build=type] <tool/sdk>
 
                                 - Activates the given tool or SDK in the
-                                  environment of the current shell. If the
-                                  --embedded option is passed, all Emcripten
+                                  environment of the current shell. In
+                                  embedded mode (the default), all Emcripten
                                   configuration files as well as the temp, cache
                                   and ports directories are located inside the
                                   Emscripten SDK directory rather than the user
@@ -2810,6 +2810,7 @@ def main():
   arg_uses = extract_bool_arg('--uses')
   arg_global = extract_bool_arg('--global')
   arg_embedded = extract_bool_arg('--embedded')
+  arg_embedded = not extract_bool_arg('--no-embedded')
   arg_notty = extract_bool_arg('--notty')
   if arg_notty:
     TTY_OUTPUT = False
