@@ -686,12 +686,6 @@
     "os": "unix"
   },
   {
-    "version": "1.37.1",
-    "bitness": 64,
-    "uses": ["clang-e1.37.1-64bit", "node-4.1.1-64bit", "python-2.7.13.1-64bit", "emscripten-1.37.1"],
-    "os": "win"
-  },
-  {
     "version": "releases-upstream-%releases-tag%",
     "bitness": 64,
     "uses": ["node-12.9.1-64bit", "releases-upstream-%releases-tag%-64bit"],
