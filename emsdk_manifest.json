@@ -530,6 +530,12 @@
     "os": "linux"
   },
   {
+    "version": "upstream-master",
+    "bitness": 32,
+    "uses": ["llvm-git-master-32bit", "emscripten-master-32bit", "binaryen-master-32bit"],
+    "os": "linux"
+  },
+  {
     "version": "fastcomp-master",
     "bitness": 32,
     "uses": ["fastcomp-clang-master-32bit", "node-12.9.1-32bit", "python-3.7.4-32bit", "java-8.152-32bit", "emscripten-master-32bit", "binaryen-master-32bit"],
