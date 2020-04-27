@@ -888,9 +888,9 @@ def build_env(generator):
 
 def get_generator_for_sln_file(sln_file):
   contents = open(sln_file, 'r').read()
-  if '# Visual Studio 16' in contents: # VS2019
+  if '# Visual Studio 16' in contents:  # VS2019
     return 'Visual Studio 16'
-  if '# Visual Studio 15' in contents: # VS2017
+  if '# Visual Studio 15' in contents:  # VS2017
     return 'Visual Studio 15'
   raise Exception('Unknown generator used to build solution file ' + sln_file)
 
@@ -900,12 +900,12 @@ def find_msbuild(sln_file):
   # MSBuild.exe from a list of known locations.
   generator = get_generator_for_sln_file(sln_file)
   debug_print('find_msbuild looking for generator ' + str(generator))
-  if generator == 'Visual Studio 16': # VS2019
+  if generator == 'Visual Studio 16':  # VS2019
     path = vswhere(16)
     search_paths = [os.path.join(path, 'MSBuild/Current/Bin'),
                     os.path.join(path, 'MSBuild/15.0/Bin/amd64'),
                     os.path.join(path, 'MSBuild/15.0/Bin')]
-  elif generator == 'Visual Studio 15': # VS2017
+  elif generator == 'Visual Studio 15':  # VS2017
     path = vswhere(15)
     search_paths = [os.path.join(path, 'MSBuild/15.0/Bin/amd64'),
                     os.path.join(path, 'MSBuild/15.0/Bin')]
@@ -1057,7 +1057,7 @@ def build_llvm_fastcomp(tool):
   args = []
 
   cmake_generator = CMAKE_GENERATOR
-  if 'Visual Studio 16' in CMAKE_GENERATOR: # VS2019
+  if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
     # With Visual Studio 16 2019, CMake changed the way they specify target arch.
     # Instead of appending it into the CMake generator line, it is specified
     # with a -A arch parameter.
@@ -1155,7 +1155,7 @@ def build_llvm_monorepo(tool):
   # It looks like compiler-rt is not compatible to build on Windows?
   args += ['-DLLVM_ENABLE_PROJECTS="clang;clang;lld;lld"']
   cmake_generator = CMAKE_GENERATOR
-  if 'Visual Studio 16' in CMAKE_GENERATOR: # VS2019
+  if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
     # With Visual Studio 16 2019, CMake changed the way they specify target arch.
     # Instead of appending it into the CMake generator line, it is specified
     # with a -A arch parameter.
@@ -1248,7 +1248,7 @@ def emscripten_post_install(tool):
 
   # Configure
   cmake_generator = CMAKE_GENERATOR
-  if 'Visual Studio 16' in CMAKE_GENERATOR: # VS2019
+  if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
     # With Visual Studio 16 2019, CMake changed the way they specify target arch.
     # Instead of appending it into the CMake generator line, it is specified
     # with a -A arch parameter.
@@ -1306,7 +1306,7 @@ def build_binaryen_tool(tool):
   args = []
 
   cmake_generator = CMAKE_GENERATOR
-  if 'Visual Studio 16' in CMAKE_GENERATOR: # VS2019
+  if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
     # With Visual Studio 16 2019, CMake changed the way they specify target arch.
     # Instead of appending it into the CMake generator line, it is specified
     # with a -A arch parameter.
