@@ -217,38 +217,29 @@ if WINDOWS:
   # Detect which CMake generator to use when building on Windows
   if '--mingw' in sys.argv:
     CMAKE_GENERATOR = 'MinGW Makefiles'
-  elif '--vs2013' in sys.argv:
-    CMAKE_GENERATOR = 'Visual Studio 12'
-  elif '--vs2015' in sys.argv:
-    CMAKE_GENERATOR = 'Visual Studio 14'
   elif '--vs2017' in sys.argv:
     CMAKE_GENERATOR = 'Visual Studio 15'
   elif '--vs2019' in sys.argv:
     CMAKE_GENERATOR = 'Visual Studio 16'
   else:
     program_files = os.environ['ProgramFiles(x86)'] if 'ProgramFiles(x86)' in os.environ else os.environ['ProgramFiles']
+    vs2019_exists = len(vswhere(16)) > 0
     vs2017_exists = len(vswhere(15)) > 0
-    vs2015_exists = 'VS140COMNTOOLS' in os.environ or 'VSSDK140Install' in os.environ or os.path.isdir(os.path.join(program_files, 'Microsoft Visual Studio 14.0'))
-    vs2013_exists = 'VS120COMNTOOLS' in os.environ or os.path.isdir(os.path.join(program_files, 'Microsoft Visual Studio 12.0'))
     mingw_exists = which('mingw32-make') is not None and which('g++') is not None
-    if vs2015_exists:
-      CMAKE_GENERATOR = 'Visual Studio 14'
+    if vs2019_exists:
+      CMAKE_GENERATOR = 'Visual Studio 16'
     elif vs2017_exists:
       # VS2017 has an LLVM build issue, see
       # https://github.com/kripken/emscripten-fastcomp/issues/185
       CMAKE_GENERATOR = 'Visual Studio 15'
     elif mingw_exists:
       CMAKE_GENERATOR = 'MinGW Makefiles'
-    elif vs2013_exists:
-      # VS2013 is no longer supported, so attempt it as a last resort if someone
-      # might want to insist using it.
-      CMAKE_GENERATOR = 'Visual Studio 12'
     else:
       # No detected generator
       CMAKE_GENERATOR = ''
 
 
-sys.argv = [a for a in sys.argv if a not in ('--mingw', '--vs2013', '--vs2015', '--vs2017', '--vs2019')]
+sys.argv = [a for a in sys.argv if a not in ('--mingw', '--vs2017', '--vs2019')]
 
 
 # Computes a suitable path prefix to use when building with a given generator.
@@ -257,11 +248,9 @@ def cmake_generator_prefix():
     return '_vs2019'
   if CMAKE_GENERATOR == 'Visual Studio 15':
     return '_vs2017'
-  elif CMAKE_GENERATOR == 'Visual Studio 14':
-    return '_vs2015'
   elif CMAKE_GENERATOR == 'MinGW Makefiles':
     return '_mingw'
-  # Unix Makefiles and Visual Studio 2013 do not specify a path prefix for backwards path compatibility
+  # Unix Makefiles do not specify a path prefix for backwards path compatibility
   return ''
 
 
@@ -826,15 +815,7 @@ def decide_cmake_build_type(tool):
 # The root directory of the build.
 def llvm_build_dir(tool):
   generator_suffix = ''
-  if CMAKE_GENERATOR == 'Visual Studio 10':
-    generator_suffix = '_vs2010'
-  elif CMAKE_GENERATOR == 'Visual Studio 11':
-    generator_suffix = '_vs2012'
-  elif CMAKE_GENERATOR == 'Visual Studio 12':
-    generator_suffix = '_vs2013'
-  elif CMAKE_GENERATOR == 'Visual Studio 14':
-    generator_suffix = '_vs2015'
-  elif CMAKE_GENERATOR == 'Visual Studio 15':
+  if CMAKE_GENERATOR == 'Visual Studio 15':
     generator_suffix = '_vs2017'
   elif CMAKE_GENERATOR == 'Visual Studio 16':
     generator_suffix = '_vs2019'
@@ -888,8 +869,11 @@ def build_env(generator):
   # See https://groups.google.com/forum/#!topic/emscripten-discuss/5Or6QIzkqf0
   if OSX:
     build_env['CXXFLAGS'] = ((build_env['CXXFLAGS'] + ' ') if hasattr(build_env, 'CXXFLAGS') else '') + '-stdlib=libc++'
-  elif 'Visual Studio 15' in generator:
-    path = vswhere(15)
+  elif 'Visual Studio 15' in generator or 'Visual Studio 16' in generator:
+    if 'Visual Studio 16' in generator:
+      path = vswhere(16)
+    else:
+      path = vswhere(15)
     build_env['VCTargetsPath'] = os.path.join(path, 'Common7\\IDE\\VC\\VCTargets')
 
     # CMake and VS2017 cl.exe needs to have mspdb140.dll et al. in its PATH.
@@ -899,70 +883,32 @@ def build_env(generator):
       if os.path.isdir(path):
           build_env['PATH'] = build_env['PATH'] + ';' + path
 
-  elif 'Visual Studio 14' in generator or 'Visual Studio 2015' in generator:
-    build_env['VCTargetsPath'] = os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/Microsoft.Cpp/v4.0/V140')
-
-    # CMake and VS2015 cl.exe needs to have mspdb140.dll et al. in its PATH.
-    vc_bin_paths = [os.path.join(os.environ['ProgramFiles'], 'Microsoft Visual Studio 14.0\\VC\\bin'),
-                    os.path.join(os.environ['ProgramFiles(x86)'], 'Microsoft Visual Studio 14.0\\VC\\bin')]
-    for path in vc_bin_paths:
-      if os.path.isdir(path):
-        build_env['PATH'] = build_env['PATH'] + ';' + path
-
-  elif 'Visual Studio 12' in generator or 'Visual Studio 2013' in generator:
-    build_env['VCTargetsPath'] = os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/Microsoft.Cpp/v4.0/V120')
-
   return build_env
 
 
 def get_generator_for_sln_file(sln_file):
   contents = open(sln_file, 'r').read()
-  if '# Visual Studio 16' in contents:
+  if '# Visual Studio 16' in contents:  # VS2019
     return 'Visual Studio 16'
-  if '# Visual Studio 15' in contents:
+  if '# Visual Studio 15' in contents:  # VS2017
     return 'Visual Studio 15'
-  if '# Visual Studio Express 2015' in contents or '# Visual Studio 2015' in contents or '# Visual Studio 14' in contents:
-    return 'Visual Studio 14'
-  if '# Visual Studio Express 2013' in contents or '# Visual Studio 2013' in contents or '# Visual Studio 12' in contents:
-    return 'Visual Studio 12'
   raise Exception('Unknown generator used to build solution file ' + sln_file)
 
 
 def find_msbuild(sln_file):
   # The following logic attempts to find a Visual Studio version specific
-  # MSBuild.exe from a list of known locations. This logic exists because it was
-  # detected that when multiple Visual Studio versions exist (VS2013 & VS2015),
-  # their MSBuild.exes might not be able to drive a build proper. This search is
-  # messy, and perhaps in VS >= 2017 or similar none of this logic would be
-  # needed.  Ideally would be able to do "cmake --build
-  # path/to/cmake/build/directory --config
-  # Debug|RelWithDebInfo|MinSizeRel|Release" across all platforms, but around
-  # VS2013 era this did not work. This could be reattempted when support for VS
-  # 2015 is dropped.
-  search_paths_vs2015 = [os.path.join(os.environ['ProgramFiles'], 'MSBuild/14.0/Bin/amd64'),
-                         os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/14.0/Bin/amd64'),
-                         os.path.join(os.environ['ProgramFiles'], 'MSBuild/14.0/Bin'),
-                         os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/14.0/Bin')]
-  search_paths_vs2013 = [os.path.join(os.environ['ProgramFiles'], 'MSBuild/12.0/Bin/amd64'),
-                         os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/12.0/Bin/amd64'),
-                         os.path.join(os.environ['ProgramFiles'], 'MSBuild/12.0/Bin'),
-                         os.path.join(os.environ['ProgramFiles(x86)'], 'MSBuild/12.0/Bin')]
-  search_paths_old = [os.path.join(os.environ["WINDIR"], 'Microsoft.NET/Framework/v4.0.30319')]
+  # MSBuild.exe from a list of known locations.
   generator = get_generator_for_sln_file(sln_file)
   debug_print('find_msbuild looking for generator ' + str(generator))
-  if generator == 'Visual Studio 16':
+  if generator == 'Visual Studio 16':  # VS2019
     path = vswhere(16)
     search_paths = [os.path.join(path, 'MSBuild/Current/Bin'),
                     os.path.join(path, 'MSBuild/15.0/Bin/amd64'),
                     os.path.join(path, 'MSBuild/15.0/Bin')]
-  elif generator == 'Visual Studio 15':
+  elif generator == 'Visual Studio 15':  # VS2017
     path = vswhere(15)
     search_paths = [os.path.join(path, 'MSBuild/15.0/Bin/amd64'),
                     os.path.join(path, 'MSBuild/15.0/Bin')]
-  elif generator == 'Visual Studio 14':
-    search_paths = search_paths_vs2015
-  elif generator == 'Visual Studio 12':
-    search_paths = search_paths_vs2013 + search_paths_old
   else:
     raise Exception('Unknown generator!')
 
@@ -1111,7 +1057,7 @@ def build_llvm_fastcomp(tool):
   args = []
 
   cmake_generator = CMAKE_GENERATOR
-  if 'Visual Studio 16' in CMAKE_GENERATOR:
+  if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
     # With Visual Studio 16 2019, CMake changed the way they specify target arch.
     # Instead of appending it into the CMake generator line, it is specified
     # with a -A arch parameter.
@@ -1209,7 +1155,7 @@ def build_llvm_monorepo(tool):
   # It looks like compiler-rt is not compatible to build on Windows?
   args += ['-DLLVM_ENABLE_PROJECTS="clang;clang;lld;lld"']
   cmake_generator = CMAKE_GENERATOR
-  if 'Visual Studio 16' in CMAKE_GENERATOR:
+  if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
     # With Visual Studio 16 2019, CMake changed the way they specify target arch.
     # Instead of appending it into the CMake generator line, it is specified
     # with a -A arch parameter.
@@ -1302,7 +1248,7 @@ def emscripten_post_install(tool):
 
   # Configure
   cmake_generator = CMAKE_GENERATOR
-  if 'Visual Studio 16' in CMAKE_GENERATOR:
+  if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
     # With Visual Studio 16 2019, CMake changed the way they specify target arch.
     # Instead of appending it into the CMake generator line, it is specified
     # with a -A arch parameter.
@@ -1360,7 +1306,7 @@ def build_binaryen_tool(tool):
   args = []
 
   cmake_generator = CMAKE_GENERATOR
-  if 'Visual Studio 16' in CMAKE_GENERATOR:
+  if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
     # With Visual Studio 16 2019, CMake changed the way they specify target arch.
     # Instead of appending it into the CMake generator line, it is specified
     # with a -A arch parameter.
@@ -1826,7 +1772,7 @@ class Tool(object):
       if len(msbuild_dir) > 0:
         return True
       else:
-        return "Visual Studio 2010 was not found"
+        return "Visual Studio was not found!"
     else:
       return True
 
@@ -2774,7 +2720,7 @@ def main():
                                   purposes. Default: Enabled
             --disable-assertions: Forces assertions off during the build.
 
-      --vs2013/--vs2015/--vs2017: If building from source, overrides to build
+               --vs2017/--vs2019: If building from source, overrides to build
                                   using the specified compiler. When installing
                                   precompiled packages, this has no effect.
                                   Note: The same compiler specifier must be
@@ -2793,7 +2739,7 @@ def main():
 
     if WINDOWS:
       print('''
-   emsdk activate [--global] [--embedded] [--build=type] [--vs2013/--vs2015/--vs2017] <tool/sdk>
+   emsdk activate [--global] [--embedded] [--build=type] [--vs2017/--vs2019] <tool/sdk>
 
                                 - Activates the given tool or SDK in the
                                   environment of the current shell. If the
@@ -2806,7 +2752,7 @@ def main():
                                   directory rather than the user home
                                   directory. If a custom compiler version was
                                   used to override the compiler to use, pass
-                                  the same --vs2013/--vs2015/--vs2017 parameter
+                                  the same --vs2017/--vs2019 parameter
                                   here to choose which version to activate.
 
    emcmdprompt.bat              - Spawns a new command prompt window with the
