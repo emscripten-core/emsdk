@@ -182,6 +182,32 @@ if POWERSHELL:
 else:
   EMSDK_SET_ENV = os.path.join(emsdk_path(), 'emsdk_set_env.bat')
 
+
+# Parses https://github.com/emscripten-core/emscripten/tree/d6aced8 to a pair (https://github.com/emscripten-core/emscripten, d6aced8)
+def parse_github_url_and_refspec(url):
+  if not url:
+    return ('', '')
+
+  if url.endswith(('/tree/', '/tree', '/commit/', '/commit')):
+    raise Exception('Malformed git URL and refspec ' + url + '!')
+
+  if '/tree/' in url:
+    if url.endswith('/'):
+      raise Exception('Malformed git URL and refspec ' + url + '!')
+    return url.split('/tree/')
+  elif '/commit/' in url:
+    if url.endswith('/'):
+      raise Exception('Malformed git URL and refspec ' + url + '!')
+    return url.split('/commit/')
+  else:
+    return (url, 'main')  # Assume the default branch is main in the absence of a refspec
+
+
+emscripten_config_directory = os.path.expanduser("~/")
+# If .emscripten exists, we are configuring as embedded inside the emsdk directory.
+if os.path.exists(os.path.join(emsdk_path(), '.emscripten')):
+  emscripten_config_directory = emsdk_path()
+
 ARCHIVE_SUFFIXES = ('zip', '.tar', '.gz', '.xz', '.tbz2', '.bz2')
 
 
@@ -498,11 +524,11 @@ def num_files_in_directory(path):
   return len([name for name in os.listdir(path) if os.path.exists(os.path.join(path, name))])
 
 
-def run(cmd, cwd=None):
+def run(cmd, cwd=None, quiet=False):
   debug_print('run(cmd=' + str(cmd) + ', cwd=' + str(cwd) + ')')
   process = subprocess.Popen(cmd, cwd=cwd, env=os.environ.copy())
   process.communicate()
-  if process.returncode != 0:
+  if process.returncode != 0 and not quiet:
     errlog(str(cmd) + ' failed with error code ' + str(process.returncode) + '!')
   return process.returncode
 
@@ -792,33 +818,37 @@ def git_clone(url, dstpath):
   git_clone_args = []
   if GIT_CLONE_SHALLOW:
     git_clone_args += ['--depth', '1']
+  print('Cloning from ' + url + '...')
   return run([GIT(), 'clone'] + git_clone_args + [url, dstpath]) == 0
 
 
-def git_checkout_and_pull(repo_path, branch):
-  debug_print('git_checkout_and_pull(repo_path=' + repo_path + ', branch=' + branch + ')')
+def git_checkout_and_pull(repo_path, branch_or_tag):
+  debug_print('git_checkout_and_pull(repo_path=' + repo_path + ', branch/tag=' + branch_or_tag + ')')
   ret = run([GIT(), 'fetch', '--quiet', 'origin'], repo_path)
   if ret != 0:
     return False
   try:
-    print("Fetching latest changes to the branch '" + branch + "' for '" + repo_path + "'...")
+    print("Fetching latest changes to the branch/tag '" + branch_or_tag + "' for '" + repo_path + "'...")
     ret = run([GIT(), 'fetch', '--quiet', 'origin'], repo_path)
     if ret != 0:
       return False
-    #  run([GIT, 'checkout', '-b', branch, '--track', 'origin/'+branch], repo_path)
     # this line assumes that the user has not gone and manually messed with the
     # repo and added new remotes to ambiguate the checkout.
-    ret = run([GIT(), 'checkout', '--quiet', branch], repo_path)
+    ret = run([GIT(), 'checkout', '--quiet', branch_or_tag], repo_path)
     if ret != 0:
       return False
-    # this line assumes that the user has not gone and made local changes to the repo
-    ret = run([GIT(), 'merge', '--ff-only', 'origin/' + branch], repo_path)
+    # Test if branch_or_tag is a branch, or if it is a tag that needs to be updated
+    target_is_tag = run([GIT(), 'symbolic-ref', '-q', 'HEAD'], repo_path, quiet=True)
+    if not target_is_tag:
+      # update branch to latest (not needed for tags)
+      # this line assumes that the user has not gone and made local changes to the repo
+      ret = run([GIT(), 'merge', '--ff-only', 'origin/' + branch_or_tag], repo_path)
     if ret != 0:
       return False
   except:
     errlog('git operation failed!')
     return False
-  print("Successfully updated and checked out branch '" + branch + "' on repository '" + repo_path + "'")
+  print("Successfully updated and checked out branch/tag '" + branch_or_tag + "' on repository '" + repo_path + "'")
   print("Current repository version: " + git_repo_version(repo_path))
   return True
 
@@ -1684,7 +1714,9 @@ class Tool(object):
       setattr(self, key, value)
 
     # Cache the name ID of this Tool (these are read very often)
-    self.name = self.id + '-' + self.version
+    self.name = self.id
+    if len(self.version) > 0:
+      self.name += '-' + self.version
     if hasattr(self, 'bitness'):
       self.name += '-' + str(self.bitness) + 'bit'
 
@@ -2873,6 +2905,10 @@ def main(args):
                                   in the environment where the build is invoked.
                                   See README.md for details.
 
+           --override-repository: Specifies the git URL to use for a given Tool. E.g.
+                                  --override-repository emscripten-main@https://github.com/<fork>/emscripten/tree/<refspec>
+
+
    emsdk uninstall <tool/sdk>   - Removes the given tool or SDK from disk.''')
 
     if WINDOWS:
@@ -2920,6 +2956,14 @@ def main(args):
       return True
     return False
 
+  def extract_string_arg(name):
+    nonlocal args
+    for i in range(len(args)):
+      if args[i] == name:
+        value = args[i + 1]
+        args = args[:i] + args[i + 2:]
+        return value
+
   arg_old = extract_bool_arg('--old')
   arg_uses = extract_bool_arg('--uses')
   arg_permanent = extract_bool_arg('--permanent')
@@ -2941,13 +2985,27 @@ def main(args):
     global TTY_OUTPUT
     TTY_OUTPUT = False
 
+  load_dot_emscripten()
+  load_sdk_manifest()
+
+  # Apply any overrides to git branch names to clone from.
+  forked_url = extract_string_arg('--override-repository')
+  while forked_url:
+    tool_name, url_and_refspec = forked_url.split('@')
+    t = find_tool(tool_name)
+    if not t:
+      errlog('Failed to find tool ' + tool_name + '!')
+      return False
+    else:
+      t.url, t.git_branch = parse_github_url_and_refspec(url_and_refspec)
+      debug_print('Reading git repository URL "' + t.url + '" and git branch "' + t.git_branch + '" for Tool "' + tool_name + '".')
+
+    forked_url = extract_string_arg('--override-repository')
+
   # Replace meta-packages with the real package names.
   if cmd in ('update', 'install', 'activate'):
     activating = cmd == 'activate'
     args = [expand_sdk_name(a, activating=activating) for a in args]
-
-  load_dot_emscripten()
-  load_sdk_manifest()
 
   # Process global args
   for i in range(len(args)):
