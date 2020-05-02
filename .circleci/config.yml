@@ -76,7 +76,7 @@ jobs:
           name: Install latest
           shell: cmd.exe
           command: scripts\test.bat
-      - run: python scripts\test.py
+      - run: python scripts/test.py
 
 workflows:
   flake8:
