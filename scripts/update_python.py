@@ -7,7 +7,7 @@
 """Updates the python binaries that we cache store at
 http://storage.google.com/webassembly.
 
-Currently this is windows only and we realy on the system python on other
+Currently this is windows only and we rely on the system python on other
 platforms.
 
 We currently bundle a version of python for windows use the following
