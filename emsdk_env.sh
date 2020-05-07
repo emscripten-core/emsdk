@@ -1,3 +1,4 @@
+#!/bin/bash
 # This script is sourced by the user and uses
 # their shell. Try not to use bashisms.
 
@@ -23,7 +24,8 @@ cd "$(dirname "$SRC")"
 unset SRC
 
 tmpfile=`mktemp` || exit 1
-./emsdk construct_env $tmpfile
+# Force emsdk to use bash syntax so that this works in windows + bash too
+EMSDK_BASH=1 ./emsdk construct_env $tmpfile
 . $tmpfile
 rm -f $tmpfile
 
