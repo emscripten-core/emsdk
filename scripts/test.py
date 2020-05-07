@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import json
 import os
 import shutil
@@ -32,13 +32,14 @@ def check_call(cmd, **args):
   if type(cmd) != list:
     cmd = cmd.split()
   print('running: %s' % cmd)
+  args['universal_newlines'] = True
   subprocess.check_call(cmd, **args)
 
 
 def checked_call_with_output(cmd, expected=None, unexpected=None, stderr=None):
   cmd = cmd.split(' ')
   print('running: %s' % cmd)
-  stdout = subprocess.check_output(cmd, stderr=stderr)
+  stdout = subprocess.check_output(cmd, stderr=stderr, universal_newlines=True)
   if expected:
     for x in listify(expected):
       assert x in stdout, 'call had the right output: ' + stdout + '\n[[[' + x + ']]]'
@@ -48,7 +49,7 @@ def checked_call_with_output(cmd, expected=None, unexpected=None, stderr=None):
 
 
 def failing_call_with_output(cmd, expected):
-  proc = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE)
+  proc = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, universal_newlines=True)
   stdout, stderr = proc.communicate()
   assert proc.returncode, 'call must have failed'
   assert expected in stdout, 'call did not have the right output'
