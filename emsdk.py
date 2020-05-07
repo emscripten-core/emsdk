@@ -85,10 +85,13 @@ if not CSH and not POWERSHELL and not BASH and not CMD:
   # Fall back to default of `cmd` on windows and `bash` otherwise
   if WINDOWS and not MSYS:
     CMD = True
-    ENVPATH_SEPARATOR = ';'
   else:
     BASH = True
-    ENVPATH_SEPARATOR = ':'
+
+if CMD:
+  ENVPATH_SEPARATOR = ';'
+else:
+  ENVPATH_SEPARATOR = ':'
 
 
 ARCH = 'unknown'
