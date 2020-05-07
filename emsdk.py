@@ -79,8 +79,11 @@ UNIX = (OSX or LINUX)
 # Pick which shell of 4 shells to use
 POWERSHELL = bool(os.getenv('EMSDK_POWERSHELL'))
 CSH = bool(os.getenv('EMSDK_CSH'))
-BASH = bool(os.getenv('EMSDK_BASH'))
 CMD = bool(os.getenv('EMSDK_CMD'))
+BASH = bool(os.getenv('EMSDK_BASH'))
+if WINDOWS and BASH:
+  MSYS = True
+
 if not CSH and not POWERSHELL and not BASH and not CMD:
   # Fall back to default of `cmd` on windows and `bash` otherwise
   if WINDOWS and not MSYS:
@@ -88,7 +91,7 @@ if not CSH and not POWERSHELL and not BASH and not CMD:
   else:
     BASH = True
 
-if CMD:
+if WINDOWS and not MSYS:
   ENVPATH_SEPARATOR = ';'
 else:
   ENVPATH_SEPARATOR = ':'
