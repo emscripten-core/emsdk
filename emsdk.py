@@ -2575,7 +2575,6 @@ def adjusted_path(tools_to_activate, log_additions=False, system_path_only=False
 
   # Existing non-emsdk tools
   existing_path = [i for i in existing_path if not to_unix_path(i).startswith(emsdk_root_path)]
-
   new_path = [i for i in path_add if not normalized_contains(existing_path, i)]
   whole_path = unique_items(new_path + existing_path)
   if MSYS:
