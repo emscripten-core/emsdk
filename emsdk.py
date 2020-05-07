@@ -91,7 +91,7 @@ if not CSH and not POWERSHELL and not BASH and not CMD:
   else:
     BASH = True
 
-if WINDOWS and not MSYS:
+if WINDOWS:
   ENVPATH_SEPARATOR = ';'
 else:
   ENVPATH_SEPARATOR = ':'
@@ -171,7 +171,7 @@ if os.path.exists(os.path.join(emsdk_path(), '.emscripten')):
   emscripten_config_directory = emsdk_path()
 
 EMSDK_SET_ENV = 'emsdk_set_env.ps1' if POWERSHELL \
-    else 'emsdk_set_env.bat' if CMD \
+    else 'emsdk_set_env.bat' if (WINDOWS and not MSYS) \
     else 'emsdk_set_env.csh' if CSH \
     else 'emsdk_set_env.sh'
 
@@ -1385,7 +1385,7 @@ def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False,
 
 
 def to_native_path(p):
-  if WINDOWS and CMD:
+  if WINDOWS and not MSYS:
     return to_unix_path(p).replace('/', '\\')
   else:
     return to_unix_path(p)
@@ -2581,7 +2581,7 @@ def adjusted_path(tools_to_activate, log_additions=False, system_path_only=False
     whole_path = list(map(to_msys_path, whole_path))
     new_emsdk_tools = list(map(to_msys_path, new_emsdk_tools))
 
-  return (ENVPATH_SEPARATOR.join(whole_path), new_emsdk_tools)
+  return ((':' if MSYS else ENVPATH_SEPARATOR).join(whole_path), new_emsdk_tools)
 
 
 def construct_env(tools_to_activate, permanent):
