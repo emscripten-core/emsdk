@@ -2575,7 +2575,7 @@ def adjusted_path(tools_to_activate, log_additions=False, system_path_only=False
     whole_path = list(map(to_msys_path, whole_path))
     new_emsdk_tools = list(map(to_msys_path, new_emsdk_tools))
 
-  return ENVPATH_SEPARATOR.join(whole_path), new_emsdk_tools)
+  return (ENVPATH_SEPARATOR.join(whole_path), new_emsdk_tools)
 
 
 def construct_env(tools_to_activate, permanent):
