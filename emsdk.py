@@ -51,7 +51,6 @@ TTY_OUTPUT = not os.getenv('EMSDK_NOTTY', not sys.stdout.isatty())
 WINDOWS = False
 if os.name == 'nt' or (os.getenv('SYSTEMROOT') is not None and 'windows' in os.getenv('SYSTEMROOT').lower()) or (os.getenv('COMSPEC') is not None and 'windows' in os.getenv('COMSPEC').lower()):
   WINDOWS = True
-  ENVPATH_SEPARATOR = ';'
 
 MINGW = False
 MSYS = False
@@ -69,12 +68,10 @@ if os.getenv('MSYSTEM'):
 OSX = False
 if platform.mac_ver()[0] != '':
   OSX = True
-  ENVPATH_SEPARATOR = ':'
 
 LINUX = False
 if not OSX and (platform.system() == 'Linux' or os.name == 'posix'):
   LINUX = True
-  ENVPATH_SEPARATOR = ':'
 
 UNIX = (OSX or LINUX)
 
@@ -88,8 +85,10 @@ if not CSH and not POWERSHELL and not BASH and not CMD:
   # Fall back to default of `cmd` on windows and `bash` otherwise
   if WINDOWS and not MSYS:
     CMD = True
+    ENVPATH_SEPARATOR = ';'
   else:
     BASH = True
+    ENVPATH_SEPARATOR = ':'
 
 
 ARCH = 'unknown'
@@ -1380,7 +1379,7 @@ def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False,
 
 
 def to_native_path(p):
-  if WINDOWS and not MSYS:
+  if WINDOWS and CMD:
     return to_unix_path(p).replace('/', '\\')
   else:
     return to_unix_path(p)
@@ -2576,7 +2575,7 @@ def adjusted_path(tools_to_activate, log_additions=False, system_path_only=False
     whole_path = list(map(to_msys_path, whole_path))
     new_emsdk_tools = list(map(to_msys_path, new_emsdk_tools))
 
-  return ((':' if MSYS else ENVPATH_SEPARATOR).join(whole_path), new_emsdk_tools)
+  return ENVPATH_SEPARATOR.join(whole_path), new_emsdk_tools)
 
 
 def construct_env(tools_to_activate, permanent):
