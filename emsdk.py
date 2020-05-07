@@ -210,10 +210,14 @@ def vswhere(version):
     program_files = os.environ['ProgramFiles(x86)'] if 'ProgramFiles(x86)' in os.environ else os.environ['ProgramFiles']
     vswhere_path = os.path.join(program_files, 'Microsoft Visual Studio', 'Installer', 'vswhere.exe')
     output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-version', '[%s.0,%s.0)' % (version, version + 1), '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', '-property', 'installationPath', '-format', 'json']))
-    # Visual Studio 2017 Express is not included in the above search, and it does not have the VC.Tools.x86.x64 tool, so do a catch-all attempt as a fallback, to detect Express version.
-    if len(output) == 0:
+    # Visual Studio 2017 Express is not included in the above search, and it
+    # does not have the VC.Tools.x86.x64 tool, so do a catch-all attempt as a
+    # fallback, to detect Express version.
+    if not output:
       output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-version', '[%s.0,%s.0)' % (version, version + 1), '-products', '*', '-property', 'installationPath', '-format', 'json']))
-    return str(output[0]['installationPath']) if len(output) > 0 else ''
+      if not output:
+        return ''
+    return str(output[0]['installationPath'])
   except Exception:
     return ''
 
@@ -1786,7 +1790,7 @@ class Tool(object):
 
     if self.id == 'vs-tool':
       msbuild_dir = find_msbuild_dir()
-      if len(msbuild_dir) > 0:
+      if msbuild_dir:
         return True
       else:
         return "Visual Studio was not found!"
@@ -2504,7 +2508,7 @@ def set_active_tools(tools_to_activate, permanently_activate):
     if newpath != os.environ['PATH']:
       win_set_environment_variable('PATH', newpath, system=True)
 
-  if len(tools_to_activate) > 0:
+  if tools_to_activate:
     tools = [x for x in tools_to_activate if not x.is_sdk]
     print('\nSet the following tools as active:\n   ' + '\n   '.join(map(lambda x: str(x), tools)))
     print('')
@@ -2609,16 +2613,14 @@ def construct_env(tools_to_activate, permanent):
     else:
       assert False
 
-    if len(added_path) > 0:
+    if added_path:
       print('Adding directories to PATH:')
       for item in added_path:
         print('PATH += ' + item)
       print('')
 
-  env_vars_to_add = []
-
   # A core variable EMSDK points to the root of Emscripten SDK directory.
-  env_vars_to_add += [('EMSDK', to_unix_path(emsdk_path()))]
+  env_vars_to_add = [('EMSDK', to_unix_path(emsdk_path()))]
 
   em_config_path = os.path.normpath(dot_emscripten_path())
   if to_unix_path(os.environ.get('EM_CONFIG', '')) != to_unix_path(em_config_path):
@@ -2640,7 +2642,7 @@ def construct_env(tools_to_activate, permanent):
       if key not in os.environ or to_unix_path(os.environ[key]) != to_unix_path(value):
         env_vars_to_add += [(key, value)]
 
-  if len(env_vars_to_add) > 0:
+  if env_vars_to_add:
     print('Setting environment variables:')
     for key, value in env_vars_to_add:
       if POWERSHELL:
@@ -2657,7 +2659,6 @@ def construct_env(tools_to_activate, permanent):
       else:
         assert False
       print(key + ' = ' + value)
-    print('')
   return env_string
 
 
@@ -2927,7 +2928,7 @@ def main():
     # function.
     has_partially_active_tools = [False]
 
-    if len(sdks) > 0:
+    if sdks:
       def find_sdks(needs_compilation):
         s = []
         for sdk in sdks:
@@ -2952,7 +2953,7 @@ def main():
       print('The following SDKs can be compiled from source:')
       print_sdks(find_sdks(True))
 
-    if len(tools) > 0:
+    if tools:
       def find_tools(needs_compilation):
         t = []
         for tool in tools:
@@ -3059,11 +3060,11 @@ def main():
       if tool is None:
         return error_on_missing_tool(arg)
       tools_to_activate += [tool]
-    if len(tools_to_activate) == 0:
+    if not tools_to_activate:
       print('No tools/SDKs specified to activate! Usage:\n   emsdk activate tool/sdk1 [tool/sdk2] [...]')
       return 1
-    tools_to_activate = set_active_tools(tools_to_activate, permanently_activate=arg_global)
-    if len(tools_to_activate) == 0:
+    active_tools = set_active_tools(tools_to_activate, permanently_activate=arg_global)
+    if not active_tools:
       print('No tools/SDKs found to activate! Usage:\n   emsdk activate tool/sdk1 [tool/sdk2] [...]')
       return 1
     if WINDOWS and not arg_global:
