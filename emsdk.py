@@ -48,13 +48,9 @@ zips_subdir = 'zips/'
 VERBOSE = int(os.getenv('EMSDK_VERBOSE', '0'))
 TTY_OUTPUT = not os.getenv('EMSDK_NOTTY', not sys.stdout.isatty())
 
-POWERSHELL = bool(os.getenv('EMSDK_POWERSHELL'))
-CSH = bool(os.getenv('EMSDK_CSH'))
-
 WINDOWS = False
 if os.name == 'nt' or (os.getenv('SYSTEMROOT') is not None and 'windows' in os.getenv('SYSTEMROOT').lower()) or (os.getenv('COMSPEC') is not None and 'windows' in os.getenv('COMSPEC').lower()):
   WINDOWS = True
-  ENVPATH_SEPARATOR = ';'
 
 MINGW = False
 MSYS = False
@@ -72,14 +68,34 @@ if os.getenv('MSYSTEM'):
 OSX = False
 if platform.mac_ver()[0] != '':
   OSX = True
-  ENVPATH_SEPARATOR = ':'
 
 LINUX = False
 if not OSX and (platform.system() == 'Linux' or os.name == 'posix'):
   LINUX = True
-  ENVPATH_SEPARATOR = ':'
 
 UNIX = (OSX or LINUX)
+
+
+# Pick which shell of 4 shells to use
+POWERSHELL = bool(os.getenv('EMSDK_POWERSHELL'))
+CSH = bool(os.getenv('EMSDK_CSH'))
+CMD = bool(os.getenv('EMSDK_CMD'))
+BASH = bool(os.getenv('EMSDK_BASH'))
+if WINDOWS and BASH:
+  MSYS = True
+
+if not CSH and not POWERSHELL and not BASH and not CMD:
+  # Fall back to default of `cmd` on windows and `bash` otherwise
+  if WINDOWS and not MSYS:
+    CMD = True
+  else:
+    BASH = True
+
+if WINDOWS:
+  ENVPATH_SEPARATOR = ';'
+else:
+  ENVPATH_SEPARATOR = ':'
+
 
 ARCH = 'unknown'
 # platform.machine() may return AMD64 on windows, so standardize the case.
@@ -2583,12 +2599,15 @@ def construct_env(tools_to_activate, permanent):
   if os.environ['PATH'] != newpath:
     if POWERSHELL:
       env_string += '$env:PATH="' + newpath + '"\n'
-    elif WINDOWS and not MSYS:
+    elif CMD:
       env_string += 'SET PATH=' + newpath + '\n'
     elif CSH:
       env_string += 'setenv PATH "' + newpath + '"\n'
-    else:
+    elif BASH:
       env_string += 'export PATH="' + newpath + '"\n'
+    else:
+      assert False
+
     if len(added_path) > 0:
       print('Adding directories to PATH:')
       for item in added_path:
@@ -2623,15 +2642,17 @@ def construct_env(tools_to_activate, permanent):
     for key, value in env_vars_to_add:
       if POWERSHELL:
         env_string += '$env:' + key + '="' + value + '"\n'
-      elif WINDOWS and not MSYS:
+      elif CMD:
         if permanent:
           env_string += 'SETX ' + key + ' "' + value + '"\n'
         else:
           env_string += 'SET ' + key + '=' + value + '\n'
       elif CSH:
         env_string += 'setenv ' + key + ' "' + value + '"\n'
-      else:
+      elif BASH:
         env_string += 'export ' + key + '="' + value + '"\n'
+      else:
+        assert False
       print(key + ' = ' + value)
     print('')
   return env_string
