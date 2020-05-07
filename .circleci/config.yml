@@ -62,7 +62,7 @@ jobs:
           name: test.py
           command: |
             source emsdk_env.sh
-            scripts/test.py
+            python scripts/test.py
   test-windows:
     executor:
       name: win/vs2019
