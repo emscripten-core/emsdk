@@ -2624,7 +2624,7 @@ def construct_env(tools_to_activate, permanent):
   if to_unix_path(os.environ.get('EM_CONFIG', '')) != to_unix_path(em_config_path):
     env_vars_to_add += [('EM_CONFIG', em_config_path)]
   if emscripten_config_directory == emsdk_path():
-    # Remove this once emscriptensupport EM_CACHE in config file:
+    # Remove this once emscripten support CACHE in the config file:
     # https://github.com/emscripten-core/emscripten/pull/11091
     em_cache_dir = sdk_path('.emscripten_cache')
     if to_unix_path(os.environ.get('EM_CACHE', '')) != to_unix_path(em_cache_dir):
