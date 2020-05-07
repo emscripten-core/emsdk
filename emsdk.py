@@ -1453,7 +1453,8 @@ def generate_dot_emscripten(active_tools):
 
   if embedded:
     cfg += 'import os\n'
-    cfg += "emsdk_path=os.path.dirname(os.environ.get('EM_CONFIG')).replace('\\\\', '/')\n"
+    cfg += "emsdk_path = os.path.dirname(os.environ.get('EM_CONFIG')).replace('\\\\', '/')\n"
+    cfg += "CACHE = '%s'\n" % sdk_path('.emscripten_cache')
 
   # Different tools may provide the same activated configs; the latest to be
   # activated is the relevant one.
@@ -1481,7 +1482,7 @@ JS_ENGINES = [NODE_JS]
 ''' % temp_dir
 
   if embedded:
-    cfg = cfg.replace(emscripten_config_directory, "' + emsdk_path + '")
+    cfg = cfg.replace("'" + emscripten_config_directory, "emsdk_path + '")
 
   if os.path.exists(dot_emscripten_path()):
     backup_path = dot_emscripten_path() + ".old"
@@ -2623,6 +2624,8 @@ def construct_env(tools_to_activate, permanent):
   if to_unix_path(os.environ.get('EM_CONFIG', '')) != to_unix_path(em_config_path):
     env_vars_to_add += [('EM_CONFIG', em_config_path)]
   if emscripten_config_directory == emsdk_path():
+    # Remove this once emscripten support CACHE in the config file:
+    # https://github.com/emscripten-core/emscripten/pull/11091
     em_cache_dir = sdk_path('.emscripten_cache')
     if to_unix_path(os.environ.get('EM_CACHE', '')) != to_unix_path(em_cache_dir):
       env_vars_to_add += [('EM_CACHE', em_cache_dir)]
