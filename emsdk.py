@@ -1738,8 +1738,9 @@ class Tool(object):
         debug_print(str(self) + ' is not active, because key="' + key + '" does not exist in .emscripten')
         return False
 
-      # If running in embedded mode, all paths are stored dynamically relative to the emsdk root, so normalize those first.
-      dot_emscripten_key = dot_emscripten[key].replace("' + emsdk_path + '", emsdk_path())
+      # If running in embedded mode, all paths are stored dynamically relative
+      # to the emsdk root, so normalize those first.
+      dot_emscripten_key = dot_emscripten[key].replace("emsdk_path + '", "'" + emsdk_path())
       if dot_emscripten_key != value:
         debug_print(str(self) + ' is not active, because key="' + key + '" has value "' + dot_emscripten_key + '" but should have value "' + value + '"')
         return False
