@@ -35,8 +35,12 @@ jobs:
       - run:
           name: Install debian packages
           command: apt-get update -q && apt-get install -q -y cmake build-essential openjdk-8-jre-headless
-      - run: ./test.sh
-      - run: ./test.py
+      - run: scripts/test.sh
+      - run:
+          name: test.py
+          command: |
+            source emsdk_env.sh
+            scripts/test.py
   test-mac:
     macos:
       xcode: "9.0"
@@ -50,8 +54,15 @@ jobs:
       - run:
           name: Install cmake
           command: brew install cmake
-      - run: ./test.sh
-      - run: ./test.py
+      - run:
+          name: Install python 3
+          command: brew install python3
+      - run: scripts/test.sh
+      - run:
+          name: test.py
+          command: |
+            source emsdk_env.sh
+            scripts/test.py
   test-windows:
     executor:
       name: win/vs2019
@@ -72,8 +83,12 @@ jobs:
       - run:
           name: Install latest
           shell: cmd.exe
-          command: test.bat
-      - run: python test.py
+          command: scripts\test.bat
+      - run:
+          name: test.py
+          command: |
+            source emsdk_env.sh
+            python scripts/test.py
 
 workflows:
   flake8:

@@ -1,10 +1,26 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import json
 import os
 import shutil
 import subprocess
 import sys
 import tempfile
+
+WINDOWS = sys.platform.startswith('win')
+MACOS = sys.platform == 'darwin'
+
+assert 'EM_CONFIG' in os.environ, "emsdk should be activated before running this script"
+
+emconfig = os.environ['EM_CONFIG']
+upstream_emcc = os.path.join('upstream', 'emscripten', 'emcc')
+fastcomp_emcc = os.path.join('fastcomp', 'emscripten', 'emcc')
+emsdk = './emsdk'
+if WINDOWS:
+  upstream_emcc += '.bat'
+  fastcomp_emcc += '.bat'
+  emsdk = 'emsdk.bat'
+else:
+  emsdk = './emsdk'
 
 # Utilities
 
@@ -19,13 +35,14 @@ def check_call(cmd, **args):
   if type(cmd) != list:
     cmd = cmd.split()
   print('running: %s' % cmd)
+  args['universal_newlines'] = True
   subprocess.check_call(cmd, **args)
 
 
 def checked_call_with_output(cmd, expected=None, unexpected=None, stderr=None):
   cmd = cmd.split(' ')
   print('running: %s' % cmd)
-  stdout = subprocess.check_output(cmd, stderr=stderr)
+  stdout = subprocess.check_output(cmd, stderr=stderr, universal_newlines=True)
   if expected:
     for x in listify(expected):
       assert x in stdout, 'call had the right output: ' + stdout + '\n[[[' + x + ']]]'
@@ -35,7 +52,7 @@ def checked_call_with_output(cmd, expected=None, unexpected=None, stderr=None):
 
 
 def failing_call_with_output(cmd, expected):
-  proc = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE)
+  proc = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, universal_newlines=True)
   stdout, stderr = proc.communicate()
   assert proc.returncode, 'call must have failed'
   assert expected in stdout, 'call did not have the right output'
@@ -52,24 +69,35 @@ def hack_emsdk(marker, replacement):
 
 # Set up
 
-open('hello_world.cpp', 'w').write('int main() {}')
+open('hello_world.c', 'w').write('''\
+#include <stdio.h>
+
+int main() {
+   printf("Hello, world!\\n");
+   return 0;
+}
+''')
 
 TAGS = json.loads(open('emscripten-releases-tags.txt').read())
 
-LIBC = os.path.expanduser('~/.emscripten_cache/wasm-obj/libc.a')
+DEFAULT_CACHE = os.path.expanduser('~/.emscripten_cache')
+LIBC = os.environ.get('EM_CACHE', DEFAULT_CACHE) + '/wasm/libc.a'
 
 # Tests
 
 print('test .emscripten contents (latest was installed/activated in test.sh)')
-assert 'fastcomp' not in open(os.path.expanduser('~/.emscripten')).read()
-assert 'upstream' in open(os.path.expanduser('~/.emscripten')).read()
+assert 'fastcomp' not in open(emconfig).read()
+assert 'upstream' in open(emconfig).read()
+
+# Test we don't re-download unnecessarily
+checked_call_with_output(emsdk + ' install latest', expected='already installed', unexpected='Downloading:')
 
 print('building proper system libraries')
 
 
 def test_lib_building(emcc, use_asmjs_optimizer):
   def test_build(args, expected=None, unexpected=None):
-    checked_call_with_output(emcc + ' hello_world.cpp' + args,
+    checked_call_with_output(emcc + ' hello_world.c' + args,
                              expected=expected,
                              unexpected=unexpected,
                              stderr=subprocess.STDOUT)
@@ -101,19 +129,6 @@ def run_emsdk(cmd):
   check_call([emsdk] + cmd)
 
 
-WINDOWS = sys.platform.startswith('win')
-MACOS = sys.platform == 'darwin'
-
-upstream_emcc = os.path.join('upstream', 'emscripten', 'emcc')
-fastcomp_emcc = os.path.join('fastcomp', 'emscripten', 'emcc')
-emsdk = './emsdk'
-if WINDOWS:
-  upstream_emcc += '.bat'
-  fastcomp_emcc += '.bat'
-  emsdk = 'emsdk.bat'
-else:
-  emsdk = './emsdk'
-
 test_lib_building(upstream_emcc, use_asmjs_optimizer=True)
 
 print('update')
@@ -124,9 +139,9 @@ run_emsdk('install latest-fastcomp')
 run_emsdk('activate latest-fastcomp')
 
 test_lib_building(fastcomp_emcc, use_asmjs_optimizer=False)
-assert open(os.path.expanduser('~/.emscripten')).read().count('LLVM_ROOT') == 1
-assert 'upstream' not in open(os.path.expanduser('~/.emscripten')).read()
-assert 'fastcomp' in open(os.path.expanduser('~/.emscripten')).read()
+assert open(emconfig).read().count('LLVM_ROOT') == 1
+assert 'upstream' not in open(emconfig).read()
+assert 'fastcomp' in open(emconfig).read()
 
 print('verify version')
 checked_call_with_output(fastcomp_emcc + ' -v', TAGS['latest'], stderr=subprocess.STDOUT)
@@ -138,23 +153,23 @@ assert not os.path.exists(LIBC)
 # Test the normal tools like node don't re-download on re-install
 print('another install must re-download')
 checked_call_with_output(emsdk + ' uninstall node-12.9.1-64bit')
-checked_call_with_output(emsdk + ' install node-12.9.1-64bit', expected='Downloading:', unexpected='already exist in destination')
-checked_call_with_output(emsdk + ' install node-12.9.1-64bit', unexpected='Downloading:', expected='already exist in destination')
+checked_call_with_output(emsdk + ' install node-12.9.1-64bit', expected='Downloading:', unexpected='already installed')
+checked_call_with_output(emsdk + ' install node-12.9.1-64bit', unexpected='Downloading:', expected='already installed')
 
 print('test tot-upstream')
 run_emsdk('install tot-upstream')
 assert not os.path.exists(LIBC)
-old_config = open(os.path.expanduser('~/.emscripten')).read()
+old_config = open(emconfig).read()
 run_emsdk('activate tot-upstream')
-assert old_config == open(os.path.expanduser('~/.emscripten.old')).read()
+assert old_config == open(emconfig + '.old').read()
 # TODO; test on latest as well
 assert os.path.exists(LIBC), 'activation supplies prebuilt libc'
-check_call(upstream_emcc + ' hello_world.cpp')
+check_call(upstream_emcc + ' hello_world.c')
 
 print('test tot-fastcomp')
 run_emsdk('install tot-fastcomp')
 run_emsdk('activate tot-fastcomp')
-check_call(fastcomp_emcc + ' hello_world.cpp')
+check_call(fastcomp_emcc + ' hello_world.c')
 
 print('test specific release (old)')
 run_emsdk('install sdk-fastcomp-1.38.31-64bit')
@@ -162,11 +177,11 @@ run_emsdk('activate sdk-fastcomp-1.38.31-64bit')
 
 print('test specific release (new, short name)')
 run_emsdk('install 1.38.33')
-print('another install must re-download')
-checked_call_with_output(emsdk + ' install 1.38.33', expected='Downloading:')
+print('another install, but no need for re-download')
+checked_call_with_output(emsdk + ' install 1.38.33', expected='Skipped', unexpected='Downloading:')
 run_emsdk('activate 1.38.33')
-assert 'upstream' not in open(os.path.expanduser('~/.emscripten')).read()
-assert 'fastcomp' in open(os.path.expanduser('~/.emscripten')).read()
+assert 'upstream' not in open(emconfig).read()
+assert 'fastcomp' in open(emconfig).read()
 
 print('test specific release (new, full name)')
 run_emsdk('install sdk-1.38.33-upstream-64bit')

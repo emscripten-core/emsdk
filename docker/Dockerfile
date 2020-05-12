@@ -1,9 +1,9 @@
-FROM debian:stretch AS stage_build
+FROM debian:buster AS stage_build
 
 # ------------------------------------------------------------------------------
 
-# Supports only 1.38.40+, accpets also '-upstream' variants
-ARG EMSCRIPTEN_VERSION=1.38.43
+# Supports only 1.38.40+, accepts also '-upstream' variants
+ARG EMSCRIPTEN_VERSION=1.39.11
 ARG EMSDK_CHANGESET=master
 
 # ------------------------------------------------------------------------------
