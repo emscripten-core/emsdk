@@ -61,19 +61,6 @@
   },
   {
     "id": "fastcomp-clang",
-    "version": "nightly-e%nightly-llvm-64bit%",
-    "bitness": 64,
-    "arch": "x86_64",
-    "append_bitness": false,
-    "windows_url": "llvm/nightly/win_64bit/emscripten-llvm-e%nightly-llvm-64bit%.zip",
-    "osx_url": "llvm/nightly/osx_64bit/emscripten-llvm-e%nightly-llvm-64bit%.tar.gz",
-    "linux_url": "llvm/nightly/linux_64bit/emscripten-llvm-e%nightly-llvm-64bit%.tar.gz",
-    "activated_path": "%installation_dir%",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%'",
-    "activated_env": "LLVM_ROOT=%installation_dir%;EMCC_WASM_BACKEND=0"
-  },
-  {
-    "id": "fastcomp-clang",
     "version": "master",
     "bitness": 32,
     "install_path": "clang/fastcomp",
@@ -155,49 +142,6 @@
     "activated_path": "%installation_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/optimizer%.exe%';BINARYEN_ROOT='%installation_dir%/binaryen'",
     "activated_env": "LLVM_ROOT=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%/optimizer%.exe%;BINARYEN_ROOT=%installation_dir%/binaryen;EMCC_WASM_BACKEND=0"
-  },
-  {
-    "id": "node",
-    "version": "4.1.1",
-    "bitness": 32,
-    "arch": "x86",
-    "windows_url": "node_4.1.1_32bit.zip",
-    "linux_url": "node-v4.1.1-linux-x86.tar.gz",
-    "activated_path": "%installation_dir%/bin",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
-    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
-  },
-  {
-    "id": "node",
-    "version": "4.1.1",
-    "bitness": 32,
-    "arch": "arm",
-    "linux_url": "https://nodejs.org/download/release/v4.1.1/node-v4.1.1-linux-armv7l.tar.xz",
-    "activated_path": "%installation_dir%/bin",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
-    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
-  },
-  {
-    "id": "node",
-    "version": "4.1.1",
-    "bitness": 64,
-    "arch": "x86_64",
-    "osx_url": "node-v4.1.1-darwin-x64.tar.gz",
-    "windows_url": "node_4.1.1_64bit.zip",
-    "linux_url": "node-v4.1.1-linux-x64.tar.gz",
-    "activated_path": "%installation_dir%/bin",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
-    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
-  },
-  {
-    "id": "node",
-    "version": "4.1.1",
-    "bitness": 64,
-    "arch": "aarch64",
-    "linux_url": "https://nodejs.org/download/release/v4.1.1/node-v4.1.1-linux-arm64.tar.gz",
-    "activated_path": "%installation_dir%/bin",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
-    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
   },
   {
     "id": "node",
@@ -438,15 +382,6 @@
   },
   {
     "id": "emscripten",
-    "version": "nightly-%nightly-emscripten%",
-    "windows_url": "emscripten/nightly/win/emscripten-nightly-%nightly-emscripten%.zip",
-    "unix_url": "emscripten/nightly/linux/emscripten-nightly-%nightly-emscripten%.tar.gz",
-    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
-    "activated_path": "%installation_dir%",
-    "activated_env": "EMSCRIPTEN=%installation_dir%"
-  },
-  {
-    "id": "emscripten",
     "version": "master",
     "bitness": 32,
     "append_bitness": false,
@@ -588,42 +523,6 @@
   {
     "version": "fastcomp-tag-%tag%",
     "bitness": 32,
-    "uses": ["fastcomp-clang-tag-e%tag%-32bit", "node-4.1.1-32bit", "python-2.7.13.1-32bit", "java-7.45-32bit", "emscripten-tag-%tag%-32bit", "binaryen-tag-%tag%-32bit"],
-    "os": "win",
-    "version_filter": [
-      ["%tag%", "<=", "1.37.22"]
-    ]
-  },
-  {
-    "version": "fastcomp-tag-%tag%",
-    "bitness": 64,
-    "uses": ["fastcomp-clang-tag-e%tag%-64bit", "node-4.1.1-64bit", "python-2.7.13.1-64bit", "java-7.45-64bit", "emscripten-tag-%tag%-64bit", "binaryen-tag-%tag%-64bit"],
-    "os": "win",
-    "version_filter": [
-      ["%tag%", "<=", "1.37.22"]
-    ]
-  },
-  {
-    "version": "fastcomp-tag-%tag%",
-    "bitness": 32,
-    "uses": ["fastcomp-clang-tag-e%tag%-32bit", "node-4.1.1-32bit", "emscripten-tag-%tag%-32bit", "binaryen-tag-%tag%-32bit"],
-    "os": "linux",
-    "version_filter": [
-      ["%tag%", "<=", "1.37.22"]
-    ]
-  },
-  {
-    "version": "fastcomp-tag-%tag%",
-    "bitness": 64,
-    "uses": ["fastcomp-clang-tag-e%tag%-64bit", "node-4.1.1-64bit", "emscripten-tag-%tag%-64bit", "binaryen-tag-%tag%-64bit"],
-    "os": "unix",
-    "version_filter": [
-      ["%tag%", "<=", "1.37.22"]
-    ]
-  },
-  {
-    "version": "fastcomp-tag-%tag%",
-    "bitness": 32,
     "uses": ["fastcomp-clang-tag-e%tag%-32bit", "node-8.9.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-tag-%tag%-32bit", "binaryen-tag-%tag%-32bit"],
     "os": "win",
     "version_filter": [
@@ -657,54 +556,6 @@
       ["%tag%", ">", "1.37.22"]
     ]
   },  
-  {
-    "version": "fastcomp-nightly-%nightly-llvm-32bit%",
-    "bitness": 32,
-    "uses": ["fastcomp-clang-nightly-e%nightly-llvm-32bit%-32bit", "node-4.1.1-32bit", "python-2.7.13.1-32bit", "java-7.45-32bit", "emscripten-nightly-%nightly-llvm-32bit%"],
-    "os": "win",
-    "version_filter": [
-      ["%nightly-llvm-32bit%", "<=", "1.37.22-2017_11_05"]
-    ]
-  },
-  {
-    "version": "fastcomp-nightly-%nightly-llvm-64bit%",
-    "bitness": 64,
-    "uses": ["fastcomp-clang-nightly-e%nightly-llvm-64bit%-64bit", "node-4.1.1-64bit", "python-2.7.13.1-64bit", "java-7.45-64bit", "emscripten-nightly-%nightly-llvm-64bit%"],
-    "os": "win",
-    "version_filter": [
-      ["%nightly-llvm-64bit%", "<=", "1.37.22-2017_11_05"]
-    ]
-  },
-  {
-    "version": "fastcomp-nightly-%nightly-llvm-32bit%",
-    "bitness": 32,
-    "uses": ["fastcomp-clang-nightly-e%nightly-llvm-32bit%-32bit", "node-4.1.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-nightly-%nightly-llvm-32bit%"],
-    "os": "win",
-    "version_filter": [
-      ["%nightly-llvm-32bit%", ">", "1.37.22-2017_11_05"]
-    ]
-  },
-  {
-    "version": "fastcomp-nightly-%nightly-llvm-64bit%",
-    "bitness": 64,
-    "uses": ["fastcomp-clang-nightly-e%nightly-llvm-64bit%-64bit", "node-4.1.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-nightly-%nightly-llvm-64bit%"],
-    "os": "win",
-    "version_filter": [
-      ["%nightly-llvm-64bit%", ">", "1.37.22-2017_11_05"]
-    ]
-  },
-  {
-    "version": "fastcomp-nightly-%nightly-llvm-32bit%",
-    "bitness": 32,
-    "uses": ["fastcomp-clang-nightly-e%nightly-llvm-32bit%-32bit", "node-4.1.1-64bit", "emscripten-nightly-%nightly-llvm-32bit%"],
-    "os": "unix"
-  },
-  {
-    "version": "fastcomp-nightly-%nightly-llvm-64bit%",
-    "bitness": 64,
-    "uses": ["fastcomp-clang-nightly-e%nightly-llvm-64bit%-64bit", "node-4.1.1-64bit", "emscripten-nightly-%nightly-llvm-64bit%"],
-    "os": "unix"
-  },
   {
     "version": "releases-upstream-%releases-tag%",
     "bitness": 64,
@@ -746,60 +597,6 @@
     "uses": ["node-12.9.1-64bit", "python-3.7.4-pywin32-64bit", "java-8.152-64bit", "releases-fastcomp-%releases-tag%-64bit"],
     "os": "win",
     "custom_install_script": "emscripten_npm_install"
-  },
-  {
-    "version": "fastcomp-%precompiled_tag32%",
-    "bitness": 32,
-    "uses": ["fastcomp-clang-e%precompiled_tag32%-32bit", "node-4.1.1-32bit", "python-2.7.13.1-32bit", "java-7.45-32bit", "emscripten-%precompiled_tag32%"],
-    "os": "win",
-    "version_filter": [
-      ["%precompiled_tag32%", "<=", "1.37.22"]
-    ]
-  },
-  {
-    "version": "fastcomp-%precompiled_tag64%",
-    "bitness": 64,
-    "uses": ["fastcomp-clang-e%precompiled_tag64%-64bit", "node-4.1.1-64bit", "python-2.7.13.1-64bit", "java-7.45-64bit", "emscripten-%precompiled_tag64%"],
-    "os": "win",
-    "version_filter": [
-      ["%precompiled_tag64%", "<=", "1.37.22"]
-    ]
-  },
-  {
-    "version": "fastcomp-%precompiled_tag32%",
-    "bitness": 32,
-    "uses": ["fastcomp-clang-e%precompiled_tag32%-32bit", "node-4.1.1-32bit", "emscripten-%precompiled_tag32%"],
-    "os": "linux",
-    "version_filter": [
-      ["%precompiled_tag32%", "<=", "1.37.22"]
-    ]
-  },
-  {
-    "version": "fastcomp-%precompiled_tag64%",
-    "bitness": 64,
-    "uses": ["fastcomp-clang-e%precompiled_tag64%-64bit", "node-4.1.1-64bit", "emscripten-%precompiled_tag64%"],
-    "os": "linux",
-    "version_filter": [
-      ["%precompiled_tag64%", "<=", "1.37.22"]
-    ]
-  },
-  {
-    "version": "fastcomp-%precompiled_tag32%",
-    "bitness": 32,
-    "uses": ["fastcomp-clang-e%precompiled_tag32%-32bit", "node-4.1.1-32bit", "emscripten-%precompiled_tag32%"],
-    "os": "osx",
-    "version_filter": [
-      ["%precompiled_tag32%", "<=", "1.37.22"]
-    ]
-  },
-  {
-    "version": "fastcomp-%precompiled_tag64%",
-    "bitness": 64,
-    "uses": ["fastcomp-clang-e%precompiled_tag64%-64bit", "node-4.1.1-64bit", "emscripten-%precompiled_tag64%"],
-    "os": "osx",
-    "version_filter": [
-      ["%precompiled_tag64%", "<=", "1.37.22"]
-    ]
   },
   {
     "version": "fastcomp-%precompiled_tag32%",
