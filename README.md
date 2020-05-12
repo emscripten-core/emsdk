@@ -11,10 +11,18 @@ released.
 You can also set up Emscripten from source, without the pre-built SDK, see
 "Installing from Source" below.
 
-## Downloads
+## Downloads / How do I get the latest Emscripten build?
 
 To get started with Emscripten development, see the [Emscripten website
 documentation](https://emscripten.org/docs/getting_started/downloads.html).
+
+That explains how to use the emsdk to get the latest binary builds (without
+compiling from source). Basically, that amounts to
+
+```
+./emsdk install latest
+./emsdk activate latest
+```
 
 ## SDK Concepts
 
@@ -118,7 +126,7 @@ Emsdk contains a history of old compiler versions that you can use to maintain
 your migration path. Type `emsdk list --old` to get a list of archived tool and
 SDK versions, and `emsdk install <name_of_tool>` to install it.
 
-### I want to build from source/I want to download a precompiled build!
+### I want to build from source!
 
 Some Emsdk Tool and SDK targets refer to packages that are precompiled, and
 no compilation is needed when installing them. Other Emsdk Tools and SDK
@@ -132,6 +140,7 @@ To obtain and build latest upstream wasm SDK from source, run
 
 ```
 emsdk install sdk-upstream-master-64bit
+emsdk activate sdk-upstream-master-64bit
 ```
 
 You can use this target for example to bootstrap developing patches to LLVM,
