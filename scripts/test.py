@@ -80,8 +80,7 @@ int main() {
 
 TAGS = json.loads(open('emscripten-releases-tags.txt').read())
 
-DEFAULT_CACHE = os.path.expanduser('~/.emscripten_cache')
-LIBC = os.environ.get('EM_CACHE', DEFAULT_CACHE) + '/wasm/libc.a'
+LIBC = os.environ['EM_CACHE'] + '/wasm/libc.a'
 
 # Tests
 
