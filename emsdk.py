@@ -1455,7 +1455,6 @@ def generate_dot_emscripten(active_tools):
   if embedded:
     cfg += 'import os\n'
     cfg += "emsdk_path = os.path.dirname(os.environ.get('EM_CONFIG')).replace('\\\\', '/')\n"
-    cfg += "CACHE = '%s'\n" % sdk_path('.emscripten_cache')
 
   # Different tools may provide the same activated configs; the latest to be
   # activated is the relevant one.
@@ -1490,11 +1489,9 @@ JS_ENGINES = [NODE_JS]
   with open(dot_emscripten_path(), "w") as text_file:
     text_file.write(cfg)
 
-  # Clear old cached emscripten content.
+  # Clear old emscripten content.
   try:
-    remove_tree(os.path.join(emscripten_config_directory, ".emscripten_cache"))
     os.remove(os.path.join(emscripten_config_directory, ".emscripten_sanity"))
-    os.remove(os.path.join(emscripten_config_directory, ".emscripten_cache__last_clear"))
   except:
     pass
 
@@ -2420,13 +2417,27 @@ def run_emcc(tools_to_activate):
         return
 
 
-def emscripten_cache_directory():
-  return os.path.join(emscripten_config_directory, ".emscripten_cache")
-
-
 # Copy over any emscripten cache contents that were pregenerated. This avoids
 # the user needing to immediately build libc etc. on first run.
+# This only applies to legacy SDK versions.  Anything built after
+# https://github.com/WebAssembly/waterfall/pull/644 already has the libraries
+# in the correct location.
+# TODO(sbc): Remove this code.
 def copy_pregenerated_cache(tools_to_activate):
+  em_cache_dir = None
+
+  # First look through all the tools to find the EMSCRIPTEN_ROOT
+  for tool in tools_to_activate:
+    config = tool.activated_config()
+    if 'EMSCRIPTEN_ROOT' in config:
+      em_cache_dir = os.path.join(config['EMSCRIPTEN_ROOT'], 'cache')
+      break
+  else:
+    debug_print('Not copying pregenerated libaries (no EMSCRIPTEN_ROOT found)')
+    return
+
+  # If we found an EMSCRIPTEN_ROOT look for any tools that include
+  # "pregenerated_cache" and copy those items into the cache.
   for tool in tools_to_activate:
     pregenerated_cache = getattr(tool, 'pregenerated_cache', None)
     if not pregenerated_cache:
@@ -2437,8 +2448,9 @@ def copy_pregenerated_cache(tools_to_activate):
       in_cache = os.path.join(install_path, 'lib', cache_dir)
       if not os.path.exists(in_cache):
         continue
-      out_cache = os.path.join(emscripten_cache_directory(), cache_dir)
-      os.makedirs(out_cache)
+      out_cache = os.path.join(em_cache_dir, cache_dir)
+      if not os.path.exists(out_cache):
+        os.makedirs(out_cache)
       for filename in os.listdir(in_cache):
         debug_print('Copying %s to cache: %s' % (filename, out_cache))
         shutil.copy2(os.path.join(in_cache, filename),
@@ -2600,15 +2612,14 @@ def construct_env(tools_to_activate, permanent):
   em_config_path = os.path.normpath(dot_emscripten_path())
   if to_unix_path(os.environ.get('EM_CONFIG', '')) != to_unix_path(em_config_path):
     env_vars_to_add += [('EM_CONFIG', em_config_path)]
-  if emscripten_config_directory == emsdk_path():
-    # Remove this once emscripten support CACHE in the config file:
-    # https://github.com/emscripten-core/emscripten/pull/11091
-    em_cache_dir = sdk_path('.emscripten_cache')
-    if to_unix_path(os.environ.get('EM_CACHE', '')) != to_unix_path(em_cache_dir):
-      env_vars_to_add += [('EM_CACHE', em_cache_dir)]
-    mkdir_p(em_cache_dir)
 
   for tool in tools_to_activate:
+    config = tool.activated_config()
+    if 'EMSCRIPTEN_ROOT' in config:
+      # For older emscripten versions that don't use this default we export
+      # EM_CACHE.
+      em_cache_dir = os.path.join(config['EMSCRIPTEN_ROOT'], 'cache')
+      env_vars_to_add += [('EM_CACHE', em_cache_dir)]
     envs = tool.activated_environment()
     for env in envs:
       key, value = parse_key_value(env)
