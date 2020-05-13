@@ -1461,11 +1461,8 @@ def generate_dot_emscripten(active_tools):
   # activated is the relevant one.
   activated_config = OrderedDict()
   for tool in active_tools:
-    tool_cfg = tool.activated_config()
-    if tool_cfg:
-      for specific_cfg in tool_cfg.split(';'):
-        name, value = specific_cfg.split('=')
-        activated_config[name] = value
+    for name, value in tool.activated_config().items():
+      activated_config[name] = value
 
   if 'NODE_JS' not in activated_config:
     node_fallback = which('nodejs')
@@ -1474,7 +1471,7 @@ def generate_dot_emscripten(active_tools):
     activated_config['NODE_JS'] = "'%s'" % node_fallback
 
   for name, value in activated_config.items():
-    cfg += name + ' = ' + value + '\n'
+    cfg += name + " = '" + value + "'\n"
 
   cfg += '''\
 TEMP_DIR = '%s'
@@ -1620,10 +1617,14 @@ class Tool(object):
   # Returns the configuration item that needs to be added to .emscripten to make
   # this Tool active for the current user.
   def activated_config(self):
-    if hasattr(self, 'activated_cfg'):
-      return to_unix_path(self.expand_vars(self.activated_cfg))
-    else:
-      return ''
+    if not hasattr(self, 'activated_cfg'):
+      return {}
+    config = OrderedDict()
+    expanded = to_unix_path(self.expand_vars(self.activated_cfg))
+    for specific_cfg in expanded.split(';'):
+      name, value = specific_cfg.split('=')
+      config[name] = value.strip("'")
+    return config
 
   def activated_environment(self):
     if hasattr(self, 'activated_env'):
@@ -1727,13 +1728,10 @@ class Tool(object):
         return False
 
     activated_cfg = self.activated_config()
-    if activated_cfg == '':
+    if not activated_cfg:
       return len(deps) > 0
 
-    activated_cfg = activated_cfg.split(';')
-    for cfg in activated_cfg:
-      cfg = cfg.strip()
-      key, value = parse_key_value(cfg)
+    for key, value in activated_cfg.items():
       if key not in dot_emscripten:
         debug_print(str(self) + ' is not active, because key="' + key + '" does not exist in .emscripten')
         return False
@@ -1741,6 +1739,7 @@ class Tool(object):
       # If running in embedded mode, all paths are stored dynamically relative
       # to the emsdk root, so normalize those first.
       dot_emscripten_key = dot_emscripten[key].replace("emsdk_path + '", "'" + emsdk_path())
+      dot_emscripten_key = dot_emscripten_key.strip("'")
       if dot_emscripten_key != value:
         debug_print(str(self) + ' is not active, because key="' + key + '" has value "' + dot_emscripten_key + '" but should have value "' + value + '"')
         return False
