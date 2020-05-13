@@ -2176,11 +2176,11 @@ def remove_suffix(s, suffix):
     return s
 
 
-# filename should be one of: 'llvm-nightlies-32bit.txt', 'llvm-nightlies-64bit.txt', 'llvm-precompiled-tags-32bit.txt', 'llvm-precompiled-tags-64bit.txt', 'emscripten-nightlies.txt'
+# filename should be one of: 'llvm-precompiled-tags-32bit.txt', 'llvm-precompiled-tags-64bit.txt'
 def load_file_index_list(filename):
   try:
     items = open(sdk_path(filename), 'r').read().split('\n')
-    items = map(lambda x: remove_suffix(remove_suffix(remove_prefix(remove_prefix(x, 'emscripten-llvm-e'), 'emscripten-nightly-'), '.tar.gz'), '.zip').strip(), items)
+    items = map(lambda x: remove_suffix(remove_suffix(remove_prefix(x, 'emscripten-llvm-e'), '.tar.gz'), '.zip').strip(), items)
     items = filter(lambda x: 'latest' not in x and len(x) > 0, items)
 
     # Sort versions from oldest to newest (the default sort would be lexicographic, i.e. '1.37.1 < 1.37.10 < 1.37.2')
@@ -2189,18 +2189,6 @@ def load_file_index_list(filename):
     return items
   except:
     return []
-
-
-def load_llvm_32bit_nightlies():
-  return load_file_index_list('llvm-nightlies-32bit.txt')
-
-
-def load_llvm_64bit_nightlies():
-  return load_file_index_list('llvm-nightlies-64bit.txt')
-
-
-def load_emscripten_nightlies():
-  return load_file_index_list('emscripten-nightlies.txt')
 
 
 def load_llvm_precompiled_tags_32bit():
@@ -2264,9 +2252,6 @@ def load_sdk_manifest():
   llvm_precompiled_tags_64bit = list(reversed(load_llvm_precompiled_tags_64bit()))
   llvm_precompiled_tags = llvm_precompiled_tags_32bit + llvm_precompiled_tags_64bit
   binaryen_tags = load_legacy_binaryen_tags()
-  llvm_32bit_nightlies = list(reversed(load_llvm_32bit_nightlies()))
-  llvm_64bit_nightlies = list(reversed(load_llvm_64bit_nightlies()))
-  emscripten_nightlies = list(reversed(load_emscripten_nightlies()))
   releases_tags = load_releases_tags()
 
   def dependencies_exist(sdk):
@@ -2298,7 +2283,7 @@ def load_sdk_manifest():
     return True
 
   # A 'category parameter' is a %foo%-encoded identifier that specifies
-  # a class of tools instead of just one tool, e.g. %tag% or %nightly..%
+  # a class of tools instead of just one tool, e.g. %tag%
   def expand_category_param(param, category_list, t, is_sdk):
     for i, ver in enumerate(category_list):
       if not ver.strip():
@@ -2339,7 +2324,7 @@ def load_sdk_manifest():
       if not hasattr(t, 'is_old'):
         t.is_old = False
 
-      # Expand the metapackages that refer to tags or nightlies.
+      # Expand the metapackages that refer to tags
       if '%tag%' in t.version:
         expand_category_param('%tag%', emscripten_tags, t, is_sdk=False)
       elif '%precompiled_tag%' in t.version:
@@ -2350,12 +2335,6 @@ def load_sdk_manifest():
         expand_category_param('%precompiled_tag64%', llvm_precompiled_tags_64bit, t, is_sdk=False)
       elif '%binaryen_tag%' in t.version:
         expand_category_param('%binaryen_tag%', binaryen_tags, t, is_sdk=False)
-      elif '%nightly-llvm-64bit%' in t.version:
-        expand_category_param('%nightly-llvm-64bit%', llvm_64bit_nightlies, t, is_sdk=False)
-      elif '%nightly-llvm-32bit%' in t.version:
-        expand_category_param('%nightly-llvm-32bit%', llvm_32bit_nightlies, t, is_sdk=False)
-      elif '%nightly-emscripten%' in t.version:
-        expand_category_param('%nightly-emscripten%', emscripten_nightlies, t, is_sdk=False)
       elif '%releases-tag%' in t.version:
         expand_category_param('%releases-tag%', releases_tags, t, is_sdk=False)
       else:
@@ -2376,12 +2355,6 @@ def load_sdk_manifest():
         expand_category_param('%precompiled_tag32%', llvm_precompiled_tags_32bit, sdk, is_sdk=True)
       elif '%precompiled_tag64%' in sdk.version:
         expand_category_param('%precompiled_tag64%', llvm_precompiled_tags_64bit, sdk, is_sdk=True)
-      elif '%nightly-llvm-64bit%' in sdk.version:
-        expand_category_param('%nightly-llvm-64bit%', llvm_64bit_nightlies, sdk, is_sdk=True)
-      elif '%nightly-llvm-32bit%' in sdk.version:
-        expand_category_param('%nightly-llvm-32bit%', llvm_32bit_nightlies, sdk, is_sdk=True)
-      elif '%nightly-emscripten%' in sdk.version:
-        expand_category_param('%nightly-emscripten%', emscripten_nightlies, sdk, is_sdk=True)
       elif '%releases-tag%' in sdk.version:
         expand_category_param('%releases-tag%', releases_tags, sdk, is_sdk=True)
       else:
