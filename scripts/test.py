@@ -157,12 +157,10 @@ checked_call_with_output(emsdk + ' install node-12.9.1-64bit', unexpected='Downl
 
 print('test tot-upstream')
 run_emsdk('install tot-upstream')
-assert not os.path.exists(LIBC)
 old_config = open(emconfig).read()
 run_emsdk('activate tot-upstream')
 assert old_config == open(emconfig + '.old').read()
 # TODO; test on latest as well
-assert os.path.exists(LIBC), 'activation supplies prebuilt libc'
 check_call(upstream_emcc + ' hello_world.c')
 
 print('test tot-fastcomp')
