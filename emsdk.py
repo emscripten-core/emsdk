@@ -2433,6 +2433,7 @@ def copy_pregenerated_cache(tools_to_activate):
       em_cache_dir = os.path.join(config['EMSCRIPTEN_ROOT'], 'cache')
       break
   else:
+    debug_print('Not copying pregenerated libaries (no EMSCRIPTEN_ROOT found)')
     return
 
   # If we found an EMSCRIPTEN_ROOT look for any tools that include
