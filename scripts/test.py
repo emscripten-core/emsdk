@@ -10,6 +10,11 @@ WINDOWS = sys.platform.startswith('win')
 MACOS = sys.platform == 'darwin'
 
 assert 'EM_CONFIG' in os.environ, "emsdk should be activated before running this script"
+# Remove the EM_CACHE environment variable.  It interferes with testing since 
+# it would otherwise be fixed for the duration of the script and we expect
+# "emsdk activate" to be able swtich between SDKs during the running of this
+# script.
+del os.environ['EM_CACHE']
 
 emconfig = os.environ['EM_CONFIG']
 upstream_emcc = os.path.join('upstream', 'emscripten', 'emcc')
@@ -80,8 +85,6 @@ int main() {
 
 TAGS = json.loads(open('emscripten-releases-tags.txt').read())
 
-LIBC = os.environ['EM_CACHE'] + '/wasm/libc.a'
-
 # Tests
 
 print('test .emscripten contents (latest was installed/activated in test.sh)')
@@ -95,31 +98,27 @@ print('building proper system libraries')
 
 
 def test_lib_building(emcc, use_asmjs_optimizer):
-  def test_build(args, expected=None, unexpected=None):
+  cache_building_messages = ['generating system library: ']
+
+  def test_build(args, expected):
+    if expected:
+      expected = cache_building_messages
+      unexpected = []
+    else:
+      expected = []
+      unexpected = cache_building_messages
     checked_call_with_output(emcc + ' hello_world.c' + args,
                              expected=expected,
                              unexpected=unexpected,
                              stderr=subprocess.STDOUT)
 
-  # by default we ship libc, struct_info, and the asm.js optimizer, as they
-  # are important for various reasons (libc takes a long time to build;
-  # struct_info is a bootstrap product so if the user's setup is broken it's
-  # confusing; the asm.js optimizer is a native application so it needs a
-  # working native local build environment). otherwise we don't ship every
-  # single lib, so some building is expected on first run.
-
-  unexpected_system_libs = ['generating system library: libc.',
-                            'generating system asset: optimizer']
-  if use_asmjs_optimizer:
-    unexpected_system_libs += ['generating system asset: generated_struct_info.json']
-
-  first_time_system_libs = ['generating system library: libdlmalloc.']
-
-  test_build('', expected=first_time_system_libs,
-             unexpected=unexpected_system_libs)
-  test_build(' -O2', unexpected=unexpected_system_libs + first_time_system_libs)
-  test_build(' -s WASM=0', unexpected=unexpected_system_libs + first_time_system_libs)
-  test_build(' -O2 -s WASM=0', unexpected=unexpected_system_libs + first_time_system_libs)
+  # The emsdk ships all system libraries so we don't expect to see any
+  # cache population unless we explicly --clear-cache.
+  test_build('', expected=False)
+  check_call(emcc + ' --clear-cache')
+  test_build(' -O2', expected=True)
+  test_build(' -s WASM=0', expected=False)
+  test_build(' -O2 -s WASM=0', expected=False)
 
 
 def run_emsdk(cmd):
@@ -147,7 +146,6 @@ checked_call_with_output(fastcomp_emcc + ' -v', TAGS['latest'], stderr=subproces
 
 print('clear cache')
 check_call(upstream_emcc + ' --clear-cache')
-assert not os.path.exists(LIBC)
 
 # Test the normal tools like node don't re-download on re-install
 print('another install must re-download')
