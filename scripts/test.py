@@ -10,9 +10,12 @@ WINDOWS = sys.platform.startswith('win')
 MACOS = sys.platform == 'darwin'
 
 assert 'EM_CONFIG' in os.environ, "emsdk should be activated before running this script"
+
+LIBC = os.environ['EM_CACHE'] + '/wasm/libc.a'
+
 # Remove the EM_CACHE environment variable.  It interferes with testing since 
 # it would otherwise be fixed for the duration of the script and we expect
-# "emsdk activate" to be able swtich between SDKs during the running of this
+# "emsdk activate" to be able switch between SDKs during the running of this
 # script.
 del os.environ['EM_CACHE']
 
@@ -146,6 +149,7 @@ checked_call_with_output(fastcomp_emcc + ' -v', TAGS['latest'], stderr=subproces
 
 print('clear cache')
 check_call(upstream_emcc + ' --clear-cache')
+assert not os.path.exists(LIBC)
 
 # Test the normal tools like node don't re-download on re-install
 print('another install must re-download')
