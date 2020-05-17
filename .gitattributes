@@ -1,0 +1,6 @@
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text=auto
+
+# Shell scripts should be converted to native line endings on checkout
+/emsdk                text eol=lf
+/emsdk_env.sh         text eol=lf
