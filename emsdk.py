@@ -1677,7 +1677,7 @@ class Tool(object):
     return False
 
   def update_installed_version(self):
-    with open(self.get_version_file_path(), 'wr') as version_file:
+    with open(self.get_version_file_path(), 'w') as version_file:
       version_file.write(self.name)
     return None
 
@@ -2088,6 +2088,10 @@ def get_emscripten_releases_tot():
       continue
     return release
   return ''
+
+
+def get_release_hash(arg, releases_info):
+  return releases_info.get(arg, None) or releases_info.get('sdk-' + arg + '-64bit')
 
 
 # Finds the best-matching python tool for use.
@@ -2887,7 +2891,7 @@ def main():
           arg = arg.replace('-fastcomp', '')
           backend = 'fastcomp'
         arg = arg.replace('sdk-', '').replace('-64bit', '').replace('tag-', '')
-        release_hash = releases_info.get(arg, None) or releases_info.get('sdk-' + arg + '-64bit')
+        release_hash = get_release_hash(arg, releases_info)
         if release_hash:
           if backend is None:
             if version_key(arg) >= (1, 39, 0):
@@ -2899,6 +2903,9 @@ def main():
   if cmd == 'list':
     print('')
 
+    def installed_sdk_text(name):
+      return '\tINSTALLED' if find_sdk(name).is_installed() else ''
+
     if (LINUX or OSX or WINDOWS) and (ARCH == 'x86' or ARCH == 'x86_64'):
       print('The *recommended* precompiled SDK download is %s (%s).' % (find_latest_releases_version(), find_latest_releases_hash()))
       print()
@@ -2907,8 +2914,8 @@ def main():
       print('         latest-fastcomp         [legacy (fastcomp) backend]')
       print('')
       print('Those are equivalent to installing/activating the following:')
-      print('         %s' % find_latest_releases_version())
-      print('         %s-fastcomp' % find_latest_releases_version())
+      print('         %s            %s' % (find_latest_releases_version(), installed_sdk_text(find_latest_releases_sdk('upstream'))))
+      print('         %s-fastcomp   %s' % (find_latest_releases_version(), installed_sdk_text(find_latest_releases_sdk('fastcomp'))))
       print('')
     else:
       print('Warning: your platform does not have precompiled SDKs available.')
@@ -2919,7 +2926,7 @@ def main():
     releases_versions = sorted(load_releases_versions())
     releases_versions.reverse()
     for ver in releases_versions:
-      print('         %s' % ver)
+      print('         %s  %s' % (ver, installed_sdk_text('sdk-releases-upstream-%s-64bit' % get_release_hash(ver, releases_info))))
     print()
 
     # Use array to work around the lack of being able to mutate from enclosing
