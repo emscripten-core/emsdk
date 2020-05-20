@@ -1791,16 +1791,6 @@ class Tool(object):
     else:
       return True
 
-  def can_report_installed(self):
-    # The main SDK releases should never be marked "installed" since they
-    # are not cached. We do not keep old versions since they can accumulate;
-    # instead we overwrite in the same directory when we update.
-    # FIXME https://github.com/emscripten-core/emsdk/issues/477
-    return not self.name.startswith(('releases-', 'sdk-releases-'))
-
-  def report_installed(self):
-    return self.can_report_installed() and self.is_installed()
-
   def download_url(self):
     if WINDOWS and hasattr(self, 'windows_url'):
       return self.windows_url
@@ -2937,7 +2927,7 @@ def main():
 
       def print_sdks(s):
         for sdk in s:
-          installed = '\tINSTALLED' if sdk.report_installed() else ''
+          installed = '\tINSTALLED' if sdk.is_installed() else ''
           active = '*' if sdk.is_active() else ' '
           print('    ' + active + '    {0: <25}'.format(str(sdk)) + installed)
           if arg_uses:
@@ -2964,8 +2954,6 @@ def main():
       def print_tools(t):
         for tool in t:
           if tool.is_old and not arg_old:
-            continue
-          if not tool.can_report_installed():
             continue
           if tool.can_be_installed() is True:
             installed = '\tINSTALLED' if tool.is_installed() else ''
