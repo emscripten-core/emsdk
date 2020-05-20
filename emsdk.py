@@ -1661,7 +1661,27 @@ class Tool(object):
 
     return hasattr(self, 'url')
 
-  def is_installed(self):
+  # the "version file" is a file inside install dirs that indicates the
+  # version installed there. this helps disambiguate when there is more than
+  # one version that may be installed to the same directory (which is used
+  # to avoid accumulating builds over time in some cases, with new builds
+  # overwriting the old)
+  def get_version_file_path(self):
+    return os.path.join(self.installation_path(), '.emsdk_version')
+
+  def is_installed_version(self):
+    version_file_path = self.get_version_file_path()
+    if os.path.isfile(version_file_path):
+      with open(version_file_path, 'r') as version_file:
+        return version_file.read() == self.name
+    return False
+
+  def update_installed_version(self):
+    with open(self.get_version_file_path(), 'wr') as version_file:
+      version_file.write(self.name)
+    return None
+
+  def is_installed(self, assume_is_installed_version=False):
     # If this tool/sdk depends on other tools, require that all dependencies are
     # installed for this tool to count as being installed.
     if hasattr(self, 'uses'):
@@ -1707,7 +1727,7 @@ class Tool(object):
       else:
         raise Exception('Unknown custom_is_installed_script directive "' + self.custom_is_installed_script + '"!')
 
-    return content_exists
+    return content_exists and (assume_is_installed_version or self.is_installed_version())
 
   def is_active(self):
     if not self.is_installed():
@@ -1846,14 +1866,6 @@ class Tool(object):
       print("Skipped installing " + self.name + ", already installed.")
       return True
 
-    version_id = self.name
-    version_file_path = os.path.join(self.installation_path(), '.emsdk_version')
-    if os.path.isfile(version_file_path):
-      with open(version_file_path, 'r') as version_file:
-        if version_id == version_file.read():
-          print("Skipped installing " + self.name + ", already installed.")
-          return True
-
     print("Installing tool '" + str(self) + "'..")
     url = self.download_url()
 
@@ -1912,10 +1924,9 @@ class Tool(object):
 
     # Sanity check that the installation succeeded, and if so, remove unneeded
     # leftover installation files.
-    if self.is_installed():
+    if self.is_installed(assume_is_installed_version=True):
       self.cleanup_temp_install_files()
-      with open(version_file_path, 'w') as version_file:
-        version_file.write(version_id)
+      self.update_installed_version()
     else:
       print("Installation of '" + str(self) + "' failed, but no error was detected. Either something went wrong with the installation, or this may indicate an internal emsdk error.")
       return False
