@@ -1681,7 +1681,7 @@ class Tool(object):
       version_file.write(self.name)
     return None
 
-  def is_installed(self, assume_is_installed_version=False):
+  def is_installed(self, skip_version_check=False):
     # If this tool/sdk depends on other tools, require that all dependencies are
     # installed for this tool to count as being installed.
     if hasattr(self, 'uses'):
@@ -1727,7 +1727,7 @@ class Tool(object):
       else:
         raise Exception('Unknown custom_is_installed_script directive "' + self.custom_is_installed_script + '"!')
 
-    return content_exists and (assume_is_installed_version or self.is_installed_version())
+    return content_exists and (skip_version_check or self.is_installed_version())
 
   def is_active(self):
     if not self.is_installed():
@@ -1918,7 +1918,7 @@ class Tool(object):
 
     # Sanity check that the installation succeeded, and if so, remove unneeded
     # leftover installation files.
-    if self.is_installed(assume_is_installed_version=True):
+    if self.is_installed(skip_version_check=True):
       self.cleanup_temp_install_files()
       self.update_installed_version()
     else:
