@@ -1662,6 +1662,11 @@ class Tool(object):
     return hasattr(self, 'url')
 
   def is_installed(self):
+    if self.id.startswith(('releases', 'sdk-releases')):
+      # The main SDK releases should never be marked "installed" since they
+      # are not cached.
+      return False
+
     # If this tool/sdk depends on other tools, require that all dependencies are
     # installed for this tool to count as being installed.
     if hasattr(self, 'uses'):
