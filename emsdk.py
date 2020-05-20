@@ -1856,13 +1856,7 @@ class Tool(object):
     return True
 
   def install_tool(self):
-    # We should not force reinstallation of python if it already exists, since that very python
-    # may be interpreting the current emsdk.py script we are executing. On Windows this would
-    # lead to a failure to uncompress the python zip file as the python executable files are in use.
-    # TODO: Refactor codebase to avoid needing this kind of special case check by being more
-    # careful about reinstallation, see https://github.com/emscripten-core/emsdk/pull/394#issuecomment-559386468
-    # for a scheme that would work.
-    if self.id == 'python' and self.is_installed():
+    if self.is_installed():
       print("Skipped installing " + self.name + ", already installed.")
       return True
 
