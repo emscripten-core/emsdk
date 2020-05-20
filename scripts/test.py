@@ -97,6 +97,10 @@ assert 'upstream' in open(emconfig).read()
 # Test we don't re-download unnecessarily
 checked_call_with_output(emsdk + ' install latest', expected='already installed', unexpected='Downloading:')
 
+# Test we report installed tools properly. The latest version should be
+# installed, but not some random old one.
+checked_call_with_output(emsdk + ' list', expected=TAGS['latest'] + '    INSTALLED', unexpected='1.39.15    INSTALLED:')
+
 print('building proper system libraries')
 
 

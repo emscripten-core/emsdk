@@ -2904,7 +2904,7 @@ def main():
     print('')
 
     def installed_sdk_text(name):
-      return '\tINSTALLED' if find_sdk(name).is_installed() else ''
+      return 'INSTALLED' if find_sdk(name).is_installed() else ''
 
     if (LINUX or OSX or WINDOWS) and (ARCH == 'x86' or ARCH == 'x86_64'):
       print('The *recommended* precompiled SDK download is %s (%s).' % (find_latest_releases_version(), find_latest_releases_hash()))
@@ -2914,8 +2914,8 @@ def main():
       print('         latest-fastcomp         [legacy (fastcomp) backend]')
       print('')
       print('Those are equivalent to installing/activating the following:')
-      print('         %s            %s' % (find_latest_releases_version(), installed_sdk_text(find_latest_releases_sdk('upstream'))))
-      print('         %s-fastcomp   %s' % (find_latest_releases_version(), installed_sdk_text(find_latest_releases_sdk('fastcomp'))))
+      print('         %s             %s' % (find_latest_releases_version(), installed_sdk_text(find_latest_releases_sdk('upstream'))))
+      print('         %s-fastcomp    %s' % (find_latest_releases_version(), installed_sdk_text(find_latest_releases_sdk('fastcomp'))))
       print('')
     else:
       print('Warning: your platform does not have precompiled SDKs available.')
@@ -2926,7 +2926,7 @@ def main():
     releases_versions = sorted(load_releases_versions())
     releases_versions.reverse()
     for ver in releases_versions:
-      print('         %s  %s' % (ver, installed_sdk_text('sdk-releases-upstream-%s-64bit' % get_release_hash(ver, releases_info))))
+      print('         %s    %s' % (ver, installed_sdk_text('sdk-releases-upstream-%s-64bit' % get_release_hash(ver, releases_info))))
     print()
 
     # Use array to work around the lack of being able to mutate from enclosing
