@@ -1661,7 +1661,27 @@ class Tool(object):
 
     return hasattr(self, 'url')
 
-  def is_installed(self):
+  # the "version file" is a file inside install dirs that indicates the
+  # version installed there. this helps disambiguate when there is more than
+  # one version that may be installed to the same directory (which is used
+  # to avoid accumulating builds over time in some cases, with new builds
+  # overwriting the old)
+  def get_version_file_path(self):
+    return os.path.join(self.installation_path(), '.emsdk_version')
+
+  def is_installed_version(self):
+    version_file_path = self.get_version_file_path()
+    if os.path.isfile(version_file_path):
+      with open(version_file_path, 'r') as version_file:
+        return version_file.read() == self.name
+    return False
+
+  def update_installed_version(self):
+    with open(self.get_version_file_path(), 'w') as version_file:
+      version_file.write(self.name)
+    return None
+
+  def is_installed(self, skip_version_check=False):
     # If this tool/sdk depends on other tools, require that all dependencies are
     # installed for this tool to count as being installed.
     if hasattr(self, 'uses'):
@@ -1707,7 +1727,7 @@ class Tool(object):
       else:
         raise Exception('Unknown custom_is_installed_script directive "' + self.custom_is_installed_script + '"!')
 
-    return content_exists
+    return content_exists and (skip_version_check or self.is_installed_version())
 
   def is_active(self):
     if not self.is_installed():
@@ -1836,23 +1856,9 @@ class Tool(object):
     return True
 
   def install_tool(self):
-    # We should not force reinstallation of python if it already exists, since that very python
-    # may be interpreting the current emsdk.py script we are executing. On Windows this would
-    # lead to a failure to uncompress the python zip file as the python executable files are in use.
-    # TODO: Refactor codebase to avoid needing this kind of special case check by being more
-    # careful about reinstallation, see https://github.com/emscripten-core/emsdk/pull/394#issuecomment-559386468
-    # for a scheme that would work.
-    if self.id == 'python' and self.is_installed():
+    if self.is_installed():
       print("Skipped installing " + self.name + ", already installed.")
       return True
-
-    version_id = self.name
-    version_file_path = os.path.join(self.installation_path(), '.emsdk_version')
-    if os.path.isfile(version_file_path):
-      with open(version_file_path, 'r') as version_file:
-        if version_id == version_file.read():
-          print("Skipped installing " + self.name + ", already installed.")
-          return True
 
     print("Installing tool '" + str(self) + "'..")
     url = self.download_url()
@@ -1912,10 +1918,9 @@ class Tool(object):
 
     # Sanity check that the installation succeeded, and if so, remove unneeded
     # leftover installation files.
-    if self.is_installed():
+    if self.is_installed(skip_version_check=True):
       self.cleanup_temp_install_files()
-      with open(version_file_path, 'w') as version_file:
-        version_file.write(version_id)
+      self.update_installed_version()
     else:
       print("Installation of '" + str(self) + "' failed, but no error was detected. Either something went wrong with the installation, or this may indicate an internal emsdk error.")
       return False
@@ -2077,6 +2082,10 @@ def get_emscripten_releases_tot():
       continue
     return release
   return ''
+
+
+def get_release_hash(arg, releases_info):
+  return releases_info.get(arg, None) or releases_info.get('sdk-' + arg + '-64bit')
 
 
 # Finds the best-matching python tool for use.
@@ -2876,7 +2885,7 @@ def main():
           arg = arg.replace('-fastcomp', '')
           backend = 'fastcomp'
         arg = arg.replace('sdk-', '').replace('-64bit', '').replace('tag-', '')
-        release_hash = releases_info.get(arg, None) or releases_info.get('sdk-' + arg + '-64bit')
+        release_hash = get_release_hash(arg, releases_info)
         if release_hash:
           if backend is None:
             if version_key(arg) >= (1, 39, 0):
@@ -2888,6 +2897,9 @@ def main():
   if cmd == 'list':
     print('')
 
+    def installed_sdk_text(name):
+      return 'INSTALLED' if find_sdk(name).is_installed() else ''
+
     if (LINUX or OSX or WINDOWS) and (ARCH == 'x86' or ARCH == 'x86_64'):
       print('The *recommended* precompiled SDK download is %s (%s).' % (find_latest_releases_version(), find_latest_releases_hash()))
       print()
@@ -2896,8 +2908,8 @@ def main():
       print('         latest-fastcomp         [legacy (fastcomp) backend]')
       print('')
       print('Those are equivalent to installing/activating the following:')
-      print('         %s' % find_latest_releases_version())
-      print('         %s-fastcomp' % find_latest_releases_version())
+      print('         %s             %s' % (find_latest_releases_version(), installed_sdk_text(find_latest_releases_sdk('upstream'))))
+      print('         %s-fastcomp    %s' % (find_latest_releases_version(), installed_sdk_text(find_latest_releases_sdk('fastcomp'))))
       print('')
     else:
       print('Warning: your platform does not have precompiled SDKs available.')
@@ -2908,7 +2920,7 @@ def main():
     releases_versions = sorted(load_releases_versions())
     releases_versions.reverse()
     for ver in releases_versions:
-      print('         %s' % ver)
+      print('         %s    %s' % (ver, installed_sdk_text('sdk-releases-upstream-%s-64bit' % get_release_hash(ver, releases_info))))
     print()
 
     # Use array to work around the lack of being able to mutate from enclosing
