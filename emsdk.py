@@ -2677,11 +2677,11 @@ def error_on_missing_tool(name):
 def main():
   global emscripten_config_directory, BUILD_FOR_TESTING, ENABLE_LLVM_ASSERTIONS, TTY_OUTPUT
 
-  if len(sys.argv) <= 1 or sys.argv[1] in ('help', '--help', '-h'):
-    if len(sys.argv) <= 1:
-      print(' emsdk: No command given. Please call one of the following:')
-    else:
-      print(' emsdk: Available commands:')
+  if len(sys.argv) <= 1:
+    print("Missing command; Type 'emsdk help' to get a list of commands.")
+    return 1
+  if sys.argv[1] in ('help', '--help', '-h'):
+    print(' emsdk: Available commands:')
 
     print('''
    emsdk list [--old] [--uses]  - Lists all available SDKs and tools and their
@@ -2798,7 +2798,7 @@ def main():
        'activate' commands and the invocation of 'emsdk_env', or otherwise
        these commands will default to operating on the default build type
        which in and RelWithDebInfo.''')
-    return 1
+    return 0
 
   # Extracts a boolean command line argument from sys.argv and returns True if it was present
   def extract_bool_arg(name):
