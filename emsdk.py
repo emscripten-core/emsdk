@@ -2677,7 +2677,7 @@ def error_on_missing_tool(name):
 def main():
   global emscripten_config_directory, BUILD_FOR_TESTING, ENABLE_LLVM_ASSERTIONS, TTY_OUTPUT
 
-  if len(sys.argv) <= 1 or sys.argv[1] == 'help' or sys.argv[1] == '--help':
+  if len(sys.argv) <= 1 or sys.argv[1] in ('help', '--help', '-h'):
     if len(sys.argv) <= 1:
       print(' emsdk: No command given. Please call one of the following:')
     else:
