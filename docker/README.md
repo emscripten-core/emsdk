@@ -59,6 +59,7 @@ This step will build Dockerfile as given tag on local machine
 ```bash
 # using docker
 docker build \
+    --network host \
     --build-arg=EMSCRIPTEN_VERSION=1.38.43-upstream \
     --tag emscripten/emsdk:1.38.43-upstream \
     .
