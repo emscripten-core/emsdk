@@ -1,5 +1,6 @@
 :: equivilent of test.sh as windows bat file
 set PATH=%PATH%;%PYTHON_BIN%
+@CALL emsdk update-tags
 @CALL emsdk install tot
 @CALL emsdk activate tot
 @CALL emsdk_env.bat --build=Release
