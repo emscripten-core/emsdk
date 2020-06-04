@@ -81,7 +81,7 @@ jobs:
           name: Add python to bash path
           command: echo "export PATH=\"$PATH:/c/python27amd64/\"" >> $BASH_ENV
       - run:
-          name: Install latest
+          name: test.bat
           shell: cmd.exe
           command: scripts\test.bat
       - run:
