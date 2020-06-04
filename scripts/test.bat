@@ -4,4 +4,5 @@ set PATH=%PATH%;%PYTHON_BIN%
 @CALL emsdk activate latest
 @CALL emsdk_env.bat --build=Release
 @CALL python -c "import sys; print(sys.executable)"
+set EMCC_DEBUG=1
 @CALL emcc.bat -v
