@@ -119,6 +119,11 @@ def test_lib_building(emcc, use_asmjs_optimizer):
                              unexpected=unexpected,
                              stderr=subprocess.STDOUT)
 
+  print('cache dir')
+  print(os.listdir(os.path.join('upstream', 'emscripten', 'cache')))
+  print('cache wasm dir')
+  print(os.listdir(os.path.join('upstream', 'emscripten', 'cache', 'wasm')))
+
   # The emsdk ships all system libraries so we don't expect to see any
   # cache population unless we explicly --clear-cache.
   test_build('', expected=False)
