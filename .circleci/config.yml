@@ -90,6 +90,15 @@ jobs:
             source emsdk_env.sh
             python scripts/test.py
 
+  build-docker-image:
+    machine: true
+    steps:
+      - checkout
+      - run: cd docker && make version=${CIRCLE_TAG}-upstream
+      - run: |
+          docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
+          docker push emscripten/emsdk:${CIRCLE_TAG}-upstream
+
 workflows:
   flake8:
     jobs:
@@ -103,3 +112,11 @@ workflows:
   test-windows:
     jobs:
       - test-windows
+  build-docker-image:
+    jobs:
+      - build-docker-image:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /.*/
