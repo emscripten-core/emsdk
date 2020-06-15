@@ -7,7 +7,6 @@ ARG EMSCRIPTEN_VERSION=1.39.18
 
 # ------------------------------------------------------------------------------
 
-# NOTE: Any change of following variables should be reflected in ./entrypoint file
 ENV EMSDK /emsdk
 
 # ------------------------------------------------------------------------------
@@ -38,14 +37,11 @@ RUN  echo "## Install Emscripten" \
 # This generates configuration that contains all valid paths according to installed SDK
 RUN cd ${EMSDK} \
     &&  echo "## Generate standard configuration" \
-    &&  ./emsdk activate ${EMSCRIPTEN_VERSION} --embedded \
+    &&  ./emsdk activate ${EMSCRIPTEN_VERSION} \
     &&  ./emsdk construct_env \
     &&  cat ${EMSDK}/emsdk_set_env.sh \
-    &&  chmod -R 777 ${EMSDK} \
+    &&  chmod -R 777 ${EMSDK}/upstream/emscripten/cache \
 &&  echo "## Done"
-
-# Create an entrypoint that activates Emscripten SDK and helps running this image as non-root user
-COPY entrypoint ${EMSDK}/
 
 # Clean up emscripten installation and strip some symbols
 RUN echo "## Aggresive optimization: Remove debug symbols" \
@@ -55,7 +51,7 @@ RUN echo "## Aggresive optimization: Remove debug symbols" \
     # Remove debugging symbols from embedded node (extra 7MB)
     && strip -s `which node` \
     # Tests consume ~80MB disc space
-    && rm -fr ${EMSDK}/upstreeam/emscripten/tests \
+    && rm -fr ${EMSDK}/upstream/emscripten/tests \
     # strip out symbols from clang (~extra 50MB disc space)
     && find ${EMSDK}/upstream/bin -type f -exec strip -s {} + || true \
     && find ${EMSDK}/upstream/fastcomp/bin -type f -exec strip -s {} + || true \
@@ -82,9 +78,7 @@ COPY --from=stage_build /emsdk /emsdk
 # Fallback in case Emscripten isn't activated.
 # This will let use tools offered by this image inside other Docker images (sub-stages) or with custom / no entrypoint
 ENV EMSDK /emsdk
-
-# Use entrypoint that's coming from emscripten-slim image. It sets all required system paths and variables
-ENTRYPOINT ["/emsdk/entrypoint"]
+ENV PATH="${EMSDK}:${EMSDK}/upstream/emscripten:${PATH}"
 
 
 # ------------------------------------------------------------------------------
@@ -95,12 +89,11 @@ ENTRYPOINT ["/emsdk/entrypoint"]
 # user 1000:1000 might not exist on host machine, and in this case running any
 # docker image will cause other random problems (mostly due `$HOME` pointing to
 # `/`)
-# This extra user works nicely with entrypoint provided in `/emsdk/entrypoint`
-# as it detects case explained before.
 RUN echo "## Create emscripten user (1000:1000)" \
     &&  groupadd --gid 1000 emscripten \
     &&  useradd --uid 1000 --gid emscripten --shell /bin/bash --create-home emscripten \
-    \
+    &&  echo "umask 0000" >> ~/.bashrc \
+    &&  echo ". ${EMSDK}/emsdk_set_env.sh" >> ~/.bashrc \
 &&  echo "## Done"
 
 # ------------------------------------------------------------------------------
@@ -145,7 +138,6 @@ COPY test_dockerimage.sh ${EMSDK}/
 RUN echo "## Internal Testing of image" \
     &&  . ${EMSDK}/emsdk_set_env.sh \
     &&  ${EMSDK}/test_dockerimage.sh  \
-    \
 &&  echo "## Done"
 
 # ------------------------------------------------------------------------------
