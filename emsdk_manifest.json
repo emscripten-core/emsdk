@@ -486,7 +486,7 @@
   {
     "version": "upstream-master",
     "bitness": 64,
-    "uses": ["llvm-git-master-64bit", "node-12.9.1-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
+    "uses": ["llvm-git-master-64bit", "node-12.9.1-64bit", "python-3.7.7-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
     "os": "osx"
   },
   {
@@ -516,7 +516,7 @@
   {
     "version": "fastcomp-master",
     "bitness": 64,
-    "uses": ["fastcomp-clang-master-64bit", "node-12.9.1-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
+    "uses": ["fastcomp-clang-master-64bit", "node-12.9.1-64bit", "python-3.7.7-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
     "os": "osx"
   },
   {
@@ -598,7 +598,7 @@
   {
     "version": "releases-fastcomp-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-12.9.1-64bit", "releases-fastcomp-%releases-tag%-64bit"],
+    "uses": ["node-12.9.1-64bit", "python-3.7.7-64bit", "releases-fastcomp-%releases-tag%-64bit"],
     "os": "osx",
     "custom_install_script": "emscripten_npm_install"
   },
@@ -648,7 +648,7 @@
   {
     "version": "fastcomp-%precompiled_tag32%",
     "bitness": 32,
-    "uses": ["fastcomp-clang-e%precompiled_tag32%-32bit", "node-8.9.1-32bit", "emscripten-%precompiled_tag32%"],
+    "uses": ["fastcomp-clang-e%precompiled_tag32%-32bit", "node-8.9.1-32bit", "python-3.7.7-64bit", "emscripten-%precompiled_tag32%"],
     "os": "osx",
     "version_filter": [
       ["%precompiled_tag32%", ">", "1.37.22"]
@@ -657,7 +657,7 @@
   {
     "version": "fastcomp-%precompiled_tag64%",
     "bitness": 64,
-    "uses": ["fastcomp-clang-e%precompiled_tag64%-64bit", "node-8.9.1-64bit", "emscripten-%precompiled_tag64%"],
+    "uses": ["fastcomp-clang-e%precompiled_tag64%-64bit", "node-8.9.1-64bit", "python-3.7.7-64bit", "emscripten-%precompiled_tag64%"],
     "os": "osx",
     "version_filter": [
       ["%precompiled_tag64%", ">", "1.37.22"]
