@@ -577,7 +577,7 @@
   {
     "version": "releases-upstream-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-12.9.1-64bit", "releases-upstream-%releases-tag%-64bit"],
+    "uses": ["node-12.9.1-64bit", "python-3.7.7-64bit", "releases-upstream-%releases-tag%-64bit"],
     "os": "osx",
     "custom_install_script": "emscripten_npm_install"
   },
