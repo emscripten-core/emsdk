@@ -491,14 +491,14 @@ def run(cmd, cwd=None):
 
 
 # http://pythonicprose.blogspot.fi/2009/10/python-extract-targz-archive.html
-def untargz(source_filename, dest_dir, unpack_even_if_exists=False):
+def untargz(source_filename, dest_dir, strip, unpack_even_if_exists=False):
   debug_print('untargz(source_filename=' + source_filename + ', dest_dir=' + dest_dir + ')')
   if not unpack_even_if_exists and num_files_in_directory(dest_dir) > 0:
     print("File '" + source_filename + "' has already been unpacked, skipping.")
     return True
   print("Unpacking '" + source_filename + "' to '" + dest_dir + "'")
   mkdir_p(dest_dir)
-  run(['tar', '-xvf' if VERBOSE else '-xf', sdk_path(source_filename), '--strip', '1'], cwd=dest_dir)
+  run(['tar', '-xvf' if VERBOSE else '-xf', sdk_path(source_filename), '--strip', str(strip)], cwd=dest_dir)
   # tfile = tarfile.open(source_filename, 'r:gz')
   # tfile.extractall(dest_dir)
   return True
@@ -1350,7 +1350,7 @@ def build_binaryen_tool(tool):
   return success
 
 
-def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False,
+def download_and_unzip(zipfile, dest_dir, strip, download_even_if_exists=False,
                        filename_prefix='', clobber=True):
   debug_print('download_and_unzip(zipfile=' + zipfile + ', dest_dir=' + dest_dir + ')')
 
@@ -1381,7 +1381,7 @@ def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False,
   if zipfile.endswith('.zip'):
     return unzip(download_target, dest_dir, unpack_even_if_exists=download_even_if_exists)
   else:
-    return untargz(download_target, dest_dir, unpack_even_if_exists=download_even_if_exists)
+    return untargz(download_target, dest_dir, strip=strip, unpack_even_if_exists=download_even_if_exists)
 
 
 def to_native_path(p):
@@ -1878,7 +1878,8 @@ class Tool(object):
       # archive even when the target directory exists.
       download_even_if_exists = (self.id == 'releases')
       filename_prefix = getattr(self, 'zipfile_prefix', '')
-      success = download_and_unzip(url, self.installation_path(), download_even_if_exists=download_even_if_exists, filename_prefix=filename_prefix)
+      strip = int(getattr(self, 'strip', '1'))
+      success = download_and_unzip(url, self.installation_path(), strip=strip, download_even_if_exists=download_even_if_exists, filename_prefix=filename_prefix)
     else:
       dst_file = download_file(urljoin(emsdk_packages_url, self.download_url()), self.installation_path())
       if dst_file:
@@ -3023,7 +3024,7 @@ def main():
       outfile = sys.argv[2]
     tools_to_activate = currently_active_tools()
     tools_to_activate = process_tool_list(tools_to_activate, log_errors=True)
-    env_string = construct_env(tools_to_activate, len(sys.argv) >= 3 and 'perm' in sys.argv[2])
+    env_string = construct_env(tools_to_activate, False)
     open(outfile, 'w').write(env_string)
     if UNIX:
       os.chmod(outfile, 0o755)

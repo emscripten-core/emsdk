@@ -4,7 +4,7 @@
 # University of Illinois/NCSA Open Source License.  Both these licenses can be
 # found in the LICENSE file.
 
-"""Updates the python binaries that we cache store at
+"""Updates the windows python binaries that we cache store at
 http://storage.google.com/webassembly.
 
 Currently this is windows only and we rely on the system python on other
@@ -16,6 +16,12 @@ recipe:
   2. Remove .pth file to work around https://bugs.python.org/issue34841
   3. Download and install pywin32 in the `site-packages` directory
   4. Re-zip and upload to storage.google.com
+
+
+Note: The mac version of python was downloaded from the homebrew archive:
+  https://bintray.com/homebrew/bottles/python/3.7.7#files
+With the sha265 checked against the formula:
+  https://github.com/Homebrew/homebrew-core/blob/master/Formula/python.rb
 """
 
 import urllib.request

@@ -289,6 +289,17 @@
     "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
   },
   {
+    "id": "python",
+    "version": "3.7.7",
+    "bitness": 64,
+    "strip": 2,
+    "arch": "x86_64",
+    "osx_url": "python-3.7.7.high_sierra.bottle.tar.gz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_cfg": "PYTHON='%installation_dir%/bin/python3",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3"
+  },
+  {
     "id": "java",
     "version": "8.152",
     "bitness": 32,
