@@ -91,7 +91,6 @@ jobs:
             python scripts/test.py
 
   build-docker-image:
-    machine: true
     steps:
       - checkout
       - run:
