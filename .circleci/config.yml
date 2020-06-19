@@ -94,12 +94,26 @@ jobs:
     machine: true
     steps:
       - checkout
-      - run: docker build --network host --build-arg=EMSCRIPTEN_VERSION=${CIRCLE_TAG}-upstream --tag emscripten/emsdk:${CIRCLE_TAG} ./docker
-      - run: docker tag emscripten/emsdk:${CIRCLE_TAG} emscripten/emsdk:latest
-      - run: |
-          docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
-          docker push emscripten/emsdk:${CIRCLE_TAG}
-          docker push emscripten/emsdk:latest
+      - run:
+          name: build
+          command: docker build --network host ./docker
+
+  publish-docker-image:
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: build
+          command: docker build --network host --build-arg=EMSCRIPTEN_VERSION=${CIRCLE_TAG}-upstream --tag emscripten/emsdk:${CIRCLE_TAG} ./docker
+      - run:
+          name: tag image
+          command: docker tag emscripten/emsdk:${CIRCLE_TAG} emscripten/emsdk:latest
+      - run:
+          name: push image
+          command: |
+            docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
+            docker push emscripten/emsdk:${CIRCLE_TAG}
+            docker push emscripten/emsdk:latest
 
 workflows:
   flake8:
@@ -116,7 +130,8 @@ workflows:
       - test-windows
   build-docker-image:
     jobs:
-      - build-docker-image:
+      - build-docker-image
+      - publish-docker-image:
           filters:
             branches:
               ignore: /.*/
