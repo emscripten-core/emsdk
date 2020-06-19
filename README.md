@@ -187,10 +187,9 @@ the user. This may be a problem if you need to simultaneously build with
 multiple Emscripten compiler versions, since the user home directory can only be
 configured to point to one compiler at a time. This can be overcome by
 specifying the '--embedded' option as a parameter to 'emsdk activate', which
-will signal emsdk to generate the compiler configuration files inside the emsdk
-root directory instead of the user home directory. Use this option also when it
-is desirable to run emsdk in a fully portable mode that does not touch any files
-outside the emsdk directory.
+will signal emsdk to generate the compiler configuration files inside the
+SDK itself.  Use this option also when it is desirable to run emsdk in a fully
+portable mode that does not touch any files outside the emsdk directory.
 
 ### How do I track the latest Emscripten development with the SDK?
 
