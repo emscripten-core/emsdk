@@ -91,7 +91,8 @@ jobs:
             python scripts/test.py
 
   build-docker-image:
-    machine: true
+    docker:
+      - image: docker:17.05.0-ce-git
     steps:
       - checkout
       - run:
@@ -99,7 +100,8 @@ jobs:
           command: docker build --network host ./docker
 
   publish-docker-image:
-    machine: true
+    docker:
+      - image: docker:17.05.0-ce-git
     steps:
       - checkout
       - run:
