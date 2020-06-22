@@ -91,15 +91,37 @@ jobs:
             python scripts/test.py
 
   build-docker-image:
-    machine: true
+    executor: bionic
     steps:
       - checkout
-      - run: docker build --network host --build-arg=EMSCRIPTEN_VERSION=${CIRCLE_TAG}-upstream --tag emscripten/emsdk:${CIRCLE_TAG} ./docker
-      - run: docker tag emscripten/emsdk:${CIRCLE_TAG} emscripten/emsdk:latest
-      - run: |
-          docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
-          docker push emscripten/emsdk:${CIRCLE_TAG}
-          docker push emscripten/emsdk:latest
+      - run:
+          name: install docker
+          command: apt-get update -q && apt-get install -q -y docker.io
+      - setup_remote_docker
+      - run:
+          name: build
+          command: docker build --network host ./docker
+
+  publish-docker-image:
+    executor: bionic
+    steps:
+      - checkout
+      - run:
+          name: install docker
+          command: apt-get update -q && apt-get install -q -y docker.io
+      - setup_remote_docker
+      - run:
+          name: build
+          command: docker build --network host --build-arg=EMSCRIPTEN_VERSION=${CIRCLE_TAG}-upstream --tag emscripten/emsdk:${CIRCLE_TAG} ./docker
+      - run:
+          name: tag image
+          command: docker tag emscripten/emsdk:${CIRCLE_TAG} emscripten/emsdk:latest
+      - run:
+          name: push image
+          command: |
+            docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
+            docker push emscripten/emsdk:${CIRCLE_TAG}
+            docker push emscripten/emsdk:latest
 
 workflows:
   flake8:
@@ -116,7 +138,8 @@ workflows:
       - test-windows
   build-docker-image:
     jobs:
-      - build-docker-image:
+      - build-docker-image
+      - publish-docker-image:
           filters:
             branches:
               ignore: /.*/
