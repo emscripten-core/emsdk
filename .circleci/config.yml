@@ -98,7 +98,7 @@ jobs:
           name: Install Docker client
           command: |
             apt-get update -q
-            apt-get install -q docker.io
+            apt-get install -q -y docker.io
       - run:
           name: build
           command: docker build --network host ./docker
