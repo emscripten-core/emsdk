@@ -94,6 +94,9 @@ jobs:
     executor: bionic
     steps:
       - checkout
+      - run:
+          name: install docker
+          command: apt-get update -q && apt-get install -q -y docker.io
       - setup_remote_docker
       - run:
           name: build
@@ -103,6 +106,9 @@ jobs:
     executor: bionic
     steps:
       - checkout
+      - run:
+          name: install docker
+          command: apt-get update -q && apt-get install -q -y docker.io
       - setup_remote_docker
       - run:
           name: build
