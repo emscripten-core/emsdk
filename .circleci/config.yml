@@ -95,6 +95,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Install Docker client
+          command: apt-get install docker-ce-cli
+      - run:
           name: build
           command: docker build --network host ./docker
 
