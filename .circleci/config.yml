@@ -91,6 +91,7 @@ jobs:
             python scripts/test.py
 
   build-docker-image:
+    executor: bionic
     steps:
       - checkout
       - run:
