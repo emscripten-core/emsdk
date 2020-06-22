@@ -91,14 +91,9 @@ jobs:
             python scripts/test.py
 
   build-docker-image:
-    executor: bionic
+    machine: true
     steps:
       - checkout
-      - run:
-          name: Install Docker client
-          command: |
-            apt-get update -q
-            apt-get install -q -y docker.io
       - run:
           name: build
           command: docker build --network host ./docker
