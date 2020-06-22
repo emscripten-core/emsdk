@@ -91,19 +91,19 @@ jobs:
             python scripts/test.py
 
   build-docker-image:
-    docker:
-      - image: docker:17.05.0-ce-git
+    executor: bionic
     steps:
       - checkout
+      - setup_remote_docker
       - run:
           name: build
           command: docker build --network host ./docker
 
   publish-docker-image:
-    docker:
-      - image: docker:17.05.0-ce-git
+    executor: bionic
     steps:
       - checkout
+      - setup_remote_docker
       - run:
           name: build
           command: docker build --network host --build-arg=EMSCRIPTEN_VERSION=${CIRCLE_TAG}-upstream --tag emscripten/emsdk:${CIRCLE_TAG} ./docker
