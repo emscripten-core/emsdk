@@ -16,7 +16,7 @@ import subprocess
 import os
 import shutil
 
-version = '12.16.3'
+version = '12.18.1'
 base = 'https://nodejs.org/dist/latest-v12.x/'
 upload_base = 'gs://webassembly/emscripten-releases-builds/deps/'
 
@@ -45,7 +45,7 @@ for suffix in suffixes:
 
     upload_url = upload_base + filename
     print('Uploading: ' + upload_url)
-    cmd = ['gsutil', 'cp', '-n', filename, upload_url]
+    cmd = ['gsutil.py', 'cp', '-n', filename, upload_url]
     print(' '.join(cmd))
     subprocess.check_call(cmd)
     os.remove(filename)
