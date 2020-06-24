@@ -112,19 +112,15 @@ jobs:
       - setup_remote_docker
       - run:
           name: build
-          # TESTING: using fixed EMSCRIPTEN_VERSION.  Will revert this as
-          # soon as we've published docker image autoamtically using a test
-          # tag.
-          #command: docker build --network host --build-arg EMSCRIPTEN_VERSION=${CIRCLE_TAG} --tag emscripten/emsdk:${CIRCLE_TAG} ./docker
-          command: docker build --network host --build-arg EMSCRIPTEN_VERSION=1.39.18 --tag emscripten/emsdk:1.39.18 ./docker
+          command: docker build --network host --build-arg=EMSCRIPTEN_VERSION=${CIRCLE_TAG}-upstream --tag emscripten/emsdk:${CIRCLE_TAG} ./docker
       - run:
           name: tag image
-          command: docker tag emscripten/emsdk:1.39.18 emscripten/emsdk:latest
+          command: docker tag emscripten/emsdk:${CIRCLE_TAG} emscripten/emsdk:latest
       - run:
           name: push image
           command: |
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
-            docker push emscripten/emsdk:1.39.18
+            docker push emscripten/emsdk:${CIRCLE_TAG}
             docker push emscripten/emsdk:latest
 
 workflows:
