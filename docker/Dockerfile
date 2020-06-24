@@ -78,10 +78,10 @@ COPY --from=stage_build /emsdk /emsdk
 # Fallback in case Emscripten isn't activated.
 # This will let use tools offered by this image inside other Docker images
 # (sub-stages) or with custom / no entrypoint
-ENV EMSDK_NODE=/emsdk/node/12.9.1_64bit/bin/node
+ENV EMSDK_NODE=/emsdk/node/12.18.1_64bit/bin/node
 ENV EMSDK=/emsdk
 ENV EM_CONFIG=/emsdk/.emscripten
-ENV PATH="${EMSDK}:${EMSDK}/upstream/emscripten:${EMSDK}/upstream/bin:emsdk/node/12.9.1_64bit/bin:${PATH}"
+ENV PATH="${EMSDK}:${EMSDK}/upstream/emscripten:${EMSDK}/upstream/bin:emsdk/node/12.18.1_64bit/bin:${PATH}"
 
 # ------------------------------------------------------------------------------
 # Create a 'standard` 1000:1000 user
