@@ -100,7 +100,10 @@ jobs:
       - setup_remote_docker
       - run:
           name: build
-          command: docker build --network host ./docker
+          command: make -C ./docker version=${CIRCLE_TAG} build
+      - run:
+          name: test
+          command: make -C ./docker version=${CIRCLE_TAG} test
 
   publish-docker-image:
     executor: bionic
@@ -112,16 +115,15 @@ jobs:
       - setup_remote_docker
       - run:
           name: build
-          command: docker build --network host --build-arg EMSCRIPTEN_VERSION=${CIRCLE_TAG} --tag emscripten/emsdk:${CIRCLE_TAG} ./docker
+          command: make -C ./docker version=${CIRCLE_TAG} build
       - run:
-          name: tag image
-          command: docker tag emscripten/emsdk:${CIRCLE_TAG} emscripten/emsdk:latest
+          name: test
+          command: make -C ./docker version=${CIRCLE_TAG} test
       - run:
           name: push image
           command: |
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
-            docker push emscripten/emsdk:${CIRCLE_TAG}
-            docker push emscripten/emsdk:latest
+            make -C ./docker version=${CIRCLE_TAG} alias=latest push
 
 workflows:
   flake8:
