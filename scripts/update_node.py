@@ -45,7 +45,7 @@ for suffix in suffixes:
 
     upload_url = upload_base + filename
     print('Uploading: ' + upload_url)
-    cmd = ['gsutil.py', 'cp', '-n', filename, upload_url]
+    cmd = ['gsutil', 'cp', '-n', filename, upload_url]
     print(' '.join(cmd))
     subprocess.check_call(cmd)
     os.remove(filename)
