@@ -124,7 +124,7 @@ jobs:
           name: push image
           command: |
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
-            docker push emscripten/emsdk:${CIRCLE_TAG}
+            docker push emscripten/emsdk:1.39.18
             docker push emscripten/emsdk:latest
 
 workflows:
