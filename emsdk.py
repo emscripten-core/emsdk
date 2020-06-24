@@ -2486,7 +2486,7 @@ def set_active_tools(tools_to_activate, permanently_activate):
 
   # Construct a .bat script that will be invoked to set env. vars and PATH
   if WINDOWS:
-    env_string = construct_env(tools_to_activate, False)
+    env_string = construct_env(tools_to_activate)
     open(EMSDK_SET_ENV, 'w').write(env_string)
 
   # Apply environment variables to global all users section.
@@ -2583,16 +2583,9 @@ def adjusted_path(tools_to_activate, log_additions=False, system_path_only=False
   return (separator.join(whole_path), new_emsdk_tools)
 
 
-def construct_env(tools_to_activate, permanent):
+def construct_env(tools_to_activate):
   env_string = ''
   newpath, added_path = adjusted_path(tools_to_activate)
-
-  # Dont permanently add to PATH, since this will break the whole system if there
-  # are more than 1024 chars in PATH.
-  # (SETX truncates to set only 1024 chars)
-  #  if permanent:
-  #    print('SETX PATH "' + newpath + '"')
-  #  else:
 
   # Don't bother setting the path if there are no changes.
   if os.environ['PATH'] != newpath:
@@ -2643,10 +2636,7 @@ def construct_env(tools_to_activate, permanent):
       if POWERSHELL:
         env_string += '$env:' + key + '="' + value + '"\n'
       elif CMD:
-        if permanent:
-          env_string += 'SETX ' + key + ' "' + value + '"\n'
-        else:
-          env_string += 'SET ' + key + '=' + value + '\n'
+        env_string += 'SET ' + key + '=' + value + '\n'
       elif CSH:
         env_string += 'setenv ' + key + ' "' + value + '"\n'
       elif BASH:
@@ -3023,7 +3013,7 @@ def main():
       outfile = sys.argv[2]
     tools_to_activate = currently_active_tools()
     tools_to_activate = process_tool_list(tools_to_activate, log_errors=True)
-    env_string = construct_env(tools_to_activate, len(sys.argv) >= 3 and 'perm' in sys.argv[2])
+    env_string = construct_env(tools_to_activate)
     open(outfile, 'w').write(env_string)
     if UNIX:
       os.chmod(outfile, 0o755)
