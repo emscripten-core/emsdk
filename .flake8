@@ -6,6 +6,7 @@ ignore =
    E121, # Continuation line under-indented for hanging indent
    E722  # bare excepts
 exclude =
+  ./llvm
   ./gnu
   ./upstream
   ./fastcomp
