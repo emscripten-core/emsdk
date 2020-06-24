@@ -3,7 +3,7 @@ FROM debian:buster AS stage_build
 # ------------------------------------------------------------------------------
 
 # Supports only 1.38.40+, accepts also '-upstream' variants
-ARG EMSCRIPTEN_VERSION=1.39.18
+ARG EMSCRIPTEN_VERSION=1.39.17
 
 # ------------------------------------------------------------------------------
 
