@@ -1,12 +1,6 @@
 FROM debian:buster AS stage_build
 
-# ------------------------------------------------------------------------------
-
-# Supports only 1.38.40+, accepts also '-upstream' variants
 ARG EMSCRIPTEN_VERSION=1.39.18
-
-# ------------------------------------------------------------------------------
-
 ENV EMSDK /emsdk
 
 # ------------------------------------------------------------------------------
@@ -52,9 +46,10 @@ RUN echo "## Aggresive optimization: Remove debug symbols" \
     && strip -s `which node` \
     # Tests consume ~80MB disc space
     && rm -fr ${EMSDK}/upstream/emscripten/tests \
+    # Fastcomp is not supported
+    && rm -fr ${EMSDK}/upstream/fastcomp \
     # strip out symbols from clang (~extra 50MB disc space)
     && find ${EMSDK}/upstream/bin -type f -exec strip -s {} + || true \
-    && find ${EMSDK}/upstream/fastcomp/bin -type f -exec strip -s {} + || true \
 &&  echo "## Done"
 
 # Generate sanity
