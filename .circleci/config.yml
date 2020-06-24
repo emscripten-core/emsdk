@@ -119,7 +119,7 @@ jobs:
           command: docker build --network host --build-arg EMSCRIPTEN_VERSION=1.39.18 --tag emscripten/emsdk:1.39.18 ./docker
       - run:
           name: tag image
-          command: docker tag emscripten/emsdk:${CIRCLE_TAG} emscripten/emsdk:latest
+          command: docker tag emscripten/emsdk:1.39.18 emscripten/emsdk:latest
       - run:
           name: push image
           command: |
