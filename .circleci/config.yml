@@ -112,7 +112,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: build
-          command: docker build --network host --build-arg=EMSCRIPTEN_VERSION=${CIRCLE_TAG}-upstream --tag emscripten/emsdk:${CIRCLE_TAG} ./docker
+          command: docker build --network host --build-arg EMSCRIPTEN_VERSION=${CIRCLE_TAG} --tag emscripten/emsdk:${CIRCLE_TAG} ./docker
       - run:
           name: tag image
           command: docker tag emscripten/emsdk:${CIRCLE_TAG} emscripten/emsdk:latest
