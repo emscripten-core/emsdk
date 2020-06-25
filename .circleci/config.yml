@@ -91,13 +91,9 @@ jobs:
             python scripts/test.py
 
   build-docker-image:
-    executor: bionic
+    machine: true # required for testing files permissions
     steps:
       - checkout
-      - run:
-          name: install docker
-          command: apt-get update -q && apt-get install -q -y docker.io
-      - setup_remote_docker
       # build and test the latest released version of EMSDK
       - run:
           name: build
