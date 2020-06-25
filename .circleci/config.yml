@@ -98,12 +98,13 @@ jobs:
           name: install docker
           command: apt-get update -q && apt-get install -q -y docker.io
       - setup_remote_docker
+      # build and test the latest released version of EMSDK
       - run:
           name: build
-          command: make -C ./docker version=${CIRCLE_TAG} build
+          command: make -C ./docker version=$(git describe --tags --abbrev=0) build
       - run:
           name: test
-          command: make -C ./docker version=${CIRCLE_TAG} test
+          command: make -C ./docker version=$(git describe --tags --abbrev=0) test
 
   publish-docker-image:
     executor: bionic
