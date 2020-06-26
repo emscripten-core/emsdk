@@ -140,6 +140,10 @@ RUN echo "## Internal Testing of image" \
 # Copy this Dockerimage into image, so that it will be possible to recreate it later
 COPY Dockerfile /emsdk/dockerfiles/emscripten-core/emsdk/
 
+# ------------------------------------------------------------------------------
+# Use commonly used /src as working directory
+WORKDIR /src
+
 LABEL maintainer="kontakt@trzeci.eu" \
       org.label-schema.name="emscripten" \
       org.label-schema.description="The official container with Emscripten SDK" \
