@@ -1509,7 +1509,8 @@ JS_ENGINES = [NODE_JS]
     emsdk_env = os.path.relpath(sdk_path('emsdk_env.sh'))
     if '/' not in emsdk_env:
       emsdk_env = './emsdk_env.sh'
-    print("To conveniently access the selected set of tools from the command line, consider adding the following directories to PATH, or call 'source " + emsdk_env + "' to do this for you.")
+    print("To conveniently access the selected set of tools from the command line, consider adding the following directories to PATH.")
+    print("Or call 'source " + emsdk_env + "' to do this for you. (Add these in your bashrc or other startup scripts to have these permanently available)")
     print('')
     print('   ' + ENVPATH_SEPARATOR.join(path_add))
 
