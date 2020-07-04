@@ -15,7 +15,7 @@ build: .TEST
 
 test: .TEST
 	# compilation as non-root
-	docker run --rm -u `id -u`:`id -g` -v `pwd`:/src -w /src emscripten/emsdk:${version} \
+	docker run --rm -u `id -u`:`id -g` -e HOME=/tmp -v `pwd`:/src -w /src emscripten/emsdk:${version} \
 		bash -c "\
 			mkdir -p .test \
 			&& echo 'int main() { return 0; }' > .test/main.c \
@@ -25,7 +25,7 @@ test: .TEST
 	rm -fr .test
 
 	# running as non-root and forcing downloading ports
-	docker run --rm -u `id -u`:`id -g` --net=host emscripten/emsdk:${version} embuilder build zlib
+	docker run --rm -u `id -u`:`id -g` -e HOME=/tmp --net=host emscripten/emsdk:${version} embuilder build zlib
 
 	# compilation without entrypoint
 	docker run --rm -e /bin/bash -v `pwd`:/src -w /src emscripten/emsdk:${version} \
