@@ -1,1 +1,1 @@
-@call "%~dp0emsdk" construct_env %*
+@call "%~dp0emsdk" construct_env

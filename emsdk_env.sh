@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # This script is sourced by the user and uses
 # their shell. Try not to use bashisms.
 
@@ -15,18 +15,13 @@
 #     ./emsdk_env.sh
 #
 # which won't have any effect.
-SRC="$BASH_SOURCE"
-if [ "$SRC" = "" ]; then
-  SRC="$0"
+DIR="$BASH_SOURCE"
+if [ "$DIR" = "" ]; then
+  DIR="$0"
 fi
-CURDIR="$(pwd)"
-cd "$(dirname "$SRC")"
-unset SRC
+DIR="$(dirname "$DIR")"
 
-tmpfile=`mktemp` || exit 1
 # Force emsdk to use bash syntax so that this works in windows + bash too
-EMSDK_BASH=1 ./emsdk construct_env $tmpfile
-. $tmpfile
-rm -f $tmpfile
-
-cd "$CURDIR"
+EMSDK_BASH=1 $DIR/emsdk construct_env
+. $DIR/emsdk_set_env.sh
+unset DIR

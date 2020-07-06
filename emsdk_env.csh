@@ -21,16 +21,13 @@ else
   set SRC="$SRC[2]"
 endif
 set CURDIR=`pwd`
-cd `dirname "$SRC"`
+set DIR=`dirname "$SRC"`
 unset SRC
 
 setenv EMSDK_CSH 1
 
-set tmpfile=`mktemp` || exit 1
-./emsdk construct_env $tmpfile
-source $tmpfile
-rm -f $tmpfile
+$DIR/emsdk construct_env
+source $DIR/emsdk_set_env.csh
+unset DIR
 
 unsetenv EMSDK_CSH
-
-cd "$CURDIR"

@@ -2490,6 +2490,9 @@ def set_active_tools(tools_to_activate, permanently_activate):
   copy_pregenerated_cache(tools_to_activate)
 
   # Construct a .bat script that will be invoked to set env. vars and PATH
+  # We only do this on windows since emsdk.bat is able to modify the
+  # calling shell environment.  On other platform `source emsdk_env.sh` is
+  # required.
   if WINDOWS:
     env_string = construct_env(tools_to_activate)
     open(EMSDK_SET_ENV, 'w').write(env_string)
@@ -2612,11 +2615,11 @@ def construct_env(tools_to_activate):
       print('')
 
   # A core variable EMSDK points to the root of Emscripten SDK directory.
-  env_vars_to_add = [('EMSDK', to_unix_path(emsdk_path()))]
+  env_vars = [('EMSDK', to_unix_path(emsdk_path()))]
 
   em_config_path = os.path.normpath(dot_emscripten_path())
   if to_unix_path(os.environ.get('EM_CONFIG', '')) != to_unix_path(em_config_path):
-    env_vars_to_add += [('EM_CONFIG', em_config_path)]
+    env_vars += [('EM_CONFIG', em_config_path)]
 
   for tool in tools_to_activate:
     config = tool.activated_config()
@@ -2624,14 +2627,18 @@ def construct_env(tools_to_activate):
       # For older emscripten versions that don't use this default we export
       # EM_CACHE.
       em_cache_dir = os.path.join(config['EMSCRIPTEN_ROOT'], 'cache')
-      env_vars_to_add += [('EM_CACHE', em_cache_dir)]
+      env_vars += [('EM_CACHE', em_cache_dir)]
     envs = tool.activated_environment()
     for env in envs:
       key, value = parse_key_value(env)
       value = to_native_path(tool.expand_vars(value))
-      # Don't set env vars which are already set to the correct value.
-      if key not in os.environ or to_unix_path(os.environ[key]) != to_unix_path(value):
-        env_vars_to_add += [(key, value)]
+      env_vars += [(key, value)]
+
+  # Don't set env vars which are already set to the correct value.
+  env_vars_to_add = []
+  for key, value in env_vars:
+    if key not in os.environ or to_unix_path(os.environ[key]) != to_unix_path(value):
+      env_vars_to_add.append((key, value))
 
   if env_vars_to_add:
     print('Setting environment variables:')
@@ -3006,19 +3013,15 @@ def main():
 
     return 0
   elif cmd == 'construct_env':
-    if len(sys.argv) == 2:
-      outfile = EMSDK_SET_ENV
-      # Clean up old temp file up front, in case of failure later before we get
-      # to write out the new one.
-      silentremove(EMSDK_SET_ENV)
-    else:
-      outfile = sys.argv[2]
+    # Clean up old temp file up front, in case of failure later before we get
+    # to write out the new one.
+    silentremove(EMSDK_SET_ENV)
     tools_to_activate = currently_active_tools()
     tools_to_activate = process_tool_list(tools_to_activate, log_errors=True)
     env_string = construct_env(tools_to_activate)
-    open(outfile, 'w').write(env_string)
+    open(EMSDK_SET_ENV, 'w').write(env_string)
     if UNIX:
-      os.chmod(outfile, 0o755)
+      os.chmod(EMSDK_SET_ENV, 0o755)
     return 0
   elif cmd == 'update':
     update_emsdk()
