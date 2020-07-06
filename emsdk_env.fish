@@ -6,12 +6,8 @@
 set -l script (status -f)
 set -l dir (dirname $script)
 
-pushd $dir > /dev/null
-
-./emsdk construct_env
-. ./emsdk_set_env.sh
+$dir/emsdk construct_env
+. $dir/emsdk_set_env.sh
 
 set -e -l script
 set -e -l dir
-
-popd > /dev/null
