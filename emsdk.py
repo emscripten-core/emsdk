@@ -170,6 +170,7 @@ emscripten_config_directory = os.path.expanduser("~/")
 if os.path.exists(os.path.join(emsdk_path(), '.emscripten')):
   emscripten_config_directory = emsdk_path()
 
+
 def get_set_env_script_name():
   if POWERSHELL:
     return 'emsdk_set_env.ps1'
@@ -178,6 +179,7 @@ def get_set_env_script_name():
   if CSH:
     return 'emsdk_set_env.csh'
   return 'emsdk_set_env.sh'
+
 
 EMSDK_SET_ENV = os.path.join(emsdk_path(), get_set_env_script_name())
 
