@@ -22,6 +22,5 @@ fi
 DIR="$(dirname "$DIR")"
 
 # Force emsdk to use bash syntax so that this works in windows + bash too
-EMSDK_BASH=1 $DIR/emsdk construct_env
-. $DIR/emsdk_set_env.sh
+eval `EMSDK_BASH=1 $DIR/emsdk construct_env`
 unset DIR

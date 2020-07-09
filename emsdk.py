@@ -96,7 +96,6 @@ if WINDOWS:
 else:
   ENVPATH_SEPARATOR = ':'
 
-
 ARCH = 'unknown'
 # platform.machine() may return AMD64 on windows, so standardize the case.
 machine = platform.machine().lower()
@@ -170,18 +169,7 @@ emscripten_config_directory = os.path.expanduser("~/")
 if os.path.exists(os.path.join(emsdk_path(), '.emscripten')):
   emscripten_config_directory = emsdk_path()
 
-
-def get_set_env_script_name():
-  if POWERSHELL:
-    return 'emsdk_set_env.ps1'
-  if WINDOWS and not MSYS:
-    return 'emsdk_set_env.bat'
-  if CSH:
-    return 'emsdk_set_env.csh'
-  return 'emsdk_set_env.sh'
-
-
-EMSDK_SET_ENV = os.path.join(emsdk_path(), get_set_env_script_name())
+EMSDK_SET_ENV = os.path.join(emsdk_path(), 'emsdk_set_env.bat')
 
 ARCHIVE_SUFFIXES = ('zip', '.tar', '.gz', '.xz', '.tbz2', '.bz2')
 
@@ -2479,6 +2467,11 @@ def copy_pregenerated_cache(tools_to_activate):
                      os.path.join(out_cache, filename))
 
 
+def write_set_env_bat(env_string):
+  assert(WINDOWS)
+  open(EMSDK_SET_ENV, 'w').write(env_string)
+
+
 # Reconfigure .emscripten to choose the currently activated toolset, set PATH
 # and other environment variables.
 # Returns the full list of deduced tools that are now active.
@@ -2503,7 +2496,7 @@ def set_active_tools(tools_to_activate, permanently_activate):
   # required.
   if WINDOWS:
     env_string = construct_env(tools_to_activate)
-    open(EMSDK_SET_ENV, 'w').write(env_string)
+    write_set_env_bat(env_string)
 
   # Apply environment variables to global all users section.
   if WINDOWS and permanently_activate:
@@ -2599,6 +2592,10 @@ def adjusted_path(tools_to_activate, log_additions=False, system_path_only=False
   return (separator.join(whole_path), new_emsdk_tools)
 
 
+def log_stderr(msg):
+  sys.stderr.write(str(msg) + '\n')
+
+
 def construct_env(tools_to_activate):
   env_string = ''
   newpath, added_path = adjusted_path(tools_to_activate)
@@ -2610,17 +2607,17 @@ def construct_env(tools_to_activate):
     elif CMD:
       env_string += 'SET PATH=' + newpath + '\n'
     elif CSH:
-      env_string += 'setenv PATH "' + newpath + '"\n'
+      env_string += 'setenv PATH "' + newpath + '";\n'
     elif BASH:
-      env_string += 'export PATH="' + newpath + '"\n'
+      env_string += 'export PATH="' + newpath + '";\n'
     else:
       assert False
 
     if added_path:
-      print('Adding directories to PATH:')
+      log_stderr('Adding directories to PATH:')
       for item in added_path:
-        print('PATH += ' + item)
-      print('')
+        log_stderr('PATH += ' + item)
+      log_stderr('')
 
   # A core variable EMSDK points to the root of Emscripten SDK directory.
   env_vars = [('EMSDK', to_unix_path(emsdk_path()))]
@@ -2649,19 +2646,19 @@ def construct_env(tools_to_activate):
       env_vars_to_add.append((key, value))
 
   if env_vars_to_add:
-    print('Setting environment variables:')
+    log_stderr('Setting environment variables:')
     for key, value in env_vars_to_add:
       if POWERSHELL:
         env_string += '$env:' + key + '="' + value + '"\n'
       elif CMD:
         env_string += 'SET ' + key + '=' + value + '\n'
       elif CSH:
-        env_string += 'setenv ' + key + ' "' + value + '"\n'
+        env_string += 'setenv ' + key + ' "' + value + '";\n'
       elif BASH:
-        env_string += 'export ' + key + '="' + value + '"\n'
+        env_string += 'export ' + key + '="' + value + '";\n'
       else:
         assert False
-      print(key + ' = ' + value)
+      log_stderr(key + ' = ' + value)
   return env_string
 
 
@@ -3023,19 +3020,20 @@ def main():
   elif cmd == 'construct_env':
     # Clean up old temp file up front, in case of failure later before we get
     # to write out the new one.
-    silentremove(EMSDK_SET_ENV)
     tools_to_activate = currently_active_tools()
     tools_to_activate = process_tool_list(tools_to_activate, log_errors=True)
     env_string = construct_env(tools_to_activate)
-    open(EMSDK_SET_ENV, 'w').write(env_string)
-    if UNIX:
-      os.chmod(EMSDK_SET_ENV, 0o755)
+    if WINDOWS:
+      write_set_env_bat(env_string)
+    else:
+      sys.stdout.write(env_string)
     return 0
   elif cmd == 'update':
     update_emsdk()
-    # Clean up litter after old emsdk update which may have left this temp file
-    # around.
-    silentremove(sdk_path(EMSDK_SET_ENV))
+    if WINDOWS:
+      # Clean up litter after old emsdk update which may have left this temp
+      # file around.
+      silentremove(sdk_path(EMSDK_SET_ENV))
     return 0
   elif cmd == 'update-tags':
     fetch_emscripten_tags()
