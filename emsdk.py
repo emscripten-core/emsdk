@@ -3023,7 +3023,7 @@ def main():
     tools_to_activate = currently_active_tools()
     tools_to_activate = process_tool_list(tools_to_activate, log_errors=True)
     env_string = construct_env(tools_to_activate)
-    if WINDOWS:
+    if WINDOWS and not BASH:
       write_set_env_bat(env_string)
     else:
       sys.stdout.write(env_string)
