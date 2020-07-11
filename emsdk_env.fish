@@ -6,8 +6,7 @@
 set -l script (status -f)
 set -l dir (dirname $script)
 
-$dir/emsdk construct_env
-. $dir/emsdk_set_env.sh
+eval ($dir/emsdk construct_env)
 
 set -e -l script
 set -e -l dir
