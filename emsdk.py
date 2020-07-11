@@ -169,7 +169,11 @@ emscripten_config_directory = os.path.expanduser("~/")
 if os.path.exists(os.path.join(emsdk_path(), '.emscripten')):
   emscripten_config_directory = emsdk_path()
 
-EMSDK_SET_ENV = os.path.join(emsdk_path(), 'emsdk_set_env.bat')
+EMSDK_SET_ENV = ""
+if POWERSHELL:
+  EMSDK_SET_ENV = os.path.join(emsdk_path(), 'emsdk_set_env.ps1')
+else:
+  EMSDK_SET_ENV = os.path.join(emsdk_path(), 'emsdk_set_env.bat')
 
 ARCHIVE_SUFFIXES = ('zip', '.tar', '.gz', '.xz', '.tbz2', '.bz2')
 
@@ -2467,7 +2471,7 @@ def copy_pregenerated_cache(tools_to_activate):
                      os.path.join(out_cache, filename))
 
 
-def write_set_env_bat(env_string):
+def write_set_env_script(env_string):
   assert(WINDOWS)
   open(EMSDK_SET_ENV, 'w').write(env_string)
 
@@ -2496,7 +2500,7 @@ def set_active_tools(tools_to_activate, permanently_activate):
   # required.
   if WINDOWS:
     env_string = construct_env(tools_to_activate)
-    write_set_env_bat(env_string)
+    write_set_env_script(env_string)
 
   # Apply environment variables to global all users section.
   if WINDOWS and permanently_activate:
@@ -3024,7 +3028,7 @@ def main():
     tools_to_activate = process_tool_list(tools_to_activate, log_errors=True)
     env_string = construct_env(tools_to_activate)
     if WINDOWS and not BASH:
-      write_set_env_bat(env_string)
+      write_set_env_script(env_string)
     else:
       sys.stdout.write(env_string)
     return 0
