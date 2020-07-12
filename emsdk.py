@@ -2907,7 +2907,8 @@ def main():
     print('')
 
     def installed_sdk_text(name):
-      return 'INSTALLED' if find_sdk(name).is_installed() else ''
+      sdk = find_sdk(name)
+      return 'INSTALLED' if sdk and sdk.is_installed() else ''
 
     if (LINUX or OSX or WINDOWS) and (ARCH == 'x86' or ARCH == 'x86_64'):
       print('The *recommended* precompiled SDK download is %s (%s).' % (find_latest_releases_version(), find_latest_releases_hash()))
