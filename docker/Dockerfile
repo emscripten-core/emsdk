@@ -18,14 +18,12 @@ RUN echo "## Start building" \
         python3-pip \
     && echo "## Done"
 
-RUN echo "## Get EMSDK" \
-    && git clone https://github.com/emscripten-core/emsdk.git ${EMSDK} \
-    && echo "## Done"
-
 RUN echo "## Install Emscripten" \
     && cd ${EMSDK} \
     && ./emsdk install ${EMSCRIPTEN_VERSION} \
     && echo "## Done"
+
+ADD . /emsdk
 
 # This generates configuration that contains all valid paths according to installed SDK
 RUN cd ${EMSDK} \

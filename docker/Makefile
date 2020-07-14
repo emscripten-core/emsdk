@@ -11,7 +11,7 @@ ifndef version
 endif
 
 build: .TEST
-	docker build --network host --build-arg=EMSCRIPTEN_VERSION=${version} --tag emscripten/emsdk:${version} .
+	cd .. && docker build --network host --build-arg=EMSCRIPTEN_VERSION=${version} --tag emscripten/emsdk:${version} -f docker/Dockerfile
 
 push: .TEST
 	docker push emscripten/emsdk:${version}
