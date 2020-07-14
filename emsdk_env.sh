@@ -1,4 +1,3 @@
-#!/bin/sh
 # This script is sourced by the user and uses
 # their shell. Try not to use bashisms.
 
@@ -15,11 +14,14 @@
 #     ./emsdk_env.sh
 #
 # which won't have any effect.
-DIR="$BASH_SOURCE"
-if [ "$DIR" = "" ]; then
-  DIR="$0"
+if [ -z "$BASH_SOURCE" ]; then
+  if [ ! -f "./emsdk.py" ]; then
+    echo "error: You must be in the same directory as emsdk_env.sh when sourcing it (or switch to the bash shell)" 1>&2
+  fi
+  DIR="."
+else
+  DIR="$(dirname "$BASH_SOURCE")"
 fi
-DIR="$(dirname "$DIR")"
 
 # Force emsdk to use bash syntax so that this works in windows + bash too
 eval `EMSDK_BASH=1 $DIR/emsdk construct_env`
