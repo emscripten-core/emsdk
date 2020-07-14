@@ -32,8 +32,6 @@ RUN  echo "## Install Emscripten" \
 RUN cd ${EMSDK} \
     &&  echo "## Generate standard configuration" \
     &&  ./emsdk activate ${EMSCRIPTEN_VERSION} \
-    &&  ./emsdk construct_env \
-    &&  cat ${EMSDK}/emsdk_set_env.sh \
     &&  chmod -R 777 ${EMSDK}/upstream/emscripten/cache \
 &&  echo "## Done"
 
@@ -41,7 +39,7 @@ RUN cd ${EMSDK} \
 RUN echo "## Aggresive optimization: Remove debug symbols" \
 &&  apt-get -qq -y update && apt-get -qq install -y --no-install-recommends \
         binutils \
-    && . ${EMSDK}/emsdk_set_env.sh \
+    && cd ${EMSDK} && . ./emsdk_env.sh \
     # Remove debugging symbols from embedded node (extra 7MB)
     && strip -s `which node` \
     # Tests consume ~80MB disc space
@@ -56,7 +54,7 @@ RUN echo "## Aggresive optimization: Remove debug symbols" \
 # TODO(sbc): We should be able to use just emcc -v here but it doesn't
 # currently create the sanity file.
 RUN echo "## Generate sanity" \
-   &&  . ${EMSDK}/emsdk_set_env.sh \
+   &&  cd ${EMSDK} && . ./emsdk_env.sh \
    &&  echo "int main() { return 0; }" > hello.c \
    &&  emcc -c hello.c \
    &&  cat ${EMSDK}/.emscripten_sanity \
@@ -90,7 +88,7 @@ RUN echo "## Create emscripten user (1000:1000)" \
     &&  groupadd --gid 1000 emscripten \
     &&  useradd --uid 1000 --gid emscripten --shell /bin/bash --create-home emscripten \
     &&  echo "umask 0000" >> /etc/bash.bashrc \
-    &&  echo ". /emsdk/emsdk_set_env.sh" >> /etc/bash.bashrc \
+    &&  echo ". /emsdk/emsdk_env.sh" >> /etc/bash.bashrc \
 &&  echo "## Done"
 
 # ------------------------------------------------------------------------------
