@@ -15,7 +15,7 @@
 #
 # which won't have any effect.
 if [ -z "$BASH_SOURCE" ]; then
-  if [ ! -f "./emsdk" ]; then
+  if [ ! -f "./emsdk.py" ]; then
     echo "error: You must be in the same directory as emsdk_env.sh when sourcing it (or switch to the bash shell)" 1>&2
   fi
   DIR="."
