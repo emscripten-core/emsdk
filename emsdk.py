@@ -2406,6 +2406,11 @@ def run_emcc(tools_to_activate):
 # in the correct location.
 # TODO(sbc): Remove this code.
 def copy_pregenerated_cache(tools_to_activate):
+  tools_with_cache = [t for t in tools_to_activate if hasattr(t, 'pregenerated_cache')]
+  if not tools_with_cache:
+    debug_print('Not copying pregenerated libaries (none found)')
+    return
+
   em_cache_dir = None
 
   # First look through all the tools to find the EMSCRIPTEN_ROOT
@@ -2418,13 +2423,18 @@ def copy_pregenerated_cache(tools_to_activate):
     debug_print('Not copying pregenerated libaries (no EMSCRIPTEN_ROOT found)')
     return
 
+  # Generating .emscripten will cause emcc to clear the cache on first run (emcc
+  # sees that the file has changed, since we write it here in the emsdk, and it
+  # never saw it before; so it clears the cache as it assumes a new config file
+  # means system libraries may need rebuilding). To avoid emcc's clearing wiping
+  # out the pregenerated cache contents we want to copy in, run emcc here, then
+  # copy the cache contents.
+  run_emcc(tools_to_activate)
+
   # If we found an EMSCRIPTEN_ROOT look for any tools that include
   # "pregenerated_cache" and copy those items into the cache.
-  for tool in tools_to_activate:
-    pregenerated_cache = getattr(tool, 'pregenerated_cache', None)
-    if not pregenerated_cache:
-      continue
-    for cache_dir in pregenerated_cache:
+  for tool in tools_with_cache:
+    for cache_dir in tool.pregenerated_cache:
       # Finish the install of an emscripten-releases build.
       install_path = to_native_path(sdk_path(tool.expand_vars(tool.install_path)))
       in_cache = os.path.join(install_path, 'lib', cache_dir)
@@ -2451,14 +2461,6 @@ def set_active_tools(tools_to_activate, permanently_activate):
   tools_to_activate = process_tool_list(tools_to_activate, log_errors=True)
 
   generate_dot_emscripten(tools_to_activate)
-
-  # Generating .emscripten will cause emcc to clear the cache on first run (emcc
-  # sees that the file has changed, since we write it here in the emsdk, and it
-  # never saw it before; so it clears the cache as it assumes a new config file
-  # means system libraries may need rebuilding). To avoid emcc's clearing wiping
-  # out the pregenerated cache contents we want to copy in, run emcc here, then
-  # copy the cache contents.
-  run_emcc(tools_to_activate)
 
   copy_pregenerated_cache(tools_to_activate)
 
