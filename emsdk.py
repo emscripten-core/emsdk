@@ -268,7 +268,8 @@ def cmake_generator_prefix():
   return ''
 
 
-# Removes a directory tree even if it was readonly, and doesn't throw exception on failure.
+# Removes a directory tree even if it was readonly, and doesn't throw exception
+# on failure.
 def remove_tree(d):
   debug_print('remove_tree(' + str(d) + ')')
   if not os.path.exists(d):
@@ -591,10 +592,7 @@ def unzip(source_filename, dest_dir, unpack_even_if_exists=False):
             move_with_overwrite(fix_potentially_long_windows_pathname(dst_filename), fix_potentially_long_windows_pathname(final_dst_filename))
 
       if common_subdir:
-        try:
-          remove_tree(unzip_to_dir)
-        except:
-          pass
+        remove_tree(unzip_to_dir)
   except zipfile.BadZipfile as e:
     print("Unzipping file '" + source_filename + "' failed due to reason: " + str(e) + "! Removing the corrupted zip file.")
     rmfile(source_filename)
@@ -1208,11 +1206,7 @@ def uninstall_optimizer(tool):
   debug_print('uninstall_optimizer(' + str(tool) + ')')
   build_root = optimizer_build_root(tool)
   print("Deleting path '" + build_root + "'")
-  try:
-    remove_tree(build_root)
-    os.remove(build_root)
-  except:
-    pass
+  remove_tree(build_root)
 
 
 def is_optimizer_installed(tool):
@@ -1298,11 +1292,7 @@ def uninstall_binaryen(tool):
   debug_print('uninstall_binaryen(' + str(tool) + ')')
   build_root = binaryen_build_root(tool)
   print("Deleting path '" + build_root + "'")
-  try:
-    remove_tree(build_root)
-    os.remove(build_root)
-  except:
-    pass
+  remove_tree(build_root)
 
 
 def is_binaryen_installed(tool):
@@ -1469,6 +1459,7 @@ JS_ENGINES = [NODE_JS]
 
   cfg = cfg.replace("'" + emsdk_path(), "emsdk_path + '")
 
+  print('Writing configuration file: ' + dot_emscripten_path())
   if os.path.exists(dot_emscripten_path()):
     backup_path = dot_emscripten_path() + ".old"
     print("Backing up old Emscripten configuration file in " + os.path.normpath(backup_path))
@@ -1478,12 +1469,9 @@ JS_ENGINES = [NODE_JS]
     text_file.write(cfg)
 
   # Clear old emscripten content.
-  try:
-    os.remove(os.path.join(emsdk_path(), ".emscripten_sanity"))
-  except:
-    pass
+  rmfile(os.path.join(emsdk_path(), ".emscripten_sanity"))
 
-  print("The Emscripten configuration file " + os.path.normpath(dot_emscripten_path()) + " has been rewritten with the following contents:")
+  print("Configuration file contents:")
   print('')
   print(cfg.strip())
   print('')
@@ -1935,12 +1923,8 @@ class Tool(object):
         uninstall_binaryen(self)
       else:
         raise Exception('Unknown custom_uninstall_script directive "' + self.custom_uninstall_script + '"!')
-    try:
-      print("Deleting path '" + self.installation_path() + "'")
-      remove_tree(self.installation_path())
-      os.remove(self.installation_path())
-    except:
-      pass
+    print("Deleting path '" + self.installation_path() + "'")
+    remove_tree(self.installation_path())
     print("Done uninstalling '" + str(self) + "'.")
 
   def dependencies(self):
@@ -2650,14 +2634,6 @@ def construct_env(tools_to_activate):
   return env_string
 
 
-def silentremove(filename):
-  try:
-    os.remove(filename)
-  except OSError as e:
-    if e.errno != errno.ENOENT:
-      raise
-
-
 def error_on_missing_tool(name):
   if name.endswith('-64bit') and not is_os_64bit():
     print("Error: '%s' is only provided for 64-bit OSes." % name)
@@ -3016,7 +2992,7 @@ def main():
     if WINDOWS:
       # Clean up litter after old emsdk update which may have left this temp
       # file around.
-      silentremove(sdk_path(EMSDK_SET_ENV))
+      rmfile(sdk_path(EMSDK_SET_ENV))
     return 0
   elif cmd == 'update-tags':
     fetch_emscripten_tags()
@@ -3025,8 +3001,6 @@ def main():
     if arg_global:
       print('Registering active Emscripten environment globally for all users.')
       print('')
-
-    print('Writing .emscripten configuration file in ' + emsdk_path())
 
     tools_to_activate = currently_active_tools()
     args = [x for x in sys.argv[2:] if not x.startswith('--')]
