@@ -2690,13 +2690,17 @@ def macos_require_python3():
   if sys.version_info[0] >= 3:
     return
   if not which('python3'):
-    if not which('brew'):
+    if not which('brew') or True:
       # Install an emsdk-local version of homebrew
       url = 'https://github.com/Homebrew/brew/archive/2.4.8.tar.gz'
       download_and_unzip(url, 'homebrew', download_even_if_exists=False,
                          filename_prefix='', clobber=True)
       brew_path = os.path.join(emsdk_path(), 'homebrew', 'bin')
       os.environ['PATH'] = brew_path + os.pathsep + os.environ['PATH']
+      print(which('brew'))
+      print(which('brew'))
+      print(which('brew'))
+      print(which('brew'))
     subprocess.check_call(['brew', 'install', 'python3'])
 
   print(which('python3'))
