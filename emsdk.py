@@ -65,15 +65,15 @@ if os.getenv('MSYSTEM'):
     # https://stackoverflow.com/questions/37460073/msys-vs-mingw-internal-environment-variables
     print('Warning: MSYSTEM environment variable is present, and is set to "' + os.getenv('MSYSTEM') + '". This shell has not been tested with emsdk and may not work.')
 
-OSX = False
+MACOS = False
 if platform.mac_ver()[0] != '':
-  OSX = True
+  MACOS = True
 
 LINUX = False
-if not OSX and (platform.system() == 'Linux' or os.name == 'posix'):
+if not MACOS and (platform.system() == 'Linux' or os.name == 'posix'):
   LINUX = True
 
-UNIX = (OSX or LINUX)
+UNIX = (MACOS or LINUX)
 
 
 # Pick which shell of 4 shells to use
@@ -134,7 +134,7 @@ def os_name():
     return 'win'
   elif LINUX:
     return 'linux'
-  elif OSX:
+  elif MACOS:
     return 'osx'
   else:
     raise Exception('unknown OS')
@@ -145,7 +145,7 @@ def os_name_for_emscripten_releases():
     return 'win'
   elif LINUX:
     return 'linux'
-  elif OSX:
+  elif MACOS:
     return 'mac'
   else:
     raise Exception('unknown OS')
@@ -746,7 +746,7 @@ def GIT(must_succeed=True):
   if must_succeed:
     if WINDOWS:
       msg = "ERROR: git executable was not found. Please install it by typing 'emsdk install git-1.9.4', or alternatively by installing it manually from http://git-scm.com/downloads . If you install git manually, remember to add it to PATH"
-    elif OSX:
+    elif MACOS:
       msg = "ERROR: git executable was not found. Please install git for this operation! This can be done from http://git-scm.com/ , or by installing XCode and then the XCode Command Line Tools (see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools )"
     elif LINUX:
       msg = "ERROR: git executable was not found. Please install git for this operation! This can be probably be done using your package manager, see http://git-scm.com/book/en/Getting-Started-Installing-Git"
@@ -887,7 +887,7 @@ def build_env(generator):
 
   # To work around a build issue with older Mac OS X builds, add -stdlib=libc++ to all builds.
   # See https://groups.google.com/forum/#!topic/emscripten-discuss/5Or6QIzkqf0
-  if OSX:
+  if MACOS:
     build_env['CXXFLAGS'] = ((build_env['CXXFLAGS'] + ' ') if hasattr(build_env, 'CXXFLAGS') else '') + '-stdlib=libc++'
   elif 'Visual Studio 15' in generator or 'Visual Studio 16' in generator:
     if 'Visual Studio 16' in generator:
@@ -1023,8 +1023,8 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
         print('Installing this package requires CMake. Get it from http://www.cmake.org/', file=sys.stderr)
       elif LINUX:
         print('Installing this package requires CMake. Get it via your system package manager (e.g. sudo apt-get install cmake), or from http://www.cmake.org/', file=sys.stderr)
-      elif OSX:
-        print('Installing this package requires CMake. Get it via a OSX package manager (Homebrew: "brew install cmake", or MacPorts: "sudo port install cmake"), or from http://www.cmake.org/', file=sys.stderr)
+      elif MACOS:
+        print('Installing this package requires CMake. Get it via a macOS package manager (Homebrew: "brew install cmake", or MacPorts: "sudo port install cmake"), or from http://www.cmake.org/', file=sys.stderr)
       return False
     raise
   except Exception as e:
@@ -1118,7 +1118,7 @@ def build_llvm_fastcomp(tool):
 
   # MacOS < 10.13 workaround for LLVM build bug https://github.com/kripken/emscripten/issues/5418:
   # specify HAVE_FUTIMENS=0 in the build if building with target SDK that is older than 10.13.
-  if OSX and (not os.environ.get('LLVM_CMAKE_ARGS') or 'HAVE_FUTIMENS' not in os.environ.get('LLVM_CMAKE_ARGS')) and xcode_sdk_version() < ['10', '13']:
+  if MACOS and (not os.environ.get('LLVM_CMAKE_ARGS') or 'HAVE_FUTIMENS' not in os.environ.get('LLVM_CMAKE_ARGS')) and xcode_sdk_version() < ['10', '13']:
     print('Passing -DHAVE_FUTIMENS=0 to LLVM CMake configure to workaround https://github.com/kripken/emscripten/issues/5418. Please update to macOS 10.13 or newer')
     args += ['-DHAVE_FUTIMENS=0']
 
@@ -1644,7 +1644,7 @@ class Tool(object):
     if hasattr(self, 'os'):
       if self.os == 'all':
         return True
-      if self.compatible_with_this_arch() and ((WINDOWS and 'win' in self.os) or (LINUX and ('linux' in self.os or 'unix' in self.os)) or (OSX and ('osx' in self.os or 'unix' in self.os))):
+      if self.compatible_with_this_arch() and ((WINDOWS and 'win' in self.os) or (LINUX and ('linux' in self.os or 'unix' in self.os)) or (MACOS and ('osx' in self.os or 'unix' in self.os))):
         return True
       else:
         return False
@@ -1652,7 +1652,7 @@ class Tool(object):
       if not hasattr(self, 'osx_url') and not hasattr(self, 'windows_url') and not hasattr(self, 'unix_url') and not hasattr(self, 'linux_url'):
         return True
 
-    if OSX and hasattr(self, 'osx_url') and self.compatible_with_this_arch():
+    if MACOS and hasattr(self, 'osx_url') and self.compatible_with_this_arch():
       return True
 
     if LINUX and hasattr(self, 'linux_url') and self.compatible_with_this_arch():
@@ -1819,7 +1819,7 @@ class Tool(object):
   def download_url(self):
     if WINDOWS and hasattr(self, 'windows_url'):
       return self.windows_url
-    elif OSX and hasattr(self, 'osx_url'):
+    elif MACOS and hasattr(self, 'osx_url'):
       return self.osx_url
     elif LINUX and hasattr(self, 'linux_url'):
       return self.linux_url
@@ -2133,7 +2133,7 @@ def fetch_emscripten_tags():
     print('Update complete, however skipped fetching the Emscripten tags, since git was not found, which is necessary for update-tags.')
     if WINDOWS:
       print("Please install git by typing 'emsdk install git-1.9.4', or alternatively by installing it manually from http://git-scm.com/downloads . If you install git manually, remember to add it to PATH.")
-    elif OSX:
+    elif MACOS:
       print("Please install git from http://git-scm.com/ , or by installing XCode and then the XCode Command Line Tools (see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools ).")
     elif LINUX:
       print("Pease install git using your package manager, see http://git-scm.com/book/en/Getting-Started-Installing-Git .")
@@ -2682,8 +2682,24 @@ def error_on_missing_tool(name):
   return 1
 
 
+def macos_require_python3():
+  if sys.version_info[0] >= 3:
+    return
+  if not which('python3'):
+    if not which('brew'):
+      # Install an emsdk-local version of homebrew
+      url = 'https://github.com/Homebrew/brew/archive/2.4.8.tar.gz'
+      assert False
+    subprocess.check_call(['brew', 'install', 'python3'])
+
+  assert which('python3')
+  os.execvp('python3', sys.argv)
+
+
 def main():
   global emscripten_config_directory, BUILD_FOR_TESTING, ENABLE_LLVM_ASSERTIONS, TTY_OUTPUT
+  if MACOS:
+    macos_require_python3()
 
   if len(sys.argv) <= 1:
     print("Missing command; Type 'emsdk help' to get a list of commands.")
@@ -2910,7 +2926,7 @@ def main():
       sdk = find_sdk(name)
       return 'INSTALLED' if sdk and sdk.is_installed() else ''
 
-    if (LINUX or OSX or WINDOWS) and (ARCH == 'x86' or ARCH == 'x86_64'):
+    if (LINUX or MACOS or WINDOWS) and (ARCH == 'x86' or ARCH == 'x86_64'):
       print('The *recommended* precompiled SDK download is %s (%s).' % (find_latest_releases_version(), find_latest_releases_hash()))
       print()
       print('To install/activate it, use one of:')
