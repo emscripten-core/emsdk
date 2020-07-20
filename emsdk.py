@@ -20,7 +20,6 @@ import stat
 import subprocess
 import sys
 import sysconfig
-import tempfile
 import zipfile
 
 if sys.version_info >= (3,):
@@ -164,11 +163,6 @@ def emsdk_path():
   return to_unix_path(os.path.dirname(os.path.realpath(__file__)))
 
 
-emscripten_config_directory = os.path.expanduser("~/")
-# If .emscripten exists, we are configuring as embedded inside the emsdk directory.
-if os.path.exists(os.path.join(emsdk_path(), '.emscripten')):
-  emscripten_config_directory = emsdk_path()
-
 EMSDK_SET_ENV = ""
 if POWERSHELL:
   EMSDK_SET_ENV = os.path.join(emsdk_path(), 'emsdk_set_env.ps1')
@@ -274,7 +268,8 @@ def cmake_generator_prefix():
   return ''
 
 
-# Removes a directory tree even if it was readonly, and doesn't throw exception on failure.
+# Removes a directory tree even if it was readonly, and doesn't throw exception
+# on failure.
 def remove_tree(d):
   debug_print('remove_tree(' + str(d) + ')')
   if not os.path.exists(d):
@@ -597,10 +592,7 @@ def unzip(source_filename, dest_dir, unpack_even_if_exists=False):
             move_with_overwrite(fix_potentially_long_windows_pathname(dst_filename), fix_potentially_long_windows_pathname(final_dst_filename))
 
       if common_subdir:
-        try:
-          remove_tree(unzip_to_dir)
-        except:
-          pass
+        remove_tree(unzip_to_dir)
   except zipfile.BadZipfile as e:
     print("Unzipping file '" + source_filename + "' failed due to reason: " + str(e) + "! Removing the corrupted zip file.")
     rmfile(source_filename)
@@ -1214,11 +1206,7 @@ def uninstall_optimizer(tool):
   debug_print('uninstall_optimizer(' + str(tool) + ')')
   build_root = optimizer_build_root(tool)
   print("Deleting path '" + build_root + "'")
-  try:
-    remove_tree(build_root)
-    os.remove(build_root)
-  except:
-    pass
+  remove_tree(build_root)
 
 
 def is_optimizer_installed(tool):
@@ -1304,11 +1292,7 @@ def uninstall_binaryen(tool):
   debug_print('uninstall_binaryen(' + str(tool) + ')')
   build_root = binaryen_build_root(tool)
   print("Deleting path '" + build_root + "'")
-  try:
-    remove_tree(build_root)
-    os.remove(build_root)
-  except:
-    pass
+  remove_tree(build_root)
 
 
 def is_binaryen_installed(tool):
@@ -1409,7 +1393,7 @@ def get_required_path(active_tools):
 # Returns the absolute path to the file '.emscripten' for the current user on
 # this system.
 def dot_emscripten_path():
-  return os.path.join(emscripten_config_directory, ".emscripten")
+  return os.path.join(emsdk_path(), ".emscripten")
 
 
 dot_emscripten = {}
@@ -1445,20 +1429,11 @@ def load_dot_emscripten():
 
 
 def generate_dot_emscripten(active_tools):
-  global emscripten_config_directory
-  if emscripten_config_directory == emsdk_path():
-    temp_dir = sdk_path('tmp')
-    mkdir_p(temp_dir)
-    embedded = True
-  else:
-    temp_dir = tempfile.gettempdir().replace('\\', '/')
-    embedded = False
+  temp_dir = sdk_path('tmp')
+  mkdir_p(temp_dir)
 
-  cfg = ''
-
-  if embedded:
-    cfg += 'import os\n'
-    cfg += "emsdk_path = os.path.dirname(os.environ.get('EM_CONFIG')).replace('\\\\', '/')\n"
+  cfg = 'import os\n'
+  cfg += "emsdk_path = os.path.dirname(os.environ.get('EM_CONFIG')).replace('\\\\', '/')\n"
 
   # Different tools may provide the same activated configs; the latest to be
   # activated is the relevant one.
@@ -1482,9 +1457,9 @@ COMPILER_ENGINE = NODE_JS
 JS_ENGINES = [NODE_JS]
 ''' % temp_dir
 
-  if embedded:
-    cfg = cfg.replace("'" + emscripten_config_directory, "emsdk_path + '")
+  cfg = cfg.replace("'" + emsdk_path(), "emsdk_path + '")
 
+  print('Writing configuration file: ' + dot_emscripten_path())
   if os.path.exists(dot_emscripten_path()):
     backup_path = dot_emscripten_path() + ".old"
     print("Backing up old Emscripten configuration file in " + os.path.normpath(backup_path))
@@ -1494,12 +1469,9 @@ JS_ENGINES = [NODE_JS]
     text_file.write(cfg)
 
   # Clear old emscripten content.
-  try:
-    os.remove(os.path.join(emscripten_config_directory, ".emscripten_sanity"))
-  except:
-    pass
+  rmfile(os.path.join(emsdk_path(), ".emscripten_sanity"))
 
-  print("The Emscripten configuration file " + os.path.normpath(dot_emscripten_path()) + " has been rewritten with the following contents:")
+  print("Configuration file contents:")
   print('')
   print(cfg.strip())
   print('')
@@ -1758,8 +1730,8 @@ class Tool(object):
         debug_print(str(self) + ' is not active, because key="' + key + '" does not exist in .emscripten')
         return False
 
-      # If running in embedded mode, all paths are stored dynamically relative
-      # to the emsdk root, so normalize those first.
+      # all paths are stored dynamically relative to the emsdk root, so
+      # normalize those first.
       dot_emscripten_key = dot_emscripten[key].replace("emsdk_path + '", "'" + emsdk_path())
       dot_emscripten_key = dot_emscripten_key.strip("'")
       if dot_emscripten_key != value:
@@ -1951,12 +1923,8 @@ class Tool(object):
         uninstall_binaryen(self)
       else:
         raise Exception('Unknown custom_uninstall_script directive "' + self.custom_uninstall_script + '"!')
-    try:
-      print("Deleting path '" + self.installation_path() + "'")
-      remove_tree(self.installation_path())
-      os.remove(self.installation_path())
-    except:
-      pass
+    print("Deleting path '" + self.installation_path() + "'")
+    remove_tree(self.installation_path())
     print("Done uninstalling '" + str(self) + "'.")
 
   def dependencies(self):
@@ -2438,6 +2406,11 @@ def run_emcc(tools_to_activate):
 # in the correct location.
 # TODO(sbc): Remove this code.
 def copy_pregenerated_cache(tools_to_activate):
+  tools_with_cache = [t for t in tools_to_activate if hasattr(t, 'pregenerated_cache')]
+  if not tools_with_cache:
+    debug_print('Not copying pregenerated libaries (none found)')
+    return
+
   em_cache_dir = None
 
   # First look through all the tools to find the EMSCRIPTEN_ROOT
@@ -2450,13 +2423,18 @@ def copy_pregenerated_cache(tools_to_activate):
     debug_print('Not copying pregenerated libaries (no EMSCRIPTEN_ROOT found)')
     return
 
+  # Generating .emscripten will cause emcc to clear the cache on first run (emcc
+  # sees that the file has changed, since we write it here in the emsdk, and it
+  # never saw it before; so it clears the cache as it assumes a new config file
+  # means system libraries may need rebuilding). To avoid emcc's clearing wiping
+  # out the pregenerated cache contents we want to copy in, run emcc here, then
+  # copy the cache contents.
+  run_emcc(tools_to_activate)
+
   # If we found an EMSCRIPTEN_ROOT look for any tools that include
   # "pregenerated_cache" and copy those items into the cache.
-  for tool in tools_to_activate:
-    pregenerated_cache = getattr(tool, 'pregenerated_cache', None)
-    if not pregenerated_cache:
-      continue
-    for cache_dir in pregenerated_cache:
+  for tool in tools_with_cache:
+    for cache_dir in tool.pregenerated_cache:
       # Finish the install of an emscripten-releases build.
       install_path = to_native_path(sdk_path(tool.expand_vars(tool.install_path)))
       in_cache = os.path.join(install_path, 'lib', cache_dir)
@@ -2483,14 +2461,6 @@ def set_active_tools(tools_to_activate, permanently_activate):
   tools_to_activate = process_tool_list(tools_to_activate, log_errors=True)
 
   generate_dot_emscripten(tools_to_activate)
-
-  # Generating .emscripten will cause emcc to clear the cache on first run (emcc
-  # sees that the file has changed, since we write it here in the emsdk, and it
-  # never saw it before; so it clears the cache as it assumes a new config file
-  # means system libraries may need rebuilding). To avoid emcc's clearing wiping
-  # out the pregenerated cache contents we want to copy in, run emcc here, then
-  # copy the cache contents.
-  run_emcc(tools_to_activate)
 
   copy_pregenerated_cache(tools_to_activate)
 
@@ -2666,14 +2636,6 @@ def construct_env(tools_to_activate):
   return env_string
 
 
-def silentremove(filename):
-  try:
-    os.remove(filename)
-  except OSError as e:
-    if e.errno != errno.ENOENT:
-      raise
-
-
 def error_on_missing_tool(name):
   if name.endswith('-64bit') and not is_os_64bit():
     print("Error: '%s' is only provided for 64-bit OSes." % name)
@@ -2683,7 +2645,7 @@ def error_on_missing_tool(name):
 
 
 def main():
-  global emscripten_config_directory, BUILD_FOR_TESTING, ENABLE_LLVM_ASSERTIONS, TTY_OUTPUT
+  global BUILD_FOR_TESTING, ENABLE_LLVM_ASSERTIONS, TTY_OUTPUT
 
   if len(sys.argv) <= 1:
     print("Missing command; Type 'emsdk help' to get a list of commands.")
@@ -2768,18 +2730,13 @@ def main():
 
     if WINDOWS:
       print('''
-   emsdk activate [--global] [--[no-]embedded] [--build=type] [--vs2017/--vs2019] <tool/sdk>
+   emsdk activate [--global] [--build=type] [--vs2017/--vs2019] <tool/sdk>
 
                                 - Activates the given tool or SDK in the
                                   environment of the current shell. If the
                                   --global option is passed, the registration
                                   is done globally to all users in the system
-                                  environment. In embedded mode (the default)
-                                  all Emcripten configuration files as well as
-                                  the temp, cache and ports directories
-                                  are located inside the Emscripten SDK
-                                  directory rather than the user home
-                                  directory. If a custom compiler version was
+                                  environment.  If a custom compiler version was
                                   used to override the compiler to use, pass
                                   the same --vs2017/--vs2019 parameter
                                   here to choose which version to activate.
@@ -2787,15 +2744,10 @@ def main():
    emcmdprompt.bat              - Spawns a new command prompt window with the
                                   Emscripten environment active.''')
     else:
-      print('''   emsdk activate [--[no-]embedded] [--build=type] <tool/sdk>
+      print('''   emsdk activate [--build=type] <tool/sdk>
 
                                 - Activates the given tool or SDK in the
-                                  environment of the current shell. In
-                                  embedded mode (the default), all Emcripten
-                                  configuration files as well as the temp, cache
-                                  and ports directories are located inside the
-                                  Emscripten SDK directory rather than the user
-                                  home directory.''')
+                                  environment of the current shell.''')
 
     print('''
        Both commands 'install' and 'activate' accept an optional parameter
@@ -2817,8 +2769,12 @@ def main():
   arg_old = extract_bool_arg('--old')
   arg_uses = extract_bool_arg('--uses')
   arg_global = extract_bool_arg('--global')
-  arg_embedded = extract_bool_arg('--embedded')
-  arg_embedded = not extract_bool_arg('--no-embedded')
+  if extract_bool_arg('--embedded'):
+    print('embedded mode is now the only mode available', file=sys.stderr)
+  if extract_bool_arg('--no-embedded'):
+    print('embedded mode is now the only mode available', file=sys.stderr)
+    return 1
+
   arg_notty = extract_bool_arg('--notty')
   if arg_notty:
     TTY_OUTPUT = False
@@ -3038,7 +2994,7 @@ def main():
     if WINDOWS:
       # Clean up litter after old emsdk update which may have left this temp
       # file around.
-      silentremove(sdk_path(EMSDK_SET_ENV))
+      rmfile(sdk_path(EMSDK_SET_ENV))
     return 0
   elif cmd == 'update-tags':
     fetch_emscripten_tags()
@@ -3047,18 +3003,6 @@ def main():
     if arg_global:
       print('Registering active Emscripten environment globally for all users.')
       print('')
-    if arg_embedded:
-      # Activating the emsdk tools locally relative to Emscripten SDK directory.
-      emscripten_config_directory = emsdk_path()
-      print('Writing .emscripten configuration file to Emscripten SDK directory ' + emscripten_config_directory)
-    else:
-      print('Writing .emscripten configuration file to user home directory ' + emscripten_config_directory)
-      # Remove .emscripten from emsdk dir, since its presence is used to detect
-      # whether emsdk is activate in embedded mode or not.
-      try:
-        os.remove(os.path.join(emsdk_path(), ".emscripten"))
-      except:
-        pass
 
     tools_to_activate = currently_active_tools()
     args = [x for x in sys.argv[2:] if not x.startswith('--')]
