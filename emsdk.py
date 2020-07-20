@@ -901,7 +901,7 @@ def build_env(generator):
                     vs_filewhere(path, 'x86', 'cl.exe')]
     for path in vc_bin_paths:
       if os.path.isdir(path):
-          build_env['PATH'] = build_env['PATH'] + ';' + path
+        build_env['PATH'] = build_env['PATH'] + ';' + path
 
   return build_env
 
@@ -1358,7 +1358,11 @@ def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False,
                        filename_prefix='', clobber=True):
   debug_print('download_and_unzip(zipfile=' + zipfile + ', dest_dir=' + dest_dir + ')')
 
-  url = urljoin(emsdk_packages_url, zipfile)
+  if zipfile.startswith('http'):
+    url = zipfile
+  else:
+    url = urljoin(emsdk_packages_url, zipfile)
+
   download_target = get_download_target(url, zips_subdir, filename_prefix)
 
   # If the archive was already downloaded, and the directory it would be
@@ -2689,10 +2693,17 @@ def macos_require_python3():
     if not which('brew'):
       # Install an emsdk-local version of homebrew
       url = 'https://github.com/Homebrew/brew/archive/2.4.8.tar.gz'
-      assert False
+      download_and_unzip(url, 'homebrew', download_even_if_exists=False,
+                         filename_prefix='', clobber=True)
+      brew_path = os.path.join(emsdk_path(), 'homebrew', 'bin')
+      os.environ['PATH'] = brew_path + os.pathsep + os.environ['PATH']
     subprocess.check_call(['brew', 'install', 'python3'])
 
-  assert which('python3')
+  print(which('python3'))
+  print(which('python3'))
+  print(which('python3'))
+  print(which('python3'))
+  print(which('python3'))
   os.execvp('python3', ['python3'] + sys.argv)
 
 
