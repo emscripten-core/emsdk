@@ -2693,7 +2693,7 @@ def macos_require_python3():
     subprocess.check_call(['brew', 'install', 'python3'])
 
   assert which('python3')
-  os.execvp('python3', sys.argv)
+  os.execvp('python3', ['python3'] + sys.argv)
 
 
 def main():
