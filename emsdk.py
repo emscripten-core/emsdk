@@ -793,12 +793,10 @@ def git_checkout_and_pull(repo_path, branch):
     ret = run([GIT(), 'checkout', '--quiet', branch], repo_path)
     if ret != 0:
       return False
-    if run([GIT(), 'show-ref', '--tags', '--quiet', '--', branch], repo_path) != 0:
-
-      # this line assumes that the user has not gone and made local changes to the repo
-      ret = run([GIT(), 'merge', '--ff-only', 'origin/' + branch], repo_path)
-      if ret != 0:
-        return False
+    # this line assumes that the user has not gone and made local changes to the repo
+    ret = run([GIT(), 'merge', '--ff-only', 'origin/' + branch], repo_path)
+    if ret != 0:
+      return False
   except:
     print('git operation failed!')
     return False
@@ -1123,30 +1121,6 @@ def build_fastcomp(tool):
   # Make
   success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'Win32')
   return success
-
-
-def build_python(tool):
-  debug_print('build_python(' + str(tool) + ')')
-  src_dir = tool.installation_path()
-  install_dir = os.path.join(src_dir, 'install')
-  if OSX:
-    # Take some rather drastic steps to link openssl statically
-    rtn = run(['brew', 'install', 'openssl', 'pkg-config'], src_dir)
-    if rtn:
-      return False
-    rmfile('/usr/local/opt/openssl/lib/libssl.dylib')
-    rmfile('/usr/local/opt/openssl/lib/libcrypto.dylib')
-    os.environ['PKG_CONFIG_PATH'] = '/usr/local/opt/openssl/lib/pkgconfig/'
-  rtn = run(['./configure'], src_dir)
-  if rtn:
-    return False
-  rtn = run(['make', '-j' + str(CPU_CORES)], src_dir)
-  if rtn:
-    return False
-  rtn = run(['make', 'install', 'DESTDIR=' + install_dir], src_dir)
-  if rtn:
-    return False
-  return True
 
 
 # LLVM git source tree migrated to a single repository instead of multiple
@@ -1896,8 +1870,6 @@ class Tool(object):
           success = emscripten_post_install(self)
         elif self.custom_install_script == 'emscripten_npm_install':
           success = emscripten_npm_install(self, self.installation_path())
-        elif self.custom_install_script == 'build_python':
-          success = build_python(self)
         elif self.custom_install_script in ('build_fastcomp', 'build_llvm'):
           # 'build_fastcomp' is a special one that does the download on its
           # own, others do the download manually.

@@ -299,18 +299,6 @@
     "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3"
   },
   {
-    "id": "python-git",
-    "version": "3.8.5",
-    "bitness": 64,
-    "install_path": "python/git",
-    "git_branch": "v3.8.5",
-    "url": "https://github.com/python/cpython",
-    "custom_install_script": "build_python",
-    "activated_path": "%installation_dir%/install/usr/local/bin",
-    "activated_cfg": "PYTHON='%installation_dir%/install/usr/local/bin/python3'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/install/usr/local/bin/python3"
-  },
-  {
     "id": "java",
     "version": "8.152",
     "bitness": 32,
