@@ -132,11 +132,13 @@ jobs:
     executor:
       name: win/server-2019
       shell: bash.exe
+      working_directory: ~/project with spaces
     environment:
       PYTHONUNBUFFERED: "1"
       EMSDK_NOTTY: "1"
     steps:
       - checkout
+      - run: pwd
       - run: where python
       - run: pip install pip-system-certs
       - run:
