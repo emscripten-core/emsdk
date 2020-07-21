@@ -1460,6 +1460,10 @@ JS_ENGINES = [NODE_JS]
 
   cfg = cfg.replace("'" + emsdk_path(), "emsdk_path + '")
 
+  if os.path.exists(dot_emscripten_path()):
+    backup_path = dot_emscripten_path() + ".old"
+    move_with_overwrite(dot_emscripten_path(), backup_path)
+
   with open(dot_emscripten_path(), "w") as text_file:
     text_file.write(cfg)
 
