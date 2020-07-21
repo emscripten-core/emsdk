@@ -7,7 +7,7 @@
 """Updates the python binaries that we cache store at
 http://storage.google.com/webassembly.
 
-We only supply binaries for windows and macOS we do it very different ways.
+We only supply binaries for windows and macOS, but we do it very different ways for those two OSes.
 
 Windows recipe:
   1. Download the "embeddable zip file" version of python from python.org
