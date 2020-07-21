@@ -1038,8 +1038,8 @@ def xcode_sdk_version():
     return subprocess.checkplatform.mac_ver()[0].split('.')
 
 
-def build_llvm_fastcomp(tool):
-  debug_print('build_llvm_fastcomp(' + str(tool) + ')')
+def build_fastcomp(tool):
+  debug_print('build_fastcomp(' + str(tool) + ')')
   fastcomp_root = tool.installation_path()
   fastcomp_src_root = os.path.join(fastcomp_root, 'src')
   # Does this tool want to be git cloned from github?
@@ -1123,9 +1123,10 @@ def build_llvm_fastcomp(tool):
   return success
 
 
-# LLVM git source tree migrated to a single repository instead of multiple ones, build_llvm_monorepo() builds via that repository structure
-def build_llvm_monorepo(tool):
-  debug_print('build_llvm_monorepo(' + str(tool) + ')')
+# LLVM git source tree migrated to a single repository instead of multiple
+# ones, build_llvm() builds via that repository structure
+def build_llvm(tool):
+  debug_print('build_llvm(' + str(tool) + ')')
   llvm_root = tool.installation_path()
   llvm_src_root = os.path.join(llvm_root, 'src')
   success = git_clone_checkout_and_pull(tool.download_url(), llvm_src_root, tool.git_branch)
@@ -1841,9 +1842,9 @@ class Tool(object):
     url = self.download_url()
 
     if hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_fastcomp':
-      success = build_llvm_fastcomp(self)
-    elif hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_llvm_monorepo':
-      success = build_llvm_monorepo(self)
+      success = build_fastcomp(self)
+    elif hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_llvm':
+      success = build_llvm(self)
     elif hasattr(self, 'git_branch'):
       success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch)
     elif url.endswith(ARCHIVE_SUFFIXES):
@@ -1869,7 +1870,7 @@ class Tool(object):
           success = emscripten_post_install(self)
         elif self.custom_install_script == 'emscripten_npm_install':
           success = emscripten_npm_install(self, self.installation_path())
-        elif self.custom_install_script in ('build_fastcomp', 'build_llvm_monorepo'):
+        elif self.custom_install_script in ('build_fastcomp', 'build_llvm'):
           # 'build_fastcomp' is a special one that does the download on its
           # own, others do the download manually.
           pass
