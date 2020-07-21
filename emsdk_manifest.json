@@ -94,7 +94,7 @@
     "bitness": 64,
     "arch": "x86_64",
     "linux_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/linux/%releases-tag%/wasm-binaries.tbz2",
-    "osx_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/mac/%releases-tag%/wasm-binaries.tbz2",
+    "macos_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/mac/%releases-tag%/wasm-binaries.tbz2",
     "windows_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/win/%releases-tag%/wasm-binaries.zip",
     "zipfile_prefix": "%releases-tag%-",
     "install_path": "upstream",
@@ -109,7 +109,7 @@
     "bitness": 64,
     "arch": "x86_64",
     "linux_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/linux/%releases-tag%/wasm-binaries.tbz2",
-    "osx_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/mac/%releases-tag%/wasm-binaries.tbz2",
+    "macos_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/mac/%releases-tag%/wasm-binaries.tbz2",
     "windows_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/win/%releases-tag%/wasm-binaries.zip",
     "zipfile_prefix": "%releases-tag%-",
     "install_path": "fastcomp",
@@ -125,7 +125,7 @@
     "bitness": 32,
     "arch": "x86",
     "windows_url": "llvm/tag/win_64bit/emscripten-llvm-e%precompiled_tag32%.zip",
-    "osx_url": "llvm/tag/osx_64bit/emscripten-llvm-e%precompiled_tag32%.tar.gz",
+    "macos_url": "llvm/tag/osx_64bit/emscripten-llvm-e%precompiled_tag32%.tar.gz",
     "linux_url": "llvm/tag/linux_64bit/emscripten-llvm-e%precompiled_tag32%.tar.gz",
     "activated_path": "%installation_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/optimizer%.exe%';BINARYEN_ROOT='%installation_dir%/binaryen'",
@@ -137,7 +137,7 @@
     "bitness": 64,
     "arch": "x86_64",
     "windows_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/old/win/emscripten-llvm-e%precompiled_tag64%.zip",
-    "osx_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/old/mac/emscripten-llvm-e%precompiled_tag64%.tar.gz",
+    "macos_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/old/mac/emscripten-llvm-e%precompiled_tag64%.tar.gz",
     "linux_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/old/linux/emscripten-llvm-e%precompiled_tag64%.tar.gz",
     "activated_path": "%installation_dir%",
     "activated_cfg": "LLVM_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/optimizer%.exe%';BINARYEN_ROOT='%installation_dir%/binaryen'",
@@ -169,7 +169,7 @@
     "version": "8.9.1",
     "bitness": 64,
     "arch": "x86_64",
-    "osx_url": "node-v8.9.1-darwin-x64.tar.gz",
+    "macos_url": "node-v8.9.1-darwin-x64.tar.gz",
     "windows_url": "node-v8.9.1-win-x64.zip",
     "linux_url": "node-v8.9.1-linux-x64.tar.xz",
     "activated_path": "%installation_dir%/bin",
@@ -211,7 +211,7 @@
     "version": "12.18.1",
     "bitness": 64,
     "arch": "x86_64",
-    "osx_url": "node-v12.18.1-darwin-x64.tar.gz",
+    "macos_url": "node-v12.18.1-darwin-x64.tar.gz",
     "windows_url": "node-v12.18.1-win-x64.zip",
     "linux_url": "node-v12.18.1-linux-x64.tar.xz",
     "activated_path": "%installation_dir%/bin",
@@ -293,7 +293,7 @@
     "version": "3.7.4",
     "bitness": 64,
     "arch": "x86_64",
-    "osx_url": "python-3.7.4-macos.tar.gz",
+    "macos_url": "python-3.7.4-macos.tar.gz",
     "activated_path": "%installation_dir%/bin",
     "activated_cfg": "PYTHON='%installation_dir%/bin/python3'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3"
@@ -486,7 +486,7 @@
     "version": "upstream-master",
     "bitness": 64,
     "uses": ["llvm-git-master-64bit", "node-12.18.1-64bit", "python-3.7.4-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
-    "os": "osx"
+    "os": "macos"
   },
   {
     "version": "upstream-master",
@@ -516,7 +516,7 @@
     "version": "fastcomp-master",
     "bitness": 64,
     "uses": ["fastcomp-clang-master-64bit", "node-12.18.1-64bit", "python-3.7.4-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
-    "os": "osx"
+    "os": "macos"
   },
   {
     "version": "fastcomp-master",
@@ -577,7 +577,7 @@
     "version": "releases-upstream-%releases-tag%",
     "bitness": 64,
     "uses": ["node-12.18.1-64bit", "python-3.7.4-64bit", "releases-upstream-%releases-tag%-64bit"],
-    "os": "osx",
+    "os": "macos",
     "custom_install_script": "emscripten_npm_install"
   },
   {
@@ -598,7 +598,7 @@
     "version": "releases-fastcomp-%releases-tag%",
     "bitness": 64,
     "uses": ["node-12.18.1-64bit", "python-3.7.4-64bit", "releases-fastcomp-%releases-tag%-64bit"],
-    "os": "osx",
+    "os": "macos",
     "custom_install_script": "emscripten_npm_install"
   },
   {
@@ -648,7 +648,7 @@
     "version": "fastcomp-%precompiled_tag32%",
     "bitness": 32,
     "uses": ["fastcomp-clang-e%precompiled_tag32%-32bit", "node-8.9.1-32bit", "python-3.7.4-64bit", "emscripten-%precompiled_tag32%"],
-    "os": "osx",
+    "os": "macos",
     "version_filter": [
       ["%precompiled_tag32%", ">", "1.37.22"]
     ]
@@ -657,7 +657,7 @@
     "version": "fastcomp-%precompiled_tag64%",
     "bitness": 64,
     "uses": ["fastcomp-clang-e%precompiled_tag64%-64bit", "node-8.9.1-64bit", "python-3.7.4-64bit", "emscripten-%precompiled_tag64%"],
-    "os": "osx",
+    "os": "macos",
     "version_filter": [
       ["%precompiled_tag64%", ">", "1.37.22"]
     ]
