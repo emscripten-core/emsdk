@@ -6,13 +6,13 @@
 
 # Wrapper script that runs emsdk.py
 
-base_dir=$(dirname "$0")
-
-# Look for python3 first.  This is especially important on macOS (See:
-# https://github.com/emscripten-core/emsdk/pull/273)
-python=$(which python3 2> /dev/null)
-if [ $? != 0 ]; then
-  python=python
+if [ -z "$EMSDK_PYTHON" ]; then
+  # Look for python3 first.  This is especially important on macOS (See:
+  # https://github.com/emscripten-core/emsdk/pull/273)
+  EMSDK_PYTHON=$(which python3 2> /dev/null)
+  if [ $? != 0 ]; then
+    EMSDK_PYTHON=python
+  fi
 fi
 
-exec "$python" "$0.py" "$@"
+exec "$EMSDK_PYTHON" "$0.py" "$@"

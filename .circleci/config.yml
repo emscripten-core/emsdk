@@ -54,9 +54,6 @@ jobs:
       - run:
           name: Install cmake
           command: brew install cmake
-      - run:
-          name: Install python 3
-          command: brew install python3
       - run: scripts/test.sh
       - run:
           name: test.py
