@@ -1460,10 +1460,8 @@ JS_ENGINES = [NODE_JS]
 
   cfg = cfg.replace("'" + emsdk_path(), "emsdk_path + '")
 
-  print('Writing configuration file: ' + dot_emscripten_path())
   if os.path.exists(dot_emscripten_path()):
     backup_path = dot_emscripten_path() + ".old"
-    print("Backing up old Emscripten configuration file in " + os.path.normpath(backup_path))
     move_with_overwrite(dot_emscripten_path(), backup_path)
 
   with open(dot_emscripten_path(), "w") as text_file:
@@ -1472,20 +1470,18 @@ JS_ENGINES = [NODE_JS]
   # Clear old emscripten content.
   rmfile(os.path.join(emsdk_path(), ".emscripten_sanity"))
 
-  print("Configuration file contents:")
-  print('')
-  print(cfg.strip())
-  print('')
-
   path_add = get_required_path(active_tools)
   if not WINDOWS:
-    emsdk_env = os.path.relpath(sdk_path('emsdk_env.sh'))
-    if '/' not in emsdk_env:
-      emsdk_env = './emsdk_env.sh'
-    print("To conveniently access the selected set of tools from the command line, consider adding the following directories to PATH.")
-    print("Or call 'source " + emsdk_env + "' to do this for you. (Add these in your bashrc or other startup scripts to have these permanently available)")
-    print('')
-    print('   ' + ENVPATH_SEPARATOR.join(path_add))
+    emsdk_env = sdk_path('emsdk_env.sh')
+    print('Next steps:')
+    print('- To conveniently access emsdk tools from the command line,')
+    print('  consider adding the following directories to your PATH:')
+    for p in path_add:
+      print('    ' + p)
+    print('- This can be done for the current shell by running:')
+    print('    source "%s"' % emsdk_env)
+    print('- Configure emsdk in your bash profile by running:')
+    print('    echo \'source "%s"\' >> $HOME/.bash_profile' % emsdk_env)
 
 
 def find_msbuild_dir():
@@ -2461,6 +2457,11 @@ def write_set_env_script(env_string):
 def set_active_tools(tools_to_activate, permanently_activate):
   tools_to_activate = process_tool_list(tools_to_activate, log_errors=True)
 
+  if tools_to_activate:
+    tools = [x for x in tools_to_activate if not x.is_sdk]
+    print('Setting the following tools as active:\n   ' + '\n   '.join(map(lambda x: str(x), tools)))
+    print('')
+
   generate_dot_emscripten(tools_to_activate)
 
   copy_pregenerated_cache(tools_to_activate)
@@ -2485,10 +2486,6 @@ def set_active_tools(tools_to_activate, permanently_activate):
     if newpath != os.environ['PATH']:
       win_set_environment_variable('PATH', newpath, system=True)
 
-  if tools_to_activate:
-    tools = [x for x in tools_to_activate if not x.is_sdk]
-    print('\nSet the following tools as active:\n   ' + '\n   '.join(map(lambda x: str(x), tools)))
-    print('')
   return tools_to_activate
 
 
@@ -2614,15 +2611,9 @@ def construct_env(tools_to_activate):
       value = to_native_path(tool.expand_vars(value))
       env_vars += [(key, value)]
 
-  # Don't set env vars which are already set to the correct value.
-  env_vars_to_add = []
-  for key, value in env_vars:
-    if key not in os.environ or to_unix_path(os.environ[key]) != to_unix_path(value):
-      env_vars_to_add.append((key, value))
-
-  if env_vars_to_add:
+  if env_vars:
     log_stderr('Setting environment variables:')
-    for key, value in env_vars_to_add:
+    for key, value in env_vars:
       if POWERSHELL:
         env_string += '$env:' + key + '="' + value + '"\n'
       elif CMD:
