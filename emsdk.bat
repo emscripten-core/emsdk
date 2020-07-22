@@ -1,4 +1,9 @@
 :: Find python from an explicit location relative to the Emscripten SDK.
+@IF EXIST "%~dp0python\3.7.4-pywin32_64bit\python.exe" (
+  @SET EMSDK_PY="%~dp0python\3.7.4-pywin32_64bit\python.exe"
+  @GOTO end
+)
+
 @IF EXIST "%~dp0python\3.7.4_64bit\python.exe" (
   @SET EMSDK_PY="%~dp0python\3.7.4_64bit\python.exe"
   @GOTO end
