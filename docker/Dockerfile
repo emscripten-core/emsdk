@@ -6,40 +6,37 @@ ENV EMSDK /emsdk
 # ------------------------------------------------------------------------------
 
 RUN echo "## Start building" \
-    \
-&&	echo "## Update and install packages" \
-    &&	apt-get -qq -y update \
-    &&  apt-get -qq install -y --no-install-recommends \
-            libxml2 \
-            wget \
-            git-core \
-            ca-certificates \
-            build-essential \
-            file \
-            python3 python3-pip \
-&&  echo "## Done"
+    && echo "## Update and install packages" \
+    && apt-get -qq -y update \
+    && apt-get -qq install -y --no-install-recommends \
+        binutils \
+        build-essential \
+        ca-certificates \
+        file \
+        git \
+        python3 \
+        python3-pip \
+    && echo "## Done"
 
-RUN  echo "## Get EMSDK" \
-    &&  git clone https://github.com/emscripten-core/emsdk.git ${EMSDK} \
-&&  echo "## Done"
+RUN echo "## Get EMSDK" \
+    && git clone https://github.com/emscripten-core/emsdk.git ${EMSDK} \
+    && echo "## Done"
 
-RUN  echo "## Install Emscripten" \
-    &&  cd ${EMSDK} \
-    &&  ./emsdk install ${EMSCRIPTEN_VERSION} \
-&&  echo "## Done"
+RUN echo "## Install Emscripten" \
+    && cd ${EMSDK} \
+    && ./emsdk install ${EMSCRIPTEN_VERSION} \
+    && echo "## Done"
 
 # This generates configuration that contains all valid paths according to installed SDK
 RUN cd ${EMSDK} \
-    &&  echo "## Generate standard configuration" \
-    &&  ./emsdk activate ${EMSCRIPTEN_VERSION} \
-    &&  chmod -R 777 ${EMSDK}/upstream/emscripten/cache \
-    &&  cat ${EMSDK}/upstream/emscripten/cache/sanity.txt \
-&&  echo "## Done"
+    && echo "## Generate standard configuration" \
+    && ./emsdk activate ${EMSCRIPTEN_VERSION} \
+    && chmod -R 777 ${EMSDK}/upstream/emscripten/cache \
+    && cat ${EMSDK}/upstream/emscripten/cache/sanity.txt \
+    && echo "## Done"
 
-# Clean up emscripten installation and strip some symbols
-RUN echo "## Aggresive optimization: Remove debug symbols" \
-&&  apt-get -qq -y update && apt-get -qq install -y --no-install-recommends \
-        binutils \
+# Cleanup Emscripten installation and strip some symbols
+RUN echo "## Aggressive optimization: Remove debug symbols" \
     && cd ${EMSDK} && . ./emsdk_env.sh \
     # Remove debugging symbols from embedded node (extra 7MB)
     && strip -s `which node` \
@@ -49,7 +46,7 @@ RUN echo "## Aggresive optimization: Remove debug symbols" \
     && rm -fr ${EMSDK}/upstream/fastcomp \
     # strip out symbols from clang (~extra 50MB disc space)
     && find ${EMSDK}/upstream/bin -type f -exec strip -s {} + || true \
-&&  echo "## Done"
+    && echo "## Done"
 
 # ------------------------------------------------------------------------------
 # -------------------------------- STAGE DEPLOY --------------------------------
@@ -62,10 +59,11 @@ COPY --from=stage_build /emsdk /emsdk
 # Fallback in case Emscripten isn't activated.
 # This will let use tools offered by this image inside other Docker images
 # (sub-stages) or with custom / no entrypoint
-ENV EMSDK_NODE=/emsdk/node/12.18.1_64bit/bin/node
-ENV EMSDK=/emsdk
-ENV EM_CONFIG=/emsdk/.emscripten
-ENV PATH="${EMSDK}:${EMSDK}/upstream/emscripten:${EMSDK}/upstream/bin:emsdk/node/12.18.1_64bit/bin:${PATH}"
+ENV EMSDK=/emsdk \
+    EM_CACHE=/emsdk/upstream/emscripten/cache \
+    EM_CONFIG=/emsdk/.emscripten \
+    EMSDK_NODE=/emsdk/node/12.18.1_64bit/bin/node \
+    PATH="/emsdk:/emsdk/upstream/emscripten:/emsdk/upstream/bin:/emsdk/node/12.18.1_64bit/bin:${PATH}"
 
 # ------------------------------------------------------------------------------
 # Create a 'standard` 1000:1000 user
@@ -76,19 +74,18 @@ ENV PATH="${EMSDK}:${EMSDK}/upstream/emscripten:${EMSDK}/upstream/bin:emsdk/node
 # docker image will cause other random problems (mostly due `$HOME` pointing to
 # `/`)
 RUN echo "## Create emscripten user (1000:1000)" \
-    &&  groupadd --gid 1000 emscripten \
-    &&  useradd --uid 1000 --gid emscripten --shell /bin/bash --create-home emscripten \
-    &&  echo "umask 0000" >> /etc/bash.bashrc \
-    &&  echo ". /emsdk/emsdk_env.sh" >> /etc/bash.bashrc \
-&&  echo "## Done"
+    && groupadd --gid 1000 emscripten \
+    && useradd --uid 1000 --gid emscripten --shell /bin/bash --create-home emscripten \
+    && echo "umask 0000" >> /etc/bash.bashrc \
+    && echo ". /emsdk/emsdk_env.sh" >> /etc/bash.bashrc \
+    && echo "## Done"
 
 # ------------------------------------------------------------------------------
 
 RUN echo "## Update and install packages" \
-# mitigate problem with create symlink to man for base debian image
-    &&  mkdir -p /usr/share/man/man1/ \
-    \
-    &&  apt-get -qq -y update && apt-get -qq install -y --no-install-recommends \
+    # mitigate problem with create symlink to man for base debian image
+    && mkdir -p /usr/share/man/man1/ \
+    && apt-get -qq -y update && apt-get -qq install -y --no-install-recommends \
         libxml2 \
         ca-certificates \
         python3 \
@@ -105,25 +102,24 @@ RUN echo "## Update and install packages" \
         libidn11 \
         cmake \
         openjdk-11-jre-headless \
-    \
     # Standard Cleanup on Debian images
-    &&  apt-get -y clean \
-    &&  apt-get -y autoclean \
-    &&  apt-get -y autoremove \
-    &&  rm -rf /var/lib/apt/lists/* \
-    &&  rm -rf /var/cache/debconf/*-old \
-    &&  rm -rf /usr/share/doc/* \
-    &&  rm -rf /usr/share/man/?? \
-    &&  rm -rf /usr/share/man/??_* \
-&&  echo "## Done"
+    && apt-get -y clean \
+    && apt-get -y autoclean \
+    && apt-get -y autoremove \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/cache/debconf/*-old \
+    && rm -rf /usr/share/doc/* \
+    && rm -rf /usr/share/man/?? \
+    && rm -rf /usr/share/man/??_* \
+    && echo "## Done"
 
 # ------------------------------------------------------------------------------
 # Internal test suite of tools that this image provides
 COPY test_dockerimage.sh /emsdk/
 
 RUN echo "## Internal Testing of image" \
-    &&  /emsdk/test_dockerimage.sh  \
-&&  echo "## Done"
+    && ./emsdk/test_dockerimage.sh \
+    && echo "## Done"
 
 # ------------------------------------------------------------------------------
 # Copy this Dockerimage into image, so that it will be possible to recreate it later
