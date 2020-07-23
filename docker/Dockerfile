@@ -118,7 +118,7 @@ RUN echo "## Update and install packages" \
 COPY test_dockerimage.sh /emsdk/
 
 RUN echo "## Internal Testing of image" \
-    && ./emsdk/test_dockerimage.sh \
+    && /emsdk/test_dockerimage.sh \
     && echo "## Done"
 
 # ------------------------------------------------------------------------------
