@@ -1,6 +1,6 @@
 FROM debian:buster AS stage_build
 
-ARG EMSCRIPTEN_VERSION=1.39.18
+ARG EMSCRIPTEN_VERSION=1.39.20
 ENV EMSDK /emsdk
 
 # ------------------------------------------------------------------------------
@@ -33,6 +33,7 @@ RUN cd ${EMSDK} \
     &&  echo "## Generate standard configuration" \
     &&  ./emsdk activate ${EMSCRIPTEN_VERSION} \
     &&  chmod -R 777 ${EMSDK}/upstream/emscripten/cache \
+    &&  cat ${EMSDK}/upstream/emscripten/cache/sanity.txt \
 &&  echo "## Done"
 
 # Clean up emscripten installation and strip some symbols
@@ -48,16 +49,6 @@ RUN echo "## Aggresive optimization: Remove debug symbols" \
     && rm -fr ${EMSDK}/upstream/fastcomp \
     # strip out symbols from clang (~extra 50MB disc space)
     && find ${EMSDK}/upstream/bin -type f -exec strip -s {} + || true \
-&&  echo "## Done"
-
-# Generate sanity
-# TODO(sbc): We should be able to use just emcc -v here but it doesn't
-# currently create the sanity file.
-RUN echo "## Generate sanity" \
-   &&  cd ${EMSDK} && . ./emsdk_env.sh \
-   &&  echo "int main() { return 0; }" > hello.c \
-   &&  emcc -c hello.c \
-   &&  cat ${EMSDK}/.emscripten_sanity \
 &&  echo "## Done"
 
 # ------------------------------------------------------------------------------
