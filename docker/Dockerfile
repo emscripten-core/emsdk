@@ -84,7 +84,8 @@ RUN echo "## Create emscripten user (1000:1000)" \
 RUN echo "## Update and install packages" \
     # mitigate problem with create symlink to man for base debian image
     && mkdir -p /usr/share/man/man1/ \
-    && apt-get -qq -y update && apt-get -qq install -y --no-install-recommends \
+    && apt-get -qq -y update \
+    && apt-get -qq install -y --no-install-recommends \
         libxml2 \
         ca-certificates \
         python3 \
