@@ -2104,11 +2104,10 @@ def update_emsdk():
     sys.exit(1)
 
   # attempt to run fetch_emscripten_tags if git is available.
-  git = GIT(must_succeed=False)
-  if not git:
+  if GIT(must_succeed=False):
+    fetch_emscripten_tags()
+  else:
     print('Update complete, however skipped fetching the Emscripten tags, since git was not found, which is necessary for update-tags.', file=sys.stderr)
-    return
-  fetch_emscripten_tags()
 
 
 # Lists all legacy (pre-emscripten-releases) tagged versions directly in the Git
