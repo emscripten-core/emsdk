@@ -2051,7 +2051,7 @@ def get_emscripten_releases_tot():
     except:
       continue
     return release
-  return ''
+  exit_with_error('failed to find build of any recent emsdk revision')
 
 
 def get_release_hash(arg, releases_info):
@@ -2092,8 +2092,7 @@ def fetch_emscripten_tags():
   if git:
     print('Fetching emscripten-releases repository...')
     emscripten_releases_tot = get_emscripten_releases_tot()
-    if emscripten_releases_tot:
-      open(tot_path(), 'w').write(emscripten_releases_tot)
+    open(tot_path(), 'w').write(emscripten_releases_tot)
   else:
     print('Update complete, however skipped fetching the Emscripten tags, since git was not found, which is necessary for update-tags.')
     if WINDOWS:
