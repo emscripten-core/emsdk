@@ -31,6 +31,7 @@ RUN echo "## Install Emscripten" \
 RUN cd ${EMSDK} \
     && echo "## Generate standard configuration" \
     && ./emsdk activate ${EMSCRIPTEN_VERSION} \
+    && chmod 777 ${EMSDK}/upstream/emscripten \
     && chmod -R 777 ${EMSDK}/upstream/emscripten/cache \
     && cat ${EMSDK}/upstream/emscripten/cache/sanity.txt \
     && echo "## Done"
@@ -86,6 +87,7 @@ RUN echo "## Update and install packages" \
     && mkdir -p /usr/share/man/man1/ \
     && apt-get -qq -y update \
     && apt-get -qq install -y --no-install-recommends \
+        sudo \
         libxml2 \
         ca-certificates \
         python3 \

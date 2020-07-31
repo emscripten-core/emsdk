@@ -1,6 +1,8 @@
 #!/bin/bash
 set -ex
 
+sudo -u nobody `which emcc` --version
+
 which asm2wasm
 which llvm-ar
 which emsdk
