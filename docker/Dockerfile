@@ -31,6 +31,7 @@ RUN echo "## Install Emscripten" \
 RUN cd ${EMSDK} \
     && echo "## Generate standard configuration" \
     && ./emsdk activate ${EMSCRIPTEN_VERSION} \
+    && chmod 777 ${EMSDK}/upstream/emscripten \
     && chmod -R 777 ${EMSDK}/upstream/emscripten/cache \
     && cat ${EMSDK}/upstream/emscripten/cache/sanity.txt \
     && echo "## Done"
