@@ -87,6 +87,7 @@ RUN echo "## Update and install packages" \
     && mkdir -p /usr/share/man/man1/ \
     && apt-get -qq -y update \
     && apt-get -qq install -y --no-install-recommends \
+        sudo \
         libxml2 \
         ca-certificates \
         python3 \
