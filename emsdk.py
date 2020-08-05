@@ -2663,6 +2663,7 @@ def expand_sdk_name(name):
       name = name.replace('-fastcomp', '')
       backend = 'fastcomp'
     name = name.replace('sdk-', '').replace('-64bit', '').replace('tag-', '')
+    releases_info = load_releases_info()['releases']
     release_hash = get_release_hash(name, releases_info)
     if release_hash:
       if backend is None:
@@ -2847,8 +2848,6 @@ def main():
         return 1
   sys.argv = [x for x in sys.argv if not len(x) == 0]
 
-  releases_info = load_releases_info()['releases']
-
   # Replace meta-packages with the real package names.
   if cmd in ('update', 'install', 'activate'):
     for i in range(2, len(sys.argv)):
@@ -2883,6 +2882,7 @@ def main():
       key=lambda x: [int(v) if v.isdigit() else -1 for v in x.split('.')],
       reverse=True,
     )
+    releases_info = load_releases_info()['releases']
     for ver in releases_versions:
       print('         %s    %s' % (ver, installed_sdk_text('sdk-releases-upstream-%s-64bit' % get_release_hash(ver, releases_info))))
     print()
