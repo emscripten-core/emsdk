@@ -2672,6 +2672,9 @@ def expand_sdk_name(name):
           backend = 'upstream'
         else:
           backend = 'fastcomp'
+      if backend == 'fastcomp' and version_key(fullname) >= (2, 0, 0):
+        print('Note: fastcomp is not longer available in version 2.0.0 and above')
+        return name
       return 'sdk-releases-%s-%s-64bit' % (backend, release_hash)
   return name
 
