@@ -2635,6 +2635,45 @@ def error_on_missing_tool(name):
   return 1
 
 
+def expand_sdk_name(name):
+  if name in ('latest', 'sdk-latest', 'latest-64bit', 'sdk-latest-64bit'):
+    # This is effectly the default SDK
+    return str(find_latest_releases_sdk('upstream'))
+  elif name in ('latest-fastcomp', 'latest-releases-fastcomp'):
+    return str(find_latest_releases_sdk('fastcomp'))
+  elif name in ('latest-upstream', 'latest-clang-upstream', 'latest-releases-upstream'):
+    return str(find_latest_releases_sdk('upstream'))
+  elif name in ('tot', 'sdk-tot'):
+    return str(find_tot_sdk('upstream'))
+  elif name == 'tot-upstream':
+    return str(find_tot_sdk('upstream'))
+  elif name in ('tot-fastcomp', 'sdk-nightly-latest'):
+    return str(find_tot_sdk('fastcomp'))
+  else:
+    # check if it's a release handled by an emscripten-releases version,
+    # and if so use that by using the right hash. we support a few notations,
+    #   x.y.z[-(upstream|fastcomp_])
+    #   sdk-x.y.z[-(upstream|fastcomp_])-64bit
+    # TODO: support short notation for old builds too?
+    backend = None
+    if '-upstream' in name:
+      name = name.replace('-upstream', '')
+      backend = 'upstream'
+    elif '-fastcomp' in name:
+      name = name.replace('-fastcomp', '')
+      backend = 'fastcomp'
+    name = name.replace('sdk-', '').replace('-64bit', '').replace('tag-', '')
+    release_hash = get_release_hash(name, releases_info)
+    if release_hash:
+      if backend is None:
+        if version_key(name) >= (1, 39, 0):
+          backend = 'upstream'
+        else:
+          backend = 'fastcomp'
+      return 'sdk-releases-%s-%s-64bit' % (backend, release_hash)
+  return name
+
+
 def main():
   global BUILD_FOR_TESTING, ENABLE_LLVM_ASSERTIONS, TTY_OUTPUT
 
@@ -2813,42 +2852,7 @@ def main():
   # Replace meta-packages with the real package names.
   if cmd in ('update', 'install', 'activate'):
     for i in range(2, len(sys.argv)):
-      arg = sys.argv[i]
-      if arg in ('latest', 'sdk-latest', 'latest-64bit', 'sdk-latest-64bit'):
-        # This is effectly the default SDK
-        sys.argv[i] = str(find_latest_releases_sdk('upstream'))
-      elif arg in ('latest-fastcomp', 'latest-releases-fastcomp'):
-        sys.argv[i] = str(find_latest_releases_sdk('fastcomp'))
-      elif arg in ('latest-upstream', 'latest-clang-upstream', 'latest-releases-upstream'):
-        sys.argv[i] = str(find_latest_releases_sdk('upstream'))
-      elif arg in ('tot', 'sdk-tot'):
-        sys.argv[i] = str(find_tot_sdk('upstream'))
-      elif arg == 'tot-upstream':
-        sys.argv[i] = str(find_tot_sdk('upstream'))
-      elif arg in ('tot-fastcomp', 'sdk-nightly-latest'):
-        sys.argv[i] = str(find_tot_sdk('fastcomp'))
-      else:
-        # check if it's a release handled by an emscripten-releases version,
-        # and if so use that by using the right hash. we support a few notations,
-        #   x.y.z[-(upstream|fastcomp_])
-        #   sdk-x.y.z[-(upstream|fastcomp_])-64bit
-        # TODO: support short notation for old builds too?
-        backend = None
-        if '-upstream' in arg:
-          arg = arg.replace('-upstream', '')
-          backend = 'upstream'
-        elif '-fastcomp' in arg:
-          arg = arg.replace('-fastcomp', '')
-          backend = 'fastcomp'
-        arg = arg.replace('sdk-', '').replace('-64bit', '').replace('tag-', '')
-        release_hash = get_release_hash(arg, releases_info)
-        if release_hash:
-          if backend is None:
-            if version_key(arg) >= (1, 39, 0):
-              backend = 'upstream'
-            else:
-              backend = 'fastcomp'
-          sys.argv[i] = 'sdk-releases-%s-%s-64bit' % (backend, release_hash)
+      sys.argv[i] = expand_sdk_name(sys.argv[i])
 
   if cmd == 'list':
     print('')
