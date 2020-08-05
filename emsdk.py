@@ -2656,18 +2656,19 @@ def expand_sdk_name(name):
     #   sdk-x.y.z[-(upstream|fastcomp_])-64bit
     # TODO: support short notation for old builds too?
     backend = None
-    if '-upstream' in name:
-      name = name.replace('-upstream', '')
+    fullname = name
+    if '-upstream' in fullname:
+      fullname = name.replace('-upstream', '')
       backend = 'upstream'
-    elif '-fastcomp' in name:
-      name = name.replace('-fastcomp', '')
+    elif '-fastcomp' in fullname:
+      fullname = fullname.replace('-fastcomp', '')
       backend = 'fastcomp'
-    name = name.replace('sdk-', '').replace('-64bit', '').replace('tag-', '')
+    fullname = fullname.replace('sdk-', '').replace('-64bit', '').replace('tag-', '')
     releases_info = load_releases_info()['releases']
-    release_hash = get_release_hash(name, releases_info)
+    release_hash = get_release_hash(fullname, releases_info)
     if release_hash:
       if backend is None:
-        if version_key(name) >= (1, 39, 0):
+        if version_key(fullname) >= (1, 39, 0):
           backend = 'upstream'
         else:
           backend = 'fastcomp'
