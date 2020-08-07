@@ -51,6 +51,11 @@ WINDOWS = False
 if os.name == 'nt' or (os.getenv('SYSTEMROOT') is not None and 'windows' in os.getenv('SYSTEMROOT').lower()) or (os.getenv('COMSPEC') is not None and 'windows' in os.getenv('COMSPEC').lower()):
   WINDOWS = True
 
+
+def errlog(msg):
+  print(msg, file=sys.stderr)
+
+
 MINGW = False
 MSYS = False
 if os.getenv('MSYSTEM'):
@@ -153,10 +158,6 @@ def os_name_for_emscripten_releases():
 def debug_print(msg, **args):
   if VERBOSE:
     print(msg, **args)
-
-
-def errlog(msg):
-  print(msg, file=sys.stderr)
 
 
 def to_unix_path(p):
