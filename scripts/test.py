@@ -169,11 +169,6 @@ assert old_config == open(emconfig + '.old').read()
 # TODO; test on latest as well
 check_call(upstream_emcc + ' hello_world.c')
 
-print('test tot-fastcomp')
-run_emsdk('install tot-fastcomp')
-run_emsdk('activate tot-fastcomp')
-check_call(fastcomp_emcc + ' hello_world.c')
-
 print('test specific release (old)')
 run_emsdk('install sdk-fastcomp-1.38.31-64bit')
 run_emsdk('activate sdk-fastcomp-1.38.31-64bit')
