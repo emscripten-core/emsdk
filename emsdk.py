@@ -2648,7 +2648,8 @@ def expand_sdk_name(name):
   elif name == 'tot-upstream':
     return str(find_tot_sdk('upstream'))
   elif name in ('tot-fastcomp', 'sdk-nightly-latest'):
-    return str(find_tot_sdk('fastcomp'))
+    print('error: The fastcomp compiler is not available tot/nightly builds. Please use the upstream llvm backend or use an older version than 2.0.0.')
+    sys.exit(1)
   else:
     # check if it's a release handled by an emscripten-releases version,
     # and if so use that by using the right hash. we support a few notations,
@@ -2663,6 +2664,9 @@ def expand_sdk_name(name):
     elif '-fastcomp' in fullname:
       fullname = fullname.replace('-fastcomp', '')
       backend = 'fastcomp'
+      if version_key(fullname) >= (2, 0, 0):
+        print('error: The fastcomp compiler is not available in 2.0.0+. Please use the upstream llvm backend or use an older version than 2.0.0.')
+        sys.exit(1)
     fullname = fullname.replace('sdk-', '').replace('-64bit', '').replace('tag-', '')
     releases_info = load_releases_info()['releases']
     release_hash = get_release_hash(fullname, releases_info)
