@@ -2664,10 +2664,10 @@ def expand_sdk_name(name):
     elif '-fastcomp' in fullname:
       fullname = fullname.replace('-fastcomp', '')
       backend = 'fastcomp'
-      if version_key(fullname) >= (2, 0, 0):
-        print('error: The fastcomp compiler is not available in 2.0.0+. Please use the upstream llvm backend or use an older version than 2.0.0.')
-        sys.exit(1)
     fullname = fullname.replace('sdk-', '').replace('-64bit', '').replace('tag-', '')
+    if backend == 'fastcomp' and version_key(fullname) >= (2, 0, 0):
+      print('error: The fastcomp compiler is not available in 2.0.0+. Please use the upstream llvm backend or use an older version than 2.0.0.')
+      sys.exit(1)
     releases_info = load_releases_info()['releases']
     release_hash = get_release_hash(fullname, releases_info)
     if release_hash:
