@@ -2005,12 +2005,7 @@ def find_latest_releases_hash():
 
 
 def find_latest_releases_sdk(which):
-  if which == 'fastcomp':
-    # The latest fastcomp version if fixed at 1.40.1
-    latest_hash = '536568644fd67d53778f6111fdd5f64ad3f4c539'
-  else:
-    latest_hash =  find_latest_releases_hash()
-  return 'sdk-releases-%s-%s-64bit' % (which, latest_hash)
+  return 'sdk-releases-%s-%s-64bit' % (which, find_latest_releases_hash())
 
 
 def find_tot():
@@ -2642,11 +2637,12 @@ def error_on_missing_tool(name):
 
 
 def expand_sdk_name(name):
+  if name in ('latest-fastcomp', 'latest-releases-fastcomp'):
+    name = 'sdk-fastcomp-1.40.1'
+
   if name in ('latest', 'sdk-latest', 'latest-64bit', 'sdk-latest-64bit'):
     # This is effectly the default SDK
     return str(find_latest_releases_sdk('upstream'))
-  elif name in ('latest-fastcomp', 'latest-releases-fastcomp'):
-    return str(find_latest_releases_sdk('fastcomp'))
   elif name in ('latest-upstream', 'latest-clang-upstream', 'latest-releases-upstream'):
     return str(find_latest_releases_sdk('upstream'))
   elif name in ('tot', 'sdk-tot'):
