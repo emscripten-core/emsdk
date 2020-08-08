@@ -2005,7 +2005,12 @@ def find_latest_releases_hash():
 
 
 def find_latest_releases_sdk(which):
-  return 'sdk-releases-%s-%s-64bit' % (which, find_latest_releases_hash())
+  if which == 'fastcomp':
+    # The latest fastcomp version if fixed at 1.40.1
+    latest_hash = '536568644fd67d53778f6111fdd5f64ad3f4c539'
+  else:
+    latest_hash =  find_latest_releases_hash()
+  return 'sdk-releases-%s-%s-64bit' % (which, latest_hash)
 
 
 def find_tot():
