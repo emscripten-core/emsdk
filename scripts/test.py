@@ -149,7 +149,7 @@ assert 'upstream' not in open(emconfig).read()
 assert 'fastcomp' in open(emconfig).read()
 
 print('verify version')
-checked_call_with_output(fastcomp_emcc + ' -v', TAGS['latest'], stderr=subprocess.STDOUT)
+checked_call_with_output(fastcomp_emcc + ' -v', TAGS['1.40.1'], stderr=subprocess.STDOUT)
 
 print('clear cache')
 check_call(upstream_emcc + ' --clear-cache')
