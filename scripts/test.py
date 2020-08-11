@@ -62,7 +62,7 @@ def checked_call_with_output(cmd, expected=None, unexpected=None, stderr=None):
 def failing_call_with_output(cmd, expected):
   proc = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
   stdout, stderr = proc.communicate()
-  assert proc.returncode, 'call must have failed'
+  assert proc.returncode, 'call must have failed: ' + str([stdout, "\n========\n" stderr])
   assert expected in stdout or expected in stderr, 'call did not have the right output'
 
 
