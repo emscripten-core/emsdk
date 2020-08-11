@@ -32,6 +32,7 @@ from subprocess import check_call
 
 version = '3.7.4'
 base = 'https://www.python.org/ftp/python/%s/' % version
+revision = '2'
 
 pywin32_version = '227'
 pywin32_base = 'https://github.com/mhammond/pywin32/releases/download/b%s/' % pywin32_version
@@ -100,13 +101,21 @@ def build_python():
     check_call(['make', 'install', 'DESTDIR=install'], cwd=src_dir)
 
     install_dir = os.path.join(src_dir, 'install')
-    os.rename(os.path.join(install_dir, 'usr', 'local'), 'python-%s' % version)
-    tarball = 'python-%s-%s.tar.gz' % (version, osname)
-    shutil.rmtree(os.path.join('python-%s' % version, 'lib', 'python3.7', 'test'))
-    shutil.rmtree(os.path.join('python-%s' % version, 'include'))
-    for lib in glob.glob(os.path.join('python-%s' % version, 'lib', 'lib*.a')):
+
+    # Install requests module.  This is needed in particualr on macOS to ensure
+    # SSL certificates are available (certifi in installed and used by requests).
+    pybin = os.path.join(src_dir, 'install', 'usr', 'local', 'bin', 'python3')
+    pip = os.path.join(src_dir, 'install', 'usr', 'local', 'bin', 'pip3')
+    check_call([pybin, pip, 'install', 'requests'])
+
+    dirname = 'python-%s-%s' % (version, revision)
+    os.rename(os.path.join(install_dir, 'usr', 'local'), dirname)
+    tarball = 'python-%s-%s-%s.tar.gz' % (version, revision, osname)
+    shutil.rmtree(os.path.join(dirname, 'lib', 'python3.7', 'test'))
+    shutil.rmtree(os.path.join(dirname, 'include'))
+    for lib in glob.glob(os.path.join(dirname, 'lib', 'lib*.a')):
       os.remove(lib)
-    check_call(['tar', 'zcvf', tarball, 'python-%s' % version])
+    check_call(['tar', 'zcvf', tarball, dirname])
     print('Uploading: ' + upload_base + tarball)
     check_call(['gsutil', 'cp', '-n', tarball, upload_base + tarball])
 
