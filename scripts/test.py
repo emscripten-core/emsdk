@@ -60,10 +60,13 @@ def checked_call_with_output(cmd, expected=None, unexpected=None, stderr=None):
 
 
 def failing_call_with_output(cmd, expected):
-  proc = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, universal_newlines=True)
+  proc = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
   stdout, stderr = proc.communicate()
-  assert proc.returncode, 'call must have failed'
-  assert expected in stdout, 'call did not have the right output'
+  if WINDOWS:
+    print('warning: skipping part of failing_call_with_output() due to error codes not being propagated (see #592)')
+  else:
+    assert proc.returncode, 'call must have failed: ' + str([stdout, "\n========\n", stderr])
+  assert expected in stdout or expected in stderr, 'call did not have the right output'
 
 
 def hack_emsdk(marker, replacement):
@@ -139,9 +142,9 @@ test_lib_building(upstream_emcc, use_asmjs_optimizer=True)
 print('update')
 run_emsdk('update-tags')
 
-print('test latest-releases-fastcomp')
-run_emsdk('install latest-fastcomp')
-run_emsdk('activate latest-fastcomp')
+print('test the last fastcomp release')
+run_emsdk('install 1.40.1-fastcomp')
+run_emsdk('activate 1.40.1-fastcomp')
 
 test_lib_building(fastcomp_emcc, use_asmjs_optimizer=False)
 assert open(emconfig).read().count('LLVM_ROOT') == 1
@@ -150,6 +153,12 @@ assert 'fastcomp' in open(emconfig).read()
 
 print('verify latest fastcomp version is fixed at 1.40.1')
 checked_call_with_output(fastcomp_emcc + ' -v', '1.40.1', stderr=subprocess.STDOUT)
+
+print('verify that attempting to use newer fastcomp gives an error')
+fastcomp_error = 'The fastcomp backend is not getting new builds or releases. Please use the upstream llvm backend or use an older version than 2.0.0 (such as 1.40.1).'
+failing_call_with_output(emsdk + ' install latest-fastcomp', fastcomp_error)
+failing_call_with_output(emsdk + ' install tot-fastcomp', fastcomp_error)
+failing_call_with_output(emsdk + ' install 2.0.0-fastcomp', fastcomp_error)
 
 print('clear cache')
 check_call(upstream_emcc + ' --clear-cache')
@@ -169,7 +178,7 @@ assert old_config == open(emconfig + '.old').read()
 # TODO; test on latest as well
 check_call(upstream_emcc + ' hello_world.c')
 
-print('test specific release (old)')
+print('test specific release (old, using sdk-* notation)')
 run_emsdk('install sdk-fastcomp-1.38.31-64bit')
 run_emsdk('activate sdk-fastcomp-1.38.31-64bit')
 
