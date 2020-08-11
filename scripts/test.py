@@ -152,9 +152,10 @@ print('verify latest fastcomp version is fixed at 1.40.1')
 checked_call_with_output(fastcomp_emcc + ' -v', '1.40.1', stderr=subprocess.STDOUT)
 
 print('verify that attempting to use newer fastcomp gives an error')
-failing_call_with_output(emsdk + ' install latest-fastcomp', 'The fastcomp backend is not getting new builds. Please use the upstream llvm backend')
-failing_call_with_output(emsdk + ' install tot-fastcomp', 'The fastcomp backend is not getting tot/nightly builds. Please use the upstream llvm backend')
-failing_call_with_output(emsdk + ' install 2.0.0-fastcomp', 'The fastcomp backend is not supported in 2.0.0+. Please use the upstream llvm backend')
+fastcomp_error = 'The fastcomp backend is not getting new builds or releases. Please use the upstream llvm backend or use an older version than 2.0.0 (such as 1.40.1).'
+failing_call_with_output(emsdk + ' install latest-fastcomp', fastcomp_error)
+failing_call_with_output(emsdk + ' install tot-fastcomp', fastcomp_error)
+failing_call_with_output(emsdk + ' install 2.0.0-fastcomp', fastcomp_error)
 
 print('clear cache')
 check_call(upstream_emcc + ' --clear-cache')

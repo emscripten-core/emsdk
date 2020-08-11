@@ -2636,13 +2636,13 @@ def error_on_missing_tool(name):
   return 1
 
 
-def exit_with_fastcomp_error(details):
-    exit_with_error(details + ' Please use the upstream llvm backend or use an older version than 2.0.0 (such as 1.40.1).')
+def exit_with_fastcomp_error():
+    exit_with_error('The fastcomp backend is not getting new builds or releases. Please use the upstream llvm backend or use an older version than 2.0.0 (such as 1.40.1).')
 
 
 def expand_sdk_name(name):
-  if name in ('latest-fastcomp', 'latest-releases-fastcomp'):
-    exit_with_fastcomp_error('The fastcomp backend is not getting new builds.')
+  if name in ('latest-fastcomp', 'latest-releases-fastcomp', 'tot-fastcomp', 'sdk-nightly-latest'):
+    exit_with_fastcomp_error()
   if name in ('latest', 'sdk-latest', 'latest-64bit', 'sdk-latest-64bit'):
     # This is effectly the default SDK
     return str(find_latest_releases_sdk('upstream'))
@@ -2652,8 +2652,6 @@ def expand_sdk_name(name):
     return str(find_tot_sdk('upstream'))
   elif name == 'tot-upstream':
     return str(find_tot_sdk('upstream'))
-  elif name in ('tot-fastcomp', 'sdk-nightly-latest'):
-    exit_with_fastcomp_error('The fastcomp backend is not getting tot/nightly builds.')
   else:
     # check if it's a release handled by an emscripten-releases version,
     # and if so use that by using the right hash. we support a few notations,
@@ -2670,7 +2668,7 @@ def expand_sdk_name(name):
       backend = 'fastcomp'
     fullname = fullname.replace('sdk-', '').replace('-64bit', '').replace('tag-', '')
     if backend == 'fastcomp' and version_key(fullname) >= (2, 0, 0):
-      exit_with_fastcomp_error('The fastcomp backend is not supported in 2.0.0+.')
+      exit_with_fastcomp_error()
     releases_info = load_releases_info()['releases']
     release_hash = get_release_hash(fullname, releases_info)
     if release_hash:
