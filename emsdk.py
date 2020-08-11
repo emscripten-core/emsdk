@@ -2637,11 +2637,14 @@ def error_on_missing_tool(name):
 
 
 def expand_sdk_name(name):
+  if name in ('latest-fastcomp', 'latest-releases-fastcomp'):
+    # Since we no longer support fastcomp in ToT emscripten, the latest
+    # fastcomp release is fixed at 1.40.1.
+    name = 'sdk-fastcomp-1.40.1'
+
   if name in ('latest', 'sdk-latest', 'latest-64bit', 'sdk-latest-64bit'):
     # This is effectly the default SDK
     return str(find_latest_releases_sdk('upstream'))
-  elif name in ('latest-fastcomp', 'latest-releases-fastcomp'):
-    return str(find_latest_releases_sdk('fastcomp'))
   elif name in ('latest-upstream', 'latest-clang-upstream', 'latest-releases-upstream'):
     return str(find_latest_releases_sdk('upstream'))
   elif name in ('tot', 'sdk-tot'):

@@ -148,8 +148,8 @@ assert open(emconfig).read().count('LLVM_ROOT') == 1
 assert 'upstream' not in open(emconfig).read()
 assert 'fastcomp' in open(emconfig).read()
 
-print('verify version')
-checked_call_with_output(fastcomp_emcc + ' -v', TAGS['latest'], stderr=subprocess.STDOUT)
+print('verify latest fastcomp version is fixed at 1.40.1')
+checked_call_with_output(fastcomp_emcc + ' -v', '1.40.1', stderr=subprocess.STDOUT)
 
 print('clear cache')
 check_call(upstream_emcc + ' --clear-cache')
