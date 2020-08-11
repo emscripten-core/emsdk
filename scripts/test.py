@@ -139,9 +139,9 @@ test_lib_building(upstream_emcc, use_asmjs_optimizer=True)
 print('update')
 run_emsdk('update-tags')
 
-print('test latest-releases-fastcomp')
-run_emsdk('install latest-fastcomp')
-run_emsdk('activate latest-fastcomp')
+print('test the last fastcomp release')
+run_emsdk('install 1.40.1-fastcomp')
+run_emsdk('activate 1.40.1-fastcomp')
 
 test_lib_building(fastcomp_emcc, use_asmjs_optimizer=False)
 assert open(emconfig).read().count('LLVM_ROOT') == 1
@@ -150,6 +150,11 @@ assert 'fastcomp' in open(emconfig).read()
 
 print('verify latest fastcomp version is fixed at 1.40.1')
 checked_call_with_output(fastcomp_emcc + ' -v', '1.40.1', stderr=subprocess.STDOUT)
+
+print('verify that attempting to use newer fastcomp gives an error')
+failing_call_with_output(emsdk + ' install latest-fastcomp', 'The fastcomp backend is not getting new builds. Please use the upstream llvm backend')
+failing_call_with_output(emsdk + ' install tot-fastcomp', 'The fastcomp backend is not getting tot/nightly builds. Please use the upstream llvm backend')
+failing_call_with_output(emsdk + ' install 2.0.0-fastcomp', 'The fastcomp backend is not supported in 2.0.0+. Please use the upstream llvm backend')
 
 print('clear cache')
 check_call(upstream_emcc + ' --clear-cache')
@@ -169,7 +174,7 @@ assert old_config == open(emconfig + '.old').read()
 # TODO; test on latest as well
 check_call(upstream_emcc + ' hello_world.c')
 
-print('test specific release (old)')
+print('test specific release (old, using sdk-* notation)')
 run_emsdk('install sdk-fastcomp-1.38.31-64bit')
 run_emsdk('activate sdk-fastcomp-1.38.31-64bit')
 
