@@ -160,6 +160,9 @@ failing_call_with_output(emsdk + ' install latest-fastcomp', fastcomp_error)
 failing_call_with_output(emsdk + ' install tot-fastcomp', fastcomp_error)
 failing_call_with_output(emsdk + ' install 2.0.0-fastcomp', fastcomp_error)
 
+print('go back to using upstream')
+run_emsdk('activate latest')
+
 print('clear cache')
 check_call(upstream_emcc + ' --clear-cache')
 assert not os.path.exists(LIBC)
