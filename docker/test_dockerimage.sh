@@ -5,7 +5,6 @@ if [ $EUID -eq 0 ]; then
   sudo -u nobody `which emcc` --version
 fi
 
-which asm2wasm
 which llvm-ar
 which emsdk
 node --version
