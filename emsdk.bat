@@ -6,41 +6,25 @@ setlocal
 
 if exist "%~dp0python\3.7.4-pywin32_64bit\python.exe" (
   set EMSDK_PY="%~dp0python\3.7.4-pywin32_64bit\python.exe"
+  :: When using our bundled python we never want the users
+  :: PYTHONHOME or PYTHONPATH
+  :: https://github.com/emscripten-core/emsdk/issues/598
+  set PYTHONHOME=
+  set PYTHONPATH=
   goto end
 )
 
 if exist "%~dp0python\3.7.4_64bit\python.exe" (
   set EMSDK_PY="%~dp0python\3.7.4_64bit\python.exe"
+  set PYTHONHOME=
+  set PYTHONPATH=
   goto end
 )
 
 if exist "%~dp0python\2.7.13.1_64bit\python-2.7.13.amd64\python.exe" (
   set EMSDK_PY="%~dp0python\2.7.13.1_64bit\python-2.7.13.amd64\python.exe"
-  goto end
-)
-
-if exist "%~dp0python\2.7.13.1_32bit\python-2.7.13\python.exe" (
-  set EMSDK_PY="%~dp0python\2.7.13.1_32bit\python-2.7.13\python.exe"
-  goto end
-)
-
-if exist "%~dp0python\2.7.5.3_64bit\python.exe" (
-  set EMSDK_PY="%~dp0python\2.7.5.3_64bit\python.exe"
-  goto end
-)
-
-if exist "%~dp0python\2.7.5.3_32bit\python.exe" (
-  set EMSDK_PY="%~dp0python\2.7.5.3_32bit\python.exe"
-  goto end
-)
-
-if exist "%~dp0python\2.7.5_64bit\python.exe" (
-  set EMSDK_PY="%~dp0python\2.7.5_64bit\python.exe"
-  goto end
-)
-
-if exist "%~dp0python\2.7.5.1_32bit\python.exe" (
-  set EMSDK_PY="%~dp0python\2.7.5.1_32bit\python.exe"
+  set PYTHONHOME=
+  set PYTHONPATH=
   goto end
 )
 
