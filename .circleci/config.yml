@@ -34,8 +34,9 @@ jobs:
       - checkout
       - run:
           name: Install debian packages
-          command: apt-get update -q && apt-get install -q -y cmake build-essential openjdk-8-jre-headless
+          command: apt-get update -q && apt-get install -q -y cmake build-essential openjdk-8-jre-headless ksh zsh
       - run: scripts/test.sh
+      - run: scripts/test_source_env.sh
       - run:
           name: test.py
           command: |
