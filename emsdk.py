@@ -1452,7 +1452,7 @@ def generate_dot_emscripten(active_tools):
     node_fallback = which('nodejs')
     if not node_fallback:
       node_fallback = 'node'
-    activated_config['NODE_JS'] = "'%s'" % node_fallback
+    activated_config['NODE_JS'] = node_fallback
 
   for name, value in activated_config.items():
     cfg += name + " = '" + value + "'\n"
