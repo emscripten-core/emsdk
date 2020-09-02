@@ -61,3 +61,7 @@ Now you can run `bazel build :hello-world-wasm`. The result of this build will
 be the individual files produced by emscripten. Note that some of these files
 may be empty. This is because bazel has no concept of optional outputs for
 rules.
+
+## Updating to the latest version of emscripten
+When a new version of emscripten is released, emsdk maintainers can run
+`emsdk/scripts/update_bazel_workspace.sh` to update the bazel WORKSPACE file.
