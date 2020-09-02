@@ -1,6 +1,6 @@
 FROM debian:buster AS stage_build
 
-ARG EMSCRIPTEN_VERSION=1.39.20
+ARG EMSCRIPTEN_VERSION=tot
 ENV EMSDK /emsdk
 
 # ------------------------------------------------------------------------------
@@ -18,12 +18,12 @@ RUN echo "## Start building" \
         python3-pip \
     && echo "## Done"
 
-RUN echo "## Get EMSDK" \
-    && git clone https://github.com/emscripten-core/emsdk.git ${EMSDK} \
-    && echo "## Done"
+# Copy the contents of this repository to the container
+COPY . ${EMSDK}
 
 RUN echo "## Install Emscripten" \
     && cd ${EMSDK} \
+    && if [ "$EMSCRIPTEN_VERSION" = "tot" ]; then ./emsdk update-tags; fi \
     && ./emsdk install ${EMSCRIPTEN_VERSION} \
     && echo "## Done"
 
@@ -114,18 +114,6 @@ RUN echo "## Update and install packages" \
     && rm -rf /usr/share/man/?? \
     && rm -rf /usr/share/man/??_* \
     && echo "## Done"
-
-# ------------------------------------------------------------------------------
-# Internal test suite of tools that this image provides
-COPY test_dockerimage.sh /emsdk/
-
-RUN echo "## Internal Testing of image" \
-    && /emsdk/test_dockerimage.sh \
-    && echo "## Done"
-
-# ------------------------------------------------------------------------------
-# Copy this Dockerimage into image, so that it will be possible to recreate it later
-COPY Dockerfile /emsdk/dockerfiles/emscripten-core/emsdk/
 
 # ------------------------------------------------------------------------------
 # Use commonly used /src as working directory
