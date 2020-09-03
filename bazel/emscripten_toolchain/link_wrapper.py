@@ -105,7 +105,7 @@ if os.path.exists(wasm_base + '.debug.wasm') and os.path.exists(wasm_base):
     # We do this backwards because the final format is little-endian.
     final_bytes = bytearray()
     for i in reversed(range(0, len(bit_string), 7)):
-      binary_part = bit_string[i:i+7]
+      binary_part = bit_string[i:i + 7]
       if i != 0:
         # Every chunk except the last one needs to be prepended with '1'.
         # The length of each chunk is 7, so that one has an implicit '0'.
