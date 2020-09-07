@@ -31,15 +31,15 @@ DIR="."
 # To add a shell, add another conditional below,
 # then add tests to scripts/test_source_env.sh
 
-if [ -n "$BASH_SOURCE" ]; then
+if [ -n "${BASH_SOURCE-}" ]; then
   CURRENT_SCRIPT="$BASH_SOURCE"
-elif [ -n "$ZSH_VERSION" ]; then
+elif [ -n "${ZSH_VERSION-}" ]; then
   CURRENT_SCRIPT="${(%):-%x}"
-elif [ -n "$KSH_VERSION" ]; then
+elif [ -n "${KSH_VERSION-}" ]; then
   CURRENT_SCRIPT=${.sh.file}
 fi
 
-if [ -n "$CURRENT_SCRIPT" ]; then
+if [ -n "${CURRENT_SCRIPT-}" ]; then
   DIR=$(dirname "$CURRENT_SCRIPT")
   if [ -h "$CURRENT_SCRIPT" ]; then
     # Now work out actual DIR since this is part of a symlink.
