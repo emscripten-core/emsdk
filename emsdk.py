@@ -2403,56 +2403,6 @@ def run_emcc(tools_to_activate):
         return
 
 
-# Copy over any emscripten cache contents that were pregenerated. This avoids
-# the user needing to immediately build libc etc. on first run.
-# This only applies to legacy SDK versions.  Anything built after
-# https://github.com/WebAssembly/waterfall/pull/644 already has the libraries
-# in the correct location.
-# TODO(sbc): Remove this code.
-def copy_pregenerated_cache(tools_to_activate):
-  tools_with_cache = [t for t in tools_to_activate if hasattr(t, 'pregenerated_cache')]
-  if not tools_with_cache:
-    debug_print('Not copying pregenerated libaries (none found)')
-    return
-
-  em_cache_dir = None
-
-  # First look through all the tools to find the EMSCRIPTEN_ROOT
-  for tool in tools_to_activate:
-    config = tool.activated_config()
-    if 'EMSCRIPTEN_ROOT' in config:
-      em_cache_dir = os.path.join(config['EMSCRIPTEN_ROOT'], 'cache')
-      break
-  else:
-    debug_print('Not copying pregenerated libaries (no EMSCRIPTEN_ROOT found)')
-    return
-
-  # Generating .emscripten will cause emcc to clear the cache on first run (emcc
-  # sees that the file has changed, since we write it here in the emsdk, and it
-  # never saw it before; so it clears the cache as it assumes a new config file
-  # means system libraries may need rebuilding). To avoid emcc's clearing wiping
-  # out the pregenerated cache contents we want to copy in, run emcc here, then
-  # copy the cache contents.
-  run_emcc(tools_to_activate)
-
-  # If we found an EMSCRIPTEN_ROOT look for any tools that include
-  # "pregenerated_cache" and copy those items into the cache.
-  for tool in tools_with_cache:
-    for cache_dir in tool.pregenerated_cache:
-      # Finish the install of an emscripten-releases build.
-      install_path = to_native_path(sdk_path(tool.expand_vars(tool.install_path)))
-      in_cache = os.path.join(install_path, 'lib', cache_dir)
-      if not os.path.exists(in_cache):
-        continue
-      out_cache = os.path.join(em_cache_dir, cache_dir)
-      if not os.path.exists(out_cache):
-        os.makedirs(out_cache)
-      for filename in os.listdir(in_cache):
-        debug_print('Copying %s to cache: %s' % (filename, out_cache))
-        shutil.copy2(os.path.join(in_cache, filename),
-                     os.path.join(out_cache, filename))
-
-
 def write_set_env_script(env_string):
   assert(WINDOWS)
   open(EMSDK_SET_ENV, 'w').write(env_string)
@@ -2470,8 +2420,6 @@ def set_active_tools(tools_to_activate, permanently_activate):
     print('')
 
   generate_dot_emscripten(tools_to_activate)
-
-  copy_pregenerated_cache(tools_to_activate)
 
   # Construct a .bat script that will be invoked to set env. vars and PATH
   # We only do this on windows since emsdk.bat is able to modify the
