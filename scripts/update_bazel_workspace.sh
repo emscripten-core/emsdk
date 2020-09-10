@@ -4,21 +4,14 @@
 # version number. Then, it downloads the prebuilts for that version and computes
 # the sha256sum for the archive. It then puts all this information into the
 # emsdk/bazel/WORKSPACE file.
-# This command should be run from the emsdk root.
-
-function cleanup {
-  popd > /dev/null
-}
 
 ERR=0
 # Attempt to change to the emsdk root directory
-pushd "${PWD%%/emsdk*}/emsdk" > /dev/null 2> /dev/null
+cd $(dirname $0)/..
 
 # If the previous command succeeded. We are in the emsdk root. Check to make
 # sure the files and directories we need are present.
 if [[ $? = 0 ]]; then
-  trap cleanup EXIT
-
   if [[ ! -f emscripten-releases-tags.txt ]]; then
     echo "Cannot find emscripten-releases-tags.txt."
     ERR=1
@@ -36,7 +29,7 @@ else
 fi
 
 if [[ $ERR = 1 ]]; then
-  echo "This script should be run from the emsdk root directory."
+  echo "Unable to cd into the emsdk root directory."
   exit 1
 fi
 
