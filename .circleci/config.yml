@@ -137,7 +137,7 @@ jobs:
           command: |
             apt-get update -q
             apt-get install -q -y python3-pip
-      - run: pip install absl-py
+      - run: pip3 install absl-py
       - run:
           name: install bazel
           command: |
