@@ -107,7 +107,7 @@ checked_call_with_output(emsdk + ' list', expected=TAGS['latest'] + '    INSTALL
 print('building proper system libraries')
 
 
-def test_lib_building(emcc, use_asmjs_optimizer):
+def test_lib_building(emcc):
   cache_building_messages = ['generating system library: ']
 
   def test_build(args, expected):
@@ -137,7 +137,7 @@ def run_emsdk(cmd):
   check_call([emsdk] + cmd)
 
 
-test_lib_building(upstream_emcc, use_asmjs_optimizer=True)
+test_lib_building(upstream_emcc)
 
 print('update')
 run_emsdk('update-tags')
@@ -146,7 +146,7 @@ print('test the last fastcomp release')
 run_emsdk('install 1.40.1-fastcomp')
 run_emsdk('activate 1.40.1-fastcomp')
 
-test_lib_building(fastcomp_emcc, use_asmjs_optimizer=False)
+test_lib_building(fastcomp_emcc)
 assert open(emconfig).read().count('LLVM_ROOT') == 1
 assert 'upstream' not in open(emconfig).read()
 assert 'fastcomp' in open(emconfig).read()
