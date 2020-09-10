@@ -13,7 +13,7 @@ http_archive(
     name = "emscripten",
     sha256 = "9febbc252372efee82e62d548f510dfc85ade6661f5f3be28823848d4757d614",
     strip_prefix = "install",
-    url = "https://storage.googleapis.com/webassembly/emscripten-releases-builds/linux/ede25d889a0abe63360d4c5d420087c8753b8bbeq/wasm-binaries.tbz2",
+    url = "https://storage.googleapis.com/webassembly/emscripten-releases-builds/linux/ede25d889a0abe63360d4c5d420087c8753b8bbe/wasm-binaries.tbz2",
     build_file = "//emscripten_toolchain:emscripten.BUILD",
     type = "tar.bz2",
 )
