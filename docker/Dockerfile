@@ -28,11 +28,15 @@ RUN echo "## Install Emscripten" \
     && echo "## Done"
 
 # This generates configuration that contains all valid paths according to installed SDK
+# TODO(sbc): We should be able to use just emcc -v here but it doesn't
+# currently create the sanity file.
 RUN cd ${EMSDK} \
     && echo "## Generate standard configuration" \
     && ./emsdk activate ${EMSCRIPTEN_VERSION} \
     && chmod 777 ${EMSDK}/upstream/emscripten \
     && chmod -R 777 ${EMSDK}/upstream/emscripten/cache \
+    && echo "int main() { return 0; }" > hello.c \
+    && ${EMSDK}/upstream/emscripten/emcc -c hello.c \
     && cat ${EMSDK}/upstream/emscripten/cache/sanity.txt \
     && echo "## Done"
 
