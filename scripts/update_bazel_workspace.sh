@@ -1,4 +1,9 @@
 #!/bin/bash
+# This script will update emsdk/bazel/WORKSPACE to the latest version of
+# emscripten. It reads emsdk/emscripten-releases-tags.txt to get the latest
+# version number. Then, it downloads the prebuilts for that version and computes
+# the sha256sum for the archive. It then puts all this information into the
+# emsdk/bazel/WORKSPACE file.
 # This command should be run from the emsdk root.
 
 function cleanup {
