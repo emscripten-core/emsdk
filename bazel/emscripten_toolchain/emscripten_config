@@ -7,5 +7,3 @@ LLVM_ROOT = ROOT_DIR + "/external/emscripten/bin"
 EMSCRIPTEN_NATIVE_OPTIMIZER = LLVM_ROOT + "/optimizer"
 NODE_JS = ROOT_DIR + "/external/nodejs_linux_amd64/bin/node"
 BINARYEN_ROOT = ROOT_DIR + "/external/emscripten"
-
-TEMP_DIR="/tmp/bazel_emscripten"
