@@ -2185,12 +2185,15 @@ def exit_with_error(msg):
 
 # Load the json info for emscripten-releases.
 def load_releases_info():
-  try:
-    text = open(sdk_path('emscripten-releases-tags.txt'), 'r').read()
-    return json.loads(text)
-  except Exception as e:
-    print('Error parsing emscripten-releases-tags.txt!')
-    exit_with_error(str(e))
+  if not hasattr(load_releases_info, 'cached_info'):
+    try:
+      text = open(sdk_path('emscripten-releases-tags.txt'), 'r').read()
+      load_releases_info.cached_info = json.loads(text)
+    except Exception as e:
+      print('Error parsing emscripten-releases-tags.txt!')
+      exit_with_error(str(e))
+
+  return load_releases_info.cached_info
 
 
 # Get a list of tags for emscripten-releases.
