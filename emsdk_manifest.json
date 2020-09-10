@@ -100,8 +100,7 @@
     "install_path": "upstream",
     "activated_path": "%installation_dir%/emscripten",
     "activated_cfg": "LLVM_ROOT='%installation_dir%/bin';BINARYEN_ROOT='%installation_dir%';EMSCRIPTEN_ROOT='%installation_dir%/emscripten'",
-    "emscripten_releases_hash": "%releases-tag%",
-    "pregenerated_cache": ["asmjs", "wasm", "wasm-obj", "wasm-bc"]
+    "emscripten_releases_hash": "%releases-tag%"
   },
   {
     "id": "releases",
@@ -115,8 +114,7 @@
     "install_path": "fastcomp",
     "activated_path": "%installation_dir%/emscripten",
     "activated_cfg": "LLVM_ROOT='%installation_dir%/fastcomp/bin';BINARYEN_ROOT='%installation_dir%';EMSCRIPTEN_ROOT='%installation_dir%/emscripten';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/bin/optimizer%.exe%'",
-    "emscripten_releases_hash": "%releases-tag%",
-    "pregenerated_cache": ["asmjs", "wasm", "wasm-obj", "wasm-bc"]
+    "emscripten_releases_hash": "%releases-tag%"
   },
 
   {
