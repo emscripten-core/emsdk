@@ -4,9 +4,6 @@
 # Allow to run the test script inside the Docker container
 !/docker/test_dockerimage.sh
 
-# Allow the Dockerfile for future re-creation/reference
-!/docker/Dockerfile
-
 # Ignore unnecessary files inside top-level directory
 *.bat
 *.csh
