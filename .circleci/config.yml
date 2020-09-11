@@ -124,6 +124,26 @@ jobs:
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
             make -C ./docker version=${CIRCLE_TAG} alias=latest push
 
+  test-bazel:
+    executor: bionic
+    steps:
+      - checkout
+      - run: apt-get install -q -y curl gnupg
+      - run: curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor > bazel.gpg
+      - run: mv bazel.gpg /etc/apt/trusted.gpg.d/
+      - run: echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
+      - run:
+          name: install pip
+          command: |
+            apt-get update -q
+            apt-get install -q -y python3-pip
+      - run: pip3 install absl-py
+      - run:
+          name: install bazel
+          command: |
+            apt-get install -q -y bazel
+      - run: scripts/test_bazel.sh
+
 workflows:
   flake8:
     jobs:
@@ -146,3 +166,6 @@ workflows:
               ignore: /.*/
             tags:
               only: /.*/
+  test-bazel:
+    jobs:
+      - test-bazel
