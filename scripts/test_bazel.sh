@@ -14,7 +14,7 @@ HASH=$(grep "${VER}" emscripten-releases-tags.txt \
       | grep -v latest \
       | cut -f4 -d\")
       
-FAILMSG="scripts/update_bazel_toolchain.sh needs to be run."
+FAILMSG="!!! scripts/update_bazel_toolchain.sh needs to be run !!!"
 
 # Ensure the WORKSPACE file is up to date with the latest version.
 grep ${VER} bazel/WORKSPACE || (echo ${FAILMSG} && false)
