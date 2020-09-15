@@ -477,7 +477,7 @@
   {
     "version": "upstream-master",
     "bitness": 64,
-    "uses": ["llvm-git-master-64bit", "node-12.18.1-64bit", "python-3.7.4-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
+    "uses": ["llvm-git-master-64bit", "node-12.18.1-64bit", "python-3.7.4-pywin32-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
     "os": "win"
   },
   {
@@ -507,7 +507,7 @@
   {
     "version": "fastcomp-master",
     "bitness": 64,
-    "uses": ["fastcomp-clang-master-64bit", "node-12.18.1-64bit", "python-3.7.4-64bit", "java-8.152-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
+    "uses": ["fastcomp-clang-master-64bit", "node-12.18.1-64bit", "python-3.7.4-pywin32-64bit", "java-8.152-64bit", "emscripten-master-64bit", "binaryen-master-64bit"],
     "os": "win"
   },
   {
