@@ -2575,6 +2575,25 @@ def construct_env(tools_to_activate):
         env_string += 'export ' + key + '="' + value + '";\n'
       else:
         assert False
+      if 'EMSDK_PYTHON' in env_vars:
+        # When using our bundled python we never want the user's
+        # PYTHONHOME or PYTHONPATH
+        # See https://github.com/emscripten-core/emsdk/issues/598
+        if POWERSHELL:
+          env_string += 'Remove-Item env:PYTHONHOME\n'
+          env_string += 'Remove-Item env:PYTHONPATH\n'
+        elif CMD:
+          env_string += 'set PYTHONHOME=\n'
+          env_string += 'set PYTHONPATH=\n'
+        elif CSH:
+          env_string += 'unsetenv PYTHONHOME\n'
+          env_string += 'unsetenv PYTHONPATH\n'
+        elif BASH:
+          env_string += 'unset PYTHONHOME\n'
+          env_string += 'unset PYTHONPATH\n'
+        else:
+          assert False
+
       errlog(key + ' = ' + value)
   return env_string
 

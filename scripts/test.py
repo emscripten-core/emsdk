@@ -50,7 +50,13 @@ def check_call(cmd, **args):
 def checked_call_with_output(cmd, expected=None, unexpected=None, stderr=None):
   cmd = cmd.split(' ')
   print('running: %s' % cmd)
-  stdout = subprocess.check_output(cmd, stderr=stderr, universal_newlines=True)
+  try:
+    stdout = subprocess.check_output(cmd, stderr=stderr, universal_newlines=True)
+  except subprocess.CalledProcessError as e:
+    print(e.stderr)
+    print(e.stdout)
+    raise e
+
   if expected:
     for x in listify(expected):
       assert x in stdout, 'call had the right output: ' + stdout + '\n[[[' + x + ']]]'
