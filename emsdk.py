@@ -2576,7 +2576,7 @@ def construct_env(tools_to_activate):
       else:
         assert False
       if 'EMSDK_PYTHON' in env_vars:
-        # When using our bundled python we never want the users
+        # When using our bundled python we never want the user's
         # PYTHONHOME or PYTHONPATH
         # See https://github.com/emscripten-core/emsdk/issues/598
         if POWERSHELL:
