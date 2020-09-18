@@ -2767,6 +2767,8 @@ def main():
   arg_uses = extract_bool_arg('--uses')
   arg_global = extract_bool_arg('--global')
   arg_system = extract_bool_arg('--system')
+  if arg_system:
+    arg_global = True
   if extract_bool_arg('--embedded'):
     errlog('embedded mode is now the only mode available')
   if extract_bool_arg('--no-embedded'):
