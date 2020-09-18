@@ -2730,12 +2730,17 @@ def main():
    emsdk activate [--global] [--build=type] [--vs2017/--vs2019] <tool/sdk>
 
                                 - Activates the given tool or SDK in the
-                                  environment of the current shell. If the
-                                  --global option is passed, the registration
-                                  is done globally to all users in the system
-                                  environment.  If a custom compiler version was
-                                  used to override the compiler to use, pass
-                                  the same --vs2017/--vs2019 parameter
+                                  environment of the current shell.
+
+                                - If the `--global` option is passed, the the environment
+                                  variables are set permanently for the current user.
+
+                                - If the `--system` option is passed, the registration
+                                  is done for all users of the system
+                                  (uses Machine environment variables).
+
+                                - If a custom compiler version was used to override
+                                  the compiler to use, pass the same --vs2017/--vs2019 parameter
                                   here to choose which version to activate.
 
    emcmdprompt.bat              - Spawns a new command prompt window with the
