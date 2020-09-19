@@ -2727,12 +2727,12 @@ def main():
 
     if WINDOWS:
       print('''
-   emsdk activate [--global] [--build=type] [--vs2017/--vs2019] <tool/sdk>
+   emsdk activate [--permanent] [--system] [--build=type] [--vs2017/--vs2019] <tool/sdk>
 
                                 - Activates the given tool or SDK in the
                                   environment of the current shell.
 
-                                - If the `--global` option is passed, the the environment
+                                - If the `--permanent` option is passed, the the environment
                                   variables are set permanently for the current user.
 
                                 - If the `--system` option is passed, the registration
@@ -2770,9 +2770,13 @@ def main():
 
   arg_old = extract_bool_arg('--old')
   arg_uses = extract_bool_arg('--uses')
+  arg_permanent = extract_bool_arg('--permanent')
   arg_global = extract_bool_arg('--global')
+  if arg_global:
+    print('--global is deprecated. Use `--system` to set the environment variables for all users')
   arg_system = extract_bool_arg('--system')
   if arg_system:
+    arg_permanent = True
     arg_global = True
   if extract_bool_arg('--embedded'):
     errlog('embedded mode is now the only mode available')
@@ -2935,7 +2939,7 @@ def main():
     print('Items marked with * are activated for the current user.')
     if has_partially_active_tools[0]:
       env_cmd = 'emsdk_env.bat' if WINDOWS else 'source ./emsdk_env.sh'
-      print('Items marked with (*) are selected for use, but your current shell environment is not configured to use them. Type "' + env_cmd + '" to set up your current shell to use them' + (', or call "emsdk activate --global <name_of_sdk>" to permanently activate them.' if WINDOWS else '.'))
+      print('Items marked with (*) are selected for use, but your current shell environment is not configured to use them. Type "' + env_cmd + '" to set up your current shell to use them' + (', or call "emsdk activate --permanent <name_of_sdk>" to permanently activate them.' if WINDOWS else '.'))
     if not arg_old:
       print('')
       print("To access the historical archived versions, type 'emsdk list --old'")
@@ -2969,8 +2973,8 @@ def main():
     fetch_emscripten_tags()
     return 0
   elif cmd == 'activate':
-    if arg_global:
-      print('Registering active Emscripten environment globally for all users.')
+    if arg_permanent:
+      print('Registering active Emscripten environment premenantly')
       print('')
 
     tools_to_activate = currently_active_tools()
@@ -2985,12 +2989,12 @@ def main():
     if not tools_to_activate:
       errlog('No tools/SDKs specified to activate! Usage:\n   emsdk activate tool/sdk1 [tool/sdk2] [...]')
       return 1
-    active_tools = set_active_tools(tools_to_activate, permanently_activate=arg_global, system=arg_system)
+    active_tools = set_active_tools(tools_to_activate, permanently_activate=arg_permanent, system=arg_system)
     if not active_tools:
       errlog('No tools/SDKs found to activate! Usage:\n   emsdk activate tool/sdk1 [tool/sdk2] [...]')
       return 1
-    if WINDOWS and not arg_global:
-      errlog('The changes made to environment variables only apply to the currently running shell instance. Use the \'emsdk_env.bat\' to re-enter this environment later, or if you\'d like to permanently register this environment globally to all users in Windows Registry, rerun this command with the option --global.')
+    if WINDOWS and not arg_permanent:
+      errlog('The changes made to environment variables only apply to the currently running shell instance. Use the \'emsdk_env.bat\' to re-enter this environment later, or if you\'d like to permanently register this environment permanently, rerun this command with the option --permanent.')
     return 0
   elif cmd == 'install':
     # Process args
