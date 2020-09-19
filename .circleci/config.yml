@@ -87,6 +87,11 @@ jobs:
           command: |
             source emsdk_env.sh
             python scripts/test.py
+      - run:
+          name: --permanent test
+          shell: powershell.exe
+          command: |
+            scripts/test_permanent.ps1
 
   build-docker-image:
     executor: bionic
