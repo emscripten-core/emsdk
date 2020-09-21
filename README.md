@@ -176,9 +176,8 @@ reissuing `emsdk install`.
 
 You can toggle between different tools and SDK versions by running `emsdk
 activate <tool/sdk name>`. Activating a tool will set up `~/.emscripten` to
-point to that particular tool. On Windows, you can pass the option `--global` to
-the `activate` command to register the environment permanently to the system
-registry for all users.
+point to that particular tool. On Windows, you can pass the option `--permanent` to
+the `activate` command to register the environment permanently for the current user. Use `--system` to do this for all users.
 
 ### How do I build multiple projects with different SDK versions in parallel?
 
