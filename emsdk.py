@@ -2732,7 +2732,7 @@ def main():
                                 - Activates the given tool or SDK in the
                                   environment of the current shell.
 
-                                - If the `--permanent` option is passed, the the environment
+                                - If the `--permanent` option is passed, then the environment
                                   variables are set permanently for the current user.
 
                                 - If the `--system` option is passed, the registration
@@ -2974,7 +2974,7 @@ def main():
     return 0
   elif cmd == 'activate':
     if arg_permanent:
-      print('Registering active Emscripten environment premenantly')
+      print('Registering active Emscripten environment permanently')
       print('')
 
     tools_to_activate = currently_active_tools()
