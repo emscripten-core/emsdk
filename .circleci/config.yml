@@ -87,6 +87,16 @@ jobs:
           command: |
             source emsdk_env.sh
             python scripts/test.py
+      - run:
+          name: --permanent test
+          shell: powershell.exe
+          command: |
+            try {
+              scripts/test_permanent.ps1
+            } catch {
+              Write-Host "`n Error Message: [$($_.Exception.Message)"] -ForegroundColor Red
+              Write-Host "`n Line Number: "$_.InvocationInfo.ScriptLineNumber -ForegroundColor Red
+            }
 
   build-docker-image:
     executor: bionic

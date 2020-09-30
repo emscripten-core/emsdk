@@ -1760,18 +1760,13 @@ class Tool(object):
           return False
     return True
 
-  def win_activate_env_vars(self, permanently_activate):
+  def win_activate_env_vars(self, system):
     if WINDOWS:
       envs = self.activated_environment()
       for env in envs:
         key, value = parse_key_value(env)
 
-        if permanently_activate:
-          # If there is an env var for the LOCAL USER with same name, it will
-          # hide the system var, so must remove that first.
-          win_delete_environment_variable(key, False)
-
-        win_set_environment_variable(key, value, permanently_activate)
+        win_set_environment_variable(key, value, system)
 
   # If this tool can be installed on this system, this function returns True.
   # Otherwise, this function returns a string that describes the reason why this
@@ -2411,7 +2406,7 @@ def write_set_env_script(env_string):
 # Reconfigure .emscripten to choose the currently activated toolset, set PATH
 # and other environment variables.
 # Returns the full list of deduced tools that are now active.
-def set_active_tools(tools_to_activate, permanently_activate):
+def set_active_tools(tools_to_activate, permanently_activate, system):
   tools_to_activate = process_tool_list(tools_to_activate, log_errors=True)
 
   if tools_to_activate:
@@ -2433,13 +2428,13 @@ def set_active_tools(tools_to_activate, permanently_activate):
   if WINDOWS and permanently_activate:
     # Individual env. vars
     for tool in tools_to_activate:
-      tool.win_activate_env_vars(permanently_activate=True)
+      tool.win_activate_env_vars(system=system)
 
     # PATH variable
-    newpath, added_items = adjusted_path(tools_to_activate, system_path_only=True)
+    newpath, added_items = adjusted_path(tools_to_activate, system=system)
     # Are there any actual changes?
     if newpath != os.environ['PATH']:
-      win_set_environment_variable('PATH', newpath, system=True)
+      win_set_environment_variable('PATH', newpath, system=system)
 
   return tools_to_activate
 
@@ -2485,17 +2480,12 @@ def to_msys_path(p):
 
 # Looks at the current PATH and adds and removes entries so that the PATH reflects
 # the set of given active tools.
-def adjusted_path(tools_to_activate, log_additions=False, system_path_only=False):
+def adjusted_path(tools_to_activate, system=False):
   # These directories should be added to PATH
   path_add = get_required_path(tools_to_activate)
   # These already exist.
   if WINDOWS and not MSYS:
-    existing_path = win_get_environment_variable('PATH', system=True)
-    if not system_path_only:
-      current_user_path = win_get_environment_variable('PATH', system=False)
-      if current_user_path:
-        existing_path += ENVPATH_SEPARATOR + current_user_path
-    existing_path = existing_path.split(ENVPATH_SEPARATOR)
+    existing_path = win_get_environment_variable('PATH', system=system).split(ENVPATH_SEPARATOR)
   else:
     existing_path = os.environ['PATH'].split(ENVPATH_SEPARATOR)
   emsdk_root_path = to_unix_path(emsdk_path())
@@ -2737,15 +2727,21 @@ def main():
 
     if WINDOWS:
       print('''
-   emsdk activate [--global] [--build=type] [--vs2017/--vs2019] <tool/sdk>
+   emsdk activate [--permanent] [--system] [--build=type] [--vs2017/--vs2019] <tool/sdk>
 
                                 - Activates the given tool or SDK in the
-                                  environment of the current shell. If the
-                                  --global option is passed, the registration
-                                  is done globally to all users in the system
-                                  environment.  If a custom compiler version was
-                                  used to override the compiler to use, pass
-                                  the same --vs2017/--vs2019 parameter
+                                  environment of the current shell.
+
+                                - If the `--permanent` option is passed, then the environment
+                                  variables are set permanently for the current user.
+
+                                - If the `--system` option is passed, the registration
+                                  is done for all users of the system.
+                                  This needs admin privileges
+                                  (uses Machine environment variables).
+
+                                - If a custom compiler version was used to override
+                                  the compiler to use, pass the same --vs2017/--vs2019 parameter
                                   here to choose which version to activate.
 
    emcmdprompt.bat              - Spawns a new command prompt window with the
@@ -2775,7 +2771,14 @@ def main():
 
   arg_old = extract_bool_arg('--old')
   arg_uses = extract_bool_arg('--uses')
+  arg_permanent = extract_bool_arg('--permanent')
   arg_global = extract_bool_arg('--global')
+  arg_system = extract_bool_arg('--system')
+  if arg_global:
+    print('--global is deprecated. Use `--system` to set the environment variables for all users')
+    arg_system = True
+  if arg_system:
+    arg_permanent = True
   if extract_bool_arg('--embedded'):
     errlog('embedded mode is now the only mode available')
   if extract_bool_arg('--no-embedded'):
@@ -2937,7 +2940,7 @@ def main():
     print('Items marked with * are activated for the current user.')
     if has_partially_active_tools[0]:
       env_cmd = 'emsdk_env.bat' if WINDOWS else 'source ./emsdk_env.sh'
-      print('Items marked with (*) are selected for use, but your current shell environment is not configured to use them. Type "' + env_cmd + '" to set up your current shell to use them' + (', or call "emsdk activate --global <name_of_sdk>" to permanently activate them.' if WINDOWS else '.'))
+      print('Items marked with (*) are selected for use, but your current shell environment is not configured to use them. Type "' + env_cmd + '" to set up your current shell to use them' + (', or call "emsdk activate --permanent <name_of_sdk>" to permanently activate them.' if WINDOWS else '.'))
     if not arg_old:
       print('')
       print("To access the historical archived versions, type 'emsdk list --old'")
@@ -2971,8 +2974,8 @@ def main():
     fetch_emscripten_tags()
     return 0
   elif cmd == 'activate':
-    if arg_global:
-      print('Registering active Emscripten environment globally for all users.')
+    if arg_permanent:
+      print('Registering active Emscripten environment permanently')
       print('')
 
     tools_to_activate = currently_active_tools()
@@ -2987,12 +2990,12 @@ def main():
     if not tools_to_activate:
       errlog('No tools/SDKs specified to activate! Usage:\n   emsdk activate tool/sdk1 [tool/sdk2] [...]')
       return 1
-    active_tools = set_active_tools(tools_to_activate, permanently_activate=arg_global)
+    active_tools = set_active_tools(tools_to_activate, permanently_activate=arg_permanent, system=arg_system)
     if not active_tools:
       errlog('No tools/SDKs found to activate! Usage:\n   emsdk activate tool/sdk1 [tool/sdk2] [...]')
       return 1
-    if WINDOWS and not arg_global:
-      errlog('The changes made to environment variables only apply to the currently running shell instance. Use the \'emsdk_env.bat\' to re-enter this environment later, or if you\'d like to permanently register this environment globally to all users in Windows Registry, rerun this command with the option --global.')
+    if WINDOWS and not arg_permanent:
+      errlog('The changes made to environment variables only apply to the currently running shell instance. Use the \'emsdk_env.bat\' to re-enter this environment later, or if you\'d like to permanently register this environment permanently, rerun this command with the option --permanent.')
     return 0
   elif cmd == 'install':
     # Process args
