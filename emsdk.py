@@ -2736,7 +2736,8 @@ def main():
                                   variables are set permanently for the current user.
 
                                 - If the `--system` option is passed, the registration
-                                  is done for all users of the system
+                                  is done for all users of the system.
+                                  This needs admin privileges
                                   (uses Machine environment variables).
 
                                 - If a custom compiler version was used to override
