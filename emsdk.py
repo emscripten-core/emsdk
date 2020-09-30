@@ -2773,10 +2773,10 @@ def main():
   arg_uses = extract_bool_arg('--uses')
   arg_permanent = extract_bool_arg('--permanent')
   arg_global = extract_bool_arg('--global')
+  arg_system = extract_bool_arg('--system')
   if arg_global:
     print('--global is deprecated. Use `--system` to set the environment variables for all users')
-    arg_permanent = True
-  arg_system = extract_bool_arg('--system')
+    arg_system = True
   if arg_system:
     arg_permanent = True
   if extract_bool_arg('--embedded'):
