@@ -74,7 +74,7 @@ if platform.mac_ver()[0] != '':
   MACOS = True
 
 LINUX = False
-if not MACOS and (platform.system() == 'Linux' or os.name == 'posix'):
+if not MACOS and (platform.system() == 'Linux'):
   LINUX = True
 
 UNIX = (MACOS or LINUX)
