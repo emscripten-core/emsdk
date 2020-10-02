@@ -1241,12 +1241,31 @@ def emscripten_npm_install(tool, directory):
   print('Running post-install step: npm ci ...')
   try:
     subprocess.check_output(
-        [npm, 'ci', '--production'],
+        [npm, 'ci', '--production', '--no-optional'],
         cwd=directory, stderr=subprocess.STDOUT, env=env,
         universal_newlines=True)
   except subprocess.CalledProcessError as e:
     print('Error running %s:\n%s' % (e.cmd, e.output))
     return False
+
+  # Manually install the appropriate native Closure Compiler package
+  closure_compiler_native = ''
+  if LINUX:
+    closure_compiler_native = 'google-closure-compiler-linux'
+  if MACOS:
+    closure_compiler_native = 'google-closure-compiler-osx'
+  if WINDOWS:
+    closure_compiler_native = 'google-closure-compiler-windows'
+  if closure_compiler_native:
+    print('Running post-install step: npm install', closure_compiler_native)
+    try:
+      subprocess.check_output(
+        [npm, 'install', closure_compiler_native],
+        cwd=directory, stderr=subprocess.STDOUT, env=env,
+        universal_newlines=True)
+    except subprocess.CalledProcessError as e:
+      print('Error running %s:\n%s' % (e.cmd, e.output))
+      return False
 
   print('Done running: npm ci')
   return True
