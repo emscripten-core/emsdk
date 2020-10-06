@@ -111,16 +111,16 @@ jobs:
           command: choco install --confirm msys2
       - run:
           name: Install msys2 packages
-          command: $MSYS_CMD "pacman --sync --noconfirm --needed base-devel cmake gcc python"
+          command: %MSYS_CMD% "pacman --sync --noconfirm --needed base-devel cmake gcc python"
       - run:
           name: test.sh
-          command: $MSYS_CMD "export EMSDK_NOTTY='1' && /usr/bin/sh.exe scripts/test.sh"
+          command: %MSYS_CMD% "export EMSDK_NOTTY='1' && /usr/bin/sh.exe scripts/test.sh"
       - run:
           name: test_source_env.sh
-          command: $MSYS_CMD "export EMSDK_NOTTY='1' && /usr/bin/sh.exe scripts/test_source_env.sh"
+          command: %MSYS_CMD% "export EMSDK_NOTTY='1' && /usr/bin/sh.exe scripts/test_source_env.sh"
       - run:
           name: test.py
-          command: $MSYS_CMD "source emsdk_env.sh && export EMSDK_NOTTY='1' && /usr/bin/python scripts/test.py"
+          command: %MSYS_CMD% "source emsdk_env.sh && export EMSDK_NOTTY='1' && /usr/bin/python scripts/test.py"
 
   build-docker-image:
     executor: bionic
