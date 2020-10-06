@@ -1249,6 +1249,15 @@ def emscripten_npm_install(tool, directory):
     return False
 
   # Manually install the appropriate native Closure Compiler package
+  # This is currently needed because npm ci will install the packages
+  # for Closure for all platforms, adding 180MB to the download size
+  # There are two problems here:
+  #   1. npm ci does not consider the platform of optional dependencies
+  #      https://github.com/npm/cli/issues/558
+  #   2. A bug with the native compiler has bloated the packages from
+  #      30MB to almost 300MB
+  #      https://github.com/google/closure-compiler-npm/issues/186
+  # If either of these bugs are fixed then we can remove this exception
   closure_compiler_native = ''
   if LINUX:
     closure_compiler_native = 'google-closure-compiler-linux'
