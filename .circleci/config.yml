@@ -101,7 +101,7 @@ jobs:
   test-msys2:
     executor:
       name: win/vs2019
-      shell: cmd.exe
+      shell: bash.exe
     environment:
       MSYS_CMD: C:\\tools\\msys64\\msys2_shell.cmd -here -defterm -no-start -c
     steps:
@@ -109,18 +109,23 @@ jobs:
       - run:
           name: Install msys2 (via choco)
           command: choco --confirm install msys2
+          shell: cmd.exe
       - run:
           name: Install msys2 packages
           command: $MSYS_CMD "pacman --sync --noconfirm --needed base-devel cmake gcc python"
+          shell: cmd.exe
       - run:
           name: test.sh
           command: $MSYS_CMD "export EMSDK_NOTTY='1' && /usr/bin/sh.exe scripts/test.sh"
+          shell: cmd.exe
       - run:
           name: test_source_env.sh
           command: $MSYS_CMD "export EMSDK_NOTTY='1' && /usr/bin/sh.exe scripts/test_source_env.sh"
+          shell: cmd.exe
       - run:
           name: test.py
           command: $MSYS_CMD "source emsdk_env.sh && export EMSDK_NOTTY='1' && /usr/bin/python scripts/test.py"
+          shell: cmd.exe
 
   build-docker-image:
     executor: bionic
