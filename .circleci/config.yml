@@ -191,6 +191,7 @@ workflows:
   test-windows:
     jobs:
       - test-windows
+      - test-msys2
   build-docker-image:
     jobs:
       - build-docker-image
