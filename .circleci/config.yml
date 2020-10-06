@@ -108,7 +108,7 @@ jobs:
       - checkout
       - run:
           name: Install msys2 (via choco)
-          command: choco --confirm install msys2
+          command: choco install --confirm msys2
       - run:
           name: Install msys2 packages
           command: $MSYS_CMD "pacman --sync --noconfirm --needed base-devel cmake gcc python"
