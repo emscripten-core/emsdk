@@ -27,7 +27,7 @@ if os.name == 'nt':
   except ImportError:
     # old python 2 name
     import _winreg as winreg
-  import ctypes
+  import ctypes.wintypes
 
 if sys.version_info >= (3,):
   from urllib.parse import urljoin
