@@ -310,11 +310,11 @@ def win_set_environment_variable_direct(key, value, system=True):
     winreg, ctypes = import_pywin32()
     if system:
       # Read globally from ALL USERS section.
-      folder = winreg.OpenKeyEx(win32con.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment', 0, win32con.KEY_ALL_ACCESS)
+      folder = winreg.OpenKeyEx(winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment', 0, winreg.KEY_ALL_ACCESS)
     else:
       # Register locally from CURRENT USER section.
-      folder = winreg.OpenKeyEx(win32con.HKEY_CURRENT_USER, 'Environment', 0, win32con.KEY_ALL_ACCESS)
-    winreg.SetValueEx(folder, key, 0, win32con.REG_EXPAND_SZ, value)
+      folder = winreg.OpenKeyEx(winreg.HKEY_CURRENT_USER, 'Environment', 0, winreg.KEY_ALL_ACCESS)
+    winreg.SetValueEx(folder, key, 0, winreg.REG_EXPAND_SZ, value)
     debug_print('Set key=' + key + ' with value ' + value + ' in registry.')
   except Exception as e:
     # 'Access is denied.'
@@ -343,10 +343,10 @@ def win_get_environment_variable(key, system=True):
       winreg, ctypes = import_pywin32()
       if system:
         # Read globally from ALL USERS section.
-        folder = winreg.OpenKey(win32con.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment')
+        folder = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment')
       else:
         # Register locally from CURRENT USER section.
-        folder = winreg.OpenKey(win32con.HKEY_CURRENT_USER, 'Environment')
+        folder = winreg.OpenKey(winreg.HKEY_CURRENT_USER, 'Environment')
       value = str(winreg.QueryValueEx(folder, key)[0])
     except Exception:
       # PyWin32 is not available - read via os.environ. This has the drawback
