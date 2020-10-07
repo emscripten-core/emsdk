@@ -322,11 +322,11 @@ def win_set_environment_variable_direct(key, value, system=True):
       exit_with_error('Error! Failed to set the environment variable \'' + key + '\'! Setting environment variables permanently requires administrator access. Please rerun this command with administrative privileges. This can be done for example by holding down the Ctrl and Shift keys while opening a command prompt in start menu.')
     errlog('Failed to write environment variable ' + key + ':')
     errlog(str(e))
-    win32api.RegCloseKey(folder)
+    folder.Close()
     os.environ['PATH'] = prev_path
     return None
 
-  win32api.RegCloseKey(folder)
+  folder.Close()
   os.environ['PATH'] = prev_path
   win32api.PostMessage(win32con.HWND_BROADCAST, win32con.WM_SETTINGCHANGE, 0, 'Environment')
 
@@ -359,12 +359,12 @@ def win_get_environment_variable(key, system=True):
       errlog('Failed to read environment variable ' + key + ':')
       errlog(str(e))
     try:
-      win32api.RegCloseKey(folder)
+      folder.Close()
     except Exception:
       pass
     os.environ['PATH'] = prev_path
     return None
-  win32api.RegCloseKey(folder)
+  folder.Close()
   os.environ['PATH'] = prev_path
   return value
 
