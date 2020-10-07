@@ -314,7 +314,7 @@ def win_set_environment_variable_direct(key, value, system=True):
     else:
       # Register locally from CURRENT USER section.
       folder = winreg.OpenKeyEx(win32con.HKEY_CURRENT_USER, 'Environment', 0, win32con.KEY_ALL_ACCESS)
-    win32api.RegSetValueEx(folder, key, 0, win32con.REG_EXPAND_SZ, value)
+    winreg.SetValueEx(folder, key, 0, win32con.REG_EXPAND_SZ, value)
     debug_print('Set key=' + key + ' with value ' + value + ' in registry.')
   except Exception as e:
     # 'Access is denied.'
