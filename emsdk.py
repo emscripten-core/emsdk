@@ -2040,21 +2040,6 @@ def get_release_hash(arg, releases_info):
   return releases_info.get(arg, None) or releases_info.get('sdk-' + arg + '-64bit')
 
 
-# Finds the best-matching python tool for use.
-def find_used_python():
-  # Find newest tool first - those are always at the end of the list.
-  for t in reversed(tools):
-    if t.id == 'python' and t.is_installed() and t.is_active() and t.is_env_active():
-      return t
-  for t in reversed(tools):
-    if t.id == 'python' and t.is_installed() and t.is_active():
-      return t
-  for t in reversed(tools):
-    if t.id == 'python' and t.is_installed():
-      return t
-  return None
-
-
 def version_key(ver):
   return tuple(map(int, re.split('[._-]', ver)))
 
