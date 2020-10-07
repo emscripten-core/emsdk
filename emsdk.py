@@ -21,6 +21,13 @@ import subprocess
 import sys
 import sysconfig
 import zipfile
+if os.name == 'nt':
+  try:
+    import winreg
+  except ImportError:
+    # old python 2 name
+    import _winreg as winreg
+  import ctypes.wintypes
 
 if sys.version_info >= (3,):
   from urllib.parse import urljoin
@@ -291,31 +298,15 @@ def remove_tree(d):
     debug_print('remove_tree threw an exception, ignoring: ' + str(e))
 
 
-def import_pywin32():
-  if WINDOWS:
-    try:
-      import win32api
-      import win32con
-      return win32api, win32con
-    except Exception:
-      exit_with_error('Failed to import Python Windows extensions win32api and win32con. Make sure you are using the version of python available in emsdk, or install PyWin extensions to the distribution of Python you are attempting to use. (This script was launched in python instance from "' + sys.executable + '")')
-
-
 def win_set_environment_variable_direct(key, value, system=True):
-  prev_path = os.environ['PATH']
   try:
-    py = find_used_python()
-    if py:
-      py_path = to_native_path(py.expand_vars(py.activated_path))
-      os.environ['PATH'] = os.environ['PATH'] + ';' + py_path
-    win32api, win32con = import_pywin32()
     if system:
       # Read globally from ALL USERS section.
-      folder = win32api.RegOpenKeyEx(win32con.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment', 0, win32con.KEY_ALL_ACCESS)
+      folder = winreg.OpenKeyEx(winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment', 0, winreg.KEY_ALL_ACCESS)
     else:
       # Register locally from CURRENT USER section.
-      folder = win32api.RegOpenKeyEx(win32con.HKEY_CURRENT_USER, 'Environment', 0, win32con.KEY_ALL_ACCESS)
-    win32api.RegSetValueEx(folder, key, 0, win32con.REG_EXPAND_SZ, value)
+      folder = winreg.OpenKeyEx(winreg.HKEY_CURRENT_USER, 'Environment', 0, winreg.KEY_ALL_ACCESS)
+    winreg.SetValueEx(folder, key, 0, winreg.REG_EXPAND_SZ, value)
     debug_print('Set key=' + key + ' with value ' + value + ' in registry.')
   except Exception as e:
     # 'Access is denied.'
@@ -323,32 +314,25 @@ def win_set_environment_variable_direct(key, value, system=True):
       exit_with_error('Error! Failed to set the environment variable \'' + key + '\'! Setting environment variables permanently requires administrator access. Please rerun this command with administrative privileges. This can be done for example by holding down the Ctrl and Shift keys while opening a command prompt in start menu.')
     errlog('Failed to write environment variable ' + key + ':')
     errlog(str(e))
-    win32api.RegCloseKey(folder)
-    os.environ['PATH'] = prev_path
+    folder.Close()
     return None
 
-  win32api.RegCloseKey(folder)
-  os.environ['PATH'] = prev_path
-  win32api.PostMessage(win32con.HWND_BROADCAST, win32con.WM_SETTINGCHANGE, 0, 'Environment')
+  folder.Close()
+  HWND_BROADCAST = ctypes.wintypes.HWND(0xFFFF)  # win32con.HWND_BROADCAST == 65535
+  WM_SETTINGCHANGE = 0x001A  # win32con.WM_SETTINGCHANGE == 26
+  ctypes.windll.user32.SendMessageA(HWND_BROADCAST, WM_SETTINGCHANGE, 0, 'Environment')
 
 
 def win_get_environment_variable(key, system=True):
-  prev_path = os.environ['PATH']
   try:
-    py = find_used_python()
-    if py:
-      py_path = to_native_path(py.expand_vars(py.activated_path))
-      os.environ['PATH'] = os.environ['PATH'] + ';' + py_path
     try:
-      import win32api
-      import win32con
       if system:
         # Read globally from ALL USERS section.
-        folder = win32api.RegOpenKey(win32con.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment')
+        folder = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment')
       else:
         # Register locally from CURRENT USER section.
-        folder = win32api.RegOpenKey(win32con.HKEY_CURRENT_USER, 'Environment')
-      value = str(win32api.RegQueryValueEx(folder, key)[0])
+        folder = winreg.OpenKey(winreg.HKEY_CURRENT_USER, 'Environment')
+      value = str(winreg.QueryValueEx(folder, key)[0])
     except Exception:
       # PyWin32 is not available - read via os.environ. This has the drawback
       # that expansion items such as %PROGRAMFILES% will have been expanded, so
@@ -361,13 +345,11 @@ def win_get_environment_variable(key, system=True):
       errlog('Failed to read environment variable ' + key + ':')
       errlog(str(e))
     try:
-      win32api.RegCloseKey(folder)
+      folder.Close()
     except Exception:
       pass
-    os.environ['PATH'] = prev_path
     return None
-  win32api.RegCloseKey(folder)
-  os.environ['PATH'] = prev_path
+  folder.Close()
   return value
 
 
@@ -2056,21 +2038,6 @@ def get_emscripten_releases_tot():
 
 def get_release_hash(arg, releases_info):
   return releases_info.get(arg, None) or releases_info.get('sdk-' + arg + '-64bit')
-
-
-# Finds the best-matching python tool for use.
-def find_used_python():
-  # Find newest tool first - those are always at the end of the list.
-  for t in reversed(tools):
-    if t.id == 'python' and t.is_installed() and t.is_active() and t.is_env_active():
-      return t
-  for t in reversed(tools):
-    if t.id == 'python' and t.is_installed() and t.is_active():
-      return t
-  for t in reversed(tools):
-    if t.id == 'python' and t.is_installed():
-      return t
-  return None
 
 
 def version_key(ver):
