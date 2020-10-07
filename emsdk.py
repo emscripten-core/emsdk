@@ -294,12 +294,11 @@ def remove_tree(d):
 def import_pywin32():
   if WINDOWS:
     try:
-      import win32api
-      import win32con
-      return win32api, win32con
-    except Exception:
-      exit_with_error('Failed to import Python Windows extensions win32api and win32con. Make sure you are using the version of python available in emsdk, or install PyWin extensions to the distribution of Python you are attempting to use. (This script was launched in python instance from "' + sys.executable + '")')
-
+        import winreg
+    except ImportError:
+        import _winreg as winreg
+    import ctypes
+    return winreg, ctypes
 
 def win_set_environment_variable_direct(key, value, system=True):
   prev_path = os.environ['PATH']
@@ -308,7 +307,7 @@ def win_set_environment_variable_direct(key, value, system=True):
     if py:
       py_path = to_native_path(py.expand_vars(py.activated_path))
       os.environ['PATH'] = os.environ['PATH'] + ';' + py_path
-    win32api, win32con = import_pywin32()
+    winreg, ctypes = import_pywin32()
     if system:
       # Read globally from ALL USERS section.
       folder = win32api.RegOpenKeyEx(win32con.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment', 0, win32con.KEY_ALL_ACCESS)
@@ -340,8 +339,7 @@ def win_get_environment_variable(key, system=True):
       py_path = to_native_path(py.expand_vars(py.activated_path))
       os.environ['PATH'] = os.environ['PATH'] + ';' + py_path
     try:
-      import win32api
-      import win32con
+      winreg, ctypes = import_pywin32()
       if system:
         # Read globally from ALL USERS section.
         folder = win32api.RegOpenKey(win32con.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment')
