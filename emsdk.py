@@ -300,6 +300,7 @@ def import_pywin32():
     import ctypes
     return winreg, ctypes
 
+
 def win_set_environment_variable_direct(key, value, system=True):
   prev_path = os.environ['PATH']
   try:
@@ -331,6 +332,7 @@ def win_set_environment_variable_direct(key, value, system=True):
   HWND_BROADCAST = ctypes.wintypes.HWND(0xFFFF)  # win32con.HWND_BROADCAST == 65535
   WM_SETTINGCHANGE = 0x001A  # win32con.WM_SETTINGCHANGE == 26
   ctypes.windll.user32.SendMessageA(HWND_BROADCAST, WM_SETTINGCHANGE, 0, 'Environment')
+
 
 def win_get_environment_variable(key, system=True):
   prev_path = os.environ['PATH']
