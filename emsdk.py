@@ -331,12 +331,7 @@ def win_set_environment_variable_direct(key, value, system=True):
 
 
 def win_get_environment_variable(key, system=True):
-  prev_path = os.environ['PATH']
   try:
-    py = find_used_python()
-    if py:
-      py_path = to_native_path(py.expand_vars(py.activated_path))
-      os.environ['PATH'] = os.environ['PATH'] + ';' + py_path
     try:
       if system:
         # Read globally from ALL USERS section.
@@ -360,10 +355,8 @@ def win_get_environment_variable(key, system=True):
       folder.Close()
     except Exception:
       pass
-    os.environ['PATH'] = prev_path
     return None
   folder.Close()
-  os.environ['PATH'] = prev_path
   return value
 
 
