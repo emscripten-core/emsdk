@@ -296,6 +296,7 @@ def import_pywin32():
     try:
         import winreg
     except ImportError:
+        # old python 2 name
         import _winreg as winreg
     import ctypes
     return winreg, ctypes
