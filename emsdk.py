@@ -299,12 +299,7 @@ def remove_tree(d):
 
 
 def win_set_environment_variable_direct(key, value, system=True):
-  prev_path = os.environ['PATH']
   try:
-    py = find_used_python()
-    if py:
-      py_path = to_native_path(py.expand_vars(py.activated_path))
-      os.environ['PATH'] = os.environ['PATH'] + ';' + py_path
     if system:
       # Read globally from ALL USERS section.
       folder = winreg.OpenKeyEx(winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment', 0, winreg.KEY_ALL_ACCESS)
@@ -320,11 +315,9 @@ def win_set_environment_variable_direct(key, value, system=True):
     errlog('Failed to write environment variable ' + key + ':')
     errlog(str(e))
     folder.Close()
-    os.environ['PATH'] = prev_path
     return None
 
   folder.Close()
-  os.environ['PATH'] = prev_path
   HWND_BROADCAST = ctypes.wintypes.HWND(0xFFFF)  # win32con.HWND_BROADCAST == 65535
   WM_SETTINGCHANGE = 0x001A  # win32con.WM_SETTINGCHANGE == 26
   ctypes.windll.user32.SendMessageA(HWND_BROADCAST, WM_SETTINGCHANGE, 0, 'Environment')
