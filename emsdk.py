@@ -346,7 +346,7 @@ def win_get_environment_variable(key, system=True):
       else:
         # Register locally from CURRENT USER section.
         folder = winreg.OpenKey(win32con.HKEY_CURRENT_USER, 'Environment')
-      value = str(win32api.RegQueryValueEx(folder, key)[0])
+      value = str(winreg.QueryValueEx(folder, key)[0])
     except Exception:
       # PyWin32 is not available - read via os.environ. This has the drawback
       # that expansion items such as %PROGRAMFILES% will have been expanded, so
