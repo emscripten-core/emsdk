@@ -342,10 +342,10 @@ def win_get_environment_variable(key, system=True):
       winreg, ctypes = import_pywin32()
       if system:
         # Read globally from ALL USERS section.
-        folder = win32api.RegOpenKey(win32con.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment')
+        folder = winreg.OpenKey(win32con.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment')
       else:
         # Register locally from CURRENT USER section.
-        folder = win32api.RegOpenKey(win32con.HKEY_CURRENT_USER, 'Environment')
+        folder = winreg.OpenKey(win32con.HKEY_CURRENT_USER, 'Environment')
       value = str(win32api.RegQueryValueEx(folder, key)[0])
     except Exception:
       # PyWin32 is not available - read via os.environ. This has the drawback
