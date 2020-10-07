@@ -21,6 +21,13 @@ import subprocess
 import sys
 import sysconfig
 import zipfile
+if os.name == 'nt':
+  try:
+    import winreg
+  except ImportError:
+    # old python 2 name
+    import _winreg as winreg
+  import ctypes
 
 if sys.version_info >= (3,):
   from urllib.parse import urljoin
@@ -291,17 +298,6 @@ def remove_tree(d):
     debug_print('remove_tree threw an exception, ignoring: ' + str(e))
 
 
-def import_pywin32():
-  if WINDOWS:
-    try:
-        import winreg
-    except ImportError:
-        # old python 2 name
-        import _winreg as winreg
-    import ctypes
-    return winreg, ctypes
-
-
 def win_set_environment_variable_direct(key, value, system=True):
   prev_path = os.environ['PATH']
   try:
@@ -309,7 +305,6 @@ def win_set_environment_variable_direct(key, value, system=True):
     if py:
       py_path = to_native_path(py.expand_vars(py.activated_path))
       os.environ['PATH'] = os.environ['PATH'] + ';' + py_path
-    winreg, ctypes = import_pywin32()
     if system:
       # Read globally from ALL USERS section.
       folder = winreg.OpenKeyEx(winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment', 0, winreg.KEY_ALL_ACCESS)
@@ -343,7 +338,6 @@ def win_get_environment_variable(key, system=True):
       py_path = to_native_path(py.expand_vars(py.activated_path))
       os.environ['PATH'] = os.environ['PATH'] + ';' + py_path
     try:
-      winreg, ctypes = import_pywin32()
       if system:
         # Read globally from ALL USERS section.
         folder = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment')
