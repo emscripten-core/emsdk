@@ -1,4 +1,5 @@
 #!/bin/sh
+<<<<<<< HEAD
 # Following line is responsible for selecting the best python for current host
 # This script can be called directly: `./emsdk` or indirectly: `python ./emsdk` `sh ./emsdk` or `bash ./emsdk`
 "exec" "`dirname $0`/python_selector" "$0" "$@"
@@ -2752,3 +2753,40 @@ def main():
 
 if __name__ == '__main__':
   sys.exit(main())
+=======
+# Copyright 2019 The Emscripten Authors.  All rights reserved.
+# Emscripten is available under two separate licenses, the MIT license and the
+# University of Illinois/NCSA Open Source License.  Both these licenses can be
+# found in the LICENSE file.
+
+# Wrapper script that runs emsdk.py
+
+# First look for pre-built python (macos)
+if [ -z "$EMSDK_PYTHON" ]; then
+  PYTHON3=$(dirname $0)/python/3.7.4-2_64bit/bin/python3
+  if [ -e $PYTHON3 ]; then
+    EMSDK_PYTHON=$PYTHON3
+    # When using our bundled python we never want the users
+    # PYTHONHOME or PYTHONPATH
+    # https://github.com/emscripten-core/emsdk/issues/598
+    unset PYTHONHOME
+    unset PYTHONPATH
+  fi
+fi
+
+# Look for `python3` first.  This is especially important on macOS (See:
+# https://github.com/emscripten-core/emsdk/pull/273)
+if [ -z "$EMSDK_PYTHON" ]; then
+  PYTHON3=$(which python3 2> /dev/null)
+  if [ $? = 0 ]; then
+    EMSDK_PYTHON=$PYTHON3
+  fi
+fi
+
+# Finally fall back to just looking for `python` in PATH
+if [ -z "$EMSDK_PYTHON" ]; then
+  EMSDK_PYTHON=python
+fi
+
+exec "$EMSDK_PYTHON" "$0.py" "$@"
+>>>>>>> 53c184e8d3b82c2cc9c03dc8aeffe623dd29b4a9
