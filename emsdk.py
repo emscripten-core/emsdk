@@ -2452,7 +2452,7 @@ def adjusted_path(tools_to_activate, system=False):
   path_add = get_required_path(tools_to_activate)
   # These already exist.
   if WINDOWS and not MSYS:
-    existing_path = win_get_environment_variable('PATH', system=system).split(ENVPATH_SEPARATOR)
+    existing_path = win_get_environment_variable('PATH', system=True).split(ENVPATH_SEPARATOR)
   else:
     existing_path = os.environ['PATH'].split(ENVPATH_SEPARATOR)
   emsdk_root_path = to_unix_path(emsdk_path())
