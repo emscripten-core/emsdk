@@ -1229,7 +1229,7 @@ def emscripten_npm_install(tool, directory):
   except subprocess.CalledProcessError as e:
     print('Error running %s:\n%s' % (e.cmd, e.output))
     return False
-  
+
   # Manually install the appropriate native Closure Compiler package
   # This is currently needed because npm ci will install the packages
   # for Closure for all platforms, adding 180MB to the download size
