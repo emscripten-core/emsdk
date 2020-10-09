@@ -33,24 +33,24 @@ if (!$EM_CACHE_USER) {
 
 $path_split = $PATH_USER.Split(';')
 
-$EMSDK_Path_USER = $path_split | Where-Object { $_ -match 'emsdk' }
+$EMSDK_Path_USER = $path_split | Where-Object { $_ -like "$repo_root*" }
 if (!$EMSDK_Path_USER) {
     throw "No path is added!"
 }
-$EMSDK_NODE_Path_USER = $path_split | Where-Object { $_ -match 'emsdk\\node' }
+$EMSDK_NODE_Path_USER = $path_split | Where-Object { $_ -like "$repo_root\node*" }
 if (!$EMSDK_NODE_Path_USER) {
-    throw "emsdk\node is not added to path."
+    throw "$repo_root\\node is not added to path."
 }
-$EMSDK_PYTHON_Path_USER = $path_split | Where-Object { $_ -match 'emsdk\\python' }
+$EMSDK_PYTHON_Path_USER = $path_split | Where-Object { $_ -like "$repo_root\python*" }
 if (!$EMSDK_PYTHON_Path_USER) {
-    throw "emsdk\python is not added to path."
+    throw "$repo_root\\python is not added to path."
 }
-$EMSDK_JAVA_Path_USER = $path_split | Where-Object { $_ -match 'emsdk\\java' }
+$EMSDK_JAVA_Path_USER = $path_split | Where-Object { $_ -like "$repo_root\java*" }
 if (!$EMSDK_JAVA_Path_USER) {
-    throw "emsdk\java is not added to path."
+    throw "$repo_root\\java is not added to path."
 }
 
-$EMSDK_UPSTREAM_Path_USER = $path_split | Where-Object { $_ -match 'emsdk\\upstream\\emscripten' }
+$EMSDK_UPSTREAM_Path_USER = $path_split | Where-Object { $_ -like "$repo_root\upstream\emscripten*" }
 if (!$EMSDK_UPSTREAM_Path_USER) {
-    throw "emsdk\upstream\emscripten is not added to path."
+    throw "$repo_root\\upstream\emscripten is not added to path."
 }
