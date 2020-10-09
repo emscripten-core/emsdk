@@ -334,7 +334,7 @@ def win_get_environment_variable(key, system=True, fallback=True):
         folder = winreg.OpenKey(winreg.HKEY_CURRENT_USER, 'Environment')
       value = str(winreg.QueryValueEx(folder, key)[0])
     except Exception:
-      # PyWin32 is not available - read via os.environ. This has the drawback
+      # If reading registry fails for some reason - read via os.environ. This has the drawback
       # that expansion items such as %PROGRAMFILES% will have been expanded, so
       # need to be precise not to set these back to system registry, or
       # expansion items would be lost.
@@ -346,14 +346,11 @@ def win_get_environment_variable(key, system=True, fallback=True):
         folder.Close()
 
   except Exception as e:
+    # this catch is if both the registry key threw an exception and the key is not in os.environ
     if e.args[0] != 2:
       # 'The system cannot find the file specified.'
       errlog('Failed to read environment variable ' + key + ':')
       errlog(str(e))
-    try:
-      folder.Close()
-    except Exception:
-      pass
     return None
   return value
 
@@ -2581,7 +2578,6 @@ def construct_env_with_vars(env_vars_to_add):
         else:
           assert False
 
-    errlog('')
   return env_string
 
 
