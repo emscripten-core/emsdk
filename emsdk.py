@@ -2510,13 +2510,23 @@ def adjusted_path(tools_to_activate, system=False):
     existing_path = os.environ['PATH'].split(ENVPATH_SEPARATOR)
   emsdk_root_path = to_unix_path(emsdk_path())
 
-  existing_emsdk_tools = [i for i in existing_path if to_unix_path(i).startswith(emsdk_root_path)]
-  new_emsdk_tools = [i for i in path_add if not normalized_contains(existing_emsdk_tools, i)]
+  existing_emsdk_tools = []
+  existing_nonemsdk_path = []
+  for entry in existing_path:
+    if to_unix_path(entry).startswith(emsdk_root_path):
+      existing_emsdk_tools.append(entry)
+    else:
+      existing_nonemsdk_path.append(entry)
 
-  # Existing non-emsdk tools
-  existing_path = [i for i in existing_path if not to_unix_path(i).startswith(emsdk_root_path)]
-  new_path = [i for i in path_add if not normalized_contains(existing_path, i)]
-  whole_path = unique_items(new_path + existing_path)
+  new_emsdk_tools = []
+  new_path = []
+  for entry in path_add:
+    if not normalized_contains(existing_emsdk_tools, entry):
+      new_emsdk_tools.append(entry)
+    if not normalized_contains(existing_path, entry):
+      new_path.append(entry)
+
+  whole_path = unique_items(new_path + existing_nonemsdk_path)
   if MSYS:
     # XXX Hack: If running native Windows Python in MSYS prompt where PATH
     # entries look like "/c/Windows/System32", os.environ['PATH']
