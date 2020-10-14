@@ -21,6 +21,13 @@ import subprocess
 import sys
 import sysconfig
 import zipfile
+if os.name == 'nt':
+  try:
+    import winreg
+  except ImportError:
+    # old python 2 name
+    import _winreg as winreg
+  import ctypes.wintypes
 
 if sys.version_info >= (3,):
   from urllib.parse import urljoin
@@ -291,83 +298,60 @@ def remove_tree(d):
     debug_print('remove_tree threw an exception, ignoring: ' + str(e))
 
 
-def import_pywin32():
-  if WINDOWS:
-    try:
-      import win32api
-      import win32con
-      return win32api, win32con
-    except Exception:
-      exit_with_error('Failed to import Python Windows extensions win32api and win32con. Make sure you are using the version of python available in emsdk, or install PyWin extensions to the distribution of Python you are attempting to use. (This script was launched in python instance from "' + sys.executable + '")')
-
-
 def win_set_environment_variable_direct(key, value, system=True):
-  prev_path = os.environ['PATH']
+  folder = None
   try:
-    py = find_used_python()
-    if py:
-      py_path = to_native_path(py.expand_vars(py.activated_path))
-      os.environ['PATH'] = os.environ['PATH'] + ';' + py_path
-    win32api, win32con = import_pywin32()
     if system:
       # Read globally from ALL USERS section.
-      folder = win32api.RegOpenKeyEx(win32con.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment', 0, win32con.KEY_ALL_ACCESS)
+      folder = winreg.OpenKeyEx(winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment', 0, winreg.KEY_ALL_ACCESS)
     else:
       # Register locally from CURRENT USER section.
-      folder = win32api.RegOpenKeyEx(win32con.HKEY_CURRENT_USER, 'Environment', 0, win32con.KEY_ALL_ACCESS)
-    win32api.RegSetValueEx(folder, key, 0, win32con.REG_EXPAND_SZ, value)
+      folder = winreg.OpenKeyEx(winreg.HKEY_CURRENT_USER, 'Environment', 0, winreg.KEY_ALL_ACCESS)
+    winreg.SetValueEx(folder, key, 0, winreg.REG_EXPAND_SZ, value)
     debug_print('Set key=' + key + ' with value ' + value + ' in registry.')
+    return True
   except Exception as e:
     # 'Access is denied.'
-    if e.args[0] == 5:
+    if e.args[3] == 5:
       exit_with_error('Error! Failed to set the environment variable \'' + key + '\'! Setting environment variables permanently requires administrator access. Please rerun this command with administrative privileges. This can be done for example by holding down the Ctrl and Shift keys while opening a command prompt in start menu.')
     errlog('Failed to write environment variable ' + key + ':')
     errlog(str(e))
-    win32api.RegCloseKey(folder)
-    os.environ['PATH'] = prev_path
-    return None
-
-  win32api.RegCloseKey(folder)
-  os.environ['PATH'] = prev_path
-  win32api.PostMessage(win32con.HWND_BROADCAST, win32con.WM_SETTINGCHANGE, 0, 'Environment')
+    return False
+  finally:
+    if folder is not None:
+      folder.Close()
 
 
-def win_get_environment_variable(key, system=True):
-  prev_path = os.environ['PATH']
+def win_get_environment_variable(key, system=True, fallback=True):
   try:
-    py = find_used_python()
-    if py:
-      py_path = to_native_path(py.expand_vars(py.activated_path))
-      os.environ['PATH'] = os.environ['PATH'] + ';' + py_path
+    folder = None
     try:
-      import win32api
-      import win32con
       if system:
         # Read globally from ALL USERS section.
-        folder = win32api.RegOpenKey(win32con.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment')
+        folder = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment')
       else:
         # Register locally from CURRENT USER section.
-        folder = win32api.RegOpenKey(win32con.HKEY_CURRENT_USER, 'Environment')
-      value = str(win32api.RegQueryValueEx(folder, key)[0])
+        folder = winreg.OpenKey(winreg.HKEY_CURRENT_USER, 'Environment')
+      value = str(winreg.QueryValueEx(folder, key)[0])
     except Exception:
-      # PyWin32 is not available - read via os.environ. This has the drawback
+      # If reading registry fails for some reason - read via os.environ. This has the drawback
       # that expansion items such as %PROGRAMFILES% will have been expanded, so
       # need to be precise not to set these back to system registry, or
       # expansion items would be lost.
-      return os.environ[key]
+      if fallback:
+        return os.environ[key]
+      return None
+    finally:
+      if folder is not None:
+        folder.Close()
+
   except Exception as e:
+    # this catch is if both the registry key threw an exception and the key is not in os.environ
     if e.args[0] != 2:
       # 'The system cannot find the file specified.'
       errlog('Failed to read environment variable ' + key + ':')
       errlog(str(e))
-    try:
-      win32api.RegCloseKey(folder)
-    except Exception:
-      pass
-    os.environ['PATH'] = prev_path
     return None
-  win32api.RegCloseKey(folder)
-  os.environ['PATH'] = prev_path
   return value
 
 
@@ -385,11 +369,11 @@ def win_get_active_environment_variable(key):
 
 def win_set_environment_variable(key, value, system=True):
   debug_print('set ' + str(key) + '=' + str(value) + ', in system=' + str(system), file=sys.stderr)
-  previous_value = win_get_environment_variable(key, system)
+  previous_value = win_get_environment_variable(key, system, fallback=False)
   if previous_value == value:
     debug_print('  no need to set, since same value already exists.')
     # No need to elevate UAC for nothing to set the same value, skip.
-    return
+    return False
 
   if not value:
     try:
@@ -400,13 +384,12 @@ def win_set_environment_variable(key, value, system=True):
       debug_print(str(cmd))
       value = subprocess.call(cmd, stdout=subprocess.PIPE)
     except Exception:
-      return
-    return
+      return False
+    return True
 
   try:
-    if system:
-      win_set_environment_variable_direct(key, value, system)
-      return
+    if win_set_environment_variable_direct(key, value, system):
+      return True
     # Escape % signs so that we don't expand references to environment variables.
     value = value.replace('%', '^%')
     if len(value) >= 1024:
@@ -416,15 +399,53 @@ def win_set_environment_variable(key, value, system=True):
     retcode = subprocess.call(cmd, stdout=subprocess.PIPE)
     if retcode != 0:
       errlog('ERROR! Failed to set environment variable ' + key + '=' + value + '. You may need to set it manually.')
+    else:
+      return True
   except Exception as e:
     errlog('ERROR! Failed to set environment variable ' + key + '=' + value + ':')
     errlog(str(e))
     errlog('You may need to set it manually.')
 
+  return False
+
+
+def win_set_environment_variables(env_vars_to_add, system):
+  if not env_vars_to_add:
+    return
+
+  changed = False
+
+  for key, value in env_vars_to_add:
+    if win_set_environment_variable(key, value, system):
+      if not changed:
+        changed = True
+        print('Setting global environment variables:')
+
+      print(key + ' = ' + value)
+
+  if not changed:
+    print('Global environment variables up to date')
+    return
+
+  # if changes were made then we need to notify other processes
+  try:
+    HWND_BROADCAST = ctypes.wintypes.HWND(0xFFFF)  # win32con.HWND_BROADCAST == 65535
+    WM_SETTINGCHANGE = 0x001A  # win32con.WM_SETTINGCHANGE == 26
+    SMTO_BLOCK = 0x0001  # win32con.SMTO_BLOCK == 1
+    ctypes.windll.user32.SendMessageTimeoutA(
+      HWND_BROADCAST,    # hWnd: notify everyone
+      WM_SETTINGCHANGE,  # Msg: registry changed
+      0,                 # wParam: Must be 0 when setting changed is sent by users
+      'Environment',     # lParam: Specifically environment variables changed
+      SMTO_BLOCK,        # fuFlags: Wait for message to be sent or timeout
+      100)               # uTimeout: 100ms
+  except Exception as e:
+    errlog('SendMessageTimeout failed with error: ' + str(e))
+
 
 def win_delete_environment_variable(key, system=True):
   debug_print('win_delete_environment_variable(key=' + key + ', system=' + str(system) + ')')
-  win_set_environment_variable(key, None, system)
+  return win_set_environment_variable(key, None, system)
 
 
 # Returns the absolute pathname to the given path inside the Emscripten SDK.
@@ -1241,12 +1262,40 @@ def emscripten_npm_install(tool, directory):
   print('Running post-install step: npm ci ...')
   try:
     subprocess.check_output(
-        [npm, 'ci', '--production'],
+        [npm, 'ci', '--production', '--no-optional'],
         cwd=directory, stderr=subprocess.STDOUT, env=env,
         universal_newlines=True)
   except subprocess.CalledProcessError as e:
     print('Error running %s:\n%s' % (e.cmd, e.output))
     return False
+
+  # Manually install the appropriate native Closure Compiler package
+  # This is currently needed because npm ci will install the packages
+  # for Closure for all platforms, adding 180MB to the download size
+  # There are two problems here:
+  #   1. npm ci does not consider the platform of optional dependencies
+  #      https://github.com/npm/cli/issues/558
+  #   2. A bug with the native compiler has bloated the packages from
+  #      30MB to almost 300MB
+  #      https://github.com/google/closure-compiler-npm/issues/186
+  # If either of these bugs are fixed then we can remove this exception
+  closure_compiler_native = ''
+  if LINUX and ARCH in ('x86', 'x86_64'):
+    closure_compiler_native = 'google-closure-compiler-linux'
+  if MACOS and ARCH in ('x86', 'x86_64'):
+    closure_compiler_native = 'google-closure-compiler-osx'
+  if WINDOWS and ARCH == 'x86_64':
+    closure_compiler_native = 'google-closure-compiler-windows'
+  if closure_compiler_native:
+    print('Running post-install step: npm install', closure_compiler_native)
+    try:
+      subprocess.check_output(
+        [npm, 'install', closure_compiler_native],
+        cwd=directory, stderr=subprocess.STDOUT, env=env,
+        universal_newlines=True)
+    except subprocess.CalledProcessError as e:
+      print('Error running %s:\n%s' % (e.cmd, e.output))
+      return False
 
   print('Done running: npm ci')
   return True
@@ -1760,14 +1809,6 @@ class Tool(object):
           return False
     return True
 
-  def win_activate_env_vars(self, system):
-    if WINDOWS:
-      envs = self.activated_environment()
-      for env in envs:
-        key, value = parse_key_value(env)
-
-        win_set_environment_variable(key, value, system)
-
   # If this tool can be installed on this system, this function returns True.
   # Otherwise, this function returns a string that describes the reason why this
   # tool is not available.
@@ -2056,21 +2097,6 @@ def get_emscripten_releases_tot():
 
 def get_release_hash(arg, releases_info):
   return releases_info.get(arg, None) or releases_info.get('sdk-' + arg + '-64bit')
-
-
-# Finds the best-matching python tool for use.
-def find_used_python():
-  # Find newest tool first - those are always at the end of the list.
-  for t in reversed(tools):
-    if t.id == 'python' and t.is_installed() and t.is_active() and t.is_env_active():
-      return t
-  for t in reversed(tools):
-    if t.id == 'python' and t.is_installed() and t.is_active():
-      return t
-  for t in reversed(tools):
-    if t.id == 'python' and t.is_installed():
-      return t
-  return None
 
 
 def version_key(ver):
@@ -2421,20 +2447,14 @@ def set_active_tools(tools_to_activate, permanently_activate, system):
   # calling shell environment.  On other platform `source emsdk_env.sh` is
   # required.
   if WINDOWS:
-    env_string = construct_env(tools_to_activate)
+    # always set local environment variables since permanently activating will only set the registry settings and
+    # will not affect the current session
+    env_vars_to_add = get_env_vars_to_add(tools_to_activate)
+    env_string = construct_env_with_vars(env_vars_to_add)
     write_set_env_script(env_string)
 
-  # Apply environment variables to global all users section.
-  if WINDOWS and permanently_activate:
-    # Individual env. vars
-    for tool in tools_to_activate:
-      tool.win_activate_env_vars(system=system)
-
-    # PATH variable
-    newpath, added_items = adjusted_path(tools_to_activate, system=system)
-    # Are there any actual changes?
-    if newpath != os.environ['PATH']:
-      win_set_environment_variable('PATH', newpath, system=system)
+    if permanently_activate:
+      win_set_environment_variables(env_vars_to_add, system)
 
   return tools_to_activate
 
@@ -2509,22 +2529,14 @@ def adjusted_path(tools_to_activate, system=False):
   return (separator.join(whole_path), new_emsdk_tools)
 
 
-def construct_env(tools_to_activate):
-  env_string = ''
+def get_env_vars_to_add(tools_to_activate):
+  env_vars_to_add = []
+
   newpath, added_path = adjusted_path(tools_to_activate)
 
   # Don't bother setting the path if there are no changes.
   if os.environ['PATH'] != newpath:
-    if POWERSHELL:
-      env_string += '$env:PATH="' + newpath + '"\n'
-    elif CMD:
-      env_string += 'SET PATH=' + newpath + '\n'
-    elif CSH:
-      env_string += 'setenv PATH "' + newpath + '";\n'
-    elif BASH:
-      env_string += 'export PATH="' + newpath + '";\n'
-    else:
-      assert False
+    env_vars_to_add += [('PATH', newpath)]
 
     if added_path:
       errlog('Adding directories to PATH:')
@@ -2533,11 +2545,8 @@ def construct_env(tools_to_activate):
       errlog('')
 
   # A core variable EMSDK points to the root of Emscripten SDK directory.
-  env_vars = [('EMSDK', to_unix_path(emsdk_path()))]
-
-  em_config_path = os.path.normpath(dot_emscripten_path())
-  if to_unix_path(os.environ.get('EM_CONFIG', '')) != to_unix_path(em_config_path):
-    env_vars += [('EM_CONFIG', em_config_path)]
+  env_vars_to_add += [('EMSDK', to_unix_path(emsdk_path()))]
+  env_vars_to_add += [('EM_CONFIG', os.path.normpath(dot_emscripten_path()))]
 
   for tool in tools_to_activate:
     config = tool.activated_config()
@@ -2545,27 +2554,40 @@ def construct_env(tools_to_activate):
       # For older emscripten versions that don't use this default we export
       # EM_CACHE.
       em_cache_dir = os.path.join(config['EMSCRIPTEN_ROOT'], 'cache')
-      env_vars += [('EM_CACHE', em_cache_dir)]
+      env_vars_to_add += [('EM_CACHE', em_cache_dir)]
     envs = tool.activated_environment()
     for env in envs:
       key, value = parse_key_value(env)
       value = to_native_path(tool.expand_vars(value))
-      env_vars += [(key, value)]
+      env_vars_to_add += [(key, value)]
 
-  if env_vars:
+  return env_vars_to_add
+
+
+def construct_env(tools_to_activate):
+  return construct_env_with_vars(get_env_vars_to_add(tools_to_activate))
+
+
+def construct_env_with_vars(env_vars_to_add):
+  env_string = ''
+  if env_vars_to_add:
     errlog('Setting environment variables:')
-    for key, value in env_vars:
-      if POWERSHELL:
-        env_string += '$env:' + key + '="' + value + '"\n'
-      elif CMD:
-        env_string += 'SET ' + key + '=' + value + '\n'
-      elif CSH:
-        env_string += 'setenv ' + key + ' "' + value + '";\n'
-      elif BASH:
-        env_string += 'export ' + key + '="' + value + '";\n'
-      else:
-        assert False
-      if 'EMSDK_PYTHON' in env_vars:
+
+    for key, value in env_vars_to_add:
+      # Don't set env vars which are already set to the correct value.
+      if key not in os.environ or to_unix_path(os.environ[key]) != to_unix_path(value):
+        errlog(key + ' = ' + value)
+        if POWERSHELL:
+          env_string += '$env:' + key + '="' + value + '"\n'
+        elif CMD:
+          env_string += 'SET ' + key + '=' + value + '\n'
+        elif CSH:
+          env_string += 'setenv ' + key + ' "' + value + '"\n'
+        elif BASH:
+          env_string += 'export ' + key + '="' + value + '"\n'
+        else:
+          assert False
+      if 'EMSDK_PYTHON' in env_vars_to_add:
         # When using our bundled python we never want the user's
         # PYTHONHOME or PYTHONPATH
         # See https://github.com/emscripten-core/emsdk/issues/598
@@ -2584,7 +2606,6 @@ def construct_env(tools_to_activate):
         else:
           assert False
 
-      errlog(key + ' = ' + value)
   return env_string
 
 

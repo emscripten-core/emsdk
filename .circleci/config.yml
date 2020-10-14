@@ -91,13 +91,7 @@ jobs:
           name: --permanent test
           shell: powershell.exe
           command: |
-            try {
-              scripts/test_permanent.ps1
-            } catch {
-              Write-Host "`n Error Message: [$($_.Exception.Message)"] -ForegroundColor Red
-              Write-Host "`n Line Number: "$_.InvocationInfo.ScriptLineNumber -ForegroundColor Red
-            }
-            
+            scripts/test_permanent.ps1
   test-msys2:
     executor:
       name: win/vs2019
