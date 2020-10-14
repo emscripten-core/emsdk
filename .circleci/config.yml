@@ -97,7 +97,7 @@ jobs:
       name: win/vs2019
       shell: cmd.exe
     environment:
-      MSYS_CMD: C:\\tools\\msys64\\msys2_shell.cmd -here -defterm -no-start -c
+      MSYS_CMD: C:\\tools\\msys64\\msys2_shell.cmd -here -defterm -no-start -msys2 -c
     steps:
       - checkout
       - run:
