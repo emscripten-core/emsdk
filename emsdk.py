@@ -103,10 +103,7 @@ if not CSH and not POWERSHELL and not BASH and not CMD:
     BASH = True
 
 if WINDOWS:
-  if MSYS:
-    ENVPATH_SEPARATOR = ':'
-  else:
-    ENVPATH_SEPARATOR = ';'
+  ENVPATH_SEPARATOR = ';'
 else:
   ENVPATH_SEPARATOR = ':'
 
@@ -2539,7 +2536,8 @@ def adjusted_path(tools_to_activate, system=False):
     whole_path = [to_msys_path(p) for p in whole_path]
     new_emsdk_tools = [to_msys_path(p) for p in new_emsdk_tools]
 
-  return (ENVPATH_SEPARATOR.join(whole_path), new_emsdk_tools)
+  separator = ':' if MSYS else ENVPATH_SEPARATOR
+  return (separator.join(whole_path), new_emsdk_tools)
 
 
 def get_env_vars_to_add(tools_to_activate):
