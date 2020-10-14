@@ -107,7 +107,7 @@ jobs:
           name: Install msys2 packages
           command: >
             %MSYS_CMD%
-            "pacman --sync --noconfirm --needed base-devel cmake gcc python"
+            "pacman --sync --noconfirm --needed msys2-devel python cmake"
       - run:
           name: test.sh
           command: >
