@@ -117,7 +117,7 @@ jobs:
           command: C:\msys64\usr\bin\bash -lc 'pacman --noconfirm -Syuu'
       - run:
           name: Update others
-          command: C:\msys64\usr\bin\bash -lc 'pacman --noconfirm -Syuu msys2-devel python cmake'
+          command: C:\msys64\usr\bin\bash -lc 'pacman --noconfirm -Syuu'
       - run:
           name: Install dependencies
           command: C:\msys64\usr\bin\bash -lc 'pacman --noconfirm --sync --needed msys2-devel python cmake'
