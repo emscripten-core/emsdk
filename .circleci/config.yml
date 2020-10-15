@@ -95,34 +95,41 @@ jobs:
   test-msys2:
     executor:
       name: win/vs2019
-      shell: cmd.exe
+      shell: powershell.exe
     environment:
-      MSYS_CMD: C:\\tools\\msys64\\msys2_shell.cmd -here -defterm -no-start -msys2 -c
+      MSYS2_INSTALLER_URI: https://github.com/msys2/msys2-installer/releases/download/2020-09-03/msys2-base-x86_64-20200903.sfx.exe
+      CHERE_INVOKING: 'yes'
+      MSYSTEM: 'MSYS'
     steps:
       - checkout
       - run:
-          name: Install msys2 (via choco)
-          command: choco install --confirm msys2
+          name: Download msys2
+          command: (New-Object System.Net.WebClient).DownloadFile("$Env:MSYS2_INSTALLER_URI", 'msys2.exe')
       - run:
-          name: Install msys2 packages
-          command: >
-            %MSYS_CMD%
-            "pacman --sync --noconfirm --needed msys2-devel python cmake"
+          name: Install
+          command: .\msys2.exe -y -oC:\
+      - run: Remove-Item msys2.exe
+      - run:
+          name: Bootstrap
+          command: C:\msys64\usr\bin\bash -lc ' '
+      - run:
+          name: Update core
+          command: C:\msys64\usr\bin\bash -lc 'pacman --noconfirm -Syuu'
+      - run:
+          name: Update others
+          command: C:\msys64\usr\bin\bash -lc 'pacman --noconfirm -Syuu msys2-devel python cmake'
+      - run:
+          name: Install dependencies
+          command: C:\msys64\usr\bin\bash -lc 'pacman --noconfirm --sync --needed msys2-devel python cmake'
       - run:
           name: test.sh
-          command: >
-            %MSYS_CMD%
-            "export EMSDK_NOTTY='1' && /usr/bin/sh.exe scripts/test.sh"
+          command: C:\msys64\usr\bin\bash -lc "export EMSDK_NOTTY='1' && ./scripts/test.sh"
       - run:
           name: test_source_env.sh
-          command: >
-            %MSYS_CMD%
-            "export EMSDK_NOTTY='1' && /usr/bin/sh.exe scripts/test_source_env.sh"
+          command: C:\msys64\usr\bin\bash -lc "export EMSDK_NOTTY='1' && ./scripts/test_source_env.sh"
       - run:
           name: test.py
-          command: >
-            %MSYS_CMD%
-            "source emsdk_env.sh && export EMSDK_NOTTY='1' && /usr/bin/python scripts/test.py"
+          command: C:\msys64\usr\bin\bash -lc "source emsdk_env.sh && export EMSDK_NOTTY='1' && /usr/bin/python scripts/test.py"
 
   build-docker-image:
     executor: bionic
