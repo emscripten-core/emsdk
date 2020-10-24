@@ -16,13 +16,14 @@ $PATH_USER = [System.Environment]::GetEnvironmentVariable("PATH", "User")
 $PATH_MACHINE = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
 
 if ($env:SYSTEM_FLAG) {
+    echo "--system test............................."
     $path_before_arr = $PATH_MACHINE_BEFORE.Split(';')
     $path_arr = $PATH_MACHINE.Split(';')
 } elseif ($env:PERMANENT_FLAG) {
+    echo "--permanent test.........................."
     $path_before_arr = $PATH_USER_BEFORE.Split(';')
     $path_arr = $PATH_USER.Split(';')
 }
-
 
 
 $EMSDK_Path = $path_arr | Where-Object { $_ -like "$repo_root*" }
@@ -49,16 +50,28 @@ Foreach ($item in $path_arr) {
 
 # compare the PATHs before activation and after activation
 if (Compare-Object -ReferenceObject $path_before_arr -DifferenceObject $rest_of_path ) {
+    echo "Old path is ............................."
+    echo $path_before_arr
+    echo "Current rest of path is ................."
+    echo $rest_of_path
     throw "some parts of PATH are removed"
 }
 
 # Compare the other untouched PATH
 if ($env:SYSTEM_FLAG) {
     if (Compare-Object -ReferenceObject $PATH_USER_BEFORE.Split(';') -DifferenceObject $PATH_USER.Split(';') ) {
+        echo "Old user path is ...................."
+        echo $PATH_USER_BEFORE
+        echo "Current user path is ................"
+        echo $PATH_USER
         throw "User PATH are changed while --system had been provided"
     }
 } elseif ($env:PERMANENT_FLAG) {
     if (Compare-Object -ReferenceObject $PATH_MACHINE_BEFORE.Split(';') -DifferenceObject $PATH_MACHINE.Split(';') ) {
+        echo "Old machine path is.................."
+        echo $PATH_USER_BEFORE
+        echo "Current machine path is.............."
+        echo $PATH_USER
         throw "MACHINE PATH are changed while --system was not provided"
     }
 }
