@@ -77,9 +77,9 @@ if (!$EMSDK_UPSTREAM_Path) {
 refreshenv
 
 [Environment]::SetEnvironmentVariable("Path", $PATH_USER_BEFORE,  "User")
-if ($env:SYSTEM_FLAG) {
+try {
     [Environment]::SetEnvironmentVariable("Path", $PATH_MACHINE_BEFORE,  "Machine")
-}
+} catch {}
 
 refreshenv
 
