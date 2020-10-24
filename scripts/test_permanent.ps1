@@ -1,6 +1,5 @@
 $repo_root = [System.IO.Path]::GetDirectoryName((resolve-path "$PSScriptRoot"))
 
-& "$repo_root/emsdk.ps1" install latest
 & "$repo_root/emsdk.ps1" activate latest --permanent
 
 $EMSDK_USER = [System.Environment]::GetEnvironmentVariable("EMSDK", "User")
