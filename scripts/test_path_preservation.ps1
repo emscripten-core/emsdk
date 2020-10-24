@@ -71,7 +71,9 @@ if ($env:SYSTEM_FLAG) {
 refreshenv
 
 [Environment]::SetEnvironmentVariable("Path", $PATH_USER_BEFORE,  "User")
-try { [Environment]::SetEnvironmentVariable("Path", $PATH_MACHINE_BEFORE,  "Machine") } catch { echo "no admin access" }
+if ($env:SYSTEM_FLAG) {
+    [Environment]::SetEnvironmentVariable("Path", $PATH_MACHINE_BEFORE,  "Machine")
+}
 
 refreshenv
 
