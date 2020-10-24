@@ -1,55 +1,62 @@
 $repo_root = [System.IO.Path]::GetDirectoryName((resolve-path "$PSScriptRoot"))
 
-& "$repo_root/emsdk.ps1" activate latest --permanent
+$esc = '--%'
+& "$repo_root/emsdk.ps1" activate latest $esc $env:PERMANENT_FLAG $env:SYSTEM_FLAG
 
-$EMSDK_USER = [System.Environment]::GetEnvironmentVariable("EMSDK", "User")
-$EM_CONFIG_USER = [System.Environment]::GetEnvironmentVariable("EM_CONFIG", "User")
-$EMSDK_NODE_USER = [System.Environment]::GetEnvironmentVariable("EMSDK_NODE", "User")
-$EMSDK_PYTHON_USER = [System.Environment]::GetEnvironmentVariable("EMSDK_PYTHON", "User")
-$JAVA_HOME_USER = [System.Environment]::GetEnvironmentVariable("JAVA_HOME", "User")
-$EM_CACHE_USER = [System.Environment]::GetEnvironmentVariable("EM_CACHE", "User")
-$PATH_USER = [System.Environment]::GetEnvironmentVariable("PATH", "User")
+if ($env:SYSTEM_FLAG) {
+    $path_type="Machine"
+} elseif ($env:PERMANENT_FLAG) {
+    $path_type="User"
+}
 
-if (!$EMSDK_USER) {
+$EMSDK = [System.Environment]::GetEnvironmentVariable("EMSDK", $path_type)
+$EM_CONFIG = [System.Environment]::GetEnvironmentVariable("EM_CONFIG", $path_type)
+$EMSDK_NODE = [System.Environment]::GetEnvironmentVariable("EMSDK_NODE", $path_type)
+$EMSDK_PYTHON = [System.Environment]::GetEnvironmentVariable("EMSDK_PYTHON", $path_type)
+$JAVA_HOME = [System.Environment]::GetEnvironmentVariable("JAVA_HOME", $path_type)
+$EM_CACHE = [System.Environment]::GetEnvironmentVariable("EM_CACHE", $path_type)
+$PATH = [System.Environment]::GetEnvironmentVariable("PATH", $path_type)
+
+if (!$EMSDK) {
     throw "EMSDK is not set for the user"
 }
-if (!$EM_CONFIG_USER) {
-    throw "EM_CONFIG_USER is not set for the user"
+if (!$EM_CONFIG) {
+    throw "EM_CONFIG is not set for the user"
 }
-if (!$EMSDK_NODE_USER) {
+if (!$EMSDK_NODE) {
     throw "EMSDK_NODE is not set for the user"
 }
-if (!$JAVA_HOME_USER) {
+if (!$JAVA_HOME) {
     throw "JAVA_HOME is not set for the user"
 }
-if (!$EMSDK_PYTHON_USER) {
+if (!$EMSDK_PYTHON) {
     throw "EMSDK_PYTHON is not set for the user"
 }
-if (!$EM_CACHE_USER) {
+if (!$EM_CACHE) {
     throw "EM_CACHE is not set for the user"
 }
 
 
-$path_split = $PATH_USER.Split(';')
+$path_split = $PATH.Split(';')
 
-$EMSDK_Path_USER = $path_split | Where-Object { $_ -like "$repo_root*" }
-if (!$EMSDK_Path_USER) {
+$EMSDK_Path = $path_split | Where-Object { $_ -like "$repo_root*" }
+if (!$EMSDK_Path) {
     throw "No path is added!"
 }
-$EMSDK_NODE_Path_USER = $path_split | Where-Object { $_ -like "$repo_root\node*" }
-if (!$EMSDK_NODE_Path_USER) {
+$EMSDK_NODE_Path = $path_split | Where-Object { $_ -like "$repo_root\node*" }
+if (!$EMSDK_NODE_Path) {
     throw "$repo_root\\node is not added to path."
 }
-$EMSDK_PYTHON_Path_USER = $path_split | Where-Object { $_ -like "$repo_root\python*" }
-if (!$EMSDK_PYTHON_Path_USER) {
+$EMSDK_PYTHON_Path = $path_split | Where-Object { $_ -like "$repo_root\python*" }
+if (!$EMSDK_PYTHON_Path) {
     throw "$repo_root\\python is not added to path."
 }
-$EMSDK_JAVA_Path_USER = $path_split | Where-Object { $_ -like "$repo_root\java*" }
-if (!$EMSDK_JAVA_Path_USER) {
+$EMSDK_JAVA_Path = $path_split | Where-Object { $_ -like "$repo_root\java*" }
+if (!$EMSDK_JAVA_Path) {
     throw "$repo_root\\java is not added to path."
 }
 
-$EMSDK_UPSTREAM_Path_USER = $path_split | Where-Object { $_ -like "$repo_root\upstream\emscripten*" }
-if (!$EMSDK_UPSTREAM_Path_USER) {
+$EMSDK_UPSTREAM_Path = $path_split | Where-Object { $_ -like "$repo_root\upstream\emscripten*" }
+if (!$EMSDK_UPSTREAM_Path) {
     throw "$repo_root\\upstream\emscripten is not added to path."
 }
