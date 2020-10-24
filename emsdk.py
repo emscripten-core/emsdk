@@ -2449,7 +2449,7 @@ def set_active_tools(tools_to_activate, permanently_activate, system):
   if WINDOWS:
     # always set local environment variables since permanently activating will only set the registry settings and
     # will not affect the current session
-    env_vars_to_add = get_env_vars_to_add(tools_to_activate)
+    env_vars_to_add = get_env_vars_to_add(tools_to_activate, system)
     env_string = construct_env_with_vars(env_vars_to_add)
     write_set_env_script(env_string)
 
@@ -2540,10 +2540,10 @@ def adjusted_path(tools_to_activate, system=False):
   return (separator.join(whole_path), new_emsdk_tools)
 
 
-def get_env_vars_to_add(tools_to_activate):
+def get_env_vars_to_add(tools_to_activate, system):
   env_vars_to_add = []
 
-  newpath, added_path = adjusted_path(tools_to_activate)
+  newpath, added_path = adjusted_path(tools_to_activate, system)
 
   # Don't bother setting the path if there are no changes.
   if os.environ['PATH'] != newpath:
@@ -2575,8 +2575,8 @@ def get_env_vars_to_add(tools_to_activate):
   return env_vars_to_add
 
 
-def construct_env(tools_to_activate):
-  return construct_env_with_vars(get_env_vars_to_add(tools_to_activate))
+def construct_env(tools_to_activate, system):
+  return construct_env_with_vars(get_env_vars_to_add(tools_to_activate, system))
 
 
 def construct_env_with_vars(env_vars_to_add):
@@ -2989,7 +2989,7 @@ def main():
     # to write out the new one.
     tools_to_activate = currently_active_tools()
     tools_to_activate = process_tool_list(tools_to_activate, log_errors=True)
-    env_string = construct_env(tools_to_activate)
+    env_string = construct_env(tools_to_activate, arg_system)
     if WINDOWS and not BASH:
       write_set_env_script(env_string)
     else:
