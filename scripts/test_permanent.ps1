@@ -1,5 +1,7 @@
 $repo_root = [System.IO.Path]::GetDirectoryName((resolve-path "$PSScriptRoot"))
 
+& "$repo_root/emsdk.ps1" install latest
+
 $esc = '--%'
 & "$repo_root/emsdk.ps1" activate latest $esc $env:PERMANENT_FLAG $env:SYSTEM_FLAG
 

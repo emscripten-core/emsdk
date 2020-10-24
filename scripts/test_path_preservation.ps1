@@ -9,6 +9,8 @@ $PATH_MACHINE_BEFORE = [System.Environment]::GetEnvironmentVariable("PATH", "Mac
 try {
 
 
+& "$repo_root/emsdk.ps1" install latest
+
 $esc = '--%'
 & "$repo_root/emsdk.ps1" activate latest $esc $env:PERMANENT_FLAG $env:SYSTEM_FLAG
 
