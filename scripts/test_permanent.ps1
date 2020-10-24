@@ -1,4 +1,12 @@
+refreshenv
+
 $repo_root = [System.IO.Path]::GetDirectoryName((resolve-path "$PSScriptRoot"))
+
+$PATH_USER_BEFORE = [System.Environment]::GetEnvironmentVariable("PATH", "User")
+$PATH_MACHINE_BEFORE = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
+
+
+try {
 
 & "$repo_root/emsdk.ps1" install latest
 
@@ -61,4 +69,18 @@ if (!$EMSDK_JAVA_Path) {
 $EMSDK_UPSTREAM_Path = $path_split | Where-Object { $_ -like "$repo_root\upstream\emscripten*" }
 if (!$EMSDK_UPSTREAM_Path) {
     throw "$repo_root\\upstream\emscripten is not added to path."
+}
+
+
+} finally {
+# Recover pre-split PATH
+refreshenv
+
+[Environment]::SetEnvironmentVariable("Path", $PATH_USER_BEFORE,  "User")
+if ($env:SYSTEM_FLAG) {
+    [Environment]::SetEnvironmentVariable("Path", $PATH_MACHINE_BEFORE,  "Machine")
+}
+
+refreshenv
+
 }
