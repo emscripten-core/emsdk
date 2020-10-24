@@ -93,6 +93,21 @@ jobs:
           command: |
             scripts/test_permanent.ps1
 
+      - run:
+          name: User PATH preservation test
+          shell: powershell.exe
+          command: |
+            $env:PERMANENT_FLAG="--permanent"
+            scripts/test_path_preservation.ps1
+
+      - run:
+          name: System PATH preservation test
+          shell: powershell.exe
+          command: |
+            $env:SYSTEM_FLAG="--system"
+            scripts/test_path_preservation.ps1
+
+
   build-docker-image:
     executor: bionic
     steps:
