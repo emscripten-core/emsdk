@@ -14,18 +14,18 @@ $esc = '--%'
 & "$repo_root/emsdk.ps1" activate latest $esc $env:PERMANENT_FLAG $env:SYSTEM_FLAG
 
 if ($env:SYSTEM_FLAG) {
-    $path_type="Machine"
+    $env_type="Machine"
 } elseif ($env:PERMANENT_FLAG) {
-    $path_type="User"
+    $env_type="User"
 }
 
-$EMSDK = [System.Environment]::GetEnvironmentVariable("EMSDK", $path_type)
-$EM_CONFIG = [System.Environment]::GetEnvironmentVariable("EM_CONFIG", $path_type)
-$EMSDK_NODE = [System.Environment]::GetEnvironmentVariable("EMSDK_NODE", $path_type)
-$EMSDK_PYTHON = [System.Environment]::GetEnvironmentVariable("EMSDK_PYTHON", $path_type)
-$JAVA_HOME = [System.Environment]::GetEnvironmentVariable("JAVA_HOME", $path_type)
-$EM_CACHE = [System.Environment]::GetEnvironmentVariable("EM_CACHE", $path_type)
-$PATH = [System.Environment]::GetEnvironmentVariable("PATH", $path_type)
+$EMSDK = [System.Environment]::GetEnvironmentVariable("EMSDK", $env_type)
+$EM_CONFIG = [System.Environment]::GetEnvironmentVariable("EM_CONFIG", $env_type)
+$EMSDK_NODE = [System.Environment]::GetEnvironmentVariable("EMSDK_NODE", $env_type)
+$EMSDK_PYTHON = [System.Environment]::GetEnvironmentVariable("EMSDK_PYTHON", $env_type)
+$JAVA_HOME = [System.Environment]::GetEnvironmentVariable("JAVA_HOME", $env_type)
+$EM_CACHE = [System.Environment]::GetEnvironmentVariable("EM_CACHE", $env_type)
+$PATH = [System.Environment]::GetEnvironmentVariable("PATH", $env_type)
 
 if (!$EMSDK) {
     throw "EMSDK is not set for the user"
