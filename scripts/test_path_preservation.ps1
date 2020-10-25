@@ -1,3 +1,6 @@
+# This test installs emsdk and activates the latest toolchain using `--system` or `--permanent` flags, and checks if parts of PATH are lost or overwritten.
+# Set $env:SYSTEM_FLAG and $env:PERMANENT_FLAG to test each. See the CI file for an example.
+
 refreshenv
 
 $repo_root = [System.IO.Path]::GetDirectoryName((resolve-path "$PSScriptRoot"))
