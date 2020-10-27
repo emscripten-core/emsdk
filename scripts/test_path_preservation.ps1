@@ -7,7 +7,7 @@ $repo_root = [System.IO.Path]::GetDirectoryName((resolve-path "$PSScriptRoot"))
 
 $PATH_USER_BEFORE = [System.Environment]::GetEnvironmentVariable("PATH", "User")
 $PATH_MACHINE_BEFORE = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
-
+$PATH_Process_BEFORE = [System.Environment]::GetEnvironmentVariable("PATH", "Process")
 
 try {
 
@@ -19,6 +19,7 @@ try {
 
     $PATH_USER = [System.Environment]::GetEnvironmentVariable("PATH", "User")
     $PATH_MACHINE = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
+    $PATH_Process = [System.Environment]::GetEnvironmentVariable("PATH", "Process")
 
     if ($env:SYSTEM_FLAG) {
         echo "--system test............................."
@@ -29,6 +30,10 @@ try {
         echo "--permanent test.........................."
         $path_before_arr = $PATH_USER_BEFORE.Split(';')
         $path_arr = $PATH_USER.Split(';')
+    } else {
+        echo "no flag test (shell/process).............."
+        $path_before_arr = $PATH_Process_BEFORE.Split(';')
+        $path_arr = $PATH_Process.Split(';')
     }
 
 
@@ -82,6 +87,21 @@ try {
             echo $PATH_MACHINE
             throw "MACHINE PATH are changed while --system was not provided"
         }
+    } else {
+        if (
+            (Compare-Object -ReferenceObject $PATH_MACHINE_BEFORE.Split(';') -DifferenceObject $PATH_MACHINE.Split(';')) -or
+            (Compare-Object -ReferenceObject $PATH_MACHINE_BEFORE.Split(';') -DifferenceObject $PATH_MACHINE.Split(';'))
+        ) {
+            echo "Old machine path is.................."
+            echo $PATH_MACHINE_BEFORE
+            echo "Current machine path is.............."
+            echo $PATH_MACHINE
+            echo "Old user path is ...................."
+            echo $PATH_USER_BEFORE
+            echo "Current user path is ................"
+            echo $PATH_USER
+            throw "MACHINE/USER PATH are changed while no flag was provided"
+        }
     }
 
 
@@ -97,6 +117,8 @@ finally {
         [Environment]::SetEnvironmentVariable("Path", $PATH_MACHINE_BEFORE, "Machine")
     }
     catch {}
+
+    [Environment]::SetEnvironmentVariable("Path", $PATH_Process_BEFORE, "Process")
 
     refreshenv
 

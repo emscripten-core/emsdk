@@ -109,6 +109,12 @@ jobs:
             scripts/test_activation.ps1
 
       - run:
+          name: Process/Shell PATH preservation test
+          shell: powershell.exe
+          command: |
+            scripts/test_path_preservation.ps1
+
+      - run:
           name: User PATH preservation test
           shell: powershell.exe
           command: |
@@ -121,7 +127,6 @@ jobs:
           command: |
             $env:SYSTEM_FLAG="--system"
             scripts/test_path_preservation.ps1
-
 
   build-docker-image:
     executor: bionic
