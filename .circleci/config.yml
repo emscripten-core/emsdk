@@ -92,21 +92,21 @@ jobs:
           name: flagless (process/shell) test
           shell: powershell.exe
           command: |
-            scripts/test_permanent.ps1
+            scripts/test_activation.ps1
 
       - run:
           name: --permanent test
           shell: powershell.exe
           command: |
             $env:PERMANENT_FLAG="--permanent"
-            scripts/test_permanent.ps1
+            scripts/test_activation.ps1
 
       - run:
           name: --system test
           shell: powershell.exe
           command: |
             $env:SYSTEM_FLAG="--system"
-            scripts/test_permanent.ps1
+            scripts/test_activation.ps1
 
       - run:
           name: User PATH preservation test
