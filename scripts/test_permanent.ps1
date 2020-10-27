@@ -7,6 +7,7 @@ $repo_root = [System.IO.Path]::GetDirectoryName((resolve-path "$PSScriptRoot"))
 
 $PATH_USER_BEFORE = [System.Environment]::GetEnvironmentVariable("PATH", "User")
 $PATH_MACHINE_BEFORE = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
+$PATH_Process_BEFORE = [System.Environment]::GetEnvironmentVariable("PATH", "Process")
 
 
 try {
@@ -21,6 +22,8 @@ try {
     }
     elseif ($env:PERMANENT_FLAG) {
         $env_type = "User"
+    } else {
+        $env_type = "Process"
     }
 
     $EMSDK = [System.Environment]::GetEnvironmentVariable("EMSDK", $env_type)
@@ -86,6 +89,8 @@ finally {
         [Environment]::SetEnvironmentVariable("Path", $PATH_MACHINE_BEFORE, "Machine")
     }
     catch {}
+
+    [Environment]::SetEnvironmentVariable("Path", $PATH_Process_BEFORE, "Process")
 
     refreshenv
 

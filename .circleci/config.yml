@@ -87,7 +87,13 @@ jobs:
           command: |
             source emsdk_env.sh
             python scripts/test.py
-            
+
+      - run:
+          name: flagless (process/shell) test
+          shell: powershell.exe
+          command: |
+            scripts/test_permanent.ps1
+
       - run:
           name: --permanent test
           shell: powershell.exe
