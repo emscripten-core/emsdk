@@ -322,7 +322,10 @@ def win_set_environment_variable_direct(key, value, system=True):
       folder.Close()
 
 
-def win_get_environment_variable(key, system=True, fallback=True):
+def win_get_environment_variable(key, system=True, user=True, fallback=True):
+  if (not system and not user and fallback):
+    # if no --system or --permanent flag is provided use shell's value
+    return os.environ[key]
   try:
     folder = None
     try:
@@ -355,21 +358,9 @@ def win_get_environment_variable(key, system=True, fallback=True):
   return value
 
 
-def win_environment_variable_exists(key, system=True):
-  value = win_get_environment_variable(key, system)
-  return value is not None and len(value) > 0
-
-
-def win_get_active_environment_variable(key):
-  value = win_get_environment_variable(key, False)
-  if value is not None:
-    return value
-  return win_get_environment_variable(key, True)
-
-
-def win_set_environment_variable(key, value, system=True):
+def win_set_environment_variable(key, value, system=True, user=True):
   debug_print('set ' + str(key) + '=' + str(value) + ', in system=' + str(system), file=sys.stderr)
-  previous_value = win_get_environment_variable(key, system, fallback=False)
+  previous_value = win_get_environment_variable(key, system=system, user=user)
   if previous_value == value:
     debug_print('  no need to set, since same value already exists.')
     # No need to elevate UAC for nothing to set the same value, skip.
@@ -409,14 +400,14 @@ def win_set_environment_variable(key, value, system=True):
   return False
 
 
-def win_set_environment_variables(env_vars_to_add, system):
+def win_set_environment_variables(env_vars_to_add, system, user):
   if not env_vars_to_add:
     return
 
   changed = False
 
   for key, value in env_vars_to_add:
-    if win_set_environment_variable(key, value, system):
+    if win_set_environment_variable(key, value, system, user):
       if not changed:
         changed = True
         print('Setting global environment variables:')
@@ -443,9 +434,9 @@ def win_set_environment_variables(env_vars_to_add, system):
     errlog('SendMessageTimeout failed with error: ' + str(e))
 
 
-def win_delete_environment_variable(key, system=True):
+def win_delete_environment_variable(key, system=True, user=True):
   debug_print('win_delete_environment_variable(key=' + key + ', system=' + str(system) + ')')
-  return win_set_environment_variable(key, None, system)
+  return win_set_environment_variable(key, None, system, user)
 
 
 # Returns the absolute pathname to the given path inside the Emscripten SDK.
@@ -2449,12 +2440,12 @@ def set_active_tools(tools_to_activate, permanently_activate, system):
   if WINDOWS:
     # always set local environment variables since permanently activating will only set the registry settings and
     # will not affect the current session
-    env_vars_to_add = get_env_vars_to_add(tools_to_activate, system)
+    env_vars_to_add = get_env_vars_to_add(tools_to_activate, system, user=permanently_activate)
     env_string = construct_env_with_vars(env_vars_to_add)
     write_set_env_script(env_string)
 
     if permanently_activate:
-      win_set_environment_variables(env_vars_to_add, system)
+      win_set_environment_variables(env_vars_to_add, system, user=permanently_activate)
 
   return tools_to_activate
 
@@ -2500,12 +2491,12 @@ def to_msys_path(p):
 
 # Looks at the current PATH and adds and removes entries so that the PATH reflects
 # the set of given active tools.
-def adjusted_path(tools_to_activate, system=False):
+def adjusted_path(tools_to_activate, system=False, user=False):
   # These directories should be added to PATH
   path_add = get_required_path(tools_to_activate)
   # These already exist.
   if WINDOWS and not MSYS:
-    existing_path = win_get_environment_variable('PATH', system=system).split(ENVPATH_SEPARATOR)
+    existing_path = win_get_environment_variable('PATH', system=system, user=user, fallback=True).split(ENVPATH_SEPARATOR)
   else:
     existing_path = os.environ['PATH'].split(ENVPATH_SEPARATOR)
   emsdk_root_path = to_unix_path(emsdk_path())
@@ -2540,10 +2531,10 @@ def adjusted_path(tools_to_activate, system=False):
   return (separator.join(whole_path), new_emsdk_tools)
 
 
-def get_env_vars_to_add(tools_to_activate, system):
+def get_env_vars_to_add(tools_to_activate, system, user):
   env_vars_to_add = []
 
-  newpath, added_path = adjusted_path(tools_to_activate, system)
+  newpath, added_path = adjusted_path(tools_to_activate, system, user)
 
   # Don't bother setting the path if there are no changes.
   if os.environ['PATH'] != newpath:
@@ -2575,8 +2566,8 @@ def get_env_vars_to_add(tools_to_activate, system):
   return env_vars_to_add
 
 
-def construct_env(tools_to_activate, system):
-  return construct_env_with_vars(get_env_vars_to_add(tools_to_activate, system))
+def construct_env(tools_to_activate, system, user):
+  return construct_env_with_vars(get_env_vars_to_add(tools_to_activate, system, user))
 
 
 def construct_env_with_vars(env_vars_to_add):
@@ -2989,7 +2980,7 @@ def main():
     # to write out the new one.
     tools_to_activate = currently_active_tools()
     tools_to_activate = process_tool_list(tools_to_activate, log_errors=True)
-    env_string = construct_env(tools_to_activate, arg_system)
+    env_string = construct_env(tools_to_activate, arg_system, arg_permanent)
     if WINDOWS and not BASH:
       write_set_env_script(env_string)
     else:
