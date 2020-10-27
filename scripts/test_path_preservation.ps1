@@ -77,9 +77,9 @@ try {
     elseif ($env:PERMANENT_FLAG) {
         if (Compare-Object -ReferenceObject $PATH_MACHINE_BEFORE.Split(';') -DifferenceObject $PATH_MACHINE.Split(';') ) {
             echo "Old machine path is.................."
-            echo $PATH_USER_BEFORE
+            echo $PATH_MACHINE_BEFORE
             echo "Current machine path is.............."
-            echo $PATH_USER
+            echo $PATH_MACHINE
             throw "MACHINE PATH are changed while --system was not provided"
         }
     }
