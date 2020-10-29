@@ -92,6 +92,44 @@ jobs:
           shell: powershell.exe
           command: |
             scripts/test_permanent.ps1
+  test-msys2:
+    executor:
+      name: win/vs2019
+      shell: powershell.exe
+    environment:
+      MSYS2_INSTALLER_URI: https://github.com/msys2/msys2-installer/releases/download/2020-09-03/msys2-base-x86_64-20200903.sfx.exe
+      CHERE_INVOKING: 'yes'
+      MSYSTEM: 'MSYS'
+    steps:
+      - checkout
+      - run:
+          name: Download msys2
+          command: (New-Object System.Net.WebClient).DownloadFile("$Env:MSYS2_INSTALLER_URI", 'msys2.exe')
+      - run:
+          name: Install
+          command: .\msys2.exe -y -oC:\
+      - run: Remove-Item msys2.exe
+      - run:
+          name: Bootstrap
+          command: C:\msys64\usr\bin\bash -lc ' '
+      - run:
+          name: Update core
+          command: C:\msys64\usr\bin\bash -lc 'pacman --noconfirm -Syuu'
+      - run:
+          name: Update others
+          command: C:\msys64\usr\bin\bash -lc 'pacman --noconfirm -Syuu'
+      - run:
+          name: Install dependencies
+          command: C:\msys64\usr\bin\bash -lc 'pacman --noconfirm --sync --needed msys2-devel python cmake'
+      - run:
+          name: test.sh
+          command: C:\msys64\usr\bin\bash -lc "export EMSDK_NOTTY='1' && ./scripts/test.sh"
+      - run:
+          name: test_source_env.sh
+          command: C:\msys64\usr\bin\bash -lc "export EMSDK_NOTTY='1' && ./scripts/test_source_env.sh"
+      - run:
+          name: test.py
+          command: C:\msys64\usr\bin\bash -lc "source emsdk_env.sh && export EMSDK_NOTTY='1' && /usr/bin/python scripts/test.py"
 
   build-docker-image:
     executor: bionic
@@ -164,6 +202,7 @@ workflows:
   test-windows:
     jobs:
       - test-windows
+      - test-msys2
   build-docker-image:
     jobs:
       - build-docker-image
