@@ -5,6 +5,7 @@ echo "test the standard workflow (as close as possible to how a user would do it
 set -x
 set -e
 
+OLD_PATH=$PATH
 ./emsdk install latest
 ./emsdk activate latest
 source ./emsdk_env.sh --build=Release
@@ -12,3 +13,5 @@ source ./emsdk_env.sh --build=Release
 # bundled version.
 which python3
 emcc -v
+# Check that no path elements were removed
+python3 scripts/check_path.py "$OLD_PATH"
