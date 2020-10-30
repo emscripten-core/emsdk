@@ -1,4 +1,6 @@
-# This test installs emsdk and activates the latest toolchain using `--system` or `--permanent` flags, and checks if the environment variables and PATH are correctly updated. Set $env:SYSTEM_FLAG and $env:PERMANENT_FLAG to test each. If no flag is provided the process/shell values are tested. See the CI file for an example.
+# This test installs emsdk and activates the latest toolchain using `--system` or `--permanent` flags,
+# and checks if the environment variables and PATH are correctly updated. Set $env:SYSTEM_FLAG and $env:PERMANENT_FLAG to test each.
+# If no flag is provided the process/shell values are tested. See the CI file for an example.
 
 refreshenv
 
