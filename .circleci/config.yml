@@ -87,11 +87,46 @@ jobs:
           command: |
             source emsdk_env.sh
             python scripts/test.py
+
+      - run:
+          name: flagless (process/shell) test
+          shell: powershell.exe
+          command: |
+            scripts/test_activation.ps1
+
       - run:
           name: --permanent test
           shell: powershell.exe
           command: |
-            scripts/test_permanent.ps1
+            $env:PERMANENT_FLAG="--permanent"
+            scripts/test_activation.ps1
+
+      - run:
+          name: --system test
+          shell: powershell.exe
+          command: |
+            $env:SYSTEM_FLAG="--system"
+            scripts/test_activation.ps1
+
+      - run:
+          name: Process/Shell PATH preservation test
+          shell: powershell.exe
+          command: |
+            scripts/test_path_preservation.ps1
+
+      - run:
+          name: User PATH preservation test
+          shell: powershell.exe
+          command: |
+            $env:PERMANENT_FLAG="--permanent"
+            scripts/test_path_preservation.ps1
+
+      - run:
+          name: System PATH preservation test
+          shell: powershell.exe
+          command: |
+            $env:SYSTEM_FLAG="--system"
+            scripts/test_path_preservation.ps1
 
   build-docker-image:
     executor: bionic
