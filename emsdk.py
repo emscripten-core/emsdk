@@ -358,7 +358,7 @@ def win_get_environment_variable(key, system=True, user=True, fallback=True):
   return value
 
 
-def win_set_environment_variable(key, value, system=True, user=True):
+def win_set_environment_variable(key, value, system, user):
   debug_print('set ' + str(key) + '=' + str(value) + ', in system=' + str(system), file=sys.stderr)
   previous_value = win_get_environment_variable(key, system=system, user=user)
   if previous_value == value:
