@@ -1862,7 +1862,11 @@ class Tool(object):
     return True
 
   def install_tool(self):
-    if self.is_installed():
+    # Avoid doing a redundant reinstall of the tool, if it has already been installed.
+    # However all tools that are sourced directly from git branches do need to be
+    # installed every time when requested, since the install step is then used to git
+    # pull the tool to a newer version.
+    if self.is_installed() and not hasattr(self, 'git_branch'):
       print("Skipped installing " + self.name + ", already installed.")
       return True
 
