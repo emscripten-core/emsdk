@@ -35,6 +35,7 @@ RUN cd ${EMSDK} \
     && ./emsdk activate ${EMSCRIPTEN_VERSION} \
     && chmod 777 ${EMSDK}/upstream/emscripten \
     && chmod -R 777 ${EMSDK}/upstream/emscripten/cache \
+    && . ./emsdk_env.sh \
     && echo "int main() { return 0; }" > hello.c \
     && ${EMSDK}/upstream/emscripten/emcc -c hello.c \
     && cat ${EMSDK}/upstream/emscripten/cache/sanity.txt \
