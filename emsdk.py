@@ -694,7 +694,7 @@ def download_file(url, dstpath, download_even_if_exists=False, filename_prefix='
       # Draw a progress bar 80 chars wide (in non-TTY mode)
       progress_max = 80 - 4
       progress_shown = 0
-      block_sz = 8192
+      block_sz = 256 * 1024
       if not TTY_OUTPUT:
           print(' [', end='')
       while True:
