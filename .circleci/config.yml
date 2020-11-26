@@ -73,6 +73,7 @@ jobs:
       PYTHON_BIN: "C:\\Python27amd64"
       PYTHONUNBUFFERED: "1"
       EMSDK_NOTTY: "1"
+      EMSDK_VERBOSE: "1"
     steps:
       - checkout
       - run:
