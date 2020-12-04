@@ -8,12 +8,12 @@ http_archive(
 
 load("@build_bazel_rules_nodejs//:index.bzl", "npm_install")
 
-# emscripten 2.0.9
+# emscripten 2.0.10
 http_archive(
     name = "emscripten",
-    sha256 = "42e06a5ad4b369fcb435db097edb8c4fb824b3125a3b8996aca6f10bc79d9dca",
+    sha256 = "5bb30bb70e97080c24dcb47cbd891f0d8c2fb393c17af35aaad5e18c0e60b175",
     strip_prefix = "install",
-    url = "https://storage.googleapis.com/webassembly/emscripten-releases-builds/linux/d8e430f9a9b6e87502f826c39e7684852f59624f/wasm-binaries.tbz2",
+    url = "https://storage.googleapis.com/webassembly/emscripten-releases-builds/linux/37fc7647c754ac9a28ad588c143b82286de0ef71/wasm-binaries.tbz2",
     build_file = "//emscripten_toolchain:emscripten.BUILD",
     type = "tar.bz2",
 )
