@@ -70,9 +70,8 @@ def _impl(ctx):
 
     cc_target_os = "emscripten"
     emscripten_version = ctx.attr.emscripten_version
-    emscripten_root = "external/emscripten/" + emscripten_version
 
-    builtin_sysroot = None
+    builtin_sysroot = "external/emscripten/" + emscripten_version + "/cache/sysroot"
 
     ################################################################
     # Tools
@@ -513,14 +512,7 @@ def _impl(ctx):
         # Language Features
         flag_set(
             actions = all_cpp_compile_actions,
-            flags = [
-                "-std=gnu++17",
-                "-nostdinc",
-                "-Xclang",
-                "-nobuiltininc",
-                "-Xclang",
-                "-nostdsysteminc",
-            ],
+            flags = ["-std=gnu++17"],
         ),
 
         # Emscripten-specific settings:
@@ -895,41 +887,6 @@ def _impl(ctx):
             ],
         ),
         ## Options which need to go late -- after all the user options -- go here.
-        flag_set(
-            # One might hope that these options would only be needed for C++
-            # compiles. But, sadly, users compile ".c" files with custom
-            # copts=["-x", "c++"], and expect that to be able to find C++ stdlib
-            # headers. It might be worth pondering how blaze could support this sort
-            # of use-case better.
-            actions = preprocessor_compile_actions +
-                      [ACTION_NAMES.cc_flags_make_variable],
-            flags = [
-                "-isystem",
-                emscripten_root + "/system/lib/libc/musl/arch/emscripten",
-                "-isystem",
-                emscripten_root + "/system/lib/libc/musl/arch/js",
-                "-isystem",
-                emscripten_root + "/system/local/include",
-                "-isystem",
-                emscripten_root + "/system/include/compat",
-                "-isystem",
-                emscripten_root + "/system/include",
-                "-isystem",
-                emscripten_root + "/system/include/libcxx",
-                "-isystem",
-                emscripten_root + "/system/lib/libcxxabi/include",
-                "-isystem",
-                emscripten_root + "/system/lib/compiler-rt/include",
-                "-isystem",
-                emscripten_root + "/system/include/libc",
-                "-isystem",
-                emscripten_root + "/system/include/gfx",
-                "-isystem",
-                emscripten_root + "/system/include/SDL",
-                "-isystem",
-                emscripten_root + "/lib/clang/12.0.0/include",
-            ],
-        ),
         # Inputs and outputs
         flag_set(
             actions = [
@@ -1070,17 +1027,7 @@ def _impl(ctx):
     features.append(crosstool_default_flags_feature)
 
     cxx_builtin_include_directories = [
-        emscripten_version + "/system/lib/libc/musl/arch/emscripten",
-        emscripten_version + "/system/lib/libc/musl/arch/js",
-        emscripten_version + "/system/local/include",
-        emscripten_version + "/system/include/compat",
-        emscripten_version + "/system/include",
-        emscripten_version + "/system/include/libcxx",
-        emscripten_version + "/system/lib/compiler-rt/include",
-        emscripten_version + "/system/lib/libcxxabi/include",
-        emscripten_version + "/system/include/libc",
-        emscripten_version + "/system/include/gfx",
-        emscripten_version + "/system/include/SDL",
+        emscripten_version + "/cache/sysroot/include/compat",
         emscripten_version + "/lib/clang/12.0.0/include",
     ]
 
