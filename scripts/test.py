@@ -227,14 +227,3 @@ os.chdir(temp_dir)
 run_emsdk('update')
 print('second time')
 run_emsdk('update')
-
-print('verify downloads exist for all OSes')
-latest_hash = TAGS['releases'][TAGS['latest']]
-for osname, suffix in [
-  ('linux', 'tbz2'),
-  ('mac', 'tbz2'),
-  ('win', 'zip')
-]:
-  url = 'https://storage.googleapis.com/webassembly/emscripten-releases-builds/%s/%s/wasm-binaries.%s' % (osname, latest_hash, suffix)
-  print('  checking url: ' + url),
-  check_call('curl --fail --head --silent ' + url, stdout=subprocess.PIPE)
