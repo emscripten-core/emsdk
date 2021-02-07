@@ -903,7 +903,29 @@ def build_env(generator):
       path = vswhere(16)
     else:
       path = vswhere(15)
-    build_env['VCTargetsPath'] = os.path.join(path, 'Common7\\IDE\\VC\\VCTargets')
+
+    # Configuring CMake for Visual Studio needs and env. var VCTargetsPath to be present.
+    # How this is supposed to work is unfortunately very undocumented. See
+    # https://discourse.cmake.org/t/cmake-failed-to-get-the-value-of-vctargetspath-with-vs2019-16-7/1839/16
+    # for some conversation. Try a couple of common paths if one of them would work.
+    # In the future as new versions of VS come out, we likely need to add new paths into this list.
+    if 'VCTargetsPath' not in build_env:
+      vctargets_paths = [
+        os.path.join(path, 'MSBuild\\Microsoft\\VC\\v160\\'),
+        os.path.join(path, 'Common7\\IDE\\VC\\VCTargets')
+      ]
+      for p in vctargets_paths:
+        if os.path.isfile(os.path.join(p, 'Microsoft.Cpp.Default.props')):
+          debug_print('Set env. var VCTargetsPath=' + p + ' for CMake.')
+          build_env['VCTargetsPath'] = p
+          break
+        else:
+          debug_print('Searched path ' + p + ' as candidate for VCTargetsPath, not working.')
+
+      if 'VCTargetsPath' not in build_env:
+        errlog('Unable to locate Visual Studio compiler installation for generator "' + generator + '"!')
+        errlog('Either rerun installation in Visual Studio Command Prompt, or locate directory to Microsoft.Cpp.Default.props manually')
+        sys.exit(1)
 
     # CMake and VS2017 cl.exe needs to have mspdb140.dll et al. in its PATH.
     vc_bin_paths = [vs_filewhere(path, 'amd64', 'cl.exe'),
