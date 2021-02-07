@@ -899,7 +899,7 @@ def _impl(ctx):
                 "-iwithsysroot" + "/include/c++/v1",
                 "-iwithsysroot" + "/include/compat",
                 "-iwithsysroot" + "/include",
-                "-isystem", "external/emscripten/lib/clang/12.0.0/include",
+                "-isystem", "external/emscripten/lib/clang/13.0.0/include",
             ],
         ),
         # Inputs and outputs
@@ -1045,7 +1045,7 @@ def _impl(ctx):
         "external/emscripten/emscripten/cache/sysroot/include/c++/v1",
         "external/emscripten/emscripten/cache/sysroot/include/compat",
         "external/emscripten/emscripten/cache/sysroot/include",
-        "external/emscripten/lib/clang/12.0.0/include",
+        "external/emscripten/lib/clang/13.0.0/include",
     ]
 
     artifact_name_patterns = []
