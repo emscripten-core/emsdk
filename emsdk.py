@@ -2173,25 +2173,13 @@ def remove_suffix(s, suffix):
 
 # filename should be one of: 'llvm-precompiled-tags-32bit.txt', 'llvm-precompiled-tags-64bit.txt'
 def load_file_index_list(filename):
-  try:
-    items = open(sdk_path(filename), 'r').read().split('\n')
-    items = map(lambda x: remove_suffix(remove_suffix(remove_prefix(x, 'emscripten-llvm-e'), '.tar.gz'), '.zip').strip(), items)
-    items = filter(lambda x: 'latest' not in x and len(x) > 0, items)
+  items = open(sdk_path(filename)).read().splitlines()
+  items = [remove_suffix(remove_suffix(remove_prefix(x, 'emscripten-llvm-e'), '.tar.gz'), '.zip').strip() for x in items]
+  items = [x for x in items if 'latest' not in x and len(x) > 0]
 
-    # Sort versions from oldest to newest (the default sort would be lexicographic, i.e. '1.37.1 < 1.37.10 < 1.37.2')
-    items = sorted(items, key=version_key)[::-1]
-
-    return items
-  except:
-    return []
-
-
-def load_llvm_precompiled_tags_32bit():
-  return load_file_index_list('llvm-tags-32bit.txt')
-
-
-def load_llvm_precompiled_tags_64bit():
-  return load_file_index_list('llvm-tags-64bit.txt')
+  # Sort versions from oldest to newest (the default sort would be
+  # lexicographic, i.e. '1.37.1 < 1.37.10 < 1.37.2')
+  return sorted(items, key=version_key)
 
 
 def exit_with_error(msg):
@@ -2237,7 +2225,6 @@ def is_string(s):
 
 
 def load_sdk_manifest():
-  global tools, sdks
   try:
     manifest = json.loads(open(sdk_path("emsdk_manifest.json"), "r").read())
   except Exception as e:
@@ -2246,8 +2233,8 @@ def load_sdk_manifest():
     return
 
   emscripten_tags = load_legacy_emscripten_tags()
-  llvm_precompiled_tags_32bit = list(reversed(load_llvm_precompiled_tags_32bit()))
-  llvm_precompiled_tags_64bit = list(reversed(load_llvm_precompiled_tags_64bit()))
+  llvm_precompiled_tags_32bit = []
+  llvm_precompiled_tags_64bit = load_file_index_list('llvm-tags-64bit.txt')
   llvm_precompiled_tags = llvm_precompiled_tags_32bit + llvm_precompiled_tags_64bit
   binaryen_tags = load_legacy_binaryen_tags()
   releases_tags = load_releases_tags()
@@ -2817,10 +2804,6 @@ def main():
     TTY_OUTPUT = False
 
   cmd = sys.argv[1]
-
-  # On first run when tag list is not present, populate it to bootstrap.
-  if (cmd == 'install' or cmd == 'list') and not os.path.isfile(sdk_path('llvm-tags-64bit.txt')):
-    fetch_emscripten_tags()
 
   load_dot_emscripten()
   load_sdk_manifest()
