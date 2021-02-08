@@ -22,4 +22,4 @@ grep ${HASH} bazel/WORKSPACE || (echo ${FAILMSG} && false)
 
 cd bazel
 bazel build //hello-world:hello-world-wasm
-bazel build --copt="-msimd128" //hello-world:hello-world-wasm-simd
+bazel build //hello-world:hello-world-wasm-simd

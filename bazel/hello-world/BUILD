@@ -19,4 +19,5 @@ wasm_cc_binary(
 wasm_cc_binary(
     name = "hello-world-wasm-simd",
     cc_target = ":hello-world-simd",
+    simd = True,
 )
