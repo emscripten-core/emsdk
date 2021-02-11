@@ -1229,6 +1229,81 @@ def build_llvm(tool):
   return success
 
 
+def build_ccache(tool):
+  debug_print('build_ccache(' + str(tool) + ')')
+  root = os.path.normpath(tool.installation_path())
+  src_root = os.path.join(root, 'src')
+  success = git_clone_checkout_and_pull(tool.download_url(), src_root, tool.git_branch)
+  if not success:
+    return False
+
+  build_dir = llvm_build_dir(tool)
+  build_root = os.path.join(root, build_dir)
+
+  build_type = decide_cmake_build_type(tool)
+
+  # Configure
+  cmake_generator = CMAKE_GENERATOR
+  args = []
+  if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
+    # With Visual Studio 16 2019, CMake changed the way they specify target arch.
+    # Instead of appending it into the CMake generator line, it is specified
+    # with a -A arch parameter.
+    args += ['-A', 'x64' if tool.bitness == 64 else 'x86']
+    args += ['-Thost=x64']
+  elif 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
+    cmake_generator += ' Win64'
+    args += ['-Thost=x64']
+
+  cmakelists_dir = os.path.join(src_root)
+  success = cmake_configure(cmake_generator, build_root, cmakelists_dir, build_type, args)
+  if not success:
+    return False
+
+  # Make
+  success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'Win32')
+
+  if success:
+    bin_dir = os.path.join(root, 'bin')
+    mkdir_p(bin_dir)
+    exe_paths = [os.path.join(build_root, 'Release', 'ccache'), os.path.join(build_root, 'ccache')]
+    for e in exe_paths:
+      for s in ['.exe', '']:
+        ccache = e + s
+        if os.path.isfile(ccache):
+          shutil.copyfile(ccache, os.path.join(bin_dir, 'ccache' + s))
+
+    cache_dir = os.path.join(root, 'cache')
+    open(os.path.join(root, 'emcc_ccache.conf'), 'w').write('''# Set maximum cache size to 10 GB:
+max_size = 10G
+cache_dir = %s
+''' % cache_dir)
+    mkdir_p(cache_dir)
+
+    for f in ['emcc', 'em++']:
+      open(os.path.join(root, f + '.bat'), 'w').write('''@setlocal
+
+@if "%EMSCRIPTEN%"=="" (
+  @echo "Environment variable EMSCRIPTEN is not set! If you'd like to use Emscripten with ccache, you should do one of:"
+  @echo "  1) activate CCache in Emscripten SDK, and enter Emscripten SDK environment on cmdline with emsdk_env.bat before executing %~dp0\\%~n0.bat, or"
+  @echo "  2) set EMCC_CCACHE=%~dp0 environment variable, and execute %~n0.bat in Emscripten directory, or"
+  @echo "  3) set EMSCRIPTEN=c:\\path\\to\\emscripten\\emcc.bat environment variable before executing %~dp0\\%~n0.bat, or"
+  @echo "  4) invoke ccache manually by explicitly calling 'ccache emcc <args>' instead of relying on the automatic rerouting."
+  @echo ""
+  @echo " Option 1) is considered the easiest and 'canonical' solution."
+)
+
+@set EM_PY=%EMSDK_PYTHON%
+@if "%EM_PY%"=="" (
+  set EM_PY=python
+)
+
+@"%EM_PY%" "%EMSCRIPTEN%\\%~n0.py" %*
+''')
+
+  return success
+
+
 # Emscripten asm.js optimizer build scripts:
 def optimizer_build_root(tool):
   build_root = tool.installation_path().strip()
@@ -1898,6 +1973,8 @@ class Tool(object):
       success = build_fastcomp(self)
     elif hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_llvm':
       success = build_llvm(self)
+    elif hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_ccache':
+      success = build_ccache(self)
     elif hasattr(self, 'git_branch'):
       success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch)
     elif url.endswith(ARCHIVE_SUFFIXES):
@@ -1919,6 +1996,19 @@ class Tool(object):
 
     if not success:
       exit_with_error("Installation failed!")
+    if hasattr(self, 'custom_install_script'):
+      if self.custom_install_script == 'emscripten_post_install':
+        success = emscripten_post_install(self)
+      elif self.custom_install_script == 'emscripten_npm_install':
+        success = emscripten_npm_install(self, self.installation_path())
+      elif self.custom_install_script in ('build_fastcomp', 'build_llvm', 'build_ccache'):
+        # 'build_fastcomp' is a special one that does the download on its
+        # own, others do the download manually.
+        pass
+      elif self.custom_install_script == 'build_binaryen':
+        success = build_binaryen_tool(self)
+      else:
+        raise Exception('Unknown custom_install_script command "' + self.custom_install_script + '"!')
 
     if hasattr(self, 'custom_install_script'):
       if self.custom_install_script == 'emscripten_post_install':

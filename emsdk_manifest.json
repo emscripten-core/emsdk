@@ -476,6 +476,18 @@
     "windows_url": "mingw_7.1.0_64bit.zip",
     "activated_cfg": "MINGW_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%/bin"
+  },
+  {
+    "id": "ccache",
+    "version": "4.2",
+    "bitness": 64,
+    "url": "https://github.com/juj/ccache.git",
+    "git_branch": "emscripten",
+    "activated_cfg": "EMCC_CCACHE='%installation_dir%'",
+    "activated_path": "%installation_dir%/bin",
+    "activated_env": "EMCC_CCACHE=%installation_dir%;CCACHE_CONFIGPATH=%installation_dir%/emcc_ccache.conf",
+    "cmake_build_type": "Release",
+    "custom_install_script": "build_ccache"
   }
   ],
 
