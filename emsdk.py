@@ -1244,7 +1244,7 @@ def build_ccache(tool):
 
   # Configure
   cmake_generator = CMAKE_GENERATOR
-  args = []
+  args = ['-DZSTD_FROM_INTERNET=ON']
   if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
     # With Visual Studio 16 2019, CMake changed the way they specify target arch.
     # Instead of appending it into the CMake generator line, it is specified
