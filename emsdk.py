@@ -1280,27 +1280,6 @@ cache_dir = %s
 ''' % cache_dir)
     mkdir_p(cache_dir)
 
-    for f in ['emcc', 'em++']:
-      open(os.path.join(root, f + '.bat'), 'w').write('''@setlocal
-
-@if "%EMSCRIPTEN%"=="" (
-  @echo "Environment variable EMSCRIPTEN is not set! If you'd like to use Emscripten with ccache, you should do one of:"
-  @echo "  1) activate CCache in Emscripten SDK, and enter Emscripten SDK environment on cmdline with emsdk_env.bat before executing %~dp0\\%~n0.bat, or"
-  @echo "  2) set EMCC_CCACHE=%~dp0 environment variable, and execute %~n0.bat in Emscripten directory, or"
-  @echo "  3) set EMSCRIPTEN=c:\\path\\to\\emscripten\\emcc.bat environment variable before executing %~dp0\\%~n0.bat, or"
-  @echo "  4) invoke ccache manually by explicitly calling 'ccache emcc <args>' instead of relying on the automatic rerouting."
-  @echo ""
-  @echo " Option 1) is considered the easiest and 'canonical' solution."
-)
-
-@set EM_PY=%EMSDK_PYTHON%
-@if "%EM_PY%"=="" (
-  set EM_PY=python
-)
-
-@"%EM_PY%" "%EMSCRIPTEN%\\%~n0.py" %*
-''')
-
   return success
 
 
