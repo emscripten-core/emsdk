@@ -1271,7 +1271,9 @@ def build_ccache(tool):
       for s in ['.exe', '']:
         ccache = e + s
         if os.path.isfile(ccache):
-          shutil.copyfile(ccache, os.path.join(bin_dir, 'ccache' + s))
+          dst = os.path.join(bin_dir, 'ccache' + s)
+          shutil.copyfile(ccache, dst)
+          os.chmod(dst, os.stat(dst).st_mode | stat.S_IEXEC)
 
     cache_dir = os.path.join(root, 'cache')
     open(os.path.join(root, 'emcc_ccache.conf'), 'w').write('''# Set maximum cache size to 10 GB:
