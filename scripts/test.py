@@ -175,9 +175,9 @@ assert not os.path.exists(LIBC)
 
 # Test the normal tools like node don't re-download on re-install
 print('another install must re-download')
-checked_call_with_output(emsdk + ' uninstall node-12.18.1-64bit')
-checked_call_with_output(emsdk + ' install node-12.18.1-64bit', expected='Downloading:', unexpected='already installed')
-checked_call_with_output(emsdk + ' install node-12.18.1-64bit', unexpected='Downloading:', expected='already installed')
+checked_call_with_output(emsdk + ' uninstall node-14.15.5-64bit')
+checked_call_with_output(emsdk + ' install node-14.15.5-64bit', expected='Downloading:', unexpected='already installed')
+checked_call_with_output(emsdk + ' install node-14.15.5-64bit', unexpected='Downloading:', expected='already installed')
 
 print('test tot-upstream')
 run_emsdk('install tot-upstream')
