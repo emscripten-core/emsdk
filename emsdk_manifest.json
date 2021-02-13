@@ -478,8 +478,19 @@
     "activated_path": "%installation_dir%/bin"
   },
   {
+    "id": "ninja",
+    "version": "git-release",
+    "bitness": 64,
+    "url": "https://github.com/ninja-build/ninja.git",
+    "git_branch": "release",
+    "activated_cfg": "NINJA=%installation_dir%/bin",
+    "activated_path": "%installation_dir%/bin",
+    "cmake_build_type": "Release",
+    "custom_install_script": "build_ninja"
+  },
+  {
     "id": "ccache",
-    "version": "4.2",
+    "version": "git-emscripten",
     "bitness": 64,
     "url": "https://github.com/juj/ccache.git",
     "git_branch": "emscripten",

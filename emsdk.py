@@ -1229,6 +1229,55 @@ def build_llvm(tool):
   return success
 
 
+def build_ninja(tool):
+  debug_print('build_ninja(' + str(tool) + ')')
+  root = os.path.normpath(tool.installation_path())
+  src_root = os.path.join(root, 'src')
+  success = git_clone_checkout_and_pull(tool.download_url(), src_root, tool.git_branch)
+  if not success:
+    return False
+
+  build_dir = llvm_build_dir(tool)
+  build_root = os.path.join(root, build_dir)
+
+  build_type = decide_cmake_build_type(tool)
+
+  # Configure
+  cmake_generator = CMAKE_GENERATOR
+  args = []
+  if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
+    # With Visual Studio 16 2019, CMake changed the way they specify target arch.
+    # Instead of appending it into the CMake generator line, it is specified
+    # with a -A arch parameter.
+    args += ['-A', 'x64' if tool.bitness == 64 else 'x86']
+    args += ['-Thost=x64']
+  elif 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
+    cmake_generator += ' Win64'
+    args += ['-Thost=x64']
+
+  cmakelists_dir = os.path.join(src_root)
+  success = cmake_configure(cmake_generator, build_root, cmakelists_dir, build_type, args)
+  if not success:
+    return False
+
+  # Make
+  success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'Win32')
+
+  if success:
+    bin_dir = os.path.join(root, 'bin')
+    mkdir_p(bin_dir)
+    exe_paths = [os.path.join(build_root, 'Release', 'ninja'), os.path.join(build_root, 'ninja')]
+    for e in exe_paths:
+      for s in ['.exe', '']:
+        ninja = e + s
+        if os.path.isfile(ninja):
+          dst = os.path.join(bin_dir, 'ninja' + s)
+          shutil.copyfile(ninja, dst)
+          os.chmod(dst, os.stat(dst).st_mode | stat.S_IEXEC)
+
+  return success
+
+
 def build_ccache(tool):
   debug_print('build_ccache(' + str(tool) + ')')
   root = os.path.normpath(tool.installation_path())
@@ -1954,6 +2003,8 @@ class Tool(object):
       success = build_fastcomp(self)
     elif hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_llvm':
       success = build_llvm(self)
+    elif hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_ninja':
+      success = build_ninja(self)
     elif hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_ccache':
       success = build_ccache(self)
     elif hasattr(self, 'git_branch'):
@@ -1977,12 +2028,13 @@ class Tool(object):
 
     if not success:
       exit_with_error("Installation failed!")
+
     if hasattr(self, 'custom_install_script'):
       if self.custom_install_script == 'emscripten_post_install':
         success = emscripten_post_install(self)
       elif self.custom_install_script == 'emscripten_npm_install':
         success = emscripten_npm_install(self, self.installation_path())
-      elif self.custom_install_script in ('build_fastcomp', 'build_llvm', 'build_ccache'):
+      elif self.custom_install_script in ('build_fastcomp', 'build_llvm', 'build_ninja', 'build_ccache'):
         # 'build_fastcomp' is a special one that does the download on its
         # own, others do the download manually.
         pass
