@@ -1433,6 +1433,8 @@ def get_required_path(active_tools):
   path_add = [to_native_path(EMSDK_PATH)]
   for tool in active_tools:
     if hasattr(tool, 'activated_path'):
+      if hasattr(tool, 'activated_path_skip') and which(tool.activated_path_skip):
+        continue
       path = to_native_path(tool.expand_vars(tool.activated_path))
       path_add.append(path)
   return path_add
