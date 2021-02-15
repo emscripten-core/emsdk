@@ -232,7 +232,6 @@
     "bitness": 32,
     "arch": "x86",
     "windows_url": "WinPython-32bit-2.7.13.1Zero.zip",
-    "activated_path": "%installation_dir%/python-2.7.13",
     "activated_cfg": "PYTHON='%installation_dir%/python-2.7.13/python%.exe%'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/python-2.7.13/python%.exe%"
   },
@@ -242,7 +241,6 @@
     "bitness": 64,
     "arch": "x86_64",
     "windows_url": "WinPython-64bit-2.7.13.1Zero.zip",
-    "activated_path": "%installation_dir%/python-2.7.13.amd64",
     "activated_cfg": "PYTHON='%installation_dir%/python-2.7.13.amd64/python%.exe%'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/python-2.7.13.amd64/python%.exe%"
   },
@@ -252,7 +250,6 @@
     "bitness": 32,
     "arch": "x86",
     "windows_url": "python-3.7.4-embed-win32-patched.zip",
-    "activated_path": "%installation_dir%",
     "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
   },
@@ -262,7 +259,6 @@
     "bitness": 64,
     "arch": "x86_64",
     "windows_url": "python-3.7.4-embed-amd64-patched.zip",
-    "activated_path": "%installation_dir%",
     "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
   },
@@ -272,7 +268,6 @@
     "bitness": 32,
     "arch": "x86",
     "windows_url": "python-3.7.4-embed-win32+pywin32.zip",
-    "activated_path": "%installation_dir%",
     "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
   },
@@ -282,7 +277,6 @@
     "bitness": 64,
     "arch": "x86_64",
     "windows_url": "python-3.7.4-embed-amd64+pywin32.zip",
-    "activated_path": "%installation_dir%",
     "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
   },
@@ -292,7 +286,6 @@
     "bitness": 64,
     "arch": "x86_64",
     "macos_url": "python-3.7.4-2-macos.tar.gz",
-    "activated_path": "%installation_dir%/bin",
     "activated_cfg": "PYTHON='%installation_dir%/bin/python3'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.7/site-packages/certifi/cacert.pem"
   },
@@ -302,7 +295,6 @@
     "bitness": 32,
     "arch": "x86",
     "windows_url": "portable_jre_8_update_152_32bit.zip",
-    "activated_path": "%installation_dir%/bin",
     "activated_env": "JAVA_HOME=%installation_dir%",
     "activated_cfg": "JAVA='%installation_dir%/bin/java%.exe%'"
   },
@@ -312,7 +304,6 @@
     "bitness": 64,
     "arch": "x86_64",
     "windows_url": "portable_jre_8_update_152_64bit.zip",
-    "activated_path": "%installation_dir%/bin",
     "activated_env": "JAVA_HOME=%installation_dir%",
     "activated_cfg": "JAVA='%installation_dir%/bin/java%.exe%'"
   },
