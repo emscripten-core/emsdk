@@ -1243,10 +1243,16 @@ def find_latest_installed_tool(name):
 def emscripten_npm_install(tool, directory):
   node_tool = find_latest_installed_tool('node')
   if not node_tool:
-    print('Failed to run "npm ci" in installed Emscripten root directory ' + tool.installation_path() + '! Please install node.js first!')
-    return False
+    npm_fallback = which('npm')
+    if not npm_fallback:
+      print('Failed to find npm command!')
+      print('Running "npm ci" in installed Emscripten root directory ' + tool.installation_path() + ' is required!')
+      print('Please install node.js first!')
+      return False
+    node_path = os.path.dirname(npm_fallback)
+  else:
+    node_path = os.path.join(node_tool.installation_path(), 'bin')
 
-  node_path = os.path.join(node_tool.installation_path(), 'bin')
   npm = os.path.join(node_path, 'npm' + ('.cmd' if WINDOWS else ''))
   env = os.environ.copy()
   env["PATH"] = node_path + os.pathsep + env["PATH"]
