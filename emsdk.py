@@ -2625,14 +2625,14 @@ def expand_sdk_name(name):
     elif '-fastcomp' in fullname:
       fullname = fullname.replace('-fastcomp', '')
       backend = 'fastcomp'
-    fullname = fullname.replace('sdk-', '').replace('-64bit', '').replace('tag-', '')
-    if backend == 'fastcomp' and version_key(fullname) >= (2, 0, 0):
-      exit_with_fastcomp_error()
+    version = fullname.replace('sdk-', '').replace('releases-', '').replace('-64bit', '').replace('tag-', '')
     releases_info = load_releases_info()['releases']
-    release_hash = get_release_hash(fullname, releases_info)
+    release_hash = get_release_hash(version, releases_info)
     if release_hash:
+      if backend == 'fastcomp' and version_key(version) >= (2, 0, 0):
+        exit_with_fastcomp_error()
       if backend is None:
-        if version_key(fullname) >= (1, 39, 0):
+        if version_key(version) >= (1, 39, 0):
           backend = 'upstream'
         else:
           backend = 'fastcomp'
