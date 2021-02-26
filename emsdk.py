@@ -1722,6 +1722,8 @@ class Tool(object):
       # This tool does not contain downloadable elements, so it is installed by default.
       return True
 
+    content_exists = os.path.exists(self.installation_path()) and (os.path.isfile(self.installation_path()) or num_files_in_directory(self.installation_path()) > 0)
+
     # For e.g. fastcomp clang from git repo, the activated PATH is the
     # directory where the compiler is built to, and installation_path is
     # the directory where the source tree exists. To distinguish between
@@ -1729,15 +1731,8 @@ class Tool(object):
     # clang-master-64bit, clang-master-32bit and clang-master-64bit each
     # share the same git repo), require that in addition to the installation
     # directory, each item in the activated PATH must exist.
-    if hasattr(self, 'activated_path'):
-      activated_path = self.expand_vars(self.activated_path).split(';')
-    else:
-      activated_path = [self.installation_path()]
-
-    def each_path_exists(pathlist):
-      return all(os.path.exists(p) for p in pathlist)
-
-    content_exists = os.path.exists(self.installation_path()) and each_path_exists(activated_path) and (os.path.isfile(self.installation_path()) or num_files_in_directory(self.installation_path()) > 0)
+    if hasattr(self, 'activated_path') and not os.path.exists(self.expand_vars(self.activated_path)):
+      content_exists = False
 
     # vs-tool is a special tool since all versions must be installed to the
     # same dir, so dir name will not differentiate the version.
@@ -1797,8 +1792,7 @@ class Tool(object):
         return False
 
     if hasattr(self, 'activated_path'):
-      path = self.expand_vars(self.activated_path).replace('\\', '/')
-      path = path.split(ENVPATH_SEPARATOR)
+      path = to_unix_path(self.expand_vars(self.activated_path))
       for p in path:
         path_items = os.environ['PATH'].replace('\\', '/').split(ENVPATH_SEPARATOR)
         if not normalized_contains(path_items, p):
@@ -2395,18 +2389,6 @@ def process_tool_list(tools_to_activate, log_errors=True):
       j += 1
     i += 1
   return tools_to_activate
-
-
-def run_emcc(tools_to_activate):
-  for tool in tools_to_activate:
-    activated_path = getattr(tool, 'activated_path', None)
-    if activated_path and activated_path.endswith('/emscripten'):
-      activated_path = to_native_path(tool.expand_vars(tool.activated_path))
-      emcc_path = os.path.join(activated_path, 'emcc.py')
-      if os.path.exists(emcc_path):
-        debug_print('Calling emcc to initialize it')
-        subprocess.call([sys.executable, emcc_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        return
 
 
 def write_set_env_script(env_string):
