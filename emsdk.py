@@ -2137,17 +2137,11 @@ def update_emsdk():
 # Lists all legacy (pre-emscripten-releases) tagged versions directly in the Git
 # repositories. These we can pull and compile from source.
 def load_legacy_emscripten_tags():
-  try:
-    return open(sdk_path('legacy-emscripten-tags.txt'), 'r').read().split('\n')
-  except:
-    return []
+  return open(sdk_path('legacy-emscripten-tags.txt'), 'r').read().split('\n')
 
 
 def load_legacy_binaryen_tags():
-  try:
-    return open(sdk_path('legacy-binaryen-tags.txt'), 'r').read().split('\n')
-  except:
-    return []
+  return open(sdk_path('legacy-binaryen-tags.txt'), 'r').read().split('\n')
 
 
 def remove_prefix(s, prefix):
