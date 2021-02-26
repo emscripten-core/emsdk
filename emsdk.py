@@ -2113,24 +2113,10 @@ def python_2_3_sorted(arr, cmp):
     return sorted(arr, cmp=cmp)
 
 
-def fetch_emscripten_tags():
-  git = GIT(must_succeed=False)
-
-  if git:
-    print('Fetching emscripten-releases repository...')
-    emscripten_releases_tot = get_emscripten_releases_tot()
-    open(tot_path(), 'w').write(emscripten_releases_tot)
-  else:
-    print('Update complete, however skipped fetching the Emscripten tags, since git was not found, which is necessary for update-tags.')
-    if WINDOWS:
-      print("Please install git by typing 'emsdk install git-1.9.4', or alternatively by installing it manually from http://git-scm.com/downloads . If you install git manually, remember to add it to PATH.")
-    elif MACOS:
-      print("Please install git from http://git-scm.com/ , or by installing XCode and then the XCode Command Line Tools (see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools ).")
-    elif LINUX:
-      print("Pease install git using your package manager, see http://git-scm.com/book/en/Getting-Started-Installing-Git .")
-    else:
-      print("Please install git.")
-    return
+def update_tags():
+  print('Fetching emscripten-releases repository...')
+  emscripten_releases_tot = get_emscripten_releases_tot()
+  open(tot_path(), 'w').write(emscripten_releases_tot)
 
 
 def is_emsdk_sourced_from_github():
@@ -2144,7 +2130,18 @@ def update_emsdk():
     sys.exit(1)
   if not download_and_unzip(emsdk_zip_download_url, emsdk_path(), download_even_if_exists=True, clobber=False):
     sys.exit(1)
-  fetch_emscripten_tags()
+  if not GIT(must_succeed=False):
+    print('Update complete, however skipped update-tags, since git was not found.')
+    if WINDOWS:
+      print("Please install git by typing 'emsdk install git-1.9.4', or alternatively by installing it manually from http://git-scm.com/downloads . If you install git manually, remember to add it to PATH.")
+    elif MACOS:
+      print("Please install git from http://git-scm.com/ , or by installing XCode and then the XCode Command Line Tools (see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools ).")
+    elif LINUX:
+      print("Pease install git using your package manager, see http://git-scm.com/book/en/Getting-Started-Installing-Git .")
+    else:
+      print("Please install git.")
+    return
+  update_tags()
 
 
 # Lists all legacy (pre-emscripten-releases) tagged versions directly in the Git
@@ -2987,7 +2984,7 @@ def main():
       rmfile(sdk_path(EMSDK_SET_ENV))
     return 0
   elif cmd == 'update-tags':
-    fetch_emscripten_tags()
+    update_tags()
     return 0
   elif cmd == 'activate':
     if arg_permanent:
