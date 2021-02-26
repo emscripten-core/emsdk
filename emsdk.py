@@ -834,7 +834,6 @@ def git_clone_checkout_and_pull(url, dstpath, branch):
 # Each tool can have its own build type, or it can be overridden on the command
 # line.
 def decide_cmake_build_type(tool):
-  global CMAKE_BUILD_TYPE_OVERRIDE
   if CMAKE_BUILD_TYPE_OVERRIDE:
     return CMAKE_BUILD_TYPE_OVERRIDE
   else:
@@ -953,7 +952,6 @@ def find_msbuild(sln_file):
 
 def make_build(build_root, build_type, build_target_platform='x64'):
   debug_print('make_build(build_root=' + build_root + ', build_type=' + build_type + ', build_target_platform=' + build_target_platform + ')')
-  global CPU_CORES
   if CPU_CORES > 1:
     print('Performing a parallel build with ' + str(CPU_CORES) + ' cores.')
   else:
@@ -1100,7 +1098,6 @@ def build_fastcomp(tool):
   build_type = decide_cmake_build_type(tool)
 
   # Configure
-  global BUILD_FOR_TESTING, ENABLE_LLVM_ASSERTIONS
   tests_arg = 'ON' if BUILD_FOR_TESTING else 'OFF'
 
   enable_assertions = ENABLE_LLVM_ASSERTIONS.lower() == 'on' or (ENABLE_LLVM_ASSERTIONS == 'auto' and build_type.lower() != 'release' and build_type.lower() != 'minsizerel')
@@ -1156,7 +1153,6 @@ def build_llvm(tool):
   build_type = decide_cmake_build_type(tool)
 
   # Configure
-  global BUILD_FOR_TESTING, ENABLE_LLVM_ASSERTIONS
   tests_arg = 'ON' if BUILD_FOR_TESTING else 'OFF'
 
   enable_assertions = ENABLE_LLVM_ASSERTIONS.lower() == 'on' or (ENABLE_LLVM_ASSERTIONS == 'auto' and build_type.lower() != 'release' and build_type.lower() != 'minsizerel')
@@ -2652,13 +2648,14 @@ def expand_sdk_name(name):
   return name
 
 
-def main():
-  global BUILD_FOR_TESTING, ENABLE_LLVM_ASSERTIONS, TTY_OUTPUT
-
-  if len(sys.argv) <= 1:
+def main(args):
+  if not args:
     errlog("Missing command; Type 'emsdk help' to get a list of commands.")
     return 1
-  if sys.argv[1] in ('help', '--help', '-h'):
+
+  cmd = args.pop(0)
+
+  if cmd in ('help', '--help', '-h'):
     print(' emsdk: Available commands:')
 
     print('''
@@ -2774,11 +2771,12 @@ def main():
        which in and RelWithDebInfo.''')
     return 0
 
-  # Extracts a boolean command line argument from sys.argv and returns True if it was present
+  # Extracts a boolean command line argument from args and returns True if it was present
   def extract_bool_arg(name):
-    old_argv = sys.argv
-    sys.argv = list(filter(lambda a: a != name, sys.argv))
-    return len(sys.argv) != len(old_argv)
+    if name in args:
+      args.remove(name)
+      return True
+    return False
 
   arg_old = extract_bool_arg('--old')
   arg_uses = extract_bool_arg('--uses')
@@ -2798,26 +2796,25 @@ def main():
 
   arg_notty = extract_bool_arg('--notty')
   if arg_notty:
+    global TTY_OUTPUT
     TTY_OUTPUT = False
-
-  cmd = sys.argv[1]
 
   load_dot_emscripten()
   load_sdk_manifest()
 
   # Process global args
-  for i in range(2, len(sys.argv)):
-    if sys.argv[i].startswith('--generator='):
-      build_generator = re.match(r'''^--generator=['"]?([^'"]+)['"]?$''', sys.argv[i])
+  for i in range(len(args)):
+    if args[i].startswith('--generator='):
+      build_generator = re.match(r'''^--generator=['"]?([^'"]+)['"]?$''', args[i])
       if build_generator:
         global CMAKE_GENERATOR
         CMAKE_GENERATOR = build_generator.group(1)
-        sys.argv[i] = ''
+        args[i] = ''
       else:
-        errlog("Cannot parse CMake generator string: " + sys.argv[i] + ". Try wrapping generator string with quotes")
+        errlog("Cannot parse CMake generator string: " + args[i] + ". Try wrapping generator string with quotes")
         return 1
-    elif sys.argv[i].startswith('--build='):
-      build_type = re.match(r'^--build=(.+)$', sys.argv[i])
+    elif args[i].startswith('--build='):
+      build_type = re.match(r'^--build=(.+)$', args[i])
       if build_type:
         global CMAKE_BUILD_TYPE_OVERRIDE
         build_type = build_type.group(1)
@@ -2825,19 +2822,18 @@ def main():
         try:
           build_type_index = [x.lower() for x in build_types].index(build_type.lower())
           CMAKE_BUILD_TYPE_OVERRIDE = build_types[build_type_index]
-          sys.argv[i] = ''
+          args[i] = ''
         except:
           errlog('Unknown CMake build type "' + build_type + '" specified! Please specify one of ' + str(build_types))
           return 1
       else:
-        errlog("Invalid command line parameter " + sys.argv[i] + ' specified!')
+        errlog("Invalid command line parameter " + args[i] + ' specified!')
         return 1
-  sys.argv = [x for x in sys.argv if not len(x) == 0]
+  args = [x for x in args if x]
 
   # Replace meta-packages with the real package names.
   if cmd in ('update', 'install', 'activate'):
-    for i in range(2, len(sys.argv)):
-      sys.argv[i] = expand_sdk_name(sys.argv[i])
+    args = [expand_sdk_name(a) for a in args]
 
   if cmd == 'list':
     print('')
@@ -2986,7 +2982,7 @@ def main():
       print('')
 
     tools_to_activate = currently_active_tools()
-    args = [x for x in sys.argv[2:] if not x.startswith('--')]
+    args = [x for x in args if not x.startswith('--')]
     for arg in args:
       tool = find_tool(arg)
       if tool is None:
@@ -3005,35 +3001,36 @@ def main():
       errlog('The changes made to environment variables only apply to the currently running shell instance. Use the \'emsdk_env.bat\' to re-enter this environment later, or if you\'d like to permanently register this environment permanently, rerun this command with the option --permanent.')
     return 0
   elif cmd == 'install':
+    global BUILD_FOR_TESTING, ENABLE_LLVM_ASSERTIONS, CPU_CORES, GIT_CLONE_SHALLOW
+
     # Process args
-    for i in range(2, len(sys.argv)):
-      if sys.argv[i].startswith('-j'):
-        multicore = re.match(r'^-j(\d+)$', sys.argv[i])
+    for i in range(len(args)):
+      if args[i].startswith('-j'):
+        multicore = re.match(r'^-j(\d+)$', args[i])
         if multicore:
-          global CPU_CORES
           CPU_CORES = int(multicore.group(1))
-          sys.argv[i] = ''
+          args[i] = ''
         else:
-          errlog("Invalid command line parameter " + sys.argv[i] + ' specified!')
+          errlog("Invalid command line parameter " + args[i] + ' specified!')
           return 1
-      elif sys.argv[i] == '--shallow':
-        global GIT_CLONE_SHALLOW
+      elif args[i] == '--shallow':
         GIT_CLONE_SHALLOW = True
-        sys.argv[i] = ''
-      elif sys.argv[i] == '--build-tests':
+        args[i] = ''
+      elif args[i] == '--build-tests':
         BUILD_FOR_TESTING = True
-        sys.argv[i] = ''
-      elif sys.argv[i] == '--enable-assertions':
+        args[i] = ''
+      elif args[i] == '--enable-assertions':
         ENABLE_LLVM_ASSERTIONS = 'ON'
-        sys.argv[i] = ''
-      elif sys.argv[i] == '--disable-assertions':
+        args[i] = ''
+      elif args[i] == '--disable-assertions':
         ENABLE_LLVM_ASSERTIONS = 'OFF'
-        sys.argv[i] = ''
-    sys.argv = [x for x in sys.argv if not len(x) == 0]
-    if len(sys.argv) <= 2:
+        args[i] = ''
+    args = [x for x in args if x]
+    if not args:
       errlog("Missing parameter. Type 'emsdk install <tool name>' to install a tool or an SDK. Type 'emsdk list' to obtain a list of available tools. Type 'emsdk install latest' to automatically install the newest version of the SDK.")
       return 1
-    for t in sys.argv[2:]:
+
+    for t in args:
       tool = find_tool(t)
       if tool is None:
         tool = find_sdk(t)
@@ -3044,12 +3041,12 @@ def main():
         return 1
     return 0
   elif cmd == 'uninstall':
-    if len(sys.argv) <= 2:
+    if not args:
       errlog("Syntax error. Call 'emsdk uninstall <tool name>'. Call 'emsdk list' to obtain a list of available tools.")
       return 1
-    tool = find_tool(sys.argv[2])
+    tool = find_tool(args[0])
     if tool is None:
-      errlog("Error: Tool by name '" + sys.argv[2] + "' was not found.")
+      errlog("Error: Tool by name '" + args[0] + "' was not found.")
       return 1
     tool.uninstall()
     return 0
@@ -3059,4 +3056,4 @@ def main():
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv[1:]))
