@@ -5,13 +5,12 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import unittest
 
 WINDOWS = sys.platform.startswith('win')
 MACOS = sys.platform == 'darwin'
 
 assert 'EM_CONFIG' in os.environ, "emsdk should be activated before running this script"
-
-LIBC = os.environ['EM_CACHE'] + '/wasm/libc.a'
 
 # Remove the EM_CACHE environment variable.  It interferes with testing since
 # it would otherwise be fixed for the duration of the script and we expect
@@ -76,47 +75,27 @@ def failing_call_with_output(cmd, expected):
 
 
 def hack_emsdk(marker, replacement):
-  src = open('emsdk.py').read()
+  with open('emsdk.py') as f:
+    src = f.read()
   assert marker in src
   src = src.replace(marker, replacement)
   name = '__test_emsdk'
-  open(name, 'w').write(src)
+  with open(name, 'w') as f:
+    f.write(src)
   return name
 
 
 # Set up
 
-open('hello_world.c', 'w').write('''\
-#include <stdio.h>
-
-int main() {
-   printf("Hello, world!\\n");
-   return 0;
-}
-''')
-
 TAGS = json.loads(open('emscripten-releases-tags.txt').read())
 
 # Tests
 
-print('test .emscripten contents (latest was installed/activated in test.sh)')
-assert 'fastcomp' not in open(emconfig).read()
-assert 'upstream' in open(emconfig).read()
 
-# Test we don't re-download unnecessarily
-checked_call_with_output(emsdk + ' install latest', expected='already installed', unexpected='Downloading:')
-
-# Test we report installed tools properly. The latest version should be
-# installed, but not some random old one.
-checked_call_with_output(emsdk + ' list', expected=TAGS['latest'] + '    INSTALLED', unexpected='1.39.15    INSTALLED:')
-
-print('building proper system libraries')
-
-
-def test_lib_building(emcc):
+def do_lib_building(emcc):
   cache_building_messages = ['generating system library: ']
 
-  def test_build(args, expected):
+  def do_build(args, expected):
     if expected:
       expected = cache_building_messages
       unexpected = []
@@ -130,11 +109,11 @@ def test_lib_building(emcc):
 
   # The emsdk ships all system libraries so we don't expect to see any
   # cache population unless we explicly --clear-cache.
-  test_build('', expected=False)
+  do_build('', expected=False)
   check_call(emcc + ' --clear-cache')
-  test_build(' -O2', expected=True)
-  test_build(' -s WASM=0', expected=False)
-  test_build(' -O2 -s WASM=0', expected=False)
+  do_build(' -O2', expected=True)
+  do_build(' -s WASM=0', expected=False)
+  do_build(' -O2 -s WASM=0', expected=False)
 
 
 def run_emsdk(cmd):
@@ -143,87 +122,137 @@ def run_emsdk(cmd):
   check_call([emsdk] + cmd)
 
 
-test_lib_building(upstream_emcc)
+class Emsdk(unittest.TestCase):
+  @classmethod
+  def setUpClass(cls):
+    with open('hello_world.c', 'w') as f:
+      f.write('''\
+#include <stdio.h>
 
-print('update')
-run_emsdk('update-tags')
+int main() {
+   printf("Hello, world!\\n");
+   return 0;
+}
+''')
 
-print('test the last fastcomp release')
-run_emsdk('install 1.40.1-fastcomp')
-run_emsdk('activate 1.40.1-fastcomp')
+  def setUp(self):
+    checked_call_with_output(emsdk + ' install latest')
+    checked_call_with_output(emsdk + ' activate latest')
 
-test_lib_building(fastcomp_emcc)
-assert open(emconfig).read().count('LLVM_ROOT') == 1
-assert 'upstream' not in open(emconfig).read()
-assert 'fastcomp' in open(emconfig).read()
+  def test_already_installed(self):
+    # Test we don't re-download unnecessarily
+    checked_call_with_output(emsdk + ' install latest', expected='already installed', unexpected='Downloading:')
 
-print('verify latest fastcomp version is fixed at 1.40.1')
-checked_call_with_output(fastcomp_emcc + ' -v', '1.40.1', stderr=subprocess.STDOUT)
+  def test_list(self):
+    # Test we report installed tools properly. The latest version should be
+    # installed, but not some random old one.
+    checked_call_with_output(emsdk + ' list', expected=TAGS['latest'] + '    INSTALLED', unexpected='1.39.15    INSTALLED:')
 
-print('verify that attempting to use newer fastcomp gives an error')
-fastcomp_error = 'The fastcomp backend is not getting new builds or releases. Please use the upstream llvm backend or use an older version than 2.0.0 (such as 1.40.1).'
-failing_call_with_output(emsdk + ' install latest-fastcomp', fastcomp_error)
-failing_call_with_output(emsdk + ' install tot-fastcomp', fastcomp_error)
-failing_call_with_output(emsdk + ' install 2.0.0-fastcomp', fastcomp_error)
+  def test_config_contents(self):
+    print('test .emscripten contents')
+    with open(emconfig) as f:
+      config = f.read()
+    assert 'fastcomp' not in config
+    assert 'upstream' in config
 
-print('go back to using upstream')
-run_emsdk('activate latest')
+  def test_lib_building(self):
+    print('building proper system libraries')
+    do_lib_building(upstream_emcc)
 
-print('clear cache')
-check_call(upstream_emcc + ' --clear-cache')
-assert not os.path.exists(LIBC)
+  def test_fastcomp(self):
+    print('test the last fastcomp release')
+    run_emsdk('install 1.40.1-fastcomp')
+    run_emsdk('activate 1.40.1-fastcomp')
 
-# Test the normal tools like node don't re-download on re-install
-print('another install must re-download')
-checked_call_with_output(emsdk + ' uninstall node-14.15.5-64bit')
-checked_call_with_output(emsdk + ' install node-14.15.5-64bit', expected='Downloading:', unexpected='already installed')
-checked_call_with_output(emsdk + ' install node-14.15.5-64bit', unexpected='Downloading:', expected='already installed')
+    do_lib_building(fastcomp_emcc)
+    with open(emconfig) as f:
+      config = f.read()
+    assert config.count('LLVM_ROOT') == 1
+    assert 'upstream' not in config
+    assert 'fastcomp' in config
 
-print('test tot-upstream')
-run_emsdk('install tot-upstream')
-old_config = open(emconfig).read()
-run_emsdk('activate tot-upstream')
-assert old_config == open(emconfig + '.old').read()
-# TODO; test on latest as well
-check_call(upstream_emcc + ' hello_world.c')
+    print('verify latest fastcomp version is fixed at 1.40.1')
+    checked_call_with_output(fastcomp_emcc + ' -v', '1.40.1', stderr=subprocess.STDOUT)
 
-print('test specific release (old, using sdk-* notation)')
-run_emsdk('install sdk-fastcomp-1.38.31-64bit')
-run_emsdk('activate sdk-fastcomp-1.38.31-64bit')
+  def test_fastcomp_missing(self):
+    print('verify that attempting to use newer fastcomp gives an error')
+    fastcomp_error = 'The fastcomp backend is not getting new builds or releases. Please use the upstream llvm backend or use an older version than 2.0.0 (such as 1.40.1).'
+    failing_call_with_output(emsdk + ' install latest-fastcomp', fastcomp_error)
+    failing_call_with_output(emsdk + ' install tot-fastcomp', fastcomp_error)
+    failing_call_with_output(emsdk + ' install 2.0.0-fastcomp', fastcomp_error)
 
-print('test specific release (new, short name)')
-run_emsdk('install 1.38.33')
-print('another install, but no need for re-download')
-checked_call_with_output(emsdk + ' install 1.38.33', expected='Skipped', unexpected='Downloading:')
-run_emsdk('activate 1.38.33')
-assert 'upstream' not in open(emconfig).read()
-assert 'fastcomp' in open(emconfig).read()
+  def test_redownload(self):
+    print('go back to using upstream')
+    run_emsdk('activate latest')
 
-print('test specific release (new, full name)')
-run_emsdk('install sdk-1.38.33-upstream-64bit')
-run_emsdk('activate sdk-1.38.33-upstream-64bit')
+    # Test the normal tools like node don't re-download on re-install
+    print('another install must re-download')
+    checked_call_with_output(emsdk + ' uninstall node-14.15.5-64bit')
+    checked_call_with_output(emsdk + ' install node-14.15.5-64bit', expected='Downloading:', unexpected='already installed')
+    checked_call_with_output(emsdk + ' install node-14.15.5-64bit', unexpected='Downloading:', expected='already installed')
 
-print('test specific release (new, full name)')
-run_emsdk('install sdk-tag-1.38.33-64bit')
-run_emsdk('activate sdk-tag-1.38.33-64bit')
+  def test_tot_upstream(self):
+    print('test update-tags')
+    run_emsdk('update-tags')
+    print('test tot-upstream')
+    run_emsdk('install tot-upstream')
+    with open(emconfig) as f:
+      config = f.read()
+    run_emsdk('activate tot-upstream')
+    with open(emconfig + '.old') as f:
+      old_config = f.read()
+    self.assertEqual(config, old_config)
+    # TODO; test on latest as well
+    check_call(upstream_emcc + ' hello_world.c')
 
-print('test binaryen source build')
-run_emsdk(['install', '--build=Release', '--generator=Unix Makefiles', 'binaryen-master-64bit'])
+  def test_specific_old(self):
+    print('test specific release (old, using sdk-* notation)')
+    run_emsdk('install sdk-fastcomp-1.38.31-64bit')
+    run_emsdk('activate sdk-fastcomp-1.38.31-64bit')
 
-print('test 32-bit error')
+  def test_specific_version(self):
+    print('test specific release (new, short name)')
+    run_emsdk('install 1.38.33')
+    print('another install, but no need for re-download')
+    checked_call_with_output(emsdk + ' install 1.38.33', expected='Skipped', unexpected='Downloading:')
+    run_emsdk('activate 1.38.33')
+    with open(emconfig) as f:
+      config = f.read()
+    assert 'upstream' not in config
+    assert 'fastcomp' in config
 
-failing_call_with_output('python %s install latest' % hack_emsdk('not is_os_64bit()', 'True'), 'this tool is only provided for 64-bit OSes')
+  def test_specific_version_full(self):
+    print('test specific release (new, full name)')
+    run_emsdk('install sdk-1.38.33-upstream-64bit')
+    run_emsdk('activate sdk-1.38.33-upstream-64bit')
+    print('test specific release (new, tag name)')
+    run_emsdk('install sdk-tag-1.38.33-64bit')
+    run_emsdk('activate sdk-tag-1.38.33-64bit')
 
-print('test non-git update')
+  def test_binaryen_from_source(self):
+    print('test binaryen source build')
+    run_emsdk(['install', '--build=Release', '--generator=Unix Makefiles', 'binaryen-master-64bit'])
 
-temp_dir = tempfile.mkdtemp()
+  def test_no_32bit(self):
+    print('test 32-bit error')
+    emsdk_hacked = hack_emsdk('not is_os_64bit()', 'True')
+    failing_call_with_output('python %s install latest' % emsdk_hacked, 'this tool is only provided for 64-bit OSes')
+    os.remove(emsdk_hacked)
 
-for filename in os.listdir('.'):
-  if not filename.startswith('.') and not os.path.isdir(filename):
-    shutil.copy2(filename, os.path.join(temp_dir, filename))
+  def test_update_no_git(self):
+    print('test non-git update')
 
-os.chdir(temp_dir)
+    temp_dir = tempfile.mkdtemp()
+    for filename in os.listdir('.'):
+      if not filename.startswith('.') and not os.path.isdir(filename):
+        shutil.copy2(filename, os.path.join(temp_dir, filename))
 
-run_emsdk('update')
-print('second time')
-run_emsdk('update')
+    os.chdir(temp_dir)
+    run_emsdk('update')
+
+    print('second time')
+    run_emsdk('update')
+
+
+if __name__ == '__main__':
+  unittest.main(verbosity=2)
