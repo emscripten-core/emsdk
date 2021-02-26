@@ -2199,14 +2199,22 @@ def load_releases_info():
 
 # Get a list of tags for emscripten-releases.
 def load_releases_tags():
+  tags = []
+  tags_fastcomp = []
   info = load_releases_info()
-  tags = list(info['releases'].values())
+  for version, sha in sorted(info['releases'].items(), key=lambda x: version_key(x[0])):
+    tags.append(sha)
+    # Only include versions older than 1.39.0 in fastcomp releases
+    if version_key(version) < (2, 0, 0):
+      tags_fastcomp.append(sha)
+
   # Add the tip-of-tree, if it exists.
   if os.path.exists(tot_path()):
     tot = find_tot()
     if tot:
       tags.append(tot)
-  return tags
+
+  return tags, tags_fastcomp
 
 
 def load_releases_versions():
@@ -2234,7 +2242,7 @@ def load_sdk_manifest():
   llvm_precompiled_tags_64bit = load_file_index_list('llvm-tags-64bit.txt')
   llvm_precompiled_tags = llvm_precompiled_tags_32bit + llvm_precompiled_tags_64bit
   binaryen_tags = load_legacy_binaryen_tags()
-  releases_tags = load_releases_tags()
+  releases_tags, releases_tags_fastcomp = load_releases_tags()
 
   def dependencies_exist(sdk):
     for tool_name in sdk.uses:
@@ -2317,6 +2325,8 @@ def load_sdk_manifest():
         expand_category_param('%precompiled_tag64%', llvm_precompiled_tags_64bit, t, is_sdk=False)
       elif '%binaryen_tag%' in t.version:
         expand_category_param('%binaryen_tag%', binaryen_tags, t, is_sdk=False)
+      elif '%releases-tag%' in t.version and 'fastcomp' in t.version:
+        expand_category_param('%releases-tag%', releases_tags_fastcomp, t, is_sdk=False)
       elif '%releases-tag%' in t.version:
         expand_category_param('%releases-tag%', releases_tags, t, is_sdk=False)
       else:
@@ -2337,6 +2347,8 @@ def load_sdk_manifest():
         expand_category_param('%precompiled_tag32%', llvm_precompiled_tags_32bit, sdk, is_sdk=True)
       elif '%precompiled_tag64%' in sdk.version:
         expand_category_param('%precompiled_tag64%', llvm_precompiled_tags_64bit, sdk, is_sdk=True)
+      elif '%releases-tag%' in sdk.version and 'fastcomp' in sdk.version:
+        expand_category_param('%releases-tag%', releases_tags_fastcomp, sdk, is_sdk=True)
       elif '%releases-tag%' in sdk.version:
         expand_category_param('%releases-tag%', releases_tags, sdk, is_sdk=True)
       else:
