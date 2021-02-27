@@ -550,7 +550,7 @@
     "version_filter": [
       ["%tag%", ">", "1.37.22"]
     ]
-  },  
+  },
   {
     "version": "releases-upstream-%releases-tag%",
     "bitness": 64,
