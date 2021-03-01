@@ -1828,9 +1828,11 @@ class Tool(object):
       return None
 
   def install(self):
+    """Returns True if the Tool was installed of False if was skipped due to
+    already being installed.
+    """
     if self.can_be_installed() is not True:
-      print("The tool '" + str(self) + "' is not available due to the reason: " + self.can_be_installed())
-      return False
+      exit_with_error("The tool '" + str(self) + "' is not available due to the reason: " + self.can_be_installed())
 
     if self.id == 'sdk':
       return self.install_sdk()
@@ -1838,33 +1840,42 @@ class Tool(object):
       return self.install_tool()
 
   def install_sdk(self):
+    """Returns True if any SDK component was installed of False all componented
+    were already installed.
+    """
     print("Installing SDK '" + str(self) + "'..")
+    installed = False
 
     for tool_name in self.uses:
       tool = find_tool(tool_name)
       if tool is None:
-        print("Manifest error: No tool by name '" + tool_name + "' found! This may indicate an internal SDK error!")
-      success = tool.install()
-      if not success:
-        return False
+        exit_with_error("Manifest error: No tool by name '" + tool_name + "' found! This may indicate an internal SDK error!")
+      installed |= tool.install()
+
+    if not installed:
+      print("All SDK components already installed: '" + str(self) + "'.")
+      return False
+
     if getattr(self, 'custom_install_script', None) == 'emscripten_npm_install':
       # upstream tools have hardcoded paths that are not stored in emsdk_manifest.json registry
       install_path = 'upstream' if 'releases-upstream' in self.version else 'fastcomp'
-      success = emscripten_npm_install(self, os.path.join(emsdk_path(), install_path, 'emscripten'))
-      if not success:
-        return False
+      if not emscripten_npm_install(self, os.path.join(emsdk_path(), install_path, 'emscripten')):
+        exit_with_error('post-install step failed: emscripten_npm_install')
 
     print("Done installing SDK '" + str(self) + "'.")
     return True
 
   def install_tool(self):
+    """Returns True if the SDK was installed of False if was skipped due to
+    already being installed.
+    """
     # Avoid doing a redundant reinstall of the tool, if it has already been installed.
     # However all tools that are sourced directly from git branches do need to be
     # installed every time when requested, since the install step is then used to git
     # pull the tool to a newer version.
     if self.is_installed() and not hasattr(self, 'git_branch'):
       print("Skipped installing " + self.name + ", already installed.")
-      return True
+      return False
 
     print("Installing tool '" + str(self) + "'..")
     url = self.download_url()
@@ -1892,45 +1903,44 @@ class Tool(object):
       else:
         success = False
 
-    if success:
-      if hasattr(self, 'custom_install_script'):
-        if self.custom_install_script == 'emscripten_post_install':
-          success = emscripten_post_install(self)
-        elif self.custom_install_script == 'emscripten_npm_install':
-          success = emscripten_npm_install(self, self.installation_path())
-        elif self.custom_install_script in ('build_fastcomp', 'build_llvm'):
-          # 'build_fastcomp' is a special one that does the download on its
-          # own, others do the download manually.
-          pass
-        elif self.custom_install_script == 'build_binaryen':
-          success = build_binaryen_tool(self)
-        else:
-          raise Exception('Unknown custom_install_script command "' + self.custom_install_script + '"!')
+    if not success:
+      exit_with_error("Installation failed!")
 
-      # Install an emscripten-version.txt file if told to, and if there is one.
-      # (If this is not an actual release, but some other build, then we do not
-      # write anything.)
-      if hasattr(self, 'emscripten_releases_hash'):
-        emscripten_version_file_path = os.path.join(to_native_path(self.expand_vars(self.activated_path)), 'emscripten-version.txt')
-        version = get_emscripten_release_version(self.emscripten_releases_hash)
-        if version:
-          open(emscripten_version_file_path, 'w').write('"%s"' % version)
+    if hasattr(self, 'custom_install_script'):
+      if self.custom_install_script == 'emscripten_post_install':
+        success = emscripten_post_install(self)
+      elif self.custom_install_script == 'emscripten_npm_install':
+        success = emscripten_npm_install(self, self.installation_path())
+      elif self.custom_install_script in ('build_fastcomp', 'build_llvm'):
+        # 'build_fastcomp' is a special one that does the download on its
+        # own, others do the download manually.
+        pass
+      elif self.custom_install_script == 'build_binaryen':
+        success = build_binaryen_tool(self)
+      else:
+        raise Exception('Unknown custom_install_script command "' + self.custom_install_script + '"!')
 
     if not success:
-      print("Installation failed!")
-      return False
+      exit_with_error("Installation failed!")
+
+    # Install an emscripten-version.txt file if told to, and if there is one.
+    # (If this is not an actual release, but some other build, then we do not
+    # write anything.)
+    if hasattr(self, 'emscripten_releases_hash'):
+      emscripten_version_file_path = os.path.join(to_native_path(self.expand_vars(self.activated_path)), 'emscripten-version.txt')
+      version = get_emscripten_release_version(self.emscripten_releases_hash)
+      if version:
+        open(emscripten_version_file_path, 'w').write('"%s"' % version)
 
     print("Done installing tool '" + str(self) + "'.")
 
     # Sanity check that the installation succeeded, and if so, remove unneeded
     # leftover installation files.
-    if self.is_installed(skip_version_check=True):
-      self.cleanup_temp_install_files()
-      self.update_installed_version()
-    else:
-      print("Installation of '" + str(self) + "' failed, but no error was detected. Either something went wrong with the installation, or this may indicate an internal emsdk error.")
-      return False
+    if not self.is_installed(skip_version_check=True):
+      exit_with_error("Installation of '" + str(self) + "' failed, but no error was detected. Either something went wrong with the installation, or this may indicate an internal emsdk error.")
 
+    self.cleanup_temp_install_files()
+    self.update_installed_version()
     return True
 
   def cleanup_temp_install_files(self):
@@ -3030,9 +3040,7 @@ def main(args):
         tool = find_sdk(t)
       if tool is None:
         return error_on_missing_tool(t)
-      success = tool.install()
-      if not success:
-        return 1
+      tool.install()
     return 0
   elif cmd == 'uninstall':
     if not args:
