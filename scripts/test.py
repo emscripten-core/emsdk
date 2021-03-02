@@ -136,8 +136,8 @@ int main() {
 ''')
 
   def setUp(self):
-    checked_call_with_output(emsdk + ' install latest')
-    checked_call_with_output(emsdk + ' activate latest')
+    run_emsdk('install latest')
+    run_emsdk('activate latest')
 
   def test_already_installed(self):
     # Test we don't re-download unnecessarily
@@ -252,6 +252,13 @@ int main() {
 
     print('second time')
     run_emsdk('update')
+
+  def test_install_arbitrary(self):
+    # Test that its possible to install arbrary emscripten-releases SDKs
+    run_emsdk('install sdk-releases-upstream-5c776e6a91c0cb8edafca16a652ee1ee48f4f6d2')
+
+    # Check that its not re-downloaded
+    checked_call_with_output(emsdk + ' install sdk-releases-upstream-5c776e6a91c0cb8edafca16a652ee1ee48f4f6d2', expected='Skipped', unexpected='Downloading:')
 
 
 if __name__ == '__main__':

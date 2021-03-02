@@ -49,6 +49,8 @@ emsdk_zip_download_url = 'https://github.com/emscripten-core/emsdk/archive/maste
 
 zips_subdir = 'zips/'
 
+extra_release_tag = None
+
 # Enable this to do very verbose printing about the different steps that are
 # being run. Useful for debugging.
 VERBOSE = int(os.getenv('EMSDK_VERBOSE', '0'))
@@ -2202,11 +2204,15 @@ def load_releases_tags():
   tags = []
   tags_fastcomp = []
   info = load_releases_info()
+
   for version, sha in sorted(info['releases'].items(), key=lambda x: version_key(x[0])):
     tags.append(sha)
     # Only include versions older than 1.39.0 in fastcomp releases
     if version_key(version) < (2, 0, 0):
       tags_fastcomp.append(sha)
+
+  if extra_release_tag:
+    tags.append(extra_release_tag)
 
   # Add the tip-of-tree, if it exists.
   if os.path.exists(tot_path()):
@@ -2248,6 +2254,7 @@ def load_sdk_manifest():
     for tool_name in sdk.uses:
       tool = find_tool(tool_name)
       if not tool:
+        debug_print('missing dependency: ' + tool_name)
         return False
     return True
 
@@ -2641,6 +2648,7 @@ def expand_sdk_name(name):
     releases_info = load_releases_info()['releases']
     release_hash = get_release_hash(version, releases_info)
     if release_hash:
+      # Known release hash
       if backend == 'fastcomp' and version_key(version) >= (2, 0, 0):
         exit_with_fastcomp_error()
       if backend is None:
@@ -2649,6 +2657,10 @@ def expand_sdk_name(name):
         else:
           backend = 'fastcomp'
       return 'sdk-releases-%s-%s-64bit' % (backend, release_hash)
+    elif len(version) == 40:
+      global extra_release_tag
+      extra_release_tag = version
+      return 'sdk-releases-%s-%s-64bit' % (backend, version)
   return name
 
 
@@ -2803,6 +2815,10 @@ def main(args):
     global TTY_OUTPUT
     TTY_OUTPUT = False
 
+  # Replace meta-packages with the real package names.
+  if cmd in ('update', 'install', 'activate'):
+    args = [expand_sdk_name(a) for a in args]
+
   load_dot_emscripten()
   load_sdk_manifest()
 
@@ -2834,10 +2850,6 @@ def main(args):
         errlog("Invalid command line parameter " + args[i] + ' specified!')
         return 1
   args = [x for x in args if x]
-
-  # Replace meta-packages with the real package names.
-  if cmd in ('update', 'install', 'activate'):
-    args = [expand_sdk_name(a) for a in args]
 
   if cmd == 'list':
     print('')
