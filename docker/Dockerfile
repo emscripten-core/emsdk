@@ -23,7 +23,6 @@ COPY . ${EMSDK}
 
 RUN echo "## Install Emscripten" \
     && cd ${EMSDK} \
-    && if [ "$EMSCRIPTEN_VERSION" = "tot" ]; then ./emsdk update-tags; fi \
     && ./emsdk install ${EMSCRIPTEN_VERSION} \
     && echo "## Done"
 

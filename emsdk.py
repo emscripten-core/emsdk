@@ -787,7 +787,7 @@ def git_recent_commits(repo_path, n=20):
 def git_clone(url, dstpath):
   debug_print('git_clone(url=' + url + ', dstpath=' + dstpath + ')')
   if os.path.isdir(os.path.join(dstpath, '.git')):
-    print("Repository '" + url + "' already cloned to directory '" + dstpath + "', skipping.")
+    debug_print("Repository '" + url + "' already cloned to directory '" + dstpath + "', skipping.")
     return True
   mkdir_p(dstpath)
   git_clone_args = []
@@ -798,12 +798,12 @@ def git_clone(url, dstpath):
 
 def git_checkout_and_pull(repo_path, branch):
   debug_print('git_checkout_and_pull(repo_path=' + repo_path + ', branch=' + branch + ')')
-  ret = run([GIT(), 'fetch', 'origin'], repo_path)
+  ret = run([GIT(), 'fetch', '--quiet', 'origin'], repo_path)
   if ret != 0:
     return False
   try:
     print("Fetching latest changes to the branch '" + branch + "' for '" + repo_path + "'...")
-    ret = run([GIT(), 'fetch', 'origin'], repo_path)
+    ret = run([GIT(), 'fetch', '--quiet', 'origin'], repo_path)
     if ret != 0:
       return False
     #  run([GIT, 'checkout', '-b', branch, '--track', 'origin/'+branch], repo_path)
@@ -2047,19 +2047,11 @@ def find_latest_releases_sdk(which):
   return 'sdk-releases-%s-%s-64bit' % (which, find_latest_releases_hash())
 
 
-def find_tot():
-  return open(tot_path()).read().strip()
-
-
-def find_tot_sdk(which):
-  if not os.path.exists(tot_path()):
-    print('Tip-of-tree information was not found, run emsdk update-tags')
-    sys.exit(1)
-  tot = find_tot()
-  if not tot:
-    print('Tip-of-tree build was not found, run emsdk update-tags (however, if there is no recent tip-of-tree build, you may need to wait)')
-    sys.exit(1)
-  return 'sdk-releases-%s-%s-64bit' % (which, tot)
+def find_tot_sdk():
+  debug_print('Fetching emscripten-releases repository...')
+  global extra_release_tag
+  extra_release_tag = get_emscripten_releases_tot()
+  return 'sdk-releases-upstream-%s-64bit' % (extra_release_tag)
 
 
 # Given a git hash in emscripten-releases, find the emscripten
@@ -2071,10 +2063,6 @@ def get_emscripten_release_version(emscripten_releases_hash):
     if value == emscripten_releases_hash:
       return key
   return None
-
-
-def tot_path():
-  return sdk_path('emscripten-releases-tot.txt')
 
 
 # Get the tip-of-tree build identifier.
@@ -2115,12 +2103,6 @@ def python_2_3_sorted(arr, cmp):
     return sorted(arr, cmp=cmp)
 
 
-def update_tags():
-  print('Fetching emscripten-releases repository...')
-  emscripten_releases_tot = get_emscripten_releases_tot()
-  open(tot_path(), 'w').write(emscripten_releases_tot)
-
-
 def is_emsdk_sourced_from_github():
   return os.path.exists(os.path.join(emsdk_path(), '.git'))
 
@@ -2128,22 +2110,9 @@ def is_emsdk_sourced_from_github():
 def update_emsdk():
   if is_emsdk_sourced_from_github():
     errlog('You seem to have bootstrapped Emscripten SDK by cloning from GitHub. In this case, use "git pull" instead of "emsdk update" to update emsdk. (Not doing that automatically in case you have local changes)')
-    errlog('Alternatively, use "emsdk update-tags" to refresh the latest list of tags from the different Git repositories.')
     sys.exit(1)
   if not download_and_unzip(emsdk_zip_download_url, emsdk_path(), download_even_if_exists=True, clobber=False):
     sys.exit(1)
-  if not GIT(must_succeed=False):
-    print('Update complete, however skipped update-tags, since git was not found.')
-    if WINDOWS:
-      print("Please install git by typing 'emsdk install git-1.9.4', or alternatively by installing it manually from http://git-scm.com/downloads . If you install git manually, remember to add it to PATH.")
-    elif MACOS:
-      print("Please install git from http://git-scm.com/ , or by installing XCode and then the XCode Command Line Tools (see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools ).")
-    elif LINUX:
-      print("Pease install git using your package manager, see http://git-scm.com/book/en/Getting-Started-Installing-Git .")
-    else:
-      print("Please install git.")
-    return
-  update_tags()
 
 
 # Lists all legacy (pre-emscripten-releases) tagged versions directly in the Git
@@ -2213,12 +2182,6 @@ def load_releases_tags():
 
   if extra_release_tag:
     tags.append(extra_release_tag)
-
-  # Add the tip-of-tree, if it exists.
-  if os.path.exists(tot_path()):
-    tot = find_tot()
-    if tot:
-      tags.append(tot)
 
   return tags, tags_fastcomp
 
@@ -2626,10 +2589,8 @@ def expand_sdk_name(name):
     return str(find_latest_releases_sdk('upstream'))
   elif name in ('latest-upstream', 'latest-clang-upstream', 'latest-releases-upstream'):
     return str(find_latest_releases_sdk('upstream'))
-  elif name in ('tot', 'sdk-tot'):
-    return str(find_tot_sdk('upstream'))
-  elif name == 'tot-upstream':
-    return str(find_tot_sdk('upstream'))
+  elif name in ('tot', 'sdk-tot', 'tot-upstream'):
+    return str(find_tot_sdk())
   else:
     # check if it's a release handled by an emscripten-releases version,
     # and if so use that by using the right hash. we support a few notations,
@@ -2682,14 +2643,9 @@ def main(args):
                                   composition of different SDK packages and
                                   dependencies.
 
-   emsdk update                 - Updates emsdk to the newest version, and also
-                                  runs 'update-tags' (below). If you have
+   emsdk update                 - Updates emsdk to the newest version. If you have
                                   bootstrapped emsdk via cloning directly from
                                   GitHub, call "git pull" instead to update emsdk.
-
-   emsdk update-tags            - Fetches the most up to date list of available
-                                  Emscripten tagged and other releases from the
-                                  servers.
 
    emsdk install [options] <tool 1> <tool 2> <tool 3> ...
                                 - Downloads and installs given tools or SDKs.
@@ -2951,7 +2907,7 @@ def main(args):
       print_tools(find_tools(needs_compilation=True))
     else:
       if is_emsdk_sourced_from_github():
-        print("There are no tools available. Run 'git pull' followed by 'emsdk update-tags' to fetch the latest set of tools.")
+        print("There are no tools available. Run 'git pull' to fetch the latest set of tools.")
       else:
         print("There are no tools available. Run 'emsdk update' to fetch the latest set of tools.")
       print('')
@@ -2966,7 +2922,7 @@ def main(args):
 
     print('')
     if is_emsdk_sourced_from_github():
-      print('Run "git pull" followed by "./emsdk update-tags" to pull in the latest list.')
+      print('Run "git pull" to pull in the latest list.')
     else:
       print('Run "./emsdk update" to pull in the latest list.')
 
@@ -2990,7 +2946,7 @@ def main(args):
       rmfile(sdk_path(EMSDK_SET_ENV))
     return 0
   elif cmd == 'update-tags':
-    update_tags()
+    errlog('`update-tags` is not longer needed.  To install the latest tot release just run `install tot`')
     return 0
   elif cmd == 'activate':
     if arg_permanent:
