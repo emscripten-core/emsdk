@@ -117,8 +117,7 @@ SDK from the local hard drive completely.
 
 `emsdk update` will fetch package information for all the new tools and
 SDK versions. After that, run `emsdk install <tool/sdk name>` to install a new
-version. The command `emsdk update-tags` obtains a list of all new tagged
-releases from GitHub without updating Emscripten SDK itself.
+version.
 
 ### How do I install an old Emscripten compiler version?
 
