@@ -2182,9 +2182,8 @@ def load_releases_tags():
   if extra_release_tag:
     tags.append(extra_release_tag)
 
-  # Adds the currently installed SDK version, which might be a custom
-  # version.  This means it will show up in `list` and work with
-  # `construct_env`
+  # Explicitly add the currently installed SDK version.  This could be a custom
+  # version (installed explicitly) so might be part of the main list loaded above.
   version_file = sdk_path(os.path.join('upstream', '.emsdk_version'))
   if os.path.exists(version_file):
     with open(version_file) as f:
