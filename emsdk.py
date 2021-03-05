@@ -2183,7 +2183,7 @@ def load_releases_tags():
     tags.append(extra_release_tag)
 
   # Explicitly add the currently installed SDK version.  This could be a custom
-  # version (installed explicitly) so might be part of the main list loaded above.
+  # version (installed explicitly) so it might not be part of the main list loaded above.
   version_file = sdk_path(os.path.join('upstream', '.emsdk_version'))
   if os.path.exists(version_file):
     with open(version_file) as f:
