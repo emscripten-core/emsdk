@@ -164,9 +164,9 @@ def os_name_for_emscripten_releases():
     raise Exception('unknown OS')
 
 
-def debug_print(msg, **args):
+def debug_print(msg):
   if VERBOSE:
-    print(msg, **args)
+    errlog(msg)
 
 
 def to_unix_path(p):
@@ -361,7 +361,7 @@ def win_get_environment_variable(key, system=True, user=True, fallback=True):
 
 
 def win_set_environment_variable(key, value, system, user):
-  debug_print('set ' + str(key) + '=' + str(value) + ', in system=' + str(system), file=sys.stderr)
+  debug_print('set ' + str(key) + '=' + str(value) + ', in system=' + str(system))
   previous_value = win_get_environment_variable(key, system=system, user=user)
   if previous_value == value:
     debug_print('  no need to set, since same value already exists.')
@@ -504,7 +504,7 @@ def run(cmd, cwd=None):
   process = subprocess.Popen(cmd, cwd=cwd, env=os.environ.copy())
   process.communicate()
   if process.returncode != 0:
-    print(str(cmd) + ' failed with error code ' + str(process.returncode) + '!')
+    errlog(str(cmd) + ' failed with error code ' + str(process.returncode) + '!')
   return process.returncode
 
 
@@ -613,11 +613,11 @@ def unzip(source_filename, dest_dir, unpack_even_if_exists=False):
       if common_subdir:
         remove_tree(unzip_to_dir)
   except zipfile.BadZipfile as e:
-    print("Unzipping file '" + source_filename + "' failed due to reason: " + str(e) + "! Removing the corrupted zip file.")
+    errlog("Unzipping file '" + source_filename + "' failed due to reason: " + str(e) + "! Removing the corrupted zip file.")
     rmfile(source_filename)
     return False
   except Exception as e:
-    print("Unzipping file '" + source_filename + "' failed due to reason: " + str(e))
+    errlog("Unzipping file '" + source_filename + "' failed due to reason: " + str(e))
     return False
 
   return True
@@ -817,7 +817,7 @@ def git_checkout_and_pull(repo_path, branch):
     if ret != 0:
       return False
   except:
-    print('git operation failed!')
+    errlog('git operation failed!')
     return False
   print("Successfully updated and checked out branch '" + branch + "' on repository '" + repo_path + "'")
   print("Current repository version: " + git_repo_version(repo_path))
@@ -1243,9 +1243,9 @@ def emscripten_npm_install(tool, directory):
   if not node_tool:
     npm_fallback = which('npm')
     if not npm_fallback:
-      print('Failed to find npm command!')
-      print('Running "npm ci" in installed Emscripten root directory ' + tool.installation_path() + ' is required!')
-      print('Please install node.js first!')
+      errlog('Failed to find npm command!')
+      errlog('Running "npm ci" in installed Emscripten root directory ' + tool.installation_path() + ' is required!')
+      errlog('Please install node.js first!')
       return False
     node_path = os.path.dirname(npm_fallback)
   else:
@@ -1261,7 +1261,7 @@ def emscripten_npm_install(tool, directory):
         cwd=directory, stderr=subprocess.STDOUT, env=env,
         universal_newlines=True)
   except subprocess.CalledProcessError as e:
-    print('Error running %s:\n%s' % (e.cmd, e.output))
+    errlog('Error running %s:\n%s' % (e.cmd, e.output))
     return False
 
   # Manually install the appropriate native Closure Compiler package
@@ -1289,7 +1289,7 @@ def emscripten_npm_install(tool, directory):
         cwd=directory, stderr=subprocess.STDOUT, env=env,
         universal_newlines=True)
     except subprocess.CalledProcessError as e:
-      print('Error running %s:\n%s' % (e.cmd, e.output))
+      errlog('Error running %s:\n%s' % (e.cmd, e.output))
       return False
 
   print('Done running: npm ci')
@@ -1473,7 +1473,6 @@ def load_dot_emscripten():
       key, value = parse_key_value(line)
       if value != '':
         dot_emscripten[key] = value
-      # print("Got '" + key + "' = '" + value + "'")
     except:
       pass
 
@@ -1711,7 +1710,7 @@ class Tool(object):
       for tool_name in self.uses:
         tool = find_tool(tool_name)
         if tool is None:
-          print("Manifest error: No tool by name '" + tool_name + "' found! This may indicate an internal SDK error!")
+          errlog("Manifest error: No tool by name '" + tool_name + "' found! This may indicate an internal SDK error!")
           return False
         if not tool.is_installed():
           return False
