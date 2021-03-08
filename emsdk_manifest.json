@@ -407,7 +407,7 @@
   },
   {
     "id": "binaryen",
-    "version": "master",
+    "version": "main",
     "bitness": 32,
     "append_bitness": false,
     "url": "https://github.com/WebAssembly/binaryen.git",
