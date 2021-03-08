@@ -1551,13 +1551,6 @@ def find_msbuild_dir():
   return ''
 
 
-def get_installed_vstool_version(installed_path):
-  try:
-    return open(installed_path + "/version.txt", "r").read()
-  except:
-    return None
-
-
 class Tool(object):
   def __init__(self, data):
     # Convert the dictionary representation of the tool in 'data' to members of
@@ -1695,12 +1688,12 @@ class Tool(object):
     version_file_path = self.get_version_file_path()
     if os.path.isfile(version_file_path):
       with open(version_file_path, 'r') as version_file:
-        return version_file.read() == self.name
+        return version_file.read().strip() == self.name
     return False
 
   def update_installed_version(self):
     with open(self.get_version_file_path(), 'w') as version_file:
-      version_file.write(self.name)
+      version_file.write(self.name + '\n')
     return None
 
   def is_installed(self, skip_version_check=False):
@@ -1730,11 +1723,6 @@ class Tool(object):
     # directory, each item in the activated PATH must exist.
     if hasattr(self, 'activated_path') and not os.path.exists(self.expand_vars(self.activated_path)):
       content_exists = False
-
-    # vs-tool is a special tool since all versions must be installed to the
-    # same dir, so dir name will not differentiate the version.
-    if self.id == 'vs-tool':
-      return content_exists and get_installed_vstool_version(self.installation_path()) == self.version
 
     if hasattr(self, 'custom_is_installed_script'):
       if self.custom_is_installed_script == 'is_optimizer_installed':
