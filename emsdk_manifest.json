@@ -381,11 +381,11 @@
   },
   {
     "id": "emscripten",
-    "version": "master",
+    "version": "main",
     "bitness": 32,
     "append_bitness": false,
     "url": "https://github.com/emscripten-core/emscripten.git",
-    "git_branch": "master",
+    "git_branch": "main",
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%",
     "activated_env": "EMSCRIPTEN=%installation_dir%",
@@ -394,11 +394,11 @@
   },
   {
     "id": "emscripten",
-    "version": "master",
+    "version": "main",
     "bitness": 64,
     "append_bitness": false,
     "url": "https://github.com/emscripten-core/emscripten.git",
-    "git_branch": "master",
+    "git_branch": "main",
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%",
     "activated_env": "EMSCRIPTEN=%installation_dir%",
@@ -464,55 +464,55 @@
   {
     "version": "upstream-master",
     "bitness": 64,
-    "uses": ["llvm-git-main-64bit", "node-14.15.5-64bit", "python-3.7.4-pywin32-64bit", "emscripten-master-64bit", "binaryen-main-64bit"],
+    "uses": ["llvm-git-main-64bit", "node-14.15.5-64bit", "python-3.7.4-pywin32-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
     "os": "win"
   },
   {
     "version": "upstream-master",
     "bitness": 64,
-    "uses": ["llvm-git-main-64bit", "node-14.15.5-64bit", "python-3.7.4-2-64bit", "emscripten-master-64bit", "binaryen-main-64bit"],
+    "uses": ["llvm-git-main-64bit", "node-14.15.5-64bit", "python-3.7.4-2-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
     "os": "macos"
   },
   {
     "version": "upstream-master",
     "bitness": 64,
-    "uses": ["llvm-git-main-64bit", "node-14.15.5-64bit", "emscripten-master-64bit", "binaryen-main-64bit"],
+    "uses": ["llvm-git-main-64bit", "node-14.15.5-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
     "os": "linux"
   },
   {
     "version": "upstream-master",
     "bitness": 32,
-    "uses": ["llvm-git-main-32bit", "emscripten-master-32bit", "binaryen-main-32bit"],
+    "uses": ["llvm-git-main-32bit", "emscripten-main-32bit", "binaryen-main-32bit"],
     "os": "linux"
   },
   {
     "version": "fastcomp-master",
     "bitness": 32,
-    "uses": ["fastcomp-clang-master-32bit", "node-14.15.5-32bit", "python-3.7.4-32bit", "java-8.152-32bit", "emscripten-master-32bit", "binaryen-main-32bit"],
+    "uses": ["fastcomp-clang-master-32bit", "node-14.15.5-32bit", "python-3.7.4-32bit", "java-8.152-32bit", "emscripten-main-32bit", "binaryen-main-32bit"],
     "os": "win"
   },
   {
     "version": "fastcomp-master",
     "bitness": 64,
-    "uses": ["fastcomp-clang-master-64bit", "node-14.15.5-64bit", "python-3.7.4-pywin32-64bit", "java-8.152-64bit", "emscripten-master-64bit", "binaryen-main-64bit"],
+    "uses": ["fastcomp-clang-master-64bit", "node-14.15.5-64bit", "python-3.7.4-pywin32-64bit", "java-8.152-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
     "os": "win"
   },
   {
     "version": "fastcomp-master",
     "bitness": 64,
-    "uses": ["fastcomp-clang-master-64bit", "node-14.15.5-64bit", "python-3.7.4-2-64bit", "emscripten-master-64bit", "binaryen-main-64bit"],
+    "uses": ["fastcomp-clang-master-64bit", "node-14.15.5-64bit", "python-3.7.4-2-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
     "os": "macos"
   },
   {
     "version": "fastcomp-master",
     "bitness": 32,
-    "uses": ["fastcomp-clang-master-32bit", "node-14.15.5-32bit", "emscripten-master-32bit", "binaryen-main-32bit"],
+    "uses": ["fastcomp-clang-master-32bit", "node-14.15.5-32bit", "emscripten-main-32bit", "binaryen-main-32bit"],
     "os": "linux"
   },
   {
     "version": "fastcomp-master",
     "bitness": 64,
-    "uses": ["fastcomp-clang-master-64bit", "node-14.15.5-64bit", "emscripten-master-64bit", "binaryen-main-64bit"],
+    "uses": ["fastcomp-clang-master-64bit", "node-14.15.5-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
     "os": "linux"
   },
   {
