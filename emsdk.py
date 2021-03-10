@@ -1848,8 +1848,12 @@ class Tool(object):
     if getattr(self, 'custom_install_script', None) == 'emscripten_npm_install':
       # upstream tools have hardcoded paths that are not stored in emsdk_manifest.json registry
       install_path = 'upstream' if 'releases-upstream' in self.version else 'fastcomp'
-      if not emscripten_npm_install(self, os.path.join(emsdk_path(), install_path, 'emscripten')):
-        exit_with_error('post-install step failed: emscripten_npm_install')
+      emscripten_dir = os.path.join(emsdk_path(), install_path, 'emscripten')
+      # Older versions of the sdk did not include the node_modules directory
+      # and require `npm ci` to be run post-install
+      if not os.path.exists(os.path.join(emscripten_dir, 'node_modules')):
+        if not emscripten_npm_install(self, emscripten_dir):
+          exit_with_error('post-install step failed: emscripten_npm_install')
 
     print("Done installing SDK '" + str(self) + "'.")
     return True
