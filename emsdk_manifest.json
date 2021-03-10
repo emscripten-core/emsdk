@@ -221,6 +221,7 @@
     "version": "14.15.5",
     "arch": "aarch64",
     "bitness": 64,
+    "macos_url": "node-v14.15.5-darwin-x64.tar.gz",
     "linux_url": "node-v14.15.5-linux-arm64.tar.xz",
     "activated_path": "%installation_dir%/bin",
     "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
@@ -285,6 +286,15 @@
     "version": "3.7.4-2",
     "bitness": 64,
     "arch": "x86_64",
+    "macos_url": "python-3.7.4-2-macos.tar.gz",
+    "activated_cfg": "PYTHON='%installation_dir%/bin/python3'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.7/site-packages/certifi/cacert.pem"
+  },
+  {
+    "id": "python",
+    "version": "3.7.4-2",
+    "bitness": 64,
+    "arch": "aarch64",
     "macos_url": "python-3.7.4-2-macos.tar.gz",
     "activated_cfg": "PYTHON='%installation_dir%/bin/python3'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.7/site-packages/certifi/cacert.pem"

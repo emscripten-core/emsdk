@@ -1,6 +1,8 @@
 *.pyc
 __pycache__
 
+.DS_Store
+
 # Support for --embedded configs
 /.emscripten
 /.emscripten.old
@@ -31,3 +33,6 @@ __pycache__
 /mingw
 /spidermonkey
 /binaryen
+
+/scripts/cpython
+/scripts/python-*
