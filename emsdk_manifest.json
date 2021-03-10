@@ -486,36 +486,6 @@
     "os": "linux"
   },
   {
-    "version": "fastcomp-master",
-    "bitness": 32,
-    "uses": ["fastcomp-clang-master-32bit", "node-14.15.5-32bit", "python-3.7.4-32bit", "java-8.152-32bit", "emscripten-main-32bit", "binaryen-main-32bit"],
-    "os": "win"
-  },
-  {
-    "version": "fastcomp-master",
-    "bitness": 64,
-    "uses": ["fastcomp-clang-master-64bit", "node-14.15.5-64bit", "python-3.7.4-pywin32-64bit", "java-8.152-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
-    "os": "win"
-  },
-  {
-    "version": "fastcomp-master",
-    "bitness": 64,
-    "uses": ["fastcomp-clang-master-64bit", "node-14.15.5-64bit", "python-3.7.4-2-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
-    "os": "macos"
-  },
-  {
-    "version": "fastcomp-master",
-    "bitness": 32,
-    "uses": ["fastcomp-clang-master-32bit", "node-14.15.5-32bit", "emscripten-main-32bit", "binaryen-main-32bit"],
-    "os": "linux"
-  },
-  {
-    "version": "fastcomp-master",
-    "bitness": 64,
-    "uses": ["fastcomp-clang-master-64bit", "node-14.15.5-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
-    "os": "linux"
-  },
-  {
     "version": "fastcomp-tag-%tag%",
     "bitness": 32,
     "uses": ["fastcomp-clang-tag-e%tag%-32bit", "node-8.9.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-tag-%tag%-32bit", "binaryen-tag-%tag%-32bit"],
