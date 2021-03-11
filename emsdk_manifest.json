@@ -483,13 +483,13 @@
   {
     "version": "upstream-main",
     "bitness": 64,
-    "uses": ["llvm-git-main-64bit", "node-14.15.5-64bit", "python-3.7.4-pywin32-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
+    "uses": ["python-3.7.4-pywin32-64bit", "llvm-git-main-64bit", "node-14.15.5-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
     "os": "win"
   },
   {
     "version": "upstream-main",
     "bitness": 64,
-    "uses": ["llvm-git-main-64bit", "node-14.15.5-64bit", "python-3.9.2-1-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
+    "uses": ["python-3.9.2-1-64bit", "llvm-git-main-64bit", "node-14.15.5-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
     "os": "macos"
   },
   {
