@@ -37,9 +37,8 @@ else:
   from urlparse import urljoin
   from urllib2 import urlopen
 
-emsdk_master_server = 'https://storage.googleapis.com/webassembly/emscripten-releases-builds/deps/'
 
-emsdk_packages_url = emsdk_master_server
+emsdk_packages_url = 'https://storage.googleapis.com/webassembly/emscripten-releases-builds/deps/'
 
 emscripten_releases_repo = 'https://chromium.googlesource.com/emscripten-releases'
 
@@ -1717,8 +1716,8 @@ class Tool(object):
     # For e.g. fastcomp clang from git repo, the activated PATH is the
     # directory where the compiler is built to, and installation_path is
     # the directory where the source tree exists. To distinguish between
-    # multiple packages sharing the same source (clang-master-32bit,
-    # clang-master-64bit, clang-master-32bit and clang-master-64bit each
+    # multiple packages sharing the same source (clang-main-32bit,
+    # clang-main-64bit, clang-main-32bit and clang-main-64bit each
     # share the same git repo), require that in addition to the installation
     # directory, each item in the activated PATH must exist.
     if hasattr(self, 'activated_path') and not os.path.exists(self.expand_vars(self.activated_path)):
@@ -1848,8 +1847,12 @@ class Tool(object):
     if getattr(self, 'custom_install_script', None) == 'emscripten_npm_install':
       # upstream tools have hardcoded paths that are not stored in emsdk_manifest.json registry
       install_path = 'upstream' if 'releases-upstream' in self.version else 'fastcomp'
-      if not emscripten_npm_install(self, os.path.join(emsdk_path(), install_path, 'emscripten')):
-        exit_with_error('post-install step failed: emscripten_npm_install')
+      emscripten_dir = os.path.join(emsdk_path(), install_path, 'emscripten')
+      # Older versions of the sdk did not include the node_modules directory
+      # and require `npm ci` to be run post-install
+      if not os.path.exists(os.path.join(emscripten_dir, 'node_modules')):
+        if not emscripten_npm_install(self, emscripten_dir):
+          exit_with_error('post-install step failed: emscripten_npm_install')
 
     print("Done installing SDK '" + str(self) + "'.")
     return True
@@ -2155,6 +2158,15 @@ def load_releases_info():
   return load_releases_info.cached_info
 
 
+def get_installed_sdk_version():
+  version_file = sdk_path(os.path.join('upstream', '.emsdk_version'))
+  if not os.path.exists(version_file):
+    return None
+  with open(version_file) as f:
+    version = f.read()
+  return version.split('-')[2]
+
+
 # Get a list of tags for emscripten-releases.
 def load_releases_tags():
   tags = []
@@ -2172,13 +2184,9 @@ def load_releases_tags():
 
   # Explicitly add the currently installed SDK version.  This could be a custom
   # version (installed explicitly) so it might not be part of the main list loaded above.
-  version_file = sdk_path(os.path.join('upstream', '.emsdk_version'))
-  if os.path.exists(version_file):
-    with open(version_file) as f:
-      version = f.read()
-    version = version.split('-')[2]
-    if version not in tags:
-      tags.append(version)
+  installed = get_installed_sdk_version()
+  if installed and installed not in tags:
+    tags.append(installed)
 
   return tags, tags_fastcomp
 
@@ -2578,7 +2586,10 @@ def exit_with_fastcomp_error():
     exit_with_error('The fastcomp backend is not getting new builds or releases. Please use the upstream llvm backend or use an older version than 2.0.0 (such as 1.40.1).')
 
 
-def expand_sdk_name(name):
+def expand_sdk_name(name, activating):
+  if 'upstream-master' in name:
+    errlog('upstream-master SDK has been renamed upstream-main')
+    name = name.replace('upstream-master', 'upstream-main')
   if name in ('latest-fastcomp', 'latest-releases-fastcomp', 'tot-fastcomp', 'sdk-nightly-latest'):
     exit_with_fastcomp_error()
   if name in ('latest', 'sdk-latest', 'latest-64bit', 'sdk-latest-64bit'):
@@ -2587,6 +2598,15 @@ def expand_sdk_name(name):
   elif name in ('latest-upstream', 'latest-clang-upstream', 'latest-releases-upstream'):
     return str(find_latest_releases_sdk('upstream'))
   elif name in ('tot', 'sdk-tot', 'tot-upstream'):
+    if activating:
+      # When we are activating a tot release, assume that the currently
+      # installed SDK, if any, is the tot release we want to activate.
+      # Without this `install tot && activate tot` will race with the builders
+      # that are producing new builds.
+      installed = get_installed_sdk_version()
+      if installed:
+        debug_print('activating currently installed SDK; not updating tot version')
+        return 'sdk-releases-upstream-%s-64bit' % installed
     return str(find_tot_sdk())
   else:
     # check if it's a release handled by an emscripten-releases version,
@@ -2770,7 +2790,8 @@ def main(args):
 
   # Replace meta-packages with the real package names.
   if cmd in ('update', 'install', 'activate'):
-    args = [expand_sdk_name(a) for a in args]
+    activating = cmd == 'activate'
+    args = [expand_sdk_name(a, activating=activating) for a in args]
 
   load_dot_emscripten()
   load_sdk_manifest()
