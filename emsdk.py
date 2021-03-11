@@ -2588,7 +2588,7 @@ def exit_with_fastcomp_error():
 
 def expand_sdk_name(name, activating):
   if 'upstream-master' in name:
-    errlog('upstream-master SDK has been renames upstream-main')
+    errlog('upstream-master SDK has been renamed upstream-main')
     name = name.replace('upstream-master', 'upstream-main')
   if name in ('latest-fastcomp', 'latest-releases-fastcomp', 'tot-fastcomp', 'sdk-nightly-latest'):
     exit_with_fastcomp_error()
