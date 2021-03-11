@@ -37,9 +37,8 @@ else:
   from urlparse import urljoin
   from urllib2 import urlopen
 
-emsdk_master_server = 'https://storage.googleapis.com/webassembly/emscripten-releases-builds/deps/'
 
-emsdk_packages_url = emsdk_master_server
+emsdk_packages_url = 'https://storage.googleapis.com/webassembly/emscripten-releases-builds/deps/'
 
 emscripten_releases_repo = 'https://chromium.googlesource.com/emscripten-releases'
 
@@ -1717,8 +1716,8 @@ class Tool(object):
     # For e.g. fastcomp clang from git repo, the activated PATH is the
     # directory where the compiler is built to, and installation_path is
     # the directory where the source tree exists. To distinguish between
-    # multiple packages sharing the same source (clang-master-32bit,
-    # clang-master-64bit, clang-master-32bit and clang-master-64bit each
+    # multiple packages sharing the same source (clang-main-32bit,
+    # clang-main-64bit, clang-main-32bit and clang-main-64bit each
     # share the same git repo), require that in addition to the installation
     # directory, each item in the activated PATH must exist.
     if hasattr(self, 'activated_path') and not os.path.exists(self.expand_vars(self.activated_path)):
@@ -2588,6 +2587,9 @@ def exit_with_fastcomp_error():
 
 
 def expand_sdk_name(name, activating):
+  if 'upstream-master' in name:
+    errlog('upstream-master SDK has been renamed upstream-main')
+    name = name.replace('upstream-master', 'upstream-main')
   if name in ('latest-fastcomp', 'latest-releases-fastcomp', 'tot-fastcomp', 'sdk-nightly-latest'):
     exit_with_fastcomp_error()
   if name in ('latest', 'sdk-latest', 'latest-64bit', 'sdk-latest-64bit'):
