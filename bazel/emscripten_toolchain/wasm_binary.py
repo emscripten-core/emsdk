@@ -18,10 +18,10 @@ This script and its accompanying Bazel rule should allow you to extract a
 WebAssembly binary into a larger web application.
 """
 
+import argparse
 import os
 import subprocess
 import sys
-import argparse
 
 
 def ensure(f):
