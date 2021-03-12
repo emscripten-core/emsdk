@@ -21,64 +21,61 @@ WebAssembly binary into a larger web application.
 import os
 import subprocess
 import sys
-
-from absl import app
-from absl import flags
-
-FLAGS = flags.FLAGS
-flags.DEFINE_string('archive', None, 'The the archive to extract from.')
-flags.DEFINE_string('output_path', None, 'The path to extract into.')
-
+import argparse
 
 def ensure(f):
-  if not os.path.exists(f):
-    with open(f, 'w'):
-      pass
-
+    if not os.path.exists(f):
+        with open(f, 'w'):
+            pass
 
 def check(f):
-  if not os.path.exists(f):
-    raise Exception('Expected file in archive: %s' % f)
+    if not os.path.exists(f):
+        raise Exception('Expected file in archive: %s' % f)
 
 
-def main(argv):
-  basename = os.path.basename(FLAGS.archive)
-  stem = basename.split('.')[0]
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--archive', help='The archive to extract from.')
+    parser.add_argument('--output_path', help = 'The path to extract into.')
+    args = parser.parse_args()
 
-  # Check the type of the input file
-  mimetype_bytes = subprocess.check_output(['file', '-Lb', '--mime-type', '--mime-encoding', FLAGS.archive])
-  mimetype = mimetype_bytes.decode(sys.stdout.encoding)
+    basename = os.path.basename(args.archive)
+    stem = basename.split('.')[0]
 
-  # If we have a tar, extract all files. If we have just a single file, copy it.
-  if 'tar' in mimetype:
-    subprocess.check_call(
-        ['tar', 'xf', FLAGS.archive, '-C', FLAGS.output_path])
-  elif 'binary' in mimetype:
-    subprocess.check_call([
-        'cp',
-        FLAGS.archive,
-        os.path.join(FLAGS.output_path, stem + '.wasm')])
-  elif 'text' in mimetype:
-    subprocess.check_call([
-        'cp',
-        FLAGS.archive,
-        os.path.join(FLAGS.output_path, stem + '.js')])
-  else:
-    subprocess.check_call(['cp', FLAGS.archive, FLAGS.output_path])
+    # Check the type of the input file
+    mimetype_bytes = subprocess.check_output(['file', '-Lb', '--mime-type', '--mime-encoding', args.archive])
+    mimetype = mimetype_bytes.decode(sys.stdout.encoding)
 
-  # At least one of these two files should exist at this point.
-  ensure(os.path.join(FLAGS.output_path, stem + '.js'))
-  ensure(os.path.join(FLAGS.output_path, stem + '.wasm'))
+    # If we have a tar, extract all files. If we have just a single file, copy it.
+    if 'tar' in mimetype:
+        subprocess.check_call(
+                ['tar', 'xf', args.archive, '-C', args.output_path])
+    elif 'binary' in mimetype:
+        subprocess.check_call([
+            'cp',
+            args.archive,
+            os.path.join(args.output_path, stem + '.wasm')])
+    elif 'text' in mimetype:
+        subprocess.check_call([
+            'cp',
+            args.archive,
+            os.path.join(args.output_path, stem + '.js')])
+    else:
+        subprocess.check_call(['cp', args.archive, args.output_path])
 
-  # And can optionally contain these extra files.
-  ensure(os.path.join(FLAGS.output_path, stem + '.wasm.map'))
-  ensure(os.path.join(FLAGS.output_path, stem + '.worker.js'))
-  ensure(os.path.join(FLAGS.output_path, stem + '.js.mem'))
-  ensure(os.path.join(FLAGS.output_path, stem + '.data'))
-  ensure(os.path.join(FLAGS.output_path, stem + '.fetch.js'))
-  ensure(os.path.join(FLAGS.output_path, stem + '.js.symbols'))
-  ensure(os.path.join(FLAGS.output_path, stem + '.wasm.debug.wasm'))
+    # At least one of these two files should exist at this point.
+    ensure(os.path.join(args.output_path, stem + '.js'))
+    ensure(os.path.join(args.output_path, stem + '.wasm'))
+
+    # And can optionally contain these extra files.
+    ensure(os.path.join(args.output_path, stem + '.wasm.map'))
+    ensure(os.path.join(args.output_path, stem + '.worker.js'))
+    ensure(os.path.join(args.output_path, stem + '.js.mem'))
+    ensure(os.path.join(args.output_path, stem + '.data'))
+    ensure(os.path.join(args.output_path, stem + '.fetch.js'))
+    ensure(os.path.join(args.output_path, stem + '.js.symbols'))
+    ensure(os.path.join(args.output_path, stem + '.wasm.debug.wasm'))
 
 
 if __name__ == '__main__':
-  app.run(main)
+    main()
