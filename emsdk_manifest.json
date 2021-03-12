@@ -221,6 +221,7 @@
     "version": "14.15.5",
     "arch": "aarch64",
     "bitness": 64,
+    "macos_url": "node-v14.15.5-darwin-x64.tar.gz",
     "linux_url": "node-v14.15.5-linux-arm64.tar.xz",
     "activated_path": "%installation_dir%/bin",
     "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
@@ -288,6 +289,24 @@
     "macos_url": "python-3.7.4-2-macos.tar.gz",
     "activated_cfg": "PYTHON='%installation_dir%/bin/python3'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.7/site-packages/certifi/cacert.pem"
+  },
+  {
+    "id": "python",
+    "version": "3.9.2-1",
+    "bitness": 64,
+    "arch": "x86_64",
+    "macos_url": "python-3.9.2-1-macos-x86_64.tar.gz",
+    "activated_cfg": "PYTHON='%installation_dir%/bin/python3'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.9/site-packages/certifi/cacert.pem"
+  },
+  {
+    "id": "python",
+    "version": "3.9.2-1",
+    "bitness": 64,
+    "arch": "aarch64",
+    "macos_url": "python-3.9.2-1-macos-arm64.tar.gz",
+    "activated_cfg": "PYTHON='%installation_dir%/bin/python3'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.9/site-packages/certifi/cacert.pem"
   },
   {
     "id": "java",
@@ -464,13 +483,13 @@
   {
     "version": "upstream-main",
     "bitness": 64,
-    "uses": ["llvm-git-main-64bit", "node-14.15.5-64bit", "python-3.7.4-pywin32-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
+    "uses": ["python-3.7.4-pywin32-64bit", "llvm-git-main-64bit", "node-14.15.5-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
     "os": "win"
   },
   {
     "version": "upstream-main",
     "bitness": 64,
-    "uses": ["llvm-git-main-64bit", "node-14.15.5-64bit", "python-3.7.4-2-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
+    "uses": ["python-3.9.2-1-64bit", "llvm-git-main-64bit", "node-14.15.5-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
     "os": "macos"
   },
   {
@@ -533,6 +552,7 @@
     "bitness": 64,
     "uses": ["node-14.15.5-64bit", "python-3.7.4-2-64bit", "releases-upstream-%releases-tag%-64bit"],
     "os": "macos",
+    "arch": "x86_64",
     "custom_install_script": "emscripten_npm_install"
   },
   {
@@ -554,6 +574,7 @@
     "bitness": 64,
     "uses": ["node-14.15.5-64bit", "python-3.7.4-2-64bit", "releases-fastcomp-%releases-tag%-64bit"],
     "os": "macos",
+    "arch": "x86_64",
     "custom_install_script": "emscripten_npm_install"
   },
   {
@@ -604,6 +625,7 @@
     "bitness": 32,
     "uses": ["fastcomp-clang-e%precompiled_tag32%-32bit", "node-8.9.1-32bit", "python-3.7.4-2-64bit", "emscripten-%precompiled_tag32%"],
     "os": "macos",
+    "arch": "x86_64",
     "version_filter": [
       ["%precompiled_tag32%", ">", "1.37.22"]
     ]
@@ -613,6 +635,7 @@
     "bitness": 64,
     "uses": ["fastcomp-clang-e%precompiled_tag64%-64bit", "node-8.9.1-64bit", "python-3.7.4-2-64bit", "emscripten-%precompiled_tag64%"],
     "os": "macos",
+    "arch": "x86_64",
     "version_filter": [
       ["%precompiled_tag64%", ">", "1.37.22"]
     ]
