@@ -90,8 +90,10 @@ def build_python():
         check_call(['brew', 'install', 'openssl', 'pkg-config'])
         if platform.machine() == 'x86_64':
             prefix = '/usr/local'
+            min_macos_version = '10.13'
         elif platform.machine() == 'arm64':
             prefix = '/opt/homebrew'
+            min_macos_version = '11.0'
 
         osname += '-' + platform.machine()  # Append '-x86_64' or '-arm64' depending on current arch. (TODO: Do this for Linux too, move this below?)
 
@@ -108,9 +110,14 @@ def build_python():
     if not os.path.exists(src_dir):
       check_call(['git', 'clone', 'https://github.com/python/cpython'])
     check_call(['git', 'checkout', 'v' + version], cwd=src_dir)
-    check_call(['./configure'], cwd=src_dir)
-    check_call(['make', '-j', str(multiprocessing.cpu_count())], cwd=src_dir)
-    check_call(['make', 'install', 'DESTDIR=install'], cwd=src_dir)
+
+    min_macos_version_line = '-mmacosx-version-min=' + min_macos_version  # Specify the min OS version we want the build to work on
+    build_flags = min_macos_version_line + ' -Werror=partial-availability'  # Build against latest SDK, but issue an error if using any API that would not work on the min OS version
+    env = os.environ.copy()
+    env['MACOSX_DEPLOYMENT_TARGET'] = min_macos_version
+    check_call(['./configure', 'CFLAGS=' + build_flags, 'CXXFLAGS=' + build_flags, 'LDFLAGS=' + min_macos_version_line], cwd=src_dir, env=env)
+    check_call(['make', '-j', str(multiprocessing.cpu_count())], cwd=src_dir, env=env)
+    check_call(['make', 'install', 'DESTDIR=install'], cwd=src_dir, env=env)
 
     install_dir = os.path.join(src_dir, 'install')
 
