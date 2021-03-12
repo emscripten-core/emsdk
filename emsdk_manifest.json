@@ -295,7 +295,7 @@
     "version": "3.9.2-1",
     "bitness": 64,
     "arch": "x86_64",
-    "macos_url": "python-3.9.2-1-macos.tar.gz",
+    "macos_url": "python-3.9.2-1-macos-x86_64.tar.gz",
     "activated_cfg": "PYTHON='%installation_dir%/bin/python3'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.9/site-packages/certifi/cacert.pem"
   },
