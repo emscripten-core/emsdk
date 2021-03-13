@@ -2043,20 +2043,6 @@ class Tool(object):
       else:
         raise Exception('Unknown custom_install_script command "' + self.custom_install_script + '"!')
 
-    if hasattr(self, 'custom_install_script'):
-      if self.custom_install_script == 'emscripten_post_install':
-        success = emscripten_post_install(self)
-      elif self.custom_install_script == 'emscripten_npm_install':
-        success = emscripten_npm_install(self, self.installation_path())
-      elif self.custom_install_script in ('build_fastcomp', 'build_llvm'):
-        # 'build_fastcomp' is a special one that does the download on its
-        # own, others do the download manually.
-        pass
-      elif self.custom_install_script == 'build_binaryen':
-        success = build_binaryen_tool(self)
-      else:
-        raise Exception('Unknown custom_install_script command "' + self.custom_install_script + '"!')
-
     if not success:
       exit_with_error("Installation failed!")
 
