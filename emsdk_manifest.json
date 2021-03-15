@@ -476,6 +476,29 @@
     "windows_url": "mingw_7.1.0_64bit.zip",
     "activated_cfg": "MINGW_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%/bin"
+  },
+  {
+    "id": "ninja",
+    "version": "git-release",
+    "bitness": 64,
+    "url": "https://github.com/ninja-build/ninja.git",
+    "git_branch": "release",
+    "activated_cfg": "NINJA=%installation_dir%/bin",
+    "activated_path": "%installation_dir%/bin",
+    "cmake_build_type": "Release",
+    "custom_install_script": "build_ninja"
+  },
+  {
+    "id": "ccache",
+    "version": "git-emscripten",
+    "bitness": 64,
+    "url": "https://github.com/juj/ccache.git",
+    "git_branch": "emscripten",
+    "activated_cfg": "EMCC_CCACHE=1",
+    "activated_path": "%installation_dir%/bin",
+    "activated_env": "EMCC_CCACHE=1;CCACHE_CONFIGPATH=%installation_dir%/emcc_ccache.conf",
+    "cmake_build_type": "Release",
+    "custom_install_script": "build_ccache"
   }
   ],
 
