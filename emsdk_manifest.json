@@ -514,9 +514,8 @@
     "bitness": 64,
     "url": "https://github.com/juj/ccache.git",
     "git_branch": "emscripten",
-    "activated_cfg": "EMCC_CCACHE=1",
     "activated_path": "%installation_dir%/bin",
-    "activated_env": "EMCC_CCACHE=1;CCACHE_CONFIGPATH=%installation_dir%/emcc_ccache.conf",
+    "activated_env": "_EMCC_CCACHE=1;CCACHE_CONFIGPATH=%installation_dir%/emcc_ccache.conf",
     "cmake_build_type": "Release",
     "custom_install_script": "build_ccache"
   }
