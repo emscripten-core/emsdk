@@ -11,7 +11,7 @@ filegroup(
         "env.sh",
         "@emscripten//:all",
         "@nodejs//:node_files",
-        "@npm//:node_modules",
+        "@emsdk_npm//:node_modules",
     ],
 )
 
