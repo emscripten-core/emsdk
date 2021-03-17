@@ -436,6 +436,11 @@ def _impl(ctx):
         # https://emscripten.org/docs/debugging/Sanitizers.html
         feature(name = "wasm_asan"),
         feature(name = "wasm_ubsan"),
+
+        feature(
+            name = "output_format_js",
+            enabled = True,
+        ),
     ]
 
     crosstool_default_flag_sets = [
@@ -546,6 +551,11 @@ def _impl(ctx):
             actions = all_link_actions,
             flags = ["-s", "PRINTF_LONG_DOUBLE=1"],
             features = ["precise_long_double_printf"],
+        ),
+        flag_set(
+            actions = all_link_actions,
+            flags = ["--oformat=js"],
+            features = ["output_format_js"],
         ),
 
         # Opt
