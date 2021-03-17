@@ -27,13 +27,13 @@ def _wasm_transition_impl(settings, attr):
 
     return {
         "//command_line_option:compiler": "emscripten",
-        "//command_line_option:crosstool_top": "//emscripten_toolchain:everything",
+        "//command_line_option:crosstool_top": "@emsdk//emscripten_toolchain:everything",
         "//command_line_option:cpu": "wasm",
         "//command_line_option:features": features,
         "//command_line_option:dynamic_mode": "off",
         "//command_line_option:linkopt": linkopts,
         "//command_line_option:platforms": [],
-        "//command_line_option:custom_malloc": "//emscripten_toolchain:malloc",
+        "//command_line_option:custom_malloc": "@emsdk//emscripten_toolchain:malloc",
     }
 
 _wasm_transition = transition(
@@ -143,7 +143,7 @@ wasm_cc_binary = rule(
             executable = True,
             allow_files = True,
             cfg = "exec",
-            default = Label("//emscripten_toolchain:wasm_binary"),
+            default = Label("@emsdk//emscripten_toolchain:wasm_binary"),
         ),
     },
     outputs = _wasm_binary_outputs,
