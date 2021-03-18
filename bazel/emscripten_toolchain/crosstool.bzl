@@ -1006,6 +1006,22 @@ def _impl(ctx):
     ]
 
     crosstool_default_env_sets = [
+        # Globals
+        env_set(
+            actions = all_compile_actions +
+                      all_link_actions +
+                      [ACTION_NAMES.cpp_link_static_library],
+            env_entries = [
+                env_entry(
+                    key = "EMSCRIPTEN_PATH",
+                    value = "external/emscripten/emscripten",
+                ),
+                env_entry(
+                    key = "EMCONFIG_PATH",
+                    value = ctx.file.em_config.path,
+                ),
+            ],
+        ),
         # Use llvm backend.  Off by default, enabled via --features=llvm_backend
         env_set(
             actions = all_compile_actions +
@@ -1084,6 +1100,7 @@ emscripten_cc_toolchain_config_rule = rule(
     attrs = {
         "cpu": attr.string(mandatory = True, values = ["asmjs", "wasm"]),
         "emscripten_version": attr.string(mandatory = True),
+        "em_config": attr.label(mandatory = True, allow_single_file=True),
     },
     provides = [CcToolchainConfigInfo],
     executable = True,

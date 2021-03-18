@@ -50,6 +50,7 @@ emscripten_cc_toolchain_config_rule(
     name = "wasm",
     cpu = "wasm",
     emscripten_version = "emscripten",
+    em_config = "emscripten_config",
 )
 
 cc_toolchain(
