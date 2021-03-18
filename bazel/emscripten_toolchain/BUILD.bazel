@@ -49,8 +49,8 @@ cc_library(name = "malloc")
 emscripten_cc_toolchain_config_rule(
     name = "wasm",
     cpu = "wasm",
-    emscripten_version = "emscripten",
     em_config = "emscripten_config",
+    emscripten_binaries = "@emscripten//:all",
 )
 
 cc_toolchain(

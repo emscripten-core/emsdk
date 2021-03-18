@@ -69,7 +69,6 @@ def _impl(ctx):
     abi_libc_version = "default"
 
     cc_target_os = "emscripten"
-    emscripten_version = ctx.attr.emscripten_version
 
     builtin_sysroot = "external/emscripten/emscripten/cache/sysroot"
 
@@ -1013,11 +1012,11 @@ def _impl(ctx):
                       [ACTION_NAMES.cpp_link_static_library],
             env_entries = [
                 env_entry(
-                    key = "EMSCRIPTEN_PATH",
-                    value = "external/emscripten/emscripten",
+                    key = "EM_BIN_PATH",
+                    value = ctx.attr.emscripten_binaries.label.workspace_root
                 ),
                 env_entry(
-                    key = "EMCONFIG_PATH",
+                    key = "EM_CONFIG_PATH",
                     value = ctx.file.em_config.path,
                 ),
             ],
@@ -1099,8 +1098,8 @@ emscripten_cc_toolchain_config_rule = rule(
     implementation = _impl,
     attrs = {
         "cpu": attr.string(mandatory = True, values = ["asmjs", "wasm"]),
-        "emscripten_version": attr.string(mandatory = True),
         "em_config": attr.label(mandatory = True, allow_single_file=True),
+        "emscripten_binaries": attr.label(mandatory = True),
     },
     provides = [CcToolchainConfigInfo],
     executable = True,
