@@ -31,3 +31,6 @@ __pycache__
 /mingw
 /spidermonkey
 /binaryen
+
+/artifacts
+/.dotnet

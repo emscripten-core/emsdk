@@ -1,0 +1,47 @@
+[
+    {
+        "Name": "NuGet3MinVersion",
+        "Description": "When using NuGet 3.x this package requires at least version {0}.",
+        "CommonTypes": [ ]
+    },
+    {
+        "Name": "Microsoft.NET.Runtime.Emscripten.2.0.12.Node.osx-x64",
+        "Description": "Contains Emscripten Node binaries for osx-x64.",
+        "CommonTypes": [ ]
+    },
+    {
+        "Name": "Microsoft.NET.Runtime.Emscripten.2.0.12.Python.osx-x64",
+        "Description": "Contains Emscripten Python binaries for osx-x64.",
+        "CommonTypes": [ ]
+    },
+    {
+        "Name": "Microsoft.NET.Runtime.Emscripten.2.0.12.Sdk.osx-x64",
+        "Description": "Contains Emscripten SDK binaries for osx-x64.",
+        "CommonTypes": [ ]
+    },
+    {
+        "Name": "Microsoft.NET.Runtime.Emscripten.2.0.12.Node.linux-x64",
+        "Description": "Contains Emscripten Node binaries for linux-x64.",
+        "CommonTypes": [ ]
+    },
+    {
+        "Name": "Microsoft.NET.Runtime.Emscripten.2.0.12.Sdk.linux-x64",
+        "Description": "Contains Emscripten SDK binaries for linux-x64.",
+        "CommonTypes": [ ]
+    },
+    {
+        "Name": "Microsoft.NET.Runtime.Emscripten.2.0.12.Node.win-x64",
+        "Description": "Contains Emscripten Node binaries for win-x64.",
+        "CommonTypes": [ ]
+    },
+    {
+        "Name": "Microsoft.NET.Runtime.Emscripten.2.0.12.Python.win-x64",
+        "Description": "Contains Emscripten Python binaries for win-x64.",
+        "CommonTypes": [ ]
+    },
+    {
+        "Name": "Microsoft.NET.Runtime.Emscripten.2.0.12.Sdk.win-x64",
+        "Description": "Contains Emscripten SDK binaries for win-x64.",
+        "CommonTypes": [ ]
+    }
+]

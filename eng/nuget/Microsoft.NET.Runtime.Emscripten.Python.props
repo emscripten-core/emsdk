@@ -1,0 +1,5 @@
+<Project>
+  <ItemGroup>
+    <File Include="$(ArtifactsObjDir)python\**" TargetPath="tools\%(RecursiveDir)" SkipPackageFileCheck="true" />
+  </ItemGroup>
+</Project>

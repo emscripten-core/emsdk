@@ -1,0 +1,8 @@
+<Project>
+  <Import Project="$(RepoRoot)\Directory.Build.props" />
+  <Import Project="$(NuGetPackageRoot)\microsoft.dotnet.build.tasks.packaging\$(MicrosoftDotNetBuildTasksPackagingVersion)\build\Microsoft.DotNet.Build.Tasks.Packaging.props" />
+  <Import Project="Microsoft.NET.Runtime.Emscripten.Common.props" />
+  <Import Project="Microsoft.NET.Runtime.Emscripten.Node.props" />
+  <Import Project="$(NuGetPackageRoot)\microsoft.dotnet.build.tasks.packaging\$(MicrosoftDotNetBuildTasksPackagingVersion)\build\Microsoft.DotNet.Build.Tasks.Packaging.targets" />
+  <Import Project="$(RepoRoot)\Directory.Build.targets" />
+</Project>

@@ -1,0 +1,93 @@
+<Project>
+  <Import Project="$(RepoRoot)\Directory.Build.props" />
+  <Target Name="Build">
+    <Error Condition="'$(PackageRID)' == ''" Text="PackageRID needs to be specified, e.g. 'osx-x64'!" />
+
+    <PropertyGroup>
+      <EmSdkFileName Condition="!$([MSBuild]::IsOSPlatform(Windows))">./emsdk</EmSdkFileName>
+      <EmSdkFileName Condition="$([MSBuild]::IsOSPlatform(Windows))">emsdk.bat</EmSdkFileName>
+      <StripCommand Condition="$([MSBuild]::IsOSPlatform(Linux))">strip -s</StripCommand>
+      <StripCommand Condition="$([MSBuild]::IsOSPlatform(OSX))">strip</StripCommand>
+      <UsesPythonFromEmsdk Condition="!$([MSBuild]::IsOSPlatform(Linux))">true</UsesPythonFromEmsdk>
+    </PropertyGroup>
+
+    <Exec WorkingDirectory="$(RepoRoot)"
+          Command="$(EmSdkFileName) install $(EmscriptenVersion)" />
+
+    <PropertyGroup>
+      <NodeDirectory>$([System.IO.Directory]::GetDirectories("$(RepoRoot)\node", "*"))</NodeDirectory>
+      <PythonDirectory Condition="'$(UsesPythonFromEmsdk)' == 'true'">$([System.IO.Directory]::GetDirectories("$(RepoRoot)\python", "*"))</PythonDirectory>
+      <UpstreamDirectory>$(RepoRoot)\upstream</UpstreamDirectory>
+    </PropertyGroup>
+
+    <Message Importance="High" Text="Found node directory: $(NodeDirectory)" />
+    <Message Importance="High" Text="Found python directory: $(PythonDirectory)" Condition="'$(UsesPythonFromEmsdk)' == 'true'" />
+    <Message Importance="High" Text="Found upstream directory: $(UpstreamDirectory)" />
+
+    <ItemGroup>
+      <NodeFiles Include="$(NodeDirectory)\**\*" />
+      <PythonFiles Include="$(PythonDirectory)\**\*" Condition="'$(UsesPythonFromEmsdk)' == 'true'" />
+      <UpstreamFiles Include="$(UpstreamDirectory)\**\*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(NodeFiles)"
+          DestinationFiles="$(ArtifactsObjDir)node\%(RecursiveDir)%(Filename)%(Extension)" />
+
+    <Copy SourceFiles="@(PythonFiles)"
+          DestinationFiles="$(ArtifactsObjDir)python\%(RecursiveDir)%(Filename)%(Extension)"
+          Condition="'$(UsesPythonFromEmsdk)' == 'true'" />
+
+    <Copy SourceFiles="@(UpstreamFiles)"
+          DestinationFiles="$(ArtifactsObjDir)upstream\%(RecursiveDir)%(Filename)%(Extension)" />
+
+    <!-- Fixup files that were symlinks originally (on Linux/Mac, Windows has an equivalent already) -->
+    <ItemGroup>
+      <EmscriptenNodeModulesBinFiles Include="$(ArtifactsObjDir)upstream\emscripten\node_modules\.bin\*" />
+    </ItemGroup>
+    <WriteLinesToFile
+      Condition="$([MSBuild]::IsOSPlatform(Linux)) or $([MSBuild]::IsOSPlatform(OSX))"
+      Lines="require('../%(Filename)/cli.js')"
+      File="%(EmscriptenNodeModulesBinFiles.FullPath)"
+      Overwrite="true" />
+
+    <!-- Remove unnecessary artifacts -->
+    <RemoveDir Directories="$(ArtifactsObjDir)upstream\emscripten\tests" />
+    <RemoveDir Directories="$(ArtifactsObjDir)upstream\emscripten\node_modules\google-closure-compiler" />
+    <RemoveDir Directories="$(ArtifactsObjDir)upstream\emscripten\node_modules\google-closure-compiler-java" />
+    <RemoveDir Directories="$(ArtifactsObjDir)upstream\emscripten\node_modules\google-closure-compiler-osx" />
+    <RemoveDir Directories="$(ArtifactsObjDir)upstream\emscripten\node_modules\google-closure-compiler-windows" />
+    <RemoveDir Directories="$(ArtifactsObjDir)upstream\emscripten\node_modules\google-closure-compiler-linux" />
+    <RemoveDir Directories="$(ArtifactsObjDir)node\include" />
+    <RemoveDir Directories="$(ArtifactsObjDir)node\lib" />
+    <RemoveDir Directories="$(ArtifactsObjDir)node\share" />
+
+    <Delete Files="$(ArtifactsObjDir)upstream\lib\libclang.dylib" /> <!-- only libclang-cpp.dylib is used -->
+    <Delete Files="$(ArtifactsObjDir)node\bin\npm" />
+    <Delete Files="$(ArtifactsObjDir)node\bin\npx" />
+
+    <!-- on Windows these are identical copies that should be symlinks, remove them for now -->
+    <Delete Files="$(ArtifactsObjDir)upstream\bin\clang++.exe" />
+    <Delete Files="$(ArtifactsObjDir)upstream\bin\wasm32-clang++.exe" />
+    <Delete Files="$(ArtifactsObjDir)upstream\bin\wasm32-clang.exe" />
+    <Delete Files="$(ArtifactsObjDir)upstream\bin\wasm32-wasi-clang.exe" />
+    <Delete Files="$(ArtifactsObjDir)upstream\bin\wasm32-wasi-clang++.exe" />
+    <Delete Files="$(ArtifactsObjDir)upstream\bin\ld64.lld.darwinnew.exe" />
+    <Delete Files="$(ArtifactsObjDir)upstream\bin\ld64.lld.exe" />
+    <!--<Delete Files="$(ArtifactsObjDir)upstream\bin\wasm-ld.exe" />--> <!-- TODO: this is used by emcc but could be a symlink to ld.exe -->
+
+    <!-- Strip binaries -->
+    <ItemGroup>
+      <UpstreamBinFiles Include="$(ArtifactsObjDir)upstream\bin\*" />
+    </ItemGroup>
+    <Exec Condition="'$(StripCommand)' != ''" Command="$(StripCommand) $(ArtifactsObjDir)node/bin/node" IgnoreStandardErrorWarningFormat="true" />
+    <Exec Condition="'$(StripCommand)' != ''" Command="$(StripCommand) %(UpstreamBinFiles.Identity) || true" IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+  <Target Name="Restore" />
+  <Target Name="Test" />
+  <Target Name="Pack" DependsOnTargets="Build">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.$(EmscriptenVersion).Node.$(PackageRID).pkgproj" Targets="Build" />
+    <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.$(EmscriptenVersion).Python.$(PackageRID).pkgproj" Targets="Build" Condition="'$(UsesPythonFromEmsdk)' == 'true'" />
+    <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.$(EmscriptenVersion).Sdk.$(PackageRID).pkgproj" Targets="Build" />
+  </Target>
+  <Import Project="$(RepoRoot)\Directory.Build.targets" />
+</Project>

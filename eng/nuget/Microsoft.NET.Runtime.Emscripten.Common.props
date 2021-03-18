@@ -1,0 +1,27 @@
+<Project>
+  <PropertyGroup>
+    <GitHubRepositoryName>emsdk</GitHubRepositoryName>
+    <RepositoryUrl>git://github.com/dotnet/emsdk</RepositoryUrl>
+    <ProjectUrl>https://github.com/dotnet/emsd</ProjectUrl>
+    <LicenseUrl>https://github.com/dotnet/emsdk/blob/main/LICENSE</LicenseUrl>
+    <ReleaseNotes>https://go.microsoft.com/fwlink/?LinkID=799421</ReleaseNotes>
+
+    <PackageVersion>$(VersionPrefix)</PackageVersion>
+    <PackageDescriptionFile>$(MSBuildThisFileDirectory)/descriptions.json</PackageDescriptionFile>
+    <PackageLicenseFile>$(RepoRoot)/LICENSE</PackageLicenseFile>
+    <PackageIndexFile>$(MSBuildThisFileDirectory)/packageIndex.json</PackageIndexFile>
+
+    <IsShipping>true</IsShipping>
+
+    <!-- This repo doesn't currently use the index so don't force it to be in sync -->
+    <SkipIndexCheck>true</SkipIndexCheck>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageIndex Include="$(PackageIndexFile)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <File Include="$(PackageLicenseFile)" SkipPackageFileCheck="true" />
+  </ItemGroup>
+</Project>
