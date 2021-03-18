@@ -52,13 +52,32 @@ parser.add_argument('--oformat')
 output_file = options.o
 oformat = options.oformat
 outdir = os.path.dirname(output_file)
-base_name_ext = os.path.basename(output_file)
-base_name = os.path.splitext(base_name_ext)[0]
+base_name = os.path.basename(output_file)
 
 # The output file name is the name of the build rule that was built.
 # Add an appropriate file extension based on --oformat.
-if oformat != None:
-  os.rename(output_file, output_file + '.' + oformat)
+if oformat is not None:
+  base_name_split = os.path.splitext(base_name)
+
+  # If the output name has no extension, give it the appropriate extension.
+  if not base_name_split[1]:
+    os.rename(output_file, output_file + '.' + oformat)
+
+  # If the output name does have an extension and it matches the output format,
+  # change the base_name so it doesn't have an extension.
+  elif base_name_split[1] == '.' + oformat:
+    base_name = base_name_split[0]
+
+  # If the output name does have an extension and it does not match the output
+  # format, change the base_name so it doesn't have an extension and rename
+  # the output_file so it has the proper extension.
+  # Note that if you do something like name your build rule "foo.js" and pass
+  # "--oformat=html", emscripten will write to the same file for both the js and
+  # html output, overwriting the js output entirely with the html.
+  # Please don't do that.
+  else:
+    base_name = base_name_split[0]
+    os.rename(output_file, os.path.join(outdir, base_name + '.' + oformat))
 
 files = []
 extensions = [
