@@ -70,7 +70,9 @@ def _impl(ctx):
 
     cc_target_os = "emscripten"
 
-    builtin_sysroot = "external/emscripten/emscripten/cache/sysroot"
+    emscripten_dir = ctx.attr.emscripten_binaries.label.workspace_root
+
+    builtin_sysroot = emscripten_dir + "/emscripten/cache/sysroot"
 
     ################################################################
     # Tools
@@ -898,7 +900,7 @@ def _impl(ctx):
                 "-iwithsysroot" + "/include/c++/v1",
                 "-iwithsysroot" + "/include/compat",
                 "-iwithsysroot" + "/include",
-                "-isystem", "external/emscripten/lib/clang/13.0.0/include",
+                "-isystem", emscripten_dir + "/lib/clang/13.0.0/include",
             ],
         ),
         # Inputs and outputs
@@ -1057,10 +1059,10 @@ def _impl(ctx):
     features.append(crosstool_default_flags_feature)
 
     cxx_builtin_include_directories = [
-        "external/emscripten/emscripten/cache/sysroot/include/c++/v1",
-        "external/emscripten/emscripten/cache/sysroot/include/compat",
-        "external/emscripten/emscripten/cache/sysroot/include",
-        "external/emscripten/lib/clang/13.0.0/include",
+        emscripten_dir + "emscripten/cache/sysroot/include/c++/v1",
+        emscripten_dir + "emscripten/cache/sysroot/include/compat",
+        emscripten_dir + "emscripten/cache/sysroot/include",
+        emscripten_dir + "lib/clang/13.0.0/include",
     ]
 
     artifact_name_patterns = []
