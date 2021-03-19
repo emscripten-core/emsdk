@@ -37,7 +37,7 @@ stages:
           vmImage: macOS-10.15
         steps:
         - bash: |
-            ./build.sh -ci -configuration $(_BuildConfig) $(_InternalPublishArg) /p:PackageRID=osx-x64 $(_InternalBuildArgs)
+            ./build.sh -ci -configuration $(_BuildConfig) $(_InternalPublishArg) /p:PackageRID=osx-x64 /p:AssetManifestOS=osx /p:PlatformName=x64 $(_InternalBuildArgs)
           displayName: Build and Publish
 
       ############ Linux BUILD ############
@@ -48,7 +48,7 @@ stages:
           vmImage: ubuntu-20.04
         steps:
         - bash: |
-            ./build.sh -ci -configuration $(_BuildConfig) $(_InternalPublishArg) /p:PackageRID=linux-x64 $(_InternalBuildArgs)
+            ./build.sh -ci -configuration $(_BuildConfig) $(_InternalPublishArg) /p:PackageRID=linux-x64 /p:AssetManifestOS=linux /p:PlatformName=x64 $(_InternalBuildArgs)
           displayName: Build and Publish
 
       ############ Windows BUILD ############
@@ -59,7 +59,7 @@ stages:
           vmImage: windows-2019
         steps:
         - script: |
-            .\build.cmd -ci -configuration $(_BuildConfig) $(_InternalPublishArg) /p:PackageRID=win-x64 $(_InternalBuildArgs)
+            .\build.cmd -ci -configuration $(_BuildConfig) $(_InternalPublishArg) /p:PackageRID=win-x64 /p:AssetManifestOS=win /p:PlatformName=x64 $(_InternalBuildArgs)
           displayName: Build and Publish
 
 
