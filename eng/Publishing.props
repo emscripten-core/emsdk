@@ -2,5 +2,6 @@
 <Project>
    <PropertyGroup>
       <PublishingVersion>3</PublishingVersion>
+      <AutoGenerateSymbolPackages>false</AutoGenerateSymbolPackages> <!-- we don't need symbol packages for emsdk -->
    </PropertyGroup>
 </Project>
