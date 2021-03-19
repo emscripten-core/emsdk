@@ -10,6 +10,12 @@ def emscripten_deps(emscripten_version = "latest"):
     if version == "latest":
         version = EMSCRIPTEN_TAGS.keys()[0]
 
+    if version not in EMSCRIPTEN_TAGS.keys():
+        error_msg = "Emscripten version {} not found.".format(version)
+        error_msg += " Look at @emsdk//:revisions.bzl for the list "
+        error_msg += "of currently supported versions."
+        fail(error_msg)
+
     revision = EMSCRIPTEN_TAGS[version]
 
     emscripten_url = "https://storage.googleapis.com/webassembly/emscripten-releases-builds/{}/{}/wasm-binaries.tbz2"
