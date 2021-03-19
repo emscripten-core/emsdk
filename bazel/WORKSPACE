@@ -3,5 +3,5 @@ workspace(name = "emsdk")
 load(":deps.bzl", "deps")
 deps()
 
-load(":npm_deps.bzl", "npm_deps")
-npm_deps()
+load(":emscripten_deps.bzl", "emscripten_deps")
+emscripten_deps()
