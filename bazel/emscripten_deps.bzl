@@ -22,8 +22,3 @@ def emscripten_deps(version = "2.0.15"):
         package_lock_json = "@emscripten_bin_linux//:emscripten/package-lock.json",
     )
 
-    native.local_repository(
-        name = "emscripten",
-        path = "alias",
-    )
-
