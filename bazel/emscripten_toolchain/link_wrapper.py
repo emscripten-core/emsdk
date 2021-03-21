@@ -48,7 +48,7 @@ if rtn != 0:
 parser = argparse.ArgumentParser(add_help=False)
 parser.add_argument('-o')
 parser.add_argument('--oformat')
-(options, _) = parser.parse_known_args(param_file_args)
+options = parser.parse_known_args(param_file_args)[0]
 output_file = options.o
 oformat = options.oformat
 outdir = os.path.dirname(output_file)
