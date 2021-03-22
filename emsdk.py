@@ -2767,6 +2767,8 @@ def expand_sdk_name(name, activating):
           backend = 'fastcomp'
       return 'sdk-releases-%s-%s-64bit' % (backend, release_hash)
     elif len(version) == 40:
+      if backend is None:
+        backend = 'upstream'
       global extra_release_tag
       extra_release_tag = version
       return 'sdk-releases-%s-%s-64bit' % (backend, version)
