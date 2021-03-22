@@ -2806,7 +2806,7 @@ def main(args):
                   --build=<type>: Controls what kind of build of LLVM to
                                   perform. Pass either 'Debug', 'Release',
                                   'MinSizeRel' or 'RelWithDebInfo'. Default:
-                                  'RelWithDebInfo'.
+                                  'Release'.
 
               --generator=<type>: Specifies the CMake Generator to be used
                                   during the build. Possible values are the
