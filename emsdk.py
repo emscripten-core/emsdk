@@ -116,6 +116,9 @@ elif machine.endswith('86'):
   ARCH = 'x86'
 elif machine.startswith('aarch64') or machine.lower().startswith('arm64'):
   ARCH = 'aarch64'
+  if MACOS:
+    # arm64 macOS runs x86_64 binaries and we don't have build bots yet for native
+    ARCH = 'x86_64'
 elif platform.machine().startswith('arm'):
   ARCH = 'arm'
 else:
