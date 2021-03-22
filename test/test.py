@@ -259,10 +259,10 @@ int main() {
 
   def test_install_arbitrary(self):
     # Test that its possible to install arbrary emscripten-releases SDKs
-    run_emsdk('install sdk-releases-upstream-5c776e6a91c0cb8edafca16a652ee1ee48f4f6d2')
+    run_emsdk('install 5c776e6a91c0cb8edafca16a652ee1ee48f4f6d2')
 
     # Check that its not re-downloaded
-    checked_call_with_output(emsdk + ' install sdk-releases-upstream-5c776e6a91c0cb8edafca16a652ee1ee48f4f6d2', expected='Skipped', unexpected='Downloading:')
+    checked_call_with_output(emsdk + ' install 5c776e6a91c0cb8edafca16a652ee1ee48f4f6d2', expected='Skipped', unexpected='Downloading:')
 
 
 if __name__ == '__main__':
