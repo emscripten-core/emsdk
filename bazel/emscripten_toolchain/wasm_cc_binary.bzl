@@ -74,6 +74,7 @@ def _wasm_binary_impl(ctx):
         ctx.outputs.data,
         ctx.outputs.symbols,
         ctx.outputs.dwarf,
+        ctx.outputs.html,
     ]
 
     ctx.actions.run(
@@ -103,6 +104,7 @@ def _wasm_binary_outputs(name, cc_target):
         "data": "{}/{}.data".format(name, basename),
         "symbols": "{}/{}.js.symbols".format(name, basename),
         "dwarf": "{}/{}.wasm.debug.wasm".format(name, basename),
+        "html": "{}/{}.html".format(name, basename),
     }
 
     return outputs
