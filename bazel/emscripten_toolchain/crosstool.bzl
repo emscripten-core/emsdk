@@ -1015,7 +1015,7 @@ def _impl(ctx):
             env_entries = [
                 env_entry(
                     key = "EM_BIN_PATH",
-                    value = ctx.attr.emscripten_binaries.label.workspace_root
+                    value = emscripten_dir,
                 ),
                 env_entry(
                     key = "EM_CONFIG_PATH",
