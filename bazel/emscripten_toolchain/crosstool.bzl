@@ -1059,10 +1059,10 @@ def _impl(ctx):
     features.append(crosstool_default_flags_feature)
 
     cxx_builtin_include_directories = [
-        emscripten_dir + "emscripten/cache/sysroot/include/c++/v1",
-        emscripten_dir + "emscripten/cache/sysroot/include/compat",
-        emscripten_dir + "emscripten/cache/sysroot/include",
-        emscripten_dir + "lib/clang/13.0.0/include",
+        emscripten_dir + "/emscripten/cache/sysroot/include/c++/v1",
+        emscripten_dir + "/emscripten/cache/sysroot/include/compat",
+        emscripten_dir + "/emscripten/cache/sysroot/include",
+        emscripten_dir + "/lib/clang/13.0.0/include",
     ]
 
     artifact_name_patterns = []
