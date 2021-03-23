@@ -1,0 +1,6 @@
+<Project>
+    <PropertyGroup>
+        <EmscriptenSdkToolsPath>$(MSBuildThisFileDirectory)..\tools\</EmscriptenSdkToolsPath>
+        <EmSdkUpstreamBinPath>$(EmscriptenSdkToolsPath)bin\</EmSdkUpstreamBinPath>
+    </PropertyGroup>
+</Project>

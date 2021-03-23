@@ -1,5 +1,6 @@
 <Project>
   <ItemGroup>
     <File Include="$(ArtifactsObjDir)python\**" TargetPath="tools\%(RecursiveDir)" SkipPackageFileCheck="true" />
+    <File Include="$(RepoRoot)eng\sdk_files\Emscripten.Python.props" TargetPath="Sdk\Sdk.props" SkipPackageFileCheck="true" />
   </ItemGroup>
 </Project>

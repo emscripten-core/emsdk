@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <EmscriptenNodeToolsPath>$(MSBuildThisFileDirectory)..\tools\</EmscriptenNodeToolsPath>
+  </PropertyGroup>
+</Project>
