@@ -60,6 +60,7 @@
     <RemoveDir Directories="$(ArtifactsObjDir)node\include" />
     <RemoveDir Directories="$(ArtifactsObjDir)node\lib" />
     <RemoveDir Directories="$(ArtifactsObjDir)node\share" />
+    <RemoveDir Directories="$(ArtifactsObjDir)node\bin\node_modules" />
 
     <Delete Files="$(ArtifactsObjDir)upstream\lib\libclang.dylib" /> <!-- only libclang-cpp.dylib is used -->
     <Delete Files="$(ArtifactsObjDir)node\bin\npm" />
