@@ -39,6 +39,9 @@ stages:
         - bash: |
             ./build.sh -ci -configuration $(_BuildConfig) $(_InternalPublishArg) /p:PackageRID=osx-x64 /p:AssetManifestOS=osx /p:PlatformName=x64 $(_InternalBuildArgs)
           displayName: Build and Publish
+        - bash: |
+            rm -rf upstream node python
+          displayName: Remove temporary artifacts
 
       ############ Linux BUILD ############
       - job: Build_Linux
@@ -50,6 +53,9 @@ stages:
         - bash: |
             ./build.sh -ci -configuration $(_BuildConfig) $(_InternalPublishArg) /p:PackageRID=linux-x64 /p:AssetManifestOS=linux /p:PlatformName=x64 $(_InternalBuildArgs)
           displayName: Build and Publish
+        - bash: |
+            rm -rf upstream node python
+          displayName: Remove temporary artifacts
 
       ############ Windows BUILD ############
       - job: Build_Windows
@@ -61,7 +67,9 @@ stages:
         - script: |
             .\build.cmd -ci -configuration $(_BuildConfig) $(_InternalPublishArg) /p:PackageRID=win-x64 /p:AssetManifestOS=win /p:PlatformName=x64 $(_InternalBuildArgs)
           displayName: Build and Publish
-
+        - script: |
+            rmdir /s /q upstream node python
+          displayName: Remove temporary artifacts
 
 ############ POST BUILD ARCADE LOGIC ############
 - ${{ if and(ne(variables['System.TeamProject'], 'public'), ne(variables['Build.Reason'], 'PullRequest')) }}:
