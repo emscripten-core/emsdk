@@ -6,9 +6,9 @@ set -x
 set -e
 
 # Get the latest version number from emscripten-releases-tag.txt.
-VER=$(grep -oP '(?<=latest\": \")([\d\.]+)(?=\")' \
+VER=$(ggrep -oP '(?<=latest\": \")([\d\.]+)(?=\")' \
         emscripten-releases-tags.txt \
-      | sed --expression "s/\./\\\./g")
+      | sed "s/\./\\\./g")
 # Based on the latest version number, get the commit hash for that version.
 HASH=$(grep "${VER}" emscripten-releases-tags.txt \
       | grep -v latest \
