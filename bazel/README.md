@@ -55,3 +55,7 @@ Now you can run `bazel build :hello-world-wasm`. The result of this build will
 be the individual files produced by emscripten. Note that some of these files
 may be empty. This is because bazel has no concept of optional outputs for
 rules.
+
+`wasm_cc_binary` uses transition to use emscripten toolchain on `cc_target`
+and all of its dependencies, and does not require amending `.bazelrc`. This
+is the preferred way, since it also unpacks the resulting tarball.
