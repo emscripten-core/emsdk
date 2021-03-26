@@ -3,10 +3,10 @@
 
 EMSCRIPTEN_TAGS = {
    "2.0.16": struct(
-        hash = "256179b9dd2323e77af4a9553f51ede6b14d93be",
-        sha_linux = "46d2be1c14591b35397870af4a3dab3e3422f9f5d8debd2abe8a90f0895acf37",
-        sha_mac = "01476cf7b4060e2bb3cdf8a1c832caf221f65cfb34e0826f7555f0900f68c961",
-        sha_win = "9064205b965554027559cc978edf894a3c418452775980fe3f971813aa2c7810",
+        hash = "80d9674f2fafa6b9346d735c42d5c52b8cc8aa8e",
+        sha_linux = "e527638b224d9a30dc7e5fa4b9bd2eb2ab76ad306739ba8cacf5a5e333933a2a",
+        sha_mac = "061020eb0e3ee0611dc5a0008ccc7778168a4f838d49ca41c0aad8c52c1a01c9",
+        sha_win = "99364ed0388f928e0594f790662bf3a30c2894b0eff81797e1b64f62128561cb",
     ),
    "2.0.15": struct(
         hash = "89202930a98fe7f9ed59b574469a9471b0bda7dd",
