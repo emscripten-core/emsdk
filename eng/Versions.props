@@ -8,6 +8,6 @@
     <EmscriptenVersion>2.0.12</EmscriptenVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <MicrosoftDotNetBuildTasksPackagingVersion>6.0.0-beta.21203.1</MicrosoftDotNetBuildTasksPackagingVersion>
+    <MicrosoftDotNetBuildTasksPackagingVersion>6.0.0-beta.21209.17</MicrosoftDotNetBuildTasksPackagingVersion>
   </PropertyGroup>
 </Project>
