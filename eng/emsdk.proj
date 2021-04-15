@@ -6,6 +6,8 @@
     <PropertyGroup>
       <EmSdkFileName Condition="!$([MSBuild]::IsOSPlatform(Windows))">./emsdk</EmSdkFileName>
       <EmSdkFileName Condition="$([MSBuild]::IsOSPlatform(Windows))">emsdk.bat</EmSdkFileName>
+      <NpmFileName Condition="!$([MSBuild]::IsOSPlatform(Windows))">npm</NpmFileName>
+      <NpmFileName Condition="$([MSBuild]::IsOSPlatform(Windows))">npm.cmd</NpmFileName>
       <StripCommand Condition="$([MSBuild]::IsOSPlatform(Linux))">strip -s</StripCommand>
       <StripCommand Condition="$([MSBuild]::IsOSPlatform(OSX))">strip</StripCommand>
       <UsesPythonFromEmsdk Condition="!$([MSBuild]::IsOSPlatform(Linux))">true</UsesPythonFromEmsdk>
@@ -18,12 +20,33 @@
       <NodeDirectory>$([System.IO.Directory]::GetDirectories("$(RepoRoot)\node", "*"))</NodeDirectory>
       <PythonDirectory Condition="'$(UsesPythonFromEmsdk)' == 'true'">$([System.IO.Directory]::GetDirectories("$(RepoRoot)\python", "*"))</PythonDirectory>
       <UpstreamDirectory>$(RepoRoot)\upstream</UpstreamDirectory>
+      <UpstreamEmscriptenDirectory>$(UpstreamDirectory)\emscripten</UpstreamEmscriptenDirectory>
     </PropertyGroup>
 
     <Message Importance="High" Text="Found node directory: $(NodeDirectory)" />
     <Message Importance="High" Text="Found python directory: $(PythonDirectory)" Condition="'$(UsesPythonFromEmsdk)' == 'true'" />
     <Message Importance="High" Text="Found upstream directory: $(UpstreamDirectory)" />
 
+    <Message Importance="High" Text="Pruning node modules in: $(UpstreamEmscriptenDirectory)" />
+    <PropertyGroup>
+      <NpmPath>$(NodeDirectory):$(PATH)</NpmPath>
+      <NpmPath Condition="$([MSBuild]::IsOSPlatform(Windows))">$(NodeDirectory)%3B$(PATH.Replace(';', '%3B'))</NpmPath>
+    </PropertyGroup>
+    <ItemGroup>
+      <NpmEnvironmentVariables Include="PATH=$(NpmPath)" />
+    </ItemGroup>
+    <Exec WorkingDirectory="$(UpstreamEmscriptenDirectory)"
+          Command="$(NpmFileName) prune --production"
+          EnvironmentVariables="@(NpmEnvironmentVariables)" />
+
+    <!-- These symlinks are broken after npm prune -->
+    <Delete Files="$(UpstreamEmscriptenDirectory)\node_modules\.bin\es-check" />
+    <Delete Files="$(UpstreamEmscriptenDirectory)\node_modules\.bin\mkdirp" />
+    <Delete Files="$(UpstreamEmscriptenDirectory)\node_modules\.bin\prettyjson" />
+    <Delete Files="$(UpstreamEmscriptenDirectory)\node_modules\.bin\tabtab" />
+    <Delete Files="$(UpstreamEmscriptenDirectory)\node_modules\.bin\wscat" />
+
+    <Message Importance="High" Text="Copy files to artifacts directory..." />
     <ItemGroup>
       <NodeFiles Include="$(NodeDirectory)\**\*" />
       <PythonFiles Include="$(PythonDirectory)\**\*" Condition="'$(UsesPythonFromEmsdk)' == 'true'" />
@@ -80,12 +103,14 @@
     <ItemGroup>
       <UpstreamBinFiles Include="$(ArtifactsObjDir)upstream\bin\*" />
     </ItemGroup>
+    <Message Importance="High" Text="Stripping binaries..." />
     <Exec Condition="'$(StripCommand)' != ''" Command="$(StripCommand) $(ArtifactsObjDir)node/bin/node" IgnoreStandardErrorWarningFormat="true" />
     <Exec Condition="'$(StripCommand)' != ''" Command="$(StripCommand) %(UpstreamBinFiles.Identity) || true" IgnoreStandardErrorWarningFormat="true" />
   </Target>
   <Target Name="Restore" />
   <Target Name="Test" />
   <Target Name="Pack" DependsOnTargets="Build">
+    <Message Importance="High" Text="Creating nuget packages..." />
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.$(EmscriptenVersion).Node.$(PackageRID).pkgproj" Targets="Build" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.$(EmscriptenVersion).Python.$(PackageRID).pkgproj" Targets="Build" Condition="'$(UsesPythonFromEmsdk)' == 'true'" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.$(EmscriptenVersion).Sdk.$(PackageRID).pkgproj" Targets="Build" />
