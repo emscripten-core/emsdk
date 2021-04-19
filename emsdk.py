@@ -1411,7 +1411,7 @@ def emscripten_npm_install(tool, directory):
     print('Running post-install step: npm install', closure_compiler_native)
     try:
       subprocess.check_output(
-        [npm, 'install', closure_compiler_native],
+        [npm, 'install', '--production', '--no-optional', closure_compiler_native],
         cwd=directory, stderr=subprocess.STDOUT, env=env,
         universal_newlines=True)
     except subprocess.CalledProcessError as e:
