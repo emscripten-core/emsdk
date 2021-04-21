@@ -1,6 +1,12 @@
 <Project>
-    <PropertyGroup>
-        <EmscriptenSdkToolsPath>$(MSBuildThisFileDirectory)..\tools\</EmscriptenSdkToolsPath>
-        <EmSdkUpstreamBinPath>$(EmscriptenSdkToolsPath)bin\</EmSdkUpstreamBinPath>
-    </PropertyGroup>
+  <PropertyGroup>
+    <EmscriptenSdkToolsPath>$(MSBuildThisFileDirectory)..\tools\</EmscriptenSdkToolsPath>
+    <EmscriptenUpstreamBinPath>$(EmscriptenSdkToolsPath)bin\</EmscriptenUpstreamBinPath>
+    <EmscriptenUpstreamEmscriptenPath>$(EmscriptenSdkToolsPath)emscripten\</EmscriptenUpstreamEmscriptenPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmscriptenPrependPATH Include="$(EmscriptenUpstreamBinPath)" />
+    <EmscriptenPrependPATH Include="$(EmscriptenUpstreamEmscriptenPath)" />
+  </ItemGroup>
 </Project>

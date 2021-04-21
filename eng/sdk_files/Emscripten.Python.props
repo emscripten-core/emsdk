@@ -6,4 +6,8 @@
     <!-- On windows, emsdk has python binary in the tools folder, instead of `bin/` -->
     <EmscriptenPythonBinPath Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))">$(EmscriptenPythonToolsPath)</EmscriptenPythonBinPath>
   </PropertyGroup>
+
+  <ItemGroup>
+    <EmscriptenPrependPATH Include="$(EmscriptenPythonBinPath)" />
+  </ItemGroup>
 </Project>
