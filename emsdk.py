@@ -203,11 +203,6 @@ def parse_github_url_and_refspec(url):
     return (url, 'main')  # Assume the default branch is main in the absence of a refspec
 
 
-emscripten_config_directory = os.path.expanduser("~/")
-# If .emscripten exists, we are configuring as embedded inside the emsdk directory.
-if os.path.exists(os.path.join(emsdk_path(), '.emscripten')):
-  emscripten_config_directory = emsdk_path()
-
 ARCHIVE_SUFFIXES = ('zip', '.tar', '.gz', '.xz', '.tbz2', '.bz2')
 
 
@@ -2957,11 +2952,10 @@ def main(args):
     return False
 
   def extract_string_arg(name):
-    nonlocal args
     for i in range(len(args)):
       if args[i] == name:
         value = args[i + 1]
-        args = args[:i] + args[i + 2:]
+        del args[i:i + 2]
         return value
 
   arg_old = extract_bool_arg('--old')
