@@ -1604,9 +1604,6 @@ def load_dot_emscripten():
 
 
 def generate_dot_emscripten(active_tools):
-  temp_dir = sdk_path('tmp')
-  mkdir_p(temp_dir)
-
   cfg = 'import os\n'
   cfg += "emsdk_path = os.path.dirname(os.environ.get('EM_CONFIG')).replace('\\\\', '/')\n"
 
@@ -1627,10 +1624,9 @@ def generate_dot_emscripten(active_tools):
     cfg += name + " = '" + value + "'\n"
 
   cfg += '''\
-TEMP_DIR = '%s'
 COMPILER_ENGINE = NODE_JS
 JS_ENGINES = [NODE_JS]
-''' % temp_dir
+'''
 
   cfg = cfg.replace("'" + emsdk_path(), "emsdk_path + '")
 
