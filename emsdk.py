@@ -2171,6 +2171,14 @@ def find_tot_sdk():
   return 'sdk-releases-upstream-%s-64bit' % (extra_release_tag)
 
 
+def parse_emscripten_version(emscripten_root):
+  version_file = os.path.join(emscripten_root, 'emscripten-version.txt')
+  with open(version_file) as f:
+    version = f.read().strip()
+    version = version.strip('"').split('.')
+    return [int(v) for v in version]
+
+
 # Given a git hash in emscripten-releases, find the emscripten
 # version for it. There may not be one if this is not the hash of
 # a release, in which case we return None.
@@ -2643,10 +2651,26 @@ def get_env_vars_to_add(tools_to_activate, system, user):
   for tool in tools_to_activate:
     config = tool.activated_config()
     if 'EMSCRIPTEN_ROOT' in config:
-      # For older emscripten versions that don't use this default we export
-      # EM_CACHE.
-      em_cache_dir = os.path.join(config['EMSCRIPTEN_ROOT'], 'cache')
-      env_vars_to_add += [('EM_CACHE', em_cache_dir)]
+      # For older emscripten versions that don't use an embedded cache by
+      # default we need to export EM_CACHE.
+      #
+      # Sadly, we can't put this in the config file since those older versions
+      # also didn't read the `CACHE` key from the config file:
+      #
+      # History:
+      # - 'CACHE' config started being honored in 1.39.16
+      #   https://github.com/emscripten-core/emscripten/pull/11091
+      # - Default to embedded cache also started in 1.39.16
+      #   https://github.com/emscripten-core/emscripten/pull/11126
+      #
+      # Since setting EM_CACHE in the environment effects the entire machine
+      # we want to avoid this except when installing these older emscripten
+      # versions that really need it.
+      version = parse_emscripten_version(config['EMSCRIPTEN_ROOT'])
+      if version < [1, 39, 16]:
+        em_cache_dir = os.path.join(config['EMSCRIPTEN_ROOT'], 'cache')
+        env_vars_to_add += [('EM_CACHE', em_cache_dir)]
+
     envs = tool.activated_environment()
     for env in envs:
       key, value = parse_key_value(env)

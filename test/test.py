@@ -12,12 +12,6 @@ MACOS = sys.platform == 'darwin'
 
 assert 'EM_CONFIG' in os.environ, "emsdk should be activated before running this script"
 
-# Remove the EM_CACHE environment variable.  It interferes with testing since
-# it would otherwise be fixed for the duration of the script and we expect
-# "emsdk activate" to be able switch between SDKs during the running of this
-# script.
-del os.environ['EM_CACHE']
-
 emconfig = os.environ['EM_CONFIG']
 upstream_emcc = os.path.join('upstream', 'emscripten', 'emcc')
 fastcomp_emcc = os.path.join('fastcomp', 'emscripten', 'emcc')
