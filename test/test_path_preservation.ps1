@@ -127,7 +127,6 @@ finally {
     [Environment]::SetEnvironmentVariable("EMSDK_NODE", $null, "User")
     [Environment]::SetEnvironmentVariable("EMSDK_PYTHON", $null, "User")
     [Environment]::SetEnvironmentVariable("JAVA_HOME", $null, "User")
-    [Environment]::SetEnvironmentVariable("EM_CACHE", $null, "User")
 
     try {
         [Environment]::SetEnvironmentVariable("EMSDK", $null, "Machine")
@@ -135,7 +134,6 @@ finally {
         [Environment]::SetEnvironmentVariable("EMSDK_NODE", $null, "Machine")
         [Environment]::SetEnvironmentVariable("EMSDK_PYTHON", $null, "Machine")
         [Environment]::SetEnvironmentVariable("JAVA_HOME", $null, "Machine")
-        [Environment]::SetEnvironmentVariable("EM_CACHE", $null, "Machine")
     } catch {}
 
 
@@ -144,7 +142,6 @@ finally {
     [Environment]::SetEnvironmentVariable("EMSDK_NODE", $null, "Process")
     [Environment]::SetEnvironmentVariable("EMSDK_PYTHON", $null, "Process")
     [Environment]::SetEnvironmentVariable("JAVA_HOME", $null, "Process")
-    [Environment]::SetEnvironmentVariable("EM_CACHE", $null, "Process")
 
     refreshenv
 
