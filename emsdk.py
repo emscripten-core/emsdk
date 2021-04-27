@@ -2684,6 +2684,18 @@ def construct_env(tools_to_activate, system, user):
   return construct_env_with_vars(get_env_vars_to_add(tools_to_activate, system, user))
 
 
+def unset_env(key):
+  if POWERSHELL:
+    return 'Remove-Item env:%s\n' % key
+  if CMD:
+    return 'set %s=\n' % key
+  if CSH:
+    return 'unsetenv %s;\n' % key
+  if BASH:
+    return 'unset %s;\n' % key
+  assert False
+
+
 def construct_env_with_vars(env_vars_to_add):
   env_string = ''
   if env_vars_to_add:
@@ -2691,36 +2703,40 @@ def construct_env_with_vars(env_vars_to_add):
 
     for key, value in env_vars_to_add:
       # Don't set env vars which are already set to the correct value.
-      if key not in os.environ or to_unix_path(os.environ[key]) != to_unix_path(value):
-        errlog(key + ' = ' + value)
-        if POWERSHELL:
-          env_string += '$env:' + key + '="' + value + '"\n'
-        elif CMD:
-          env_string += 'SET ' + key + '=' + value + '\n'
-        elif CSH:
-          env_string += 'setenv ' + key + ' "' + value + '"\n'
-        elif BASH:
-          env_string += 'export ' + key + '="' + value + '"\n'
-        else:
-          assert False
-      if 'EMSDK_PYTHON' in env_vars_to_add:
-        # When using our bundled python we never want the user's
-        # PYTHONHOME or PYTHONPATH
-        # See https://github.com/emscripten-core/emsdk/issues/598
-        if POWERSHELL:
-          env_string += 'Remove-Item env:PYTHONHOME\n'
-          env_string += 'Remove-Item env:PYTHONPATH\n'
-        elif CMD:
-          env_string += 'set PYTHONHOME=\n'
-          env_string += 'set PYTHONPATH=\n'
-        elif CSH:
-          env_string += 'unsetenv PYTHONHOME\n'
-          env_string += 'unsetenv PYTHONPATH\n'
-        elif BASH:
-          env_string += 'unset PYTHONHOME\n'
-          env_string += 'unset PYTHONPATH\n'
-        else:
-          assert False
+      if key in os.environ and to_unix_path(os.environ[key]) == to_unix_path(value):
+        continue
+      errlog(key + ' = ' + value)
+      if POWERSHELL:
+        env_string += '$env:' + key + '="' + value + '"\n'
+      elif CMD:
+        env_string += 'SET ' + key + '=' + value + '\n'
+      elif CSH:
+        env_string += 'setenv ' + key + ' "' + value + '";\n'
+      elif BASH:
+        env_string += 'export ' + key + '="' + value + '";\n'
+      else:
+        assert False
+
+    if 'EMSDK_PYTHON' in env_vars_to_add:
+      # When using our bundled python we never want the user's
+      # PYTHONHOME or PYTHONPATH
+      # See https://github.com/emscripten-core/emsdk/issues/598
+      env_string += unset_env('PYTHONHOME')
+      env_string += unset_env('PYTHONPATH')
+
+  # Remove any environment variables that might have been set by old or
+  # inactive tools/sdks.  For example, we set EM_CACHE for older versions
+  # of the SDK but we want to remove that from the current environment
+  # if no such tool is active.
+  # Ignore certain keys that are inputs to emsdk itself.
+  ignore_keys = set(['EMSDK_POWERSHELL', 'EMSDK_CSH', 'EMSDK_CMD', 'EMSDK_BASH',
+                     'EMSDK_NUM_CORES', 'EMSDK_TTY'])
+  env_keys_to_add = set(pair[0] for pair in env_vars_to_add)
+  for key in os.environ:
+    if key.startswith('EMSDK_') or key.startswith('EM_'):
+      if key not in env_keys_to_add and key not in ignore_keys:
+        errlog('Clearing existing environment variable: %s' % key)
+        env_string += unset_env(key)
 
   return env_string
 
