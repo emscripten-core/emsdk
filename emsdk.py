@@ -1710,7 +1710,7 @@ class Tool(object):
 
     # Cache the name ID of this Tool (these are read very often)
     self.name = self.id
-    if len(self.version) > 0:
+    if self.version:
       self.name += '-' + self.version
     if hasattr(self, 'bitness'):
       self.name += '-' + str(self.bitness) + 'bit'
