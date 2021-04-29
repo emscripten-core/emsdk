@@ -44,7 +44,10 @@ emscripten_releases_repo = 'https://chromium.googlesource.com/emscripten-release
 
 emscripten_releases_download_url_template = "https://storage.googleapis.com/webassembly/emscripten-releases-builds/%s/%s/wasm-binaries.%s"
 
-emsdk_zip_download_url = 'https://github.com/emscripten-core/emsdk/archive/master.zip'
+# This was previously `master.zip` but we are transitioning to `main` and
+# `HEAD.zip` works for both cases.  In future we could switch this to
+# `main.zip` perhaps.
+emsdk_zip_download_url = 'https://github.com/emscripten-core/emsdk/archive/HEAD.zip'
 
 zips_subdir = 'zips/'
 
