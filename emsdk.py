@@ -2979,6 +2979,11 @@ def main(args):
     global TTY_OUTPUT
     TTY_OUTPUT = False
 
+  # Replace meta-packages with the real package names.
+  if cmd in ('update', 'install', 'activate'):
+    activating = cmd == 'activate'
+    args = [expand_sdk_name(a, activating=activating) for a in args]
+
   load_dot_emscripten()
   load_sdk_manifest()
 
@@ -2995,11 +3000,6 @@ def main(args):
       debug_print('Reading git repository URL "' + t.url + '" and git branch "' + t.git_branch + '" for Tool "' + tool_name + '".')
 
     forked_url = extract_string_arg('--override-repository')
-
-  # Replace meta-packages with the real package names.
-  if cmd in ('update', 'install', 'activate'):
-    activating = cmd == 'activate'
-    args = [expand_sdk_name(a, activating=activating) for a in args]
 
   # Process global args
   for i in range(len(args)):
