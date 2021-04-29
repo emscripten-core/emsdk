@@ -2222,7 +2222,7 @@ def get_emscripten_release_version(emscripten_releases_hash):
 
 # Get the tip-of-tree build identifier.
 def get_emscripten_releases_tot():
-  git_clone_checkout_and_pull(emscripten_releases_repo, sdk_path('releases'), 'master')
+  git_clone_checkout_and_pull(emscripten_releases_repo, sdk_path('releases'), 'main')
   recent_releases = git_recent_commits(sdk_path('releases'))
   # The recent releases are the latest hashes in the git repo. There
   # may not be a build for the most recent ones yet; find the last
