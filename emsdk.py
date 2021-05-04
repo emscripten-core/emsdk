@@ -2216,7 +2216,7 @@ def get_emscripten_release_version(emscripten_releases_hash):
   releases_info = load_releases_info()
   for key, value in dict(releases_info['releases']).items():
     if value == emscripten_releases_hash:
-      return key
+      return key.split('-')[0]
   return None
 
 
@@ -2246,7 +2246,7 @@ def get_release_hash(arg, releases_info):
 
 
 def version_key(ver):
-  return tuple(map(int, re.split('[._-]', ver)))
+  return tuple(map(int, re.split('[._-]', ver)[:3]))
 
 
 # A sort function that is compatible with both Python 2 and Python 3 using a
