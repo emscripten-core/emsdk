@@ -10,7 +10,7 @@ VER=$(grep -oP '(?<=latest\": \")([\d\.]+)(?=\")' \
         emscripten-releases-tags.txt \
       | sed --expression "s/\./\\\./g")
 # Based on the latest version number, get the commit hash for that version.
-HASH=$(grep "${VER}" emscripten-releases-tags.txt \
+HASH=$(grep "\"${VER}\"" emscripten-releases-tags.txt \
       | grep -v latest \
       | cut -f4 -d\")
 
