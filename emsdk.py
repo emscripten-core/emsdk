@@ -2079,7 +2079,8 @@ class Tool(object):
       emscripten_version_file_path = os.path.join(to_native_path(self.expand_vars(self.activated_path)), 'emscripten-version.txt')
       version = get_emscripten_release_version(self.emscripten_releases_hash)
       if version:
-        open(emscripten_version_file_path, 'w').write('"%s"' % version)
+        with open(emscripten_version_file_path, 'w') as f:
+          f.write('"%s"\n' % version)
 
     print("Done installing tool '" + str(self) + "'.")
 
