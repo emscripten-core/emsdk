@@ -1,6 +1,8 @@
 {
-  "latest": "2.0.18",
+  "latest": "2.0.19",
   "releases": {
+    "2.0.19": "9b9ff2dabfb4a7fbacbc004c0bead12a60f9d05c",
+    "2.0.19-lto": "4487f6c5107e7882ae2bad6d26c34ffdceb713f0",
     "2.0.18": "c2ac7520fad29a7937ed60ab6a95b08eb374c7ba",
     "2.0.17": "f5c45e60392b82f603e3a8039c62db294fab02d2",
     "2.0.16": "80d9674f2fafa6b9346d735c42d5c52b8cc8aa8e",
