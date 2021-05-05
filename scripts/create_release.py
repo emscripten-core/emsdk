@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 import subprocess
 import sys
 from collections import OrderedDict
@@ -14,7 +15,7 @@ import emsdk  # noqa
 
 
 def version_to_list(version_string):
-  return [int(part) for part in version_string.split('.')]
+  return [int(part) for part in re.split('[.-]', version_string)[:3]]
 
 
 def main(args):
@@ -31,7 +32,10 @@ def main(args):
   subprocess.check_call(['git', 'checkout', '-b', branch_name], cwd=root_dir)
 
   new_version = '.'.join(str(part) for part in new_version)
-  new_hash = emsdk.get_emscripten_releases_tot()
+  if args:
+    new_hash = args[0]
+  else:
+    new_hash = emsdk.get_emscripten_releases_tot()
   print('Creating new release: %s -> %s' % (new_version, new_hash))
   release_info['releases'][new_version] = new_hash
   releases = [(k, v) for k, v in release_info['releases'].items()]
