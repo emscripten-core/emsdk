@@ -80,6 +80,7 @@
     <RemoveDir Directories="$(ArtifactsObjDir)upstream\emscripten\node_modules\google-closure-compiler-osx" />
     <RemoveDir Directories="$(ArtifactsObjDir)upstream\emscripten\node_modules\google-closure-compiler-windows" />
     <RemoveDir Directories="$(ArtifactsObjDir)upstream\emscripten\node_modules\google-closure-compiler-linux" />
+    <RemoveDir Directories="$(ArtifactsObjDir)upstream\emscripten\third_party" />
     <RemoveDir Directories="$(ArtifactsObjDir)node\include" />
     <RemoveDir Directories="$(ArtifactsObjDir)node\lib" />
     <RemoveDir Directories="$(ArtifactsObjDir)node\share" />
