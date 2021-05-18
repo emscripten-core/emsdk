@@ -1056,8 +1056,15 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
       generator = ['-G', generator]
     else:
       generator = []
-    cmdline = ['cmake'] + generator + ['-DCMAKE_BUILD_TYPE=' + build_type, '-DPYTHON_EXECUTABLE=' + sys.executable] + extra_cmake_args + [src_root]
+    cmdline = ['cmake'] + generator + ['-DCMAKE_BUILD_TYPE=' + build_type, '-DPYTHON_EXECUTABLE=' + sys.executable,
+      # Target macOS 10.11 at minimum, to support widest range of Mac devices from "Mid 2007" and newer:
+      # https://en.wikipedia.org/wiki/MacBook_Pro#Supported_macOS_releases
+      '-DCMAKE_OSX_DEPLOYMENT_TARGET=10.11'] + extra_cmake_args + [src_root]
     print('Running CMake: ' + str(cmdline))
+
+    # Specify the deployment target also as an env. var, since some Xcode versions
+    # read this instead of the CMake field.
+    os.environ['MACOSX_DEPLOYMENT_TARGET'] = '10.11'
 
     def quote_parens(x):
       if ' ' in x:
@@ -1218,10 +1225,13 @@ def build_llvm(tool):
     targets_to_build = 'WebAssembly'
   args = ['-DLLVM_TARGETS_TO_BUILD=' + targets_to_build,
           '-DLLVM_INCLUDE_EXAMPLES=OFF',
-          '-DCLANG_INCLUDE_EXAMPLES=OFF',
           '-DLLVM_INCLUDE_TESTS=' + tests_arg,
           '-DCLANG_INCLUDE_TESTS=' + tests_arg,
-          '-DLLVM_ENABLE_ASSERTIONS=' + ('ON' if enable_assertions else 'OFF')]
+          '-DLLVM_ENABLE_ASSERTIONS=' + ('ON' if enable_assertions else 'OFF'),
+          # Disable optional LLVM dependencies, these can cause unwanted .so dependencies
+          # that prevent distributing the generated compiler for end users.
+          '-DLLVM_ENABLE_LIBXML2=OFF', '-DLLVM_ENABLE_TERMINFO=OFF', '-DLLDB_ENABLE_LIBEDIT=OFF',
+          '-DLLVM_ENABLE_LIBEDIT=OFF', '-DLLVM_ENABLE_LIBPFM=OFF']
   # LLVM build system bug: looks like everything needs to be passed to LLVM_ENABLE_PROJECTS twice. (or every second field is ignored?)
 
   # LLVM build system bug #2: compiler-rt does not build on Windows. It insists on performing a CMake install step that writes to C:\Program Files. Attempting
