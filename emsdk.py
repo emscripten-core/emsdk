@@ -1056,10 +1056,13 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
       generator = ['-G', generator]
     else:
       generator = []
-    cmdline = ['cmake'] + generator + ['-DCMAKE_BUILD_TYPE=' + build_type, '-DPYTHON_EXECUTABLE=' + sys.executable,
-      # Target macOS 10.11 at minimum, to support widest range of Mac devices from "Mid 2007" and newer:
-      # https://en.wikipedia.org/wiki/MacBook_Pro#Supported_macOS_releases
-      '-DCMAKE_OSX_DEPLOYMENT_TARGET=10.11'] + extra_cmake_args + [src_root]
+
+    cmdline = ['cmake'] + generator + ['-DCMAKE_BUILD_TYPE=' + build_type, '-DPYTHON_EXECUTABLE=' + sys.executable]
+    # Target macOS 10.11 at minimum, to support widest range of Mac devices from "Mid 2007" and newer:
+    # https://en.wikipedia.org/wiki/MacBook_Pro#Supported_macOS_releases
+    cmdline += ['-DCMAKE_OSX_DEPLOYMENT_TARGET=10.11']
+    cmdline += extra_cmake_args + [src_root]
+
     print('Running CMake: ' + str(cmdline))
 
     # Specify the deployment target also as an env. var, since some Xcode versions
