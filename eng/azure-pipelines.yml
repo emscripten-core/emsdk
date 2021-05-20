@@ -39,6 +39,8 @@ stages:
         - bash: |
             ./build.sh -ci -configuration $(_BuildConfig) $(_InternalPublishArg) /p:PackageRID=osx-x64 /p:AssetManifestOS=osx /p:PlatformName=x64 $(_InternalBuildArgs)
           displayName: Build and Publish
+        - publish: artifacts/packages
+          artifact: Packages_macOS
         - bash: |
             rm -rf upstream node python
           displayName: Remove temporary artifacts
@@ -53,6 +55,8 @@ stages:
         - bash: |
             ./build.sh -ci -configuration $(_BuildConfig) $(_InternalPublishArg) /p:PackageRID=linux-x64 /p:AssetManifestOS=linux /p:PlatformName=x64 $(_InternalBuildArgs)
           displayName: Build and Publish
+        - publish: artifacts/packages
+          artifact: Packages_Linux
         - bash: |
             rm -rf upstream node python
           displayName: Remove temporary artifacts
@@ -67,6 +71,8 @@ stages:
         - script: |
             .\build.cmd -ci -configuration $(_BuildConfig) $(_InternalPublishArg) /p:PackageRID=win-x64 /p:AssetManifestOS=win /p:PlatformName=x64 $(_InternalBuildArgs)
           displayName: Build and Publish
+        - publish: artifacts/packages
+          artifact: Packages_Windows
         - script: |
             rmdir /s /q upstream node python
           displayName: Remove temporary artifacts
