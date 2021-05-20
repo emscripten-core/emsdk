@@ -6,8 +6,5 @@ BINARYEN_ROOT = os.path.expanduser(os.getenv('DOTNET_EMSCRIPTEN_BINARYEN_ROOT', 
 
 FROZEN_CACHE = True
 
-# this can be removed once we bump to emscripten 2.0.13 which uses FROZEN_CACHE to skip the sanity check
-os.environ['EMCC_SKIP_SANITY_CHECK'] = '1'
-
 COMPILER_ENGINE = NODE_JS
 JS_ENGINES = [NODE_JS]
