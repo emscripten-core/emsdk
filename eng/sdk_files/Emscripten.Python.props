@@ -5,9 +5,13 @@
     <EmscriptenPythonBinPath Condition="!$([MSBuild]::IsOSPlatform('WINDOWS'))">$(EmscriptenPythonToolsPath)bin\</EmscriptenPythonBinPath>
     <!-- On windows, emsdk has python binary in the tools folder, instead of `bin/` -->
     <EmscriptenPythonBinPath Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))">$(EmscriptenPythonToolsPath)</EmscriptenPythonBinPath>
-  </PropertyGroup>
 
-  <ItemGroup>
-    <EmscriptenPrependPATH Include="$(EmscriptenPythonBinPath)" />
+    <_EmscriptenPython Condition="!$([MSBuild]::IsOSPlatform('WINDOWS'))">$(EmscriptenPythonBinPath)\python3</_EmscriptenPython>
+    <_EmscriptenPython Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))" >$(EmscriptenPythonBinPath)\python.exe</_EmscriptenPython>
+   </PropertyGroup>
+
+   <ItemGroup>
+     <EmscriptenPrependPATH Include="$(EmscriptenPythonBinPath)" />
+     <EmscriptenEnvVars Include="EMSDK_PYTHON=$(_EmscriptenPython)" />
   </ItemGroup>
 </Project>
