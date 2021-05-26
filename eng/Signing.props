@@ -4,7 +4,7 @@
     We need to sign all emsdk files with the 3rd party certificate instead of the Microsoft400 one.
   -->
   <ItemGroup>
-   <FileExtensionSignInfo Condition="'%(FileExtensionSignInfo.CertificateName)' == 'Microsoft400'">
+   <FileExtensionSignInfo Update="@(FileExtensionSignInfo)" Condition="'%(FileExtensionSignInfo.CertificateName)' == 'Microsoft400'">
       <CertificateName>3PartySHA2</CertificateName>
    </FileExtensionSignInfo>
   </ItemGroup>
