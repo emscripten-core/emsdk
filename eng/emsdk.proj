@@ -121,10 +121,6 @@
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.$(EmscriptenVersion).Node.$(PackageRID).pkgproj" Targets="Build" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.$(EmscriptenVersion).Python.$(PackageRID).pkgproj" Targets="Build" Condition="'$(UsesPythonFromEmsdk)' == 'true'" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.$(EmscriptenVersion).Sdk.$(PackageRID).pkgproj" Targets="Build" />
-
-    <ItemGroup>
-      <ItemsToSignPostBuild Include="$(ArtifactsShippingPackagesDir)**/*.nupkg" />
-    </ItemGroup>
   </Target>
   <Import Project="$(RepoRoot)\Directory.Build.targets" />
 </Project>
