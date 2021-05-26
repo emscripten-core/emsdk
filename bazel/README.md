@@ -25,13 +25,16 @@ emsdk_emscripten_deps()
 
 Put the following lines into your `.bazelrc`:
 ```
-build:wasm --crosstool_top=//emscripten_toolchain:everything
+build:wasm --crosstool_top=@emsdk//emscripten_toolchain:everything
 build:wasm --cpu=wasm
 build:wasm --host_crosstool_top=@bazel_tools//tools/cpp:toolchain
 ```
 
-Simply pass `--config=wasm` when building a normal `cc_binary`. The result of
-this build will be a tar archive containing any files produced by emscripten.
+Simply pass `--config=wasm` when building a normal `cc_binary`, e.g.
+```
+bazel build --config=wasm :hello-world
+```
+The result of this build will be a tar archive containing any files produced by emscripten.
 
 ### Using wasm_cc_binary
 First, write a new rule wrapping your `cc_binary`.
