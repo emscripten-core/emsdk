@@ -6,5 +6,8 @@
   <ItemGroup>
    <FileExtensionSignInfo Update="@(FileExtensionSignInfo)" CertificateName="3PartySHA2" />
    <FileExtensionSignInfo Update=".nupkg" CertificateName="NuGet" />
+   <FileExtensionSignInfo Include=".cat" CertificateName="3PartySHA2" />
+   <FileExtensionSignInfo Include=".pyd" CertificateName="3PartySHA2" />
+   <FileExtensionSignInfo Include=".vbs" CertificateName="3PartySHA2" />
   </ItemGroup>
 </Project>
