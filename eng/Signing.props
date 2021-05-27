@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
   <!--
-    We need to sign all emsdk files with the 3rd party certificate instead of the Microsoft400 one, except the main .nupkg.
+    We need to sign all emsdk files with the 3rd party certificate instead of the Microsoft400 one, except the main .nupkg and .zip.
   -->
   <ItemGroup>
    <FileExtensionSignInfo Update="@(FileExtensionSignInfo)" CertificateName="3PartySHA2" />
    <FileExtensionSignInfo Update=".nupkg" CertificateName="NuGet" />
+   <FileExtensionSignInfo Update=".zip" CertificateName="None" />
+   
    <FileExtensionSignInfo Include=".cat" CertificateName="3PartySHA2" />
    <FileExtensionSignInfo Include=".pyd" CertificateName="3PartySHA2" />
    <FileExtensionSignInfo Include=".vbs" CertificateName="3PartySHA2" />
