@@ -7,9 +7,15 @@
    <FileExtensionSignInfo Update="@(FileExtensionSignInfo)" CertificateName="3PartySHA2" />
    <FileExtensionSignInfo Update=".nupkg" CertificateName="NuGet" />
    <FileExtensionSignInfo Update=".zip" CertificateName="None" />
+    
+   <!-- 
+    These files can't be dual-signed.
+   -->
+   <FileExtensionSignInfo Update=".py" CertificateName="None" />
+   <FileExtensionSignInfo Update=".js" CertificateName="None" />
+   <FileExtensionSignInfo Include=".vbs" CertificateName="None" />
    
    <FileExtensionSignInfo Include=".cat" CertificateName="3PartySHA2" />
    <FileExtensionSignInfo Include=".pyd" CertificateName="3PartySHA2" />
-   <FileExtensionSignInfo Include=".vbs" CertificateName="3PartySHA2" />
   </ItemGroup>
 </Project>
