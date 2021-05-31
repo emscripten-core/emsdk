@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
-  <!--
-    We need to sign all emsdk files with the 3rd party certificate instead of the Microsoft400 one, except the main .nupkg and .zip.
-  -->
   <ItemGroup>
-   <FileExtensionSignInfo Update="@(FileExtensionSignInfo)" CertificateName="3PartySHA2" />
-   <FileExtensionSignInfo Update=".nupkg" CertificateName="NuGet" />
-   <FileExtensionSignInfo Update=".zip" CertificateName="None" />
-    
-   <!-- 
-    These files can't be dual-signed.
-   -->
-   <FileExtensionSignInfo Update=".py" CertificateName="None" />
-   <FileExtensionSignInfo Update=".js" CertificateName="None" />
-   <FileExtensionSignInfo Include=".vbs" CertificateName="None" />
-   
-   <FileExtensionSignInfo Include=".cat" CertificateName="3PartySHA2" />
-   <FileExtensionSignInfo Include=".pyd" CertificateName="3PartySHA2" />
+    <!--
+      We need to generally sign all emsdk files with the 3rd party certificate instead of the Microsoft400 one, except the main .nupkg and .zip and files which aren't supported by ESRP.
+    -->
+    <FileExtensionSignInfo Update="@(FileExtensionSignInfo)" CertificateName="3PartySHA2" />
+    <FileExtensionSignInfo Update=".nupkg" CertificateName="NuGet" />
+    <FileExtensionSignInfo Update=".zip" CertificateName="None" />
+    <FileExtensionSignInfo Include=".cat" CertificateName="3PartySHA2" />
+    <FileExtensionSignInfo Include=".pyd" CertificateName="3PartySHA2" />
+
+    <!--
+      These files can't be dual-signed with 3PartySHA2, don't try to sign them.
+    -->
+    <FileExtensionSignInfo Update=".py" CertificateName="None" />
+    <FileExtensionSignInfo Update=".ps1" CertificateName="None" />
+    <FileExtensionSignInfo Update=".js" CertificateName="None" />
+    <FileExtensionSignInfo Include=".vbs" CertificateName="None" />
   </ItemGroup>
 </Project>
