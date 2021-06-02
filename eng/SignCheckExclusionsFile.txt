@@ -1,0 +1,8 @@
+;; Exclusions for SignCheck. Corresponds to info in Signing.props.
+;; Format: https://github.com/dotnet/arcade/blob/397316e195639450b6c76bfeb9823b40bee72d6d/src/SignCheck/Microsoft.SignCheck/Verification/Exclusion.cs#L23-L35
+;;
+;; This issue tracks a way to implement exclusions via Signing.props and avoid this extra file: https://github.com/dotnet/arcade/issues/2888
+
+*.js;;Can't dual sign .js files, https://github.com/dotnet/runtime/issues/53252
+*.ps1;;Can't dual sign .ps1 files, https://github.com/dotnet/runtime/issues/53252
+*.exe;*.whl;The .whl files are not supported by ESRP, https://github.com/dotnet/runtime/issues/53252
