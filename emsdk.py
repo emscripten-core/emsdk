@@ -2770,6 +2770,8 @@ def exit_with_fastcomp_error():
 
 
 def expand_sdk_name(name, activating):
+  if find_tool(name) or find_sdk(name):
+    return name
   if 'upstream-master' in name:
     errlog('upstream-master SDK has been renamed upstream-main')
     name = name.replace('upstream-master', 'upstream-main')
@@ -2984,13 +2986,13 @@ def main(args):
     global TTY_OUTPUT
     TTY_OUTPUT = False
 
+  load_dot_emscripten()
+  load_sdk_manifest()
+
   # Replace meta-packages with the real package names.
   if cmd in ('update', 'install', 'activate'):
     activating = cmd == 'activate'
     args = [expand_sdk_name(a, activating=activating) for a in args]
-
-  load_dot_emscripten()
-  load_sdk_manifest()
 
   # Apply any overrides to git branch names to clone from.
   forked_url = extract_string_arg('--override-repository')
