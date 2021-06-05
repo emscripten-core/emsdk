@@ -260,7 +260,7 @@ int main() {
 
   def test_install_tool(self):
     # Test that its possible to install emscripten as tool instead of SDK
-    checked_call_with_output(emsdk + 'install releases-upstream-77b065ace39e6ab21446e13f92897f956c80476a', unexpected='Installing SDK')
+    checked_call_with_output(emsdk + ' install releases-upstream-77b065ace39e6ab21446e13f92897f956c80476a', unexpected='Installing SDK')
 
 
 if __name__ == '__main__':
