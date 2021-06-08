@@ -2812,6 +2812,7 @@ def expand_sdk_name(name, activating):
     fullname = fullname.replace('-fastcomp', '')
     backend = 'fastcomp'
   version = fullname.replace('sdk-', '').replace('releases-', '').replace('-64bit', '').replace('tag-', '')
+  sdk = 'sdk-' if not name.startswith('releases-') else ''
   releases_info = load_releases_info()['releases']
   release_hash = get_release_hash(version, releases_info)
   if release_hash:
@@ -2823,7 +2824,7 @@ def expand_sdk_name(name, activating):
         backend = 'upstream'
       else:
         backend = 'fastcomp'
-    full_name = 'sdk-releases-%s-%s-64bit' % (backend, release_hash)
+    full_name = '%sreleases-%s-%s-64bit' % (sdk, backend, release_hash)
     print("Resolving SDK version '%s' to '%s'" % (version, full_name))
     return full_name
 
@@ -2832,7 +2833,7 @@ def expand_sdk_name(name, activating):
       backend = 'upstream'
     global extra_release_tag
     extra_release_tag = version
-    return 'sdk-releases-%s-%s-64bit' % (backend, version)
+    return '%sreleases-%s-%s-64bit' % (sdk, backend, version)
 
   return name
 
