@@ -140,7 +140,7 @@ int main() {
   def test_list(self):
     # Test we report installed tools properly. The latest version should be
     # installed, but not some random old one.
-    checked_call_with_output(emsdk + ' list', expected=TAGS['latest'] + '    INSTALLED', unexpected='1.39.15    INSTALLED:')
+    checked_call_with_output(emsdk + ' list', expected=TAGS['aliases']['latest'] + '    INSTALLED', unexpected='1.39.15    INSTALLED:')
 
   def test_config_contents(self):
     print('test .emscripten contents')
