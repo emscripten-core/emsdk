@@ -2497,19 +2497,6 @@ def can_simultaneously_activate(tool1, tool2):
   return tool1.id != tool2.id
 
 
-def remove_nonexisting_tools(tool_list, log_errors=True):
-  i = 0
-  while i < len(tool_list):
-    tool = tool_list[i]
-    if not tool.is_installed():
-      if log_errors:
-        errlog("Warning: The SDK/tool '" + str(tool) + "' cannot be activated since it is not installed! Skipping this tool...")
-      tool_list.pop(i)
-      continue
-    i += 1
-  return tool_list
-
-
 # Expands dependencies for each tool, and removes ones that don't exist.
 def process_tool_list(tools_to_activate, log_errors=True):
   i = 0
@@ -2520,7 +2507,9 @@ def process_tool_list(tools_to_activate, log_errors=True):
     tools_to_activate = tools_to_activate[:i] + deps + tools_to_activate[i:]
     i += len(deps) + 1
 
-  tools_to_activate = remove_nonexisting_tools(tools_to_activate, log_errors=log_errors)
+  for tool in tools_to_activate:
+    if not tool.is_installed():
+      exit_with_error("error: tool is not installed and therefore cannot be activated: '%s'" % tool)
 
   # Remove conflicting tools
   i = 0

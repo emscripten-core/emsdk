@@ -64,8 +64,8 @@ def failing_call_with_output(cmd, expected):
   if WINDOWS:
     print('warning: skipping part of failing_call_with_output() due to error codes not being propagated (see #592)')
   else:
-    assert proc.returncode, 'call must have failed: ' + str([stdout, "\n========\n", stderr])
-  assert expected in stdout or expected in stderr, 'call did not have the right output'
+    assert proc.returncode, 'call must have failed: ' + str([stdout, '\n========\n', stderr])
+  assert expected in stdout or expected in stderr, 'call did not have the right output: ' + str([stdout, '\n========\n', stderr])
 
 
 def hack_emsdk(marker, replacement):
@@ -261,6 +261,10 @@ int main() {
   def test_install_tool(self):
     # Test that its possible to install emscripten as tool instead of SDK
     checked_call_with_output(emsdk + ' install releases-upstream-77b065ace39e6ab21446e13f92897f956c80476a', unexpected='Installing SDK')
+
+  def test_activate_missing(self):
+    run_emsdk('install latest')
+    failing_call_with_output(emsdk + ' activate 2.0.1', expected="error: tool is not installed and therefore cannot be activated: 'releases-upstream-13e29bd55185e3c12802bc090b4507901856b2ba-64bit'")
 
 
 if __name__ == '__main__':
