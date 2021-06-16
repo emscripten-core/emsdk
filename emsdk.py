@@ -338,7 +338,7 @@ def win_set_environment_variable_direct(key, value, system=True):
   except Exception as e:
     # 'Access is denied.'
     if e.args[3] == 5:
-      exit_with_error('Error! Failed to set the environment variable \'' + key + '\'! Setting environment variables permanently requires administrator access. Please rerun this command with administrative privileges. This can be done for example by holding down the Ctrl and Shift keys while opening a command prompt in start menu.')
+      exit_with_error('failed to set the environment variable \'' + key + '\'! Setting environment variables permanently requires administrator access. Please rerun this command with administrative privileges. This can be done for example by holding down the Ctrl and Shift keys while opening a command prompt in start menu.')
     errlog('Failed to write environment variable ' + key + ':')
     errlog(str(e))
     return False
@@ -409,7 +409,7 @@ def win_set_environment_variable(key, value, system, user):
     # Escape % signs so that we don't expand references to environment variables.
     value = value.replace('%', '^%')
     if len(value) >= 1024:
-      exit_with_error('ERROR! The new environment variable ' + key + ' is more than 1024 characters long! A value this long cannot be set via command line: please add the environment variable specified above to system environment manually via Control Panel.')
+      exit_with_error('the new environment variable ' + key + ' is more than 1024 characters long! A value this long cannot be set via command line: please add the environment variable specified above to system environment manually via Control Panel.')
     cmd = ['SETX', key, value]
     debug_print(str(cmd))
     retcode = subprocess.call(cmd, stdout=subprocess.PIPE)
@@ -750,7 +750,7 @@ def download_file(url, dstpath, download_even_if_exists=False, filename_prefix='
     return None
   except KeyboardInterrupt:
     rmfile(file_name)
-    exit_with_error("Aborted by User, exiting")
+    exit_with_error("aborted by user, exiting")
   return file_name
 
 
@@ -779,13 +779,13 @@ def GIT(must_succeed=True):
       pass
   if must_succeed:
     if WINDOWS:
-      msg = "ERROR: git executable was not found. Please install it by typing 'emsdk install git-1.9.4', or alternatively by installing it manually from http://git-scm.com/downloads . If you install git manually, remember to add it to PATH"
+      msg = "git executable was not found. Please install it by typing 'emsdk install git-1.9.4', or alternatively by installing it manually from http://git-scm.com/downloads . If you install git manually, remember to add it to PATH"
     elif MACOS:
-      msg = "ERROR: git executable was not found. Please install git for this operation! This can be done from http://git-scm.com/ , or by installing XCode and then the XCode Command Line Tools (see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools )"
+      msg = "git executable was not found. Please install git for this operation! This can be done from http://git-scm.com/ , or by installing XCode and then the XCode Command Line Tools (see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools )"
     elif LINUX:
-      msg = "ERROR: git executable was not found. Please install git for this operation! This can be probably be done using your package manager, see http://git-scm.com/book/en/Getting-Started-Installing-Git"
+      msg = "git executable was not found. Please install git for this operation! This can be probably be done using your package manager, see http://git-scm.com/book/en/Getting-Started-Installing-Git"
     else:
-      msg = "ERROR: git executable was not found. Please install git for this operation!"
+      msg = "git executable was not found. Please install git for this operation!"
     exit_with_error(msg)
   # Not found
   return ''
@@ -1975,7 +1975,7 @@ class Tool(object):
     for tool_name in self.uses:
       tool = find_tool(tool_name)
       if tool is None:
-        exit_with_error("Manifest error: No tool by name '" + tool_name + "' found! This may indicate an internal SDK error!")
+        exit_with_error("manifest error: No tool by name '" + tool_name + "' found! This may indicate an internal SDK error!")
       installed |= tool.install()
 
     if not installed:
@@ -2038,7 +2038,7 @@ class Tool(object):
         success = False
 
     if not success:
-      exit_with_error("Installation failed!")
+      exit_with_error("installation failed!")
 
     if hasattr(self, 'custom_install_script'):
       if self.custom_install_script == 'emscripten_post_install':
@@ -2055,7 +2055,7 @@ class Tool(object):
         raise Exception('Unknown custom_install_script command "' + self.custom_install_script + '"!')
 
     if not success:
-      exit_with_error("Installation failed!")
+      exit_with_error("installation failed!")
 
     # Install an emscripten-version.txt file if told to, and if there is one.
     # (If this is not an actual release, but some other build, then we do not
@@ -2072,7 +2072,7 @@ class Tool(object):
     # Sanity check that the installation succeeded, and if so, remove unneeded
     # leftover installation files.
     if not self.is_installed(skip_version_check=True):
-      exit_with_error("Installation of '" + str(self) + "' failed, but no error was detected. Either something went wrong with the installation, or this may indicate an internal emsdk error.")
+      exit_with_error("installation of '" + str(self) + "' failed, but no error was detected. Either something went wrong with the installation, or this may indicate an internal emsdk error.")
 
     self.cleanup_temp_install_files()
     self.update_installed_version()
@@ -2301,7 +2301,7 @@ def load_file_index_list(filename):
 
 
 def exit_with_error(msg):
-  errlog(str(msg))
+  errlog('error: %s' % msg)
   sys.exit(1)
 
 
@@ -2757,14 +2757,13 @@ def construct_env_with_vars(env_vars_to_add):
 
 def error_on_missing_tool(name):
   if name.endswith('-64bit') and not is_os_64bit():
-    errlog("Error: '%s' is only provided for 64-bit OSes." % name)
+    exit_with_error("'%s' is only provided for 64-bit OSes" % name)
   else:
-    errlog("Error: No tool or SDK found by name '%s'." % name)
-  return 1
+    exit_with_error("tool or SDK not found: '%s'" % name)
 
 
 def exit_with_fastcomp_error():
-    exit_with_error('The fastcomp backend is not getting new builds or releases. Please use the upstream llvm backend or use an older version than 2.0.0 (such as 1.40.1).')
+    exit_with_error('the fastcomp backend is not getting new builds or releases. Please use the upstream llvm backend or use an older version than 2.0.0 (such as 1.40.1).')
 
 
 def expand_sdk_name(name, activating):
@@ -3188,7 +3187,7 @@ def main(args):
       if tool is None:
         tool = find_sdk(arg)
       if tool is None:
-        return error_on_missing_tool(arg)
+        error_on_missing_tool(arg)
       tools_to_activate += [tool]
     if not tools_to_activate:
       errlog('No tools/SDKs specified to activate! Usage:\n   emsdk activate tool/sdk1 [tool/sdk2] [...]')
@@ -3235,7 +3234,7 @@ def main(args):
       if tool is None:
         tool = find_sdk(t)
       if tool is None:
-        return error_on_missing_tool(t)
+        error_on_missing_tool(t)
       tool.install()
     return 0
   elif cmd == 'uninstall':

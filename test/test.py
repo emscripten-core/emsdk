@@ -65,7 +65,7 @@ def failing_call_with_output(cmd, expected):
     print('warning: skipping part of failing_call_with_output() due to error codes not being propagated (see #592)')
   else:
     assert proc.returncode, 'call must have failed: ' + str([stdout, '\n========\n', stderr])
-  assert expected in stdout or expected in stderr, 'call did not have the right output: ' + str([stdout, '\n========\n', stderr])
+  assert expected in stdout or expected in stderr, 'call did not have the expected output: %s: %s' % (expected, str([stdout, '\n========\n', stderr]))
 
 
 def hack_emsdk(marker, replacement):
@@ -170,7 +170,7 @@ int main() {
 
   def test_fastcomp_missing(self):
     print('verify that attempting to use newer fastcomp gives an error')
-    fastcomp_error = 'The fastcomp backend is not getting new builds or releases. Please use the upstream llvm backend or use an older version than 2.0.0 (such as 1.40.1).'
+    fastcomp_error = 'the fastcomp backend is not getting new builds or releases. Please use the upstream llvm backend or use an older version than 2.0.0 (such as 1.40.1).'
     failing_call_with_output(emsdk + ' install latest-fastcomp', fastcomp_error)
     failing_call_with_output(emsdk + ' install tot-fastcomp', fastcomp_error)
     failing_call_with_output(emsdk + ' install 2.0.0-fastcomp', fastcomp_error)
