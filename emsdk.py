@@ -1663,8 +1663,14 @@ JS_ENGINES = [NODE_JS]
       print('    ' + p)
     print('- This can be done for the current shell by running:')
     print('    source "%s"' % emsdk_env)
-    print('- Configure emsdk in your bash profile by running:')
-    print('    echo \'source "%s"\' >> $HOME/.bash_profile' % emsdk_env)
+    print('- Configure emsdk in your shell startup scripts by running:')
+    shell = os.environ.get('SHELL', '')
+    if 'zsh' in shell:
+      print('    echo \'source "%s"\' >> $HOME/.zprofile' % emsdk_env)
+    elif 'csh' in shell:
+      print('    echo \'source "%s"\' >> $HOME/.cshrc' % emsdk_env)
+    else:
+      print('    echo \'source "%s"\' >> $HOME/.bash_profile' % emsdk_env)
 
 
 def find_msbuild_dir():
