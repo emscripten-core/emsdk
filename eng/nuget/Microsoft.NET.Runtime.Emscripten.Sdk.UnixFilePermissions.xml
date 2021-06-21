@@ -49,4 +49,29 @@
     <File Path="tools/bin/wasm32-clang++" Permission="755" />
     <File Path="tools/bin/wasm32-wasi-clang" Permission="755" />
     <File Path="tools/bin/wasm32-wasi-clang++" Permission="755" />
+    <File Path="tools/emscripten/em++.py" Permission="755" />
+    <File Path="tools/emscripten/em-config.py" Permission="755" />
+    <File Path="tools/emscripten/emar.py" Permission="755" />
+    <File Path="tools/emscripten/embuilder.py" Permission="755" />
+    <File Path="tools/emscripten/emcc.py" Permission="755" />
+    <File Path="tools/emscripten/emcmake.py" Permission="755" />
+    <File Path="tools/emscripten/emconfigure.py" Permission="755" />
+    <File Path="tools/emscripten/emmake.py" Permission="755" />
+    <File Path="tools/emscripten/emranlib.py" Permission="755" />
+    <File Path="tools/emscripten/emrun.py" Permission="755" />
+    <File Path="tools/emscripten/emscons.py" Permission="755" />
+    <File Path="tools/emscripten/emscripten.py" Permission="755" />
+    <File Path="tools/emscripten/emsize.py" Permission="755" />
+    <File Path="tools/emscripten/em++" Permission="755" />
+    <File Path="tools/emscripten/em-config" Permission="755" />
+    <File Path="tools/emscripten/emar" Permission="755" />
+    <File Path="tools/emscripten/embuilder" Permission="755" />
+    <File Path="tools/emscripten/emcc" Permission="755" />
+    <File Path="tools/emscripten/emcmake" Permission="755" />
+    <File Path="tools/emscripten/emconfigure" Permission="755" />
+    <File Path="tools/emscripten/emmake" Permission="755" />
+    <File Path="tools/emscripten/emranlib" Permission="755" />
+    <File Path="tools/emscripten/emrun" Permission="755" />
+    <File Path="tools/emscripten/emscons" Permission="755" />
+    <File Path="tools/emscripten/emsize" Permission="755" />
 </FileList>
