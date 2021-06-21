@@ -1,0 +1,3 @@
+<FileList>
+    <File Path="tools/bin/node" Permission="755" />
+</FileList>
