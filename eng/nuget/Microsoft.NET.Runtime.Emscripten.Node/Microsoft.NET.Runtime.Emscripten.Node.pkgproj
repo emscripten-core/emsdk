@@ -3,18 +3,19 @@
   <Import Project="$(NuGetPackageRoot)\microsoft.dotnet.build.tasks.packaging\$(MicrosoftDotNetBuildTasksPackagingVersion)\build\Microsoft.DotNet.Build.Tasks.Packaging.props" />
   <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.NET.Runtime.Emscripten.Common.props))" />
   <Import Project="Microsoft.NET.Runtime.Emscripten.Node.props" />
-  
+
   <Target Name="_PrepareForPack" BeforeTargets="GetPackageFiles" Returns="@(PackageFile)">
     <!-- Override the id to include the sdk band as per the workload installer spec -->
     <PropertyGroup>
       <Id>Microsoft.NET.Runtime.Emscripten.$(EmscriptenVersion).Node.$(PackageRID)</Id>
     </PropertyGroup>
   </Target>
-  
+
   <PropertyGroup>
     <PackageDescription>Contains Emscripten Node binaries for $(PackageRID).</PackageDescription>
     <Description>Contains Emscripten Node binaries for $(PackageRID).</Description>
   </PropertyGroup>
+
   <Import Project="$(NuGetPackageRoot)\microsoft.dotnet.build.tasks.packaging\$(MicrosoftDotNetBuildTasksPackagingVersion)\build\Microsoft.DotNet.Build.Tasks.Packaging.targets" />
   <Import Project="$(RepoRoot)\Directory.Build.targets" />
 </Project>
