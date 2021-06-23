@@ -5,7 +5,7 @@
   <Import Project="Microsoft.NET.Runtime.Emscripten.Sdk.props" />
 
   <Target Name="_PrepareForPack" BeforeTargets="GetPackageFiles" Returns="@(PackageFile)">
-    <!-- Override the id to include the sdk band as per the workload installer spec -->
+    <!-- Override the id to include the Emscripten version -->
     <PropertyGroup>
       <Id>Microsoft.NET.Runtime.Emscripten.$(EmscriptenVersion).Sdk.$(PackageRID)</Id>
     </PropertyGroup>
