@@ -7,7 +7,6 @@
     <ReleaseNotes>https://go.microsoft.com/fwlink/?LinkID=799421</ReleaseNotes>
 
     <PackageVersion>$(VersionPrefix)</PackageVersion>
-    <PackageDescriptionFile>$(MSBuildThisFileDirectory)/descriptions.json</PackageDescriptionFile>
     <PackageLicenseFile>$(RepoRoot)/LICENSE</PackageLicenseFile>
     <PackageIndexFile>$(MSBuildThisFileDirectory)/packageIndex.json</PackageIndexFile>
 

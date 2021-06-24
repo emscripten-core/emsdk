@@ -118,9 +118,10 @@
   <Target Name="Test" />
   <Target Name="Pack" DependsOnTargets="Build">
     <Message Importance="High" Text="Creating nuget packages..." />
-    <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.$(EmscriptenVersion).Node.$(PackageRID).pkgproj" Targets="Build" />
-    <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.$(EmscriptenVersion).Python.$(PackageRID).pkgproj" Targets="Build" Condition="'$(UsesPythonFromEmsdk)' == 'true'" />
-    <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.$(EmscriptenVersion).Sdk.$(PackageRID).pkgproj" Targets="Build" />
+    <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.Node\Microsoft.NET.Runtime.Emscripten.Node.pkgproj" Targets="Build" />
+    <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.Python\Microsoft.NET.Runtime.Emscripten.Python.pkgproj" Targets="Build" Condition="'$(UsesPythonFromEmsdk)' == 'true'" />
+    <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.Sdk\Microsoft.NET.Runtime.Emscripten.Sdk.pkgproj" Targets="Build" />
+    <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Workload.Emscripten.Manifest\Microsoft.NET.Workload.Emscripten.Manifest.pkgproj" Targets="Build" Condition="'$(AssetManifestOS)' == '' or '$(AssetManifestOS)' == 'osx'" />
   </Target>
   <Import Project="$(RepoRoot)\Directory.Build.targets" />
 </Project>
