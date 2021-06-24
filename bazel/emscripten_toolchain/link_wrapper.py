@@ -22,7 +22,7 @@ import subprocess
 import sys
 
 # Only argument should be @path/to/parameter/file
-assert sys.argv[1][0] == '@'
+assert sys.argv[1][0] == '@', sys.argv
 param_filename = sys.argv[1][1:]
 param_file_args = [l.strip() for l in open(param_filename, 'r').readlines()]
 
