@@ -51,7 +51,7 @@ parser.add_argument('--oformat')
 options = parser.parse_known_args(param_file_args)[0]
 output_file = options.o
 oformat = options.oformat
-outdir = os.path.dirname(output_file)
+outdir = os.path.normpath(os.path.dirname(output_file))
 base_name = os.path.basename(output_file)
 
 # The output file name is the name of the build rule that was built.
