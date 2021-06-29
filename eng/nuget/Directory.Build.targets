@@ -4,7 +4,7 @@
       <UnixFilePermissionsOutFile>$(ArtifactsObjDir)\$(MSBuildProjectName).UnixFilePermissions.xml</UnixFilePermissionsOutFile>
 
       <!-- don't pipe to another command, as we want this to fail if `find` fails -->
-      <FindExecutableFilesCommand Condition="$([MSBuild]::IsOsPlatform('osx'))"  >find . -type f -perm +111 -print -exec sh -c "echo {} | sed 's,^\.\/,,'" \;</FindExecutableFilesCommand>
+      <FindExecutableFilesCommand Condition="$([MSBuild]::IsOsPlatform('osx'))"  >find . -type f -perm +111 -exec sh -c "echo {} | sed 's,^\.\/,,'" \;</FindExecutableFilesCommand>
       <FindExecutableFilesCommand Condition="$([MSBuild]::IsOsPlatform('linux'))">find . -type f -perm /111 -printf '%P\n'</FindExecutableFilesCommand>
     </PropertyGroup>
 
@@ -17,8 +17,6 @@
       <Lines Include="  &lt;File Path=&quot;tools\%(_ExecFile.Identity)&quot; Permission=&quot;755&quot; /&gt;" />
       <Lines Include="&lt;/FileList&gt;" />
     </ItemGroup>
-
-
     <WriteLinesToFile Lines="@(Lines)" File="$(UnixFilePermissionsOutFile)" Overwrite="true" />
 
     <ItemGroup>
