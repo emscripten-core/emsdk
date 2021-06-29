@@ -1,8 +1,11 @@
 <Project>
+  <PropertyGroup>
+    <ArtifactsDirToPackage>$(ArtifactsObjDir)upstream\</ArtifactsDirToPackage>
+  </PropertyGroup>
+
   <ItemGroup>
-    <File Include="$(ArtifactsObjDir)upstream\**" TargetPath="tools\%(RecursiveDir)" SkipPackageFileCheck="true" />
+    <File Include="$(ArtifactsDirToPackage)**" TargetPath="tools\%(RecursiveDir)" SkipPackageFileCheck="true" />
     <File Include="$(RepoRoot)eng\.emscripten" TargetPath="tools\emscripten" SkipPackageFileCheck="true" />
     <File Include="$(RepoRoot)eng\sdk_files\Emscripten.Sdk.props" TargetPath="Sdk\Sdk.props" SkipPackageFileCheck="true" />
-    <File Condition="!$([MSBuild]::IsOsPlatform('Windows'))" Include="$(RepoRoot)eng\nuget\Microsoft.NET.Runtime.Emscripten.Sdk.UnixFilePermissions.xml" TargetPath="data\UnixFilePermissions.xml" SkipPackageFileCheck="true" />
   </ItemGroup>
 </Project>

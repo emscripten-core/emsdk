@@ -1,0 +1,25 @@
+<Project>
+  <Target Name="GenerateUnixPermissionsFile" Condition="!$([MSBuild]::IsOSPlatform('windows'))">
+    <Exec Command="cd $(ArtifactsDirToPackage); find . -type f -perm +111 -print | sed -e 's,^\.\/,,'" ConsoleToMsBuild="true" StandardOutputImportance="Low">
+      <Output TaskParameter="ConsoleOutput" ItemName="_ExecFile" />
+    </Exec>
+
+    <ItemGroup>
+      <Lines Include="&lt;FileList&gt;" />
+      <Lines Include="  &lt;File Path=&quot;tools\%(_ExecFile.Identity)&quot; Permission=&quot;755&quot; /&gt;" />
+      <Lines Include="&lt;/FileList&gt;" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <UnixFilePermissionsOutFile>$(ArtifactsObjDir)\$(MSBuildProjectName).UnixFilePermissions.xml</UnixFilePermissionsOutFile>
+    </PropertyGroup>
+
+    <WriteLinesToFile Lines="@(Lines)" File="$(UnixFilePermissionsOutFile)" Overwrite="true" />
+
+    <ItemGroup>
+      <File Condition="!$([MSBuild]::IsOsPlatform('Windows'))" Include="$(UnixFilePermissionsOutFile)" TargetPath="data\UnixFilePermissions.xml" SkipPackageFileCheck="true" />
+    </ItemGroup>
+  </Target>
+
+  <Import Project="$(RepoRoot)\Directory.Build.targets" />
+</Project>
