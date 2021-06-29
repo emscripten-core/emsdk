@@ -24,5 +24,28 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="SanityCheckUnixFilePermissionsFile" AfterTargets="Deploy">
+    <!-- $(PackageOutputPath)$(Id).$(PackageVersion).nupkg -->
+    <PropertyGroup>
+      <_UnpackedNuGetPath>$(ArtifactsObjDir)unpacked.$(Id)\</_UnpackedNuGetPath>
+      <_PermsFile>$(_UnpackedNuGetPath)data\UnixFilePermissions.xml</_PermsFile>
+    </PropertyGroup>
+
+    <RemoveDir Directories="$(_UnpackedNuGetPath)" />
+    <Unzip SourceFiles="$(PackageOutputPath)$(Id).$(PackageVersion).nupkg" DestinationFolder="$(_UnpackedNuGetPath)" />
+
+    <Error Text="Could not find $(_PermsFile)" Condition="!Exists($(_PermsFile))" />
+
+    <XmlPeek XmlInputPath="$(_PermsFile)" Query="//FileList/File/@Path">
+      <Output TaskParameter="Result" ItemName="_FilePath" />
+    </XmlPeek>
+
+    <Error Condition="@(_FilePath->Count()) == 0" Text="No entries found in $(_PermsFile)" />
+    <Error Condition="!Exists('$(_UnpackedNuGetPath)%(_FilePath.Identity)')"
+           Text="Could not find %(_FilePath.Identity) at $(_UnpackedNuGetPath)%(_FilePath.Identity) referenced in $(_PermsFile)" />
+
+    <RemoveDir Directories="$(_UnpackedNuGetPath)" />
+  </Target>
+
   <Import Project="$(RepoRoot)\Directory.Build.targets" />
 </Project>
