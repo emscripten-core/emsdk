@@ -4,7 +4,7 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.NET.Runtime.Emscripten.Common.props))" />
   <Import Project="Microsoft.NET.Runtime.Emscripten.Node.props" />
 
-  <Target Name="_PrepareForPack" BeforeTargets="GetPackageFiles" Returns="@(PackageFile)">
+  <Target Name="_PrepareForPack" BeforeTargets="GetPackageFiles" DependsOnTargets="GenerateUnixPermissionsFile" Returns="@(PackageFile)">
     <!-- Override the id to include the Emscripten version -->
     <PropertyGroup>
       <Id>Microsoft.NET.Runtime.Emscripten.$(EmscriptenVersion).Node.$(PackageRID)</Id>
@@ -17,5 +17,5 @@
   </PropertyGroup>
 
   <Import Project="$(NuGetPackageRoot)\microsoft.dotnet.build.tasks.packaging\$(MicrosoftDotNetBuildTasksPackagingVersion)\build\Microsoft.DotNet.Build.Tasks.Packaging.targets" />
-  <Import Project="$(RepoRoot)\Directory.Build.targets" />
+  <Import Project="..\Directory.Build.targets" />
 </Project>
