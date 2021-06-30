@@ -96,7 +96,7 @@
     <Delete Files="$(ArtifactsObjDir)node\bin\npx" />
 
     <!-- on Windows these are identical copies that should be symlinks, remove them for now -->
-    <Delete Files="$(ArtifactsObjDir)upstream\bin\clang++.exe" />
+    <!--<Delete Files="$(ArtifactsObjDir)upstream\bin\clang++.exe" /> Used by .23 directly -->
     <Delete Files="$(ArtifactsObjDir)upstream\bin\wasm32-clang++.exe" />
     <Delete Files="$(ArtifactsObjDir)upstream\bin\wasm32-clang.exe" />
     <Delete Files="$(ArtifactsObjDir)upstream\bin\wasm32-wasi-clang.exe" />
