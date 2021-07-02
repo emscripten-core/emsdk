@@ -8,10 +8,18 @@
 
     <_EmscriptenPython Condition="!$([MSBuild]::IsOSPlatform('WINDOWS'))">$(EmscriptenPythonBinPath)\python3</_EmscriptenPython>
     <_EmscriptenPython Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))" >$(EmscriptenPythonBinPath)\python.exe</_EmscriptenPython>
-   </PropertyGroup>
+  </PropertyGroup>
 
-   <ItemGroup>
-     <EmscriptenPrependPATH Include="$(EmscriptenPythonBinPath)" />
-     <EmscriptenEnvVars Include="EMSDK_PYTHON=$(_EmscriptenPython)" />
+  <ItemGroup>
+    <EmscriptenPrependPATH Include="$(EmscriptenPythonBinPath)" />
+    <EmscriptenEnvVars Include="EMSDK_PYTHON=$(_EmscriptenPython)" />
+
+    <!--
+      Python defaults to the system charset, and thus expects the files it's reading to
+      match that. But that might not always be true. Eg. system charset=gbk, failing to read
+      utf-8 files
+      See https://github.com/dotnet/runtime/issues/53367 for the motivating issue
+    -->
+    <EmscriptenEnvVars Include="PYTHONUTF8=1" />
   </ItemGroup>
 </Project>
