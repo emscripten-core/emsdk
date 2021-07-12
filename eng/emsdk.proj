@@ -127,7 +127,8 @@
       <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libubsan_minimal_rt_wasm.a" />
       <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libubsan_rt-mt.a" />
       <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libubsan_rt.a" />
-      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libemmalloc*.a" />
+      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\lib*-mt.a" />
+      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\lib*-mt-*.a" />
     </ItemGroup>
     <Delete Files="@(DeleteCacheFiles)" />
 
