@@ -106,7 +106,7 @@
     <Delete Files="$(ArtifactsObjDir)upstream\emscripten\third_party\*.*" />
     <!--<Delete Files="$(ArtifactsObjDir)upstream\bin\wasm-ld.exe" />--> <!-- TODO: this is used by emcc but could be a symlink to ld.exe -->
 
-    <ItemGroup Condition="'$(PackageRID)' == 'win-x64'">
+    <ItemGroup>
       <!-- delete these libs from the cache to reduce windows nuget size context: https://github.com/dotnet/emsdk/pull/34#issuecomment-872691739 -->
       <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libasan_js.a" />
       <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libasan_rt-mt.a" />
