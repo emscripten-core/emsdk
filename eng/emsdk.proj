@@ -106,6 +106,32 @@
     <Delete Files="$(ArtifactsObjDir)upstream\emscripten\third_party\*.*" />
     <!--<Delete Files="$(ArtifactsObjDir)upstream\bin\wasm-ld.exe" />--> <!-- TODO: this is used by emcc but could be a symlink to ld.exe -->
 
+    <ItemGroup>
+      <!-- delete these libs from the cache to reduce windows nuget size context: https://github.com/dotnet/emsdk/pull/34#issuecomment-872691739 -->
+      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libasan_js.a" />
+      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libasan_rt-mt.a" />
+      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libasan_rt.a" />
+      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libc_rt_wasm-asan-optz.a" />
+      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libc_rt_wasm-asan.a" />
+      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libc-asan.a" />
+      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libc-mt-asan.a" />
+      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\liblsan_common_rt-mt.a" />
+      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\liblsan_common_rt.a" />
+      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\liblsan_rt-mt.a" />
+      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\liblsan_rt.a" />
+      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libprintf_long_double-asan.a" />
+      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libprintf_long_double-mt-asan.a" />
+      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libsanitizer_common_rt-mt.a" />
+      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libsanitizer_common_rt.a" />
+      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libubsan_minimal_rt_wasm-mt.a" />
+      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libubsan_minimal_rt_wasm.a" />
+      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libubsan_rt-mt.a" />
+      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libubsan_rt.a" />
+      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\lib*-mt.a" />
+      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\lib*-mt-*.a" />
+    </ItemGroup>
+    <Delete Files="@(DeleteCacheFiles)" />
+
     <!-- Strip binaries -->
     <ItemGroup>
       <UpstreamBinFiles Include="$(ArtifactsObjDir)upstream\bin\*" />
