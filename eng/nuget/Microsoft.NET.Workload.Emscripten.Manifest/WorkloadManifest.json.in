@@ -2,7 +2,6 @@
   "version": "${WorkloadVersion}",
   "workloads": {
     "microsoft-net-sdk-emscripten": {
-      "abstract": true,
       "description": "Emscripten SDK compiler tooling",
       "packs": [
         "Microsoft.NET.Runtime.Emscripten.Node",
