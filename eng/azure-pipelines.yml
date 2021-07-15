@@ -69,7 +69,7 @@ stages:
           vmImage: windows-2019
         steps:
         - script: |
-            .\build.cmd -ci -configuration $(_BuildConfig) $(_InternalPublishArg) /p:PackageRID=win-x64 /p:AssetManifestOS=win /p:PlatformName=x64 $(_InternalBuildArgs)
+            .\build.cmd -ci -configuration $(_BuildConfig) $(_InternalPublishArg) /p:PackageRID=win-x64 /p:AssetManifestOS=win /p:PlatformName=x64 /p:workloadPackagesPath=$(Build.SourcesDirectory)\artifacts\packages\$(_BuildConfig)\Shipping $(_InternalBuildArgs)
           displayName: Build and Publish
         - publish: artifacts/packages
           artifact: Packages_Windows
