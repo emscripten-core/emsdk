@@ -3,6 +3,7 @@
   "workloads": {
     "microsoft-net-sdk-emscripten": {
       "description": "Emscripten SDK compiler tooling",
+      "abstract": true,
       "packs": [
         "Microsoft.NET.Runtime.Emscripten.Node",
         "Microsoft.NET.Runtime.Emscripten.Python",
