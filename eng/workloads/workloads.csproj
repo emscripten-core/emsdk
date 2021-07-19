@@ -52,7 +52,7 @@
     <ItemGroup>
       <!-- Overrides for Visual Studio setup generation. If the workload definition IDs change,
            these must be updated. -->
-      <ComponentResources Include="microsoft-net-sdk-emscripten" Title=".NET WebAssembly Build Tools (EMSDK)"
+      <ComponentResources Include="microsoft-net-sdk-emscripten" Title=".NET WebAssembly Build Tools (Emscripten)"
                           Description="Build tools for WebAssembly ahead-of-time (AoT) compilation and native linking."/>
 
       <!-- Visual Studio components must be versioned. Build tasks will fall back to cobbling a version number from
