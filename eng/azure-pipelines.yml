@@ -2,6 +2,11 @@ variables:
   - template: /eng/common-variables.yml
   - name: Build.Repository.Clean
     value: true
+  - name: officialBuildIdArg
+    value: ''
+  - ${{ if and(eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest')) }}:
+    - name: officialBuildIdArg
+      value: '/p:OfficialBuildId=$(Build.BuildNumber)'
 
 trigger:
   batch: true
@@ -37,7 +42,7 @@ stages:
           vmImage: macOS-10.15
         steps:
         - bash: |
-            ./build.sh -ci -configuration $(_BuildConfig) $(_InternalPublishArg) /p:PackageRID=osx-x64 /p:AssetManifestOS=osx /p:PlatformName=x64 $(_InternalBuildArgs)
+            ./build.sh -ci -configuration $(_BuildConfig) $(_InternalPublishArg) /p:PackageRID=osx-x64 /p:AssetManifestOS=osx /p:PlatformName=x64 $(_InternalBuildArgs) $(officialBuildIdArg)
           displayName: Build and Publish
         - publish: artifacts/packages
           artifact: Packages_macOS
@@ -53,7 +58,7 @@ stages:
           vmImage: ubuntu-20.04
         steps:
         - bash: |
-            ./build.sh -ci -configuration $(_BuildConfig) $(_InternalPublishArg) /p:PackageRID=linux-x64 /p:AssetManifestOS=linux /p:PlatformName=x64 $(_InternalBuildArgs)
+            ./build.sh -ci -configuration $(_BuildConfig) $(_InternalPublishArg) /p:PackageRID=linux-x64 /p:AssetManifestOS=linux /p:PlatformName=x64 $(_InternalBuildArgs) $(officialBuildIdArg)
           displayName: Build and Publish
         - publish: artifacts/packages
           artifact: Packages_Linux
@@ -69,7 +74,7 @@ stages:
           vmImage: windows-2019
         steps:
         - script: |
-            .\build.cmd -ci -configuration $(_BuildConfig) $(_InternalPublishArg) /p:PackageRID=win-x64 /p:AssetManifestOS=win /p:PlatformName=x64 /p:workloadPackagesPath=$(Build.SourcesDirectory)\artifacts\packages\$(_BuildConfig)\Shipping $(_InternalBuildArgs)
+            .\build.cmd -ci -configuration $(_BuildConfig) $(_InternalPublishArg) /p:PackageRID=win-x64 /p:AssetManifestOS=win /p:PlatformName=x64 /p:workloadPackagesPath=$(Build.SourcesDirectory)\artifacts\packages\$(_BuildConfig)\Shipping $(_InternalBuildArgs) $(officialBuildIdArg)
           displayName: Build and Publish
         - publish: artifacts/packages
           artifact: Packages_Windows
