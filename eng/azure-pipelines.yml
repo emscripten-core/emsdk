@@ -102,7 +102,9 @@ stages:
         - task: PublishPipelineArtifact@1
           displayName: Publish workload artifacts
           inputs:
-            targetPath: $(Build.SourcesDirectory)/artifacts/workloadPackages
+            targetPath: |
+              $(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)/Insertion/*/*.json
+              $(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)/Insertion/*/*.msi
             artifactName: 'Workloads'
           continueOnError: true
           condition: always()
