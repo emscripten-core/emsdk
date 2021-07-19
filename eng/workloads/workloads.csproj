@@ -24,6 +24,9 @@
 
   <!-- Arcade -->
   <PropertyGroup>
+    <!-- Make the version number not be 42.42.42.42424 -->
+    <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
+    <DotNetUseShippingVersion>true</DotNetUseShippingVersion>
     <!-- Temp directory for light command layouts -->
     <LightCommandObjDir>$(ArtifactsObjDir)/LightCommandPackages</LightCommandObjDir>
     <!-- Directory for the zipped up light command package -->
@@ -54,7 +57,7 @@
 
       <!-- Visual Studio components must be versioned. Build tasks will fall back to cobbling a version number from
            the manifest information unless it's overridden. -->
-      <ComponentVersions Include="microsoft-net-sdk-emscripten" Version="$(FileVersion)" />
+      <ComponentVersions Include="microsoft-net-sdk-emscripten" Version="$(AssemblyVersion)" />
     </ItemGroup>
 
     <!-- BAR requires having version information in blobs -->
