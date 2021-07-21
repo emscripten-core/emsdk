@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <_InstallersToPublish Include="$(ArtifactsDir)**\*.wixpack.zip" UploadPathSegment="wixpack"
+    <_InstallersToPublish Include="$(ArtifactsDir)**\*.wixpack.zip" UploadPathSegment="wixpack" />
   </ItemGroup>
 
   <Target Name="_PublishInstallers">
