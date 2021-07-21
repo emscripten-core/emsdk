@@ -147,7 +147,7 @@
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.Node\Microsoft.NET.Runtime.Emscripten.Node.pkgproj" Targets="Build" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.Python\Microsoft.NET.Runtime.Emscripten.Python.pkgproj" Targets="Build" Condition="'$(UsesPythonFromEmsdk)' == 'true'" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.Sdk\Microsoft.NET.Runtime.Emscripten.Sdk.pkgproj" Targets="Build" />
-    <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Workload.Emscripten.Manifest\Microsoft.NET.Workload.Emscripten.Manifest.pkgproj" Targets="Build" Condition="'$(AssetManifestOS)' == '' or '$(AssetManifestOS)' == 'osx'" />
+    <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Workload.Emscripten.Manifest\Microsoft.NET.Workload.Emscripten.Manifest.pkgproj" Targets="Build" Condition="'$(AssetManifestOS)' == '' or '$(AssetManifestOS)' == 'win'" />
   </Target>
   <Import Project="$(RepoRoot)\Directory.Build.targets" />
 </Project>
