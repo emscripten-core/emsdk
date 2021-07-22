@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ProjectToBuild Include="$(MSBuildThisFileDirectory)emsdk.proj" />
+    <ProjectToBuild BuildInParallel="false" Condition="'$(SkipBuild)' != 'true'" Include="$(MSBuildThisFileDirectory)emsdk.proj" />
+    <ProjectToBuild BuildInParallel="false" Condition="'$(AssetManifestOS)' == 'win' and '$(SkipWorkloads)' != 'true'" Include="$(MSBuildThisFileDirectory)\workloads\workloads.csproj" />
   </ItemGroup>
 </Project>
