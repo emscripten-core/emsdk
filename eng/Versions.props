@@ -8,8 +8,8 @@
     <WorkloadSdkBandVersion>6.0.100</WorkloadSdkBandVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <MicrosoftDotNetBuildTasksPackagingVersion>6.0.0-beta.21366.1</MicrosoftDotNetBuildTasksPackagingVersion>
-    <MicrosoftDotNetBuildTasksTemplatingVersion>6.0.0-beta.21366.1</MicrosoftDotNetBuildTasksTemplatingVersion>
+    <MicrosoftDotNetBuildTasksPackagingVersion>6.0.0-beta.21372.16</MicrosoftDotNetBuildTasksPackagingVersion>
+    <MicrosoftDotNetBuildTasksTemplatingVersion>6.0.0-beta.21372.16</MicrosoftDotNetBuildTasksTemplatingVersion>
   </PropertyGroup>
   <PropertyGroup>
     <MicrosoftDotNetBuildTasksInstallersPackageVersion>6.0.0-beta.21366.1</MicrosoftDotNetBuildTasksInstallersPackageVersion>
