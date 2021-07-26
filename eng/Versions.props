@@ -13,7 +13,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <MicrosoftDotNetBuildTasksInstallersPackageVersion>6.0.0-beta.21366.1</MicrosoftDotNetBuildTasksInstallersPackageVersion>
-    <MicrosoftDotNetBuildTasksWorkloadsPackageVersion>6.0.0-beta.21366.1</MicrosoftDotNetBuildTasksWorkloadsPackageVersion>
+    <MicrosoftDotNetBuildTasksWorkloadsPackageVersion>6.0.0-beta.21372.16</MicrosoftDotNetBuildTasksWorkloadsPackageVersion>
     <SwixPackageVersion>1.1.87-gba258badda</SwixPackageVersion>
     <WixPackageVersion>3.14.0-dotnet</WixPackageVersion>
   </PropertyGroup>
