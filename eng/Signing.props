@@ -8,6 +8,7 @@
     <FileExtensionSignInfo Update=".nupkg" CertificateName="NuGet" />
     <FileExtensionSignInfo Update=".zip" CertificateName="None" />
     <FileExtensionSignInfo Include=".cat" CertificateName="3PartySHA2" />
+    <FileExtensionSignInfo Include=".msi" CertificateName="Microsoft400" />
     <FileExtensionSignInfo Include=".pyd" CertificateName="3PartySHA2" />
 
     <!--
