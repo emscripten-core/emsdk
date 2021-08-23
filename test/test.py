@@ -81,7 +81,7 @@ def hack_emsdk(marker, replacement):
 
 # Set up
 
-TAGS = json.loads(open('emscripten-releases-tags.txt').read())
+TAGS = json.loads(open('emscripten-releases-tags.json').read())
 
 # Tests
 

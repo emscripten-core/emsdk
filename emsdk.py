@@ -2315,10 +2315,10 @@ def exit_with_error(msg):
 def load_releases_info():
   if not hasattr(load_releases_info, 'cached_info'):
     try:
-      text = open(sdk_path('emscripten-releases-tags.txt'), 'r').read()
+      text = open(sdk_path('emscripten-releases-tags.json'), 'r').read()
       load_releases_info.cached_info = json.loads(text)
     except Exception as e:
-      print('Error parsing emscripten-releases-tags.txt!')
+      print('Error parsing emscripten-releases-tags.json!')
       exit_with_error(str(e))
 
   return load_releases_info.cached_info

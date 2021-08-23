@@ -44,7 +44,7 @@ def main(args):
   release_info['releases'] = OrderedDict(reversed(releases))
   release_info['aliases']['latest'] = new_version
 
-  with open(os.path.join(root_dir, 'emscripten-releases-tags.txt'), 'w') as f:
+  with open(os.path.join(root_dir, 'emscripten-releases-tags.json'), 'w') as f:
     f.write(json.dumps(release_info, indent=2))
     f.write('\n')
 
