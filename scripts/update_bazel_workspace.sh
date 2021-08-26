@@ -1,6 +1,6 @@
 #!/bin/bash
 # This script will update emsdk/bazel/WORKSPACE to the latest version of
-# emscripten. It reads emsdk/emscripten-releases-tags.txt to get the latest
+# emscripten. It reads emsdk/emscripten-releases-tags.json to get the latest
 # version number. Then, it downloads the prebuilts for that version and computes
 # the sha256sum for the archive. It then puts all this information into the
 # emsdk/bazel/WORKSPACE file.
@@ -12,8 +12,8 @@ cd $(dirname $0)/..
 # If the previous command succeeded. We are in the emsdk root. Check to make
 # sure the files and directories we need are present.
 if [[ $? = 0 ]]; then
-  if [[ ! -f emscripten-releases-tags.txt ]]; then
-    echo "Cannot find emscripten-releases-tags.txt."
+  if [[ ! -f emscripten-releases-tags.json ]]; then
+    echo "Cannot find emscripten-releases-tags.json."
     ERR=1
   fi
 
@@ -38,7 +38,7 @@ URL2=/wasm-binaries.tbz2
 
 # Get commit hash for $1 version
 get_hash () {
-  echo $(grep "$1" emscripten-releases-tags.txt | grep -v latest | cut -f4 -d\")
+  echo $(grep "$1" emscripten-releases-tags.json | grep -v latest | cut -f4 -d\")
 }
 
 # Get sha256 for $1 os $2 hash
@@ -62,9 +62,9 @@ append_revision () {
   sed -i "5 i $(revisions_item $1)" bazel/revisions.bzl
 }
 
-# Get the latest version number from emscripten-releases-tag.txt.
+# Get the latest version number from emscripten-releases-tag.json.
 VER=$(grep -oP '(?<=latest\": \")([\d\.]+)(?=\")' \
-        emscripten-releases-tags.txt \
+        emscripten-releases-tags.json \
       | sed --expression "s/\./\\\./g")
 
 append_revision ${VER}

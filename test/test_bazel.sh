@@ -5,12 +5,12 @@ echo "test bazel"
 set -x
 set -e
 
-# Get the latest version number from emscripten-releases-tag.txt.
+# Get the latest version number from emscripten-releases-tag.json.
 VER=$(grep -oP '(?<=latest\": \")([\d\.]+)(?=\")' \
-        emscripten-releases-tags.txt \
+        emscripten-releases-tags.json \
       | sed --expression "s/\./\\\./g")
 # Based on the latest version number, get the commit hash for that version.
-HASH=$(grep "\"${VER}\"" emscripten-releases-tags.txt \
+HASH=$(grep "\"${VER}\"" emscripten-releases-tags.json \
       | grep -v latest \
       | cut -f4 -d\")
 
