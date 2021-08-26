@@ -9,6 +9,7 @@
     "latest-releases-upstream": "latest"
   },
   "releases": {
+    "2.0.28-lto": "ac6ac36f7a02cec857bc1e543e55c686c5bd1256",
     "2.0.28": "866055ea639d64dfedc625d28ec981e47ce37168",
     "2.0.27-lto": "79509f70be89d66b8441383de94b3e5a91dedc68",
     "2.0.27": "1ac46e3b84955231ab4a4f4cbe0c7ac28c86b8cc",
