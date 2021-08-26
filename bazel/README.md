@@ -25,7 +25,7 @@ emsdk_emscripten_deps()
 
 Put the following lines into your `.bazelrc`:
 ```
-build:wasm --crosstool_top=//emscripten_toolchain:everything
+build:wasm --crosstool_top=@emsdk//emscripten_toolchain:everything
 build:wasm --cpu=wasm
 build:wasm --host_crosstool_top=@bazel_tools//tools/cpp:toolchain
 ```
