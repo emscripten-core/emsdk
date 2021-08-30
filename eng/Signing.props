@@ -19,4 +19,8 @@
     <FileExtensionSignInfo Update=".js" CertificateName="None" />
     <FileExtensionSignInfo Include=".vbs" CertificateName="None" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <ItemsToSignPostBuild Include="$(VisualStudioSetupInsertionPath)\**\*.msi" />
+  </ItemGroup>
 </Project>
