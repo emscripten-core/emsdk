@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <GitHubRepositoryName>emsdk</GitHubRepositoryName>
-    <RepositoryUrl>git://github.com/dotnet/emsdk</RepositoryUrl>
+    <RepositoryUrl>https://github.com/dotnet/emsdk</RepositoryUrl>
     <ProjectUrl>https://github.com/dotnet/emsd</ProjectUrl>
     <LicenseUrl>https://github.com/dotnet/emsdk/blob/main/LICENSE</LicenseUrl>
     <ReleaseNotes>https://go.microsoft.com/fwlink/?LinkID=799421</ReleaseNotes>
