@@ -1,0 +1,16 @@
+<Project>
+  <Import Project="$(RepoRoot)\Directory.Build.props" />
+  <Import Project="$(NuGetPackageRoot)\microsoft.dotnet.build.tasks.packaging\$(MicrosoftDotNetBuildTasksPackagingVersion)\build\Microsoft.DotNet.Build.Tasks.Packaging.props" />
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.NET.Runtime.Emscripten.Common.props))" />
+
+  <PropertyGroup>
+    <PackageDescription>Internal package to carry full build version number.</PackageDescription>
+    <Description>Internal package to carry full build version number.</Description>
+    <IsShipping>false</IsShipping>
+    <VersionSuffix>$(_PreReleaseLabel)$(_BuildNumberLabels)</VersionSuffix>
+    <StableVersion></StableVersion>
+  </PropertyGroup>
+
+  <Import Project="$(NuGetPackageRoot)\microsoft.dotnet.build.tasks.packaging\$(MicrosoftDotNetBuildTasksPackagingVersion)\build\Microsoft.DotNet.Build.Tasks.Packaging.targets" />
+  <Import Project="..\Directory.Build.targets" />
+</Project>

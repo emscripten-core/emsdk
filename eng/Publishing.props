@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <Target Name="_PublishInstallers">
-    <MSBuild Projects="$(RepoRoot)eng\nuget\Microsoft.NET.Runtime.Emscripten.Sdk\Microsoft.NET.Runtime.Emscripten.Sdk.pkgproj"
+    <MSBuild Projects="$(RepoRoot)eng\nuget\Microsoft.NET.Runtime.Emscripten.Sdk.Internal\Microsoft.NET.Runtime.Emscripten.Sdk.Internal.pkgproj"
         Properties="DisableYarnCheck=true;ExcludeFromBuild=false"
         Targets="GetPackageIdentity"
         SkipNonexistentProjects="false">
