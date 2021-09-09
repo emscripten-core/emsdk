@@ -128,6 +128,18 @@
     "activated_cfg": "LLVM_ROOT='%installation_dir%/fastcomp/bin';BINARYEN_ROOT='%installation_dir%';EMSCRIPTEN_ROOT='%installation_dir%/emscripten';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/bin/optimizer%.exe%'",
     "emscripten_releases_hash": "%releases-tag%"
   },
+  {
+    "id": "releases",
+    "version": "fastcomp-%releases-tag%",
+    "bitness": 64,
+    "arch": "aarch64",
+    "macos_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/mac/%releases-tag%/wasm-binaries.tbz2",
+    "zipfile_prefix": "%releases-tag%-",
+    "install_path": "fastcomp",
+    "activated_path": "%installation_dir%/emscripten",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/bin';BINARYEN_ROOT='%installation_dir%';EMSCRIPTEN_ROOT='%installation_dir%/emscripten'",
+    "emscripten_releases_hash": "%releases-tag%"
+  },
 
   {
     "id": "clang",
@@ -637,6 +649,14 @@
     "uses": ["node-14.15.5-64bit", "python-3.7.4-2-64bit", "releases-fastcomp-%releases-tag%-64bit"],
     "os": "macos",
     "arch": "x86_64",
+    "custom_install_script": "emscripten_npm_install"
+  },
+  {
+    "version": "releases-fastcomp-%releases-tag%",
+    "bitness": 64,
+    "uses": ["node-14.15.5-64bit", "python-3.9.2-1-64bit", "releases-fastcomp-%releases-tag%-64bit"],
+    "os": "macos",
+    "arch": "aarch64",
     "custom_install_script": "emscripten_npm_install"
   },
   {
