@@ -105,7 +105,7 @@ if os.path.exists(wasm_base + '.debug.wasm') and os.path.exists(wasm_base):
   # is the blaze output path; we want it to be just the filename.
 
   llvm_objcopy = os.path.join(
-      os.environ['EMSCRIPTEN'], 'llvm-bin/llvm-objcopy')
+      os.environ['EM_BIN_PATH'], 'bin/llvm-objcopy')
   # First, check to make sure the .wasm file has the header that needs to be
   # rewritten.
   rtn = subprocess.call([
