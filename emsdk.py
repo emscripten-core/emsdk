@@ -539,10 +539,10 @@ def untargz(source_filename, dest_dir, unpack_even_if_exists=False):
     return True
   print("Unpacking '" + source_filename + "' to '" + dest_dir + "'")
   mkdir_p(dest_dir)
-  run(['tar', '-xvf' if VERBOSE else '-xf', sdk_path(source_filename), '--strip', '1'], cwd=dest_dir)
+  returncode = run(['tar', '-xvf' if VERBOSE else '-xf', sdk_path(source_filename), '--strip', '1'], cwd=dest_dir)
   # tfile = tarfile.open(source_filename, 'r:gz')
   # tfile.extractall(dest_dir)
-  return True
+  return returncode == 0
 
 
 # On Windows, it is not possible to reference path names that are longer than
