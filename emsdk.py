@@ -1235,15 +1235,13 @@ def build_llvm(tool):
           # that prevent distributing the generated compiler for end users.
           '-DLLVM_ENABLE_LIBXML2=OFF', '-DLLVM_ENABLE_TERMINFO=OFF', '-DLLDB_ENABLE_LIBEDIT=OFF',
           '-DLLVM_ENABLE_LIBEDIT=OFF', '-DLLVM_ENABLE_LIBPFM=OFF']
-  # LLVM build system bug: looks like everything needs to be passed to LLVM_ENABLE_PROJECTS twice. (or every second field is ignored?)
-
-  # LLVM build system bug #2: compiler-rt does not build on Windows. It insists on performing a CMake install step that writes to C:\Program Files. Attempting
+  # LLVM build system bug: compiler-rt does not build on Windows. It insists on performing a CMake install step that writes to C:\Program Files. Attempting
   # to reroute that to build_root directory then fails on an error
   #  file INSTALL cannot find
   #  "C:/code/emsdk/llvm/git/build_master_vs2017_64/$(Configuration)/lib/clang/10.0.0/lib/windows/clang_rt.ubsan_standalone-x86_64.lib".
   # (there instead of $(Configuration), one would need ${CMAKE_BUILD_TYPE} ?)
   # It looks like compiler-rt is not compatible to build on Windows?
-  args += ['-DLLVM_ENABLE_PROJECTS="clang;clang;lld;lld"']
+  args += ['-DLLVM_ENABLE_PROJECTS=clang;lld']
   cmake_generator = CMAKE_GENERATOR
   if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
     # With Visual Studio 16 2019, CMake changed the way they specify target arch.
