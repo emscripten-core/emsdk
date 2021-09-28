@@ -2204,7 +2204,7 @@ def parse_emscripten_version(emscripten_root):
   version_file = os.path.join(emscripten_root, 'emscripten-version.txt')
   with open(version_file) as f:
     version = f.read().strip()
-    version = version.strip('"').split('.')
+    version = version.strip('"').split('-')[0].split('.')
     return [int(v) for v in version]
 
 
