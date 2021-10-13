@@ -10,19 +10,16 @@ wasm_cc_binary(
     cc_target = ":hello-world",
 )
 
-BASE_LINKOPTS = [
-    "--bind",                  # Enable embind
-    "-s MODULARIZE=1",
-    "-s NODEJS_CATCH_EXIT=0",  # No main in this
-]
-
 cc_binary(
     name = "hello-embind",
     srcs = ["hello-embind.cc"],
     # It's probably a good idea to use select() and config_setting
     # to add different linkopts to BASE_LINKOPTS depending on things
     # like a "opt" or "dbg" compilation mode.
-    linkopts = BASE_LINKOPTS,
+    linkopts = [
+        "--bind",       # Enable embind
+        "-sMODULARIZE",
+    ],
     # This target won't build successfully on its own because of missing emscripten
     # headers etc. Therefore, we hide it from wildcards.
     tags = ["manual"],
