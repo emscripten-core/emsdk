@@ -619,7 +619,7 @@ def _impl(ctx):
             actions = all_compile_actions +
                       all_link_actions,
             flags = [
-                "-g4",
+                "-g",
                 "-fsanitize=address",
                 "-O1",
                 "-DADDRESS_SANITIZER=1",
