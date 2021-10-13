@@ -26,3 +26,4 @@ bazel build //hello-world:hello-world-wasm-simd
 
 cd test_external
 bazel build //:hello-world-wasm
+bazel build //:hello-embind-wasm
