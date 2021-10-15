@@ -50,12 +50,12 @@ get_sha () {
 revisions_item () {
   hash=$(get_hash $1)
   echo \
-      "\   \"$1\": struct(\n" \
-      "\       hash = \"$(get_hash ${hash})\",\n" \
-      "\       sha_linux = \"$(get_sha linux ${hash})\",\n" \
-      "\       sha_mac = \"$(get_sha mac ${hash})\",\n" \
-      "\       sha_win = \"$(get_sha win ${hash})\",\n" \
-      "\   ),"
+      "\    \"$1\": struct(\n"\
+      "\        hash = \"$(get_hash ${hash})\",\n"\
+      "\        sha_linux = \"$(get_sha linux ${hash})\",\n"\
+      "\        sha_mac = \"$(get_sha mac ${hash})\",\n"\
+      "\        sha_win = \"$(get_sha win ${hash})\",\n"\
+      "\    ),"
 }
 
 append_revision () {

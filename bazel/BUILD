@@ -1,4 +1,4 @@
-package(default_visibility = ['//visibility:public'])
+package(default_visibility = ["//visibility:public"])
 
 config_setting(
     name = "linux",
@@ -41,4 +41,3 @@ alias(
         ":windows": "@emscripten_npm_win//:node_modules",
     }),
 )
-

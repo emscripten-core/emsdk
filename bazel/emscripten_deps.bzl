@@ -3,13 +3,13 @@ load("@build_bazel_rules_nodejs//:index.bzl", "npm_install")
 load(":revisions.bzl", "EMSCRIPTEN_TAGS")
 
 def _parse_version(v):
-  return [int(u) for u in v.split(".")]
+    return [int(u) for u in v.split(".")]
 
 def emscripten_deps(emscripten_version = "latest"):
     version = emscripten_version
 
     if version == "latest":
-        version = reversed(sorted(EMSCRIPTEN_TAGS.keys(), key=_parse_version))[0]
+        version = reversed(sorted(EMSCRIPTEN_TAGS.keys(), key = _parse_version))[0]
 
     if version not in EMSCRIPTEN_TAGS.keys():
         error_msg = "Emscripten version {} not found.".format(version)
