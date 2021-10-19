@@ -1,6 +1,6 @@
 {
   "aliases": {
-    "latest": "2.0.31",
+    "latest": "2.0.32",
     "latest-sdk": "latest",
     "latest-64bit": "latest",
     "sdk-latest-64bit": "latest",
@@ -9,6 +9,7 @@
     "latest-releases-upstream": "latest"
   },
   "releases": {
+    "2.0.32": "74646397e3c5010824ad60d1de86c6bcbe334dff",
     "2.0.31": "597724ca3f6cd6e84bea73f1f519a3953b5c273d",
     "2.0.31-asserts": "c1065389ccf4a81e3c1af080316afd444788bc46",
     "2.0.30-asserts": "e13a2d74c5fa5f175ae7cffd4197fe7f78bea304",
