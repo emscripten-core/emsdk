@@ -9,9 +9,9 @@ filegroup(
         "emcc.sh",
         "emscripten_config",
         "env.sh",
-        "@nodejs//:node_files",
         "@emsdk//:binaries",
         "@emsdk//:node_modules",
+        "@nodejs//:node_files",
     ],
 )
 

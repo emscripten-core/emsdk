@@ -437,7 +437,6 @@ def _impl(ctx):
         # https://emscripten.org/docs/debugging/Sanitizers.html
         feature(name = "wasm_asan"),
         feature(name = "wasm_ubsan"),
-
         feature(
             name = "output_format_js",
             enabled = True,
@@ -518,7 +517,7 @@ def _impl(ctx):
         # Language Features
         flag_set(
             actions = all_cpp_compile_actions,
-            flags = ["-std=gnu++17", "-nostdinc", "-nostdinc++",],
+            flags = ["-std=gnu++17", "-nostdinc", "-nostdinc++"],
         ),
 
         # Emscripten-specific settings:
@@ -910,7 +909,8 @@ def _impl(ctx):
                 "-iwithsysroot" + "/include/c++/v1",
                 "-iwithsysroot" + "/include/compat",
                 "-iwithsysroot" + "/include",
-                "-isystem", emscripten_dir + "/lib/clang/14.0.0/include",
+                "-isystem",
+                emscripten_dir + "/lib/clang/14.0.0/include",
             ],
         ),
         # Inputs and outputs
@@ -1103,7 +1103,7 @@ emscripten_cc_toolchain_config_rule = rule(
     implementation = _impl,
     attrs = {
         "cpu": attr.string(mandatory = True, values = ["asmjs", "wasm"]),
-        "em_config": attr.label(mandatory = True, allow_single_file=True),
+        "em_config": attr.label(mandatory = True, allow_single_file = True),
         "emscripten_binaries": attr.label(mandatory = True),
     },
     provides = [CcToolchainConfigInfo],

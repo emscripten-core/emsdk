@@ -17,7 +17,7 @@ cc_binary(
     # to add different linkopts to BASE_LINKOPTS depending on things
     # like a "opt" or "dbg" compilation mode.
     linkopts = [
-        "--bind",       # Enable embind
+        "--bind",  # Enable embind
         "-sMODULARIZE",
     ],
     # This target won't build successfully on its own because of missing emscripten
