@@ -89,12 +89,12 @@ TAGS = json.loads(open('emscripten-releases-tags.json').read())
 def do_lib_building(emcc):
   cache_building_messages = ['generating system library: ']
 
-  def do_build(args, expected):
-    if expected:
+  def do_build(args, is_expected=None):
+    unexpected = None
+    expected = None
+    if is_expected is True:
       expected = cache_building_messages
-      unexpected = []
-    else:
-      expected = []
+    elif is_expected is False:
       unexpected = cache_building_messages
     checked_call_with_output(emcc + ' hello_world.c' + args,
                              expected=expected,
@@ -103,11 +103,15 @@ def do_lib_building(emcc):
 
   # The emsdk ships all system libraries so we don't expect to see any
   # cache population unless we explicly --clear-cache.
-  do_build('', expected=False)
+  do_build('', is_expected=False)
   check_call(emcc + ' --clear-cache')
-  do_build(' -O2', expected=True)
-  do_build(' -s WASM=0', expected=False)
-  do_build(' -O2 -s WASM=0', expected=False)
+  do_build(' -O2', is_expected=True)
+  # Do another build at -O0.  In nwers SDK versions this generates
+  # different libs, but not in older ones so don't assert here.
+  do_build('')
+  # Now verify that libs are *not* build
+  do_build(' -s WASM=0', is_expected=False)
+  do_build(' -O2 -s WASM=0', is_expected=False)
 
 
 def run_emsdk(cmd):
