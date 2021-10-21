@@ -16,11 +16,11 @@ BASE_LINKOPTS = [
 ]
 
 RELEASE_OPTS = [
-    "--closure 1",  # Run the closure compiler
+    "--closure=1",  # Run the closure compiler
 ]
 
 DEBUG_OPTS = [
-    "--closure 0",  # Do not use closure
+    "--closure=0",  # Do not use closure
 ]
 
 config_setting(
