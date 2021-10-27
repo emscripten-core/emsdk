@@ -214,6 +214,52 @@
   },
   {
     "id": "node",
+    "version": "12.18.1",
+    "bitness": 32,
+    "arch": "x86",
+    "windows_url": "node-v12.18.1-win-x86.zip",
+    "activated_path": "%installation_dir%/bin",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%",
+    "is_old": true
+  },
+  {
+    "id": "node",
+    "version": "12.18.1",
+    "arch": "arm",
+    "bitness": 32,
+    "linux_url": "node-v12.18.1-linux-armv7l.tar.xz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%",
+    "is_old": true
+  },
+  {
+    "id": "node",
+    "version": "12.18.1",
+    "bitness": 64,
+    "arch": "x86_64",
+    "macos_url": "node-v12.18.1-darwin-x64.tar.gz",
+    "windows_url": "node-v12.18.1-win-x64.zip",
+    "linux_url": "node-v12.18.1-linux-x64.tar.xz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%",
+    "is_old": true
+  },
+  {
+    "id": "node",
+    "version": "12.18.1",
+    "arch": "aarch64",
+    "bitness": 64,
+    "linux_url": "node-v12.18.1-linux-arm64.tar.xz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%",
+    "is_old": true
+  },
+  {
+    "id": "node",
     "version": "14.15.5",
     "bitness": 32,
     "arch": "x86",
