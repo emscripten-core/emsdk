@@ -6,6 +6,7 @@ def _wasm_transition_impl(settings, attr):
 
     features = list(settings["//command_line_option:features"])
     linkopts = list(settings["//command_line_option:linkopt"])
+    platforms = list(settings["//command_line_option:platforms"])
 
     if attr.threads == "emscripten":
         # threads enabled
@@ -32,7 +33,7 @@ def _wasm_transition_impl(settings, attr):
         "//command_line_option:features": features,
         "//command_line_option:dynamic_mode": "off",
         "//command_line_option:linkopt": linkopts,
-        "//command_line_option:platforms": [],
+        "//command_line_option:platforms": platforms,
         "//command_line_option:custom_malloc": "@emsdk//emscripten_toolchain:malloc",
     }
 
@@ -41,6 +42,7 @@ _wasm_transition = transition(
     inputs = [
         "//command_line_option:features",
         "//command_line_option:linkopt",
+        "//command_line_option:platforms",
     ],
     outputs = [
         "//command_line_option:compiler",
