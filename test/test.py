@@ -232,6 +232,8 @@ int main() {
     run_emsdk('activate sdk-tag-1.38.33-64bit')
 
   def test_binaryen_from_source(self):
+    if MACOS:
+      self.skipTest("https://github.com/WebAssembly/binaryen/issues/4299")
     print('test binaryen source build')
     run_emsdk(['install', '--build=Release', '--generator=Unix Makefiles', 'binaryen-main-64bit'])
 
