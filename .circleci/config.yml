@@ -206,6 +206,28 @@ jobs:
             brew install bazel
       - run: test/test_bazel_mac.sh
 
+  test-bazel-windows:
+    executor:
+      name: win/vs2019
+      shell: powershell.exe -ExecutionPolicy Bypass
+    environment:
+      PYTHONUNBUFFERED: "1"
+      EMSDK_NOTTY: "1"
+    steps:
+      - checkout
+      - run:
+          name: Download Bazelisk
+          shell: powershell.exe
+          command: |
+            $ProgressPreference = "SilentlyContinue"
+            Invoke-WebRequest -Uri https://github.com/bazelbuild/bazelisk/releases/download/v1.10.1/bazelisk-windows-amd64.exe -OutFile ( New-Item -Path "temp\bazel\bazel.exe" -Force )
+      - run:
+          name: Run Tests
+          shell: powershell.exe
+          command: |
+            $env:Path += ";C:\Python27amd64;$pwd\temp\bazel"
+            .\test\test_bazel.ps1
+
 workflows:
   flake8:
     jobs:
@@ -234,3 +256,6 @@ workflows:
   test-bazel-mac:
     jobs:
       - test-bazel-mac
+  test-bazel-windows:
+    jobs:
+      - test-bazel-windows
