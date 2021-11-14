@@ -2935,6 +2935,13 @@ def main(args):
        'activate' commands and the invocation of 'emsdk_env', or otherwise
        these commands will default to operating on the default build type
        which in and RelWithDebInfo.''')
+
+    print('''
+
+   Environment:
+      EMSDK_NOTTY=1              - override isatty() result (mainly to log progress).
+      EMSDK_NUM_CORES=n          - limit parallelism to n cores.
+      EMSDK_VERBOSE=1            - very verbose output, useful for debugging.''')
     return 0
 
   # Extracts a boolean command line argument from args and returns True if it was present
