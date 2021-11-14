@@ -143,6 +143,9 @@ BUILD_FOR_TESTING = False
 # Other valid values are 'ON' and 'OFF'
 ENABLE_LLVM_ASSERTIONS = 'auto'
 
+# If true, keeps the downloaded archive files.
+KEEP_DOWNLOADS = bool(os.getenv('EMSDK_KEEP_DOWNLOADS'))
+
 
 def os_name():
   if WINDOWS:
@@ -1537,13 +1540,8 @@ def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False,
   if not download_even_if_exists and num_files_in_directory(dest_dir) > 0:
     print("The contents of file '" + zipfile + "' already exist in destination '" + dest_dir + "', skipping.")
     return True
-  # Otherwise, if the archive must be downloaded, always write into the
-  # target directory, since it may be a new version of a tool that gets
-  # installed to the same place (that is, a different download name
-  # indicates different contents).
-  download_even_if_exists = True
 
-  received_download_target = download_file(url, zips_subdir, download_even_if_exists, filename_prefix)
+  received_download_target = download_file(url, zips_subdir, not KEEP_DOWNLOADS, filename_prefix)
   if not received_download_target:
     return False
   assert received_download_target == download_target
@@ -1554,9 +1552,9 @@ def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False,
   if clobber:
     remove_tree(dest_dir)
   if zipfile.endswith('.zip'):
-    return unzip(download_target, dest_dir, unpack_even_if_exists=download_even_if_exists)
+    return unzip(download_target, dest_dir, unpack_even_if_exists=True)
   else:
-    return untargz(download_target, dest_dir, unpack_even_if_exists=download_even_if_exists)
+    return untargz(download_target, dest_dir, unpack_even_if_exists=True)
 
 
 def to_native_path(p):
@@ -2068,6 +2066,8 @@ class Tool(object):
     return True
 
   def cleanup_temp_install_files(self):
+    if KEEP_DOWNLOADS:
+        return
     url = self.download_url()
     if url.endswith(ARCHIVE_SUFFIXES):
       download_target = get_download_target(url, zips_subdir, getattr(self, 'zipfile_prefix', ''))
@@ -2733,7 +2733,7 @@ def construct_env_with_vars(env_vars_to_add):
   # if no such tool is active.
   # Ignore certain keys that are inputs to emsdk itself.
   ignore_keys = set(['EMSDK_POWERSHELL', 'EMSDK_CSH', 'EMSDK_CMD', 'EMSDK_BASH',
-                     'EMSDK_NUM_CORES', 'EMSDK_NOTTY'])
+                     'EMSDK_NUM_CORES', 'EMSDK_NOTTY', 'EMSDK_KEEP_DOWNLOADS'])
   env_keys_to_add = set(pair[0] for pair in env_vars_to_add)
   for key in os.environ:
     if key.startswith('EMSDK_') or key.startswith('EM_'):
@@ -2939,6 +2939,7 @@ def main(args):
     print('''
 
    Environment:
+      EMSDK_KEEP_DOWNLOADS=1     - if you want to keep the downloaded archives.
       EMSDK_NOTTY=1              - override isatty() result (mainly to log progress).
       EMSDK_NUM_CORES=n          - limit parallelism to n cores.
       EMSDK_VERBOSE=1            - very verbose output, useful for debugging.''')
