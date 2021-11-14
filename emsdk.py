@@ -1879,11 +1879,6 @@ class Tool(object):
     if not self.is_installed():
       return False
 
-    if self.id == 'vs-tool':
-      # vs-tool is a special tool since all versions must be installed to the
-      # same dir, which means that if this tool is installed, it is also active.
-      return True
-
     # All dependencies of this tool must be active as well.
     deps = self.dependencies()
     for tool in deps:
@@ -1933,15 +1928,7 @@ class Tool(object):
     if hasattr(self, 'bitness'):
       if self.bitness == 64 and not is_os_64bit():
         return "this tool is only provided for 64-bit OSes"
-
-    if self.id == 'vs-tool':
-      msbuild_dir = find_msbuild_dir()
-      if msbuild_dir:
-        return True
-      else:
-        return "Visual Studio was not found!"
-    else:
-      return True
+    return True
 
   def download_url(self):
     if WINDOWS and hasattr(self, 'windows_url'):
@@ -2025,8 +2012,6 @@ class Tool(object):
     elif hasattr(self, 'git_branch'):
       success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch)
     elif url.endswith(ARCHIVE_SUFFIXES):
-      # TODO: explain the vs-tool special-casing
-      download_even_if_exists = (self.id == 'vs-tool')
       # The 'releases' sdk is doesn't include a verion number in the directory
       # name and instead only one version can be install at the time and each
       # one will clobber the other.  This means we always need to extract this
