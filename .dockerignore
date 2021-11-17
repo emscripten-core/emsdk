@@ -14,7 +14,7 @@
 !emsdk_env.sh
 !emsdk_manifest.json
 
-# TODO: Somehow these legacy files are also required for building
+# Allow files required to install legacy versions
 !legacy-binaryen-tags.txt
 !legacy-emscripten-tags.txt
 !llvm-tags-64bit.txt
