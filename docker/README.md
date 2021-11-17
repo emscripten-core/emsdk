@@ -3,7 +3,7 @@
 This Dockerfile builds a self-contained version of Emscripten SDK that enables Emscripten to be used without any
 other installation on the host system.
 
-It is published at https://hub.docker.com/u/emscripten/emsdk
+It is published at https://hub.docker.com/r/emscripten/emsdk.
 
 ### Usage
 
