@@ -21,7 +21,6 @@ WebAssembly binary into a larger web application.
 import argparse
 import os
 import subprocess
-import sys
 
 
 def ensure(f):
@@ -44,26 +43,9 @@ def main():
   basename = os.path.basename(args.archive)
   stem = basename.split('.')[0]
 
-  # Check the type of the input file
-  mimetype_bytes = subprocess.check_output(['file', '-Lb', '--mime-type', '--mime-encoding', args.archive])
-  mimetype = mimetype_bytes.decode(sys.stdout.encoding)
-
-  # If we have a tar, extract all files. If we have just a single file, copy it.
-  if 'tar' in mimetype:
-    subprocess.check_call(
-        ['tar', 'xf', args.archive, '-C', args.output_path])
-  elif 'binary' in mimetype:
-    subprocess.check_call([
-        'cp',
-        args.archive,
-        os.path.join(args.output_path, stem + '.wasm')])
-  elif 'text' in mimetype:
-    subprocess.check_call([
-        'cp',
-        args.archive,
-        os.path.join(args.output_path, stem + '.js')])
-  else:
-    subprocess.check_call(['cp', args.archive, args.output_path])
+  # Extract all files from the tarball.
+  subprocess.check_call(
+      ['tar', 'xf', args.archive, '-C', args.output_path])
 
   # At least one of these two files should exist at this point.
   ensure(os.path.join(args.output_path, stem + '.js'))
