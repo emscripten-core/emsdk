@@ -28,6 +28,11 @@ jobs:
     executor: bionic
     environment:
       EMSDK_NOTTY: "1"
+      # This is needed because the old gcc-7 that is installed on debian/bionic
+      # generates warnings about unused variables when doing C++17
+      # destructuring:
+      # https://github.com/WebAssembly/binaryen/issues/4353
+      CXXFLAGS: "-Wno-unused-variable"
       # I don't know why circleci VMs pretent to have 36 cores but its a lie.
       EMSDK_NUM_CORES: "4"
     steps:
