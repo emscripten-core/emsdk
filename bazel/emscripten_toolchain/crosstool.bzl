@@ -572,7 +572,7 @@ def _impl(ctx):
         flag_set(
             actions = all_compile_actions +
                       all_link_actions,
-            flags = ["-O3"],
+            flags = ["-O2"],
             features = ["opt"],
         ),
         # Users can override opt-level with semantic names...
@@ -598,7 +598,7 @@ def _impl(ctx):
         flag_set(
             actions = all_compile_actions +
                       all_link_actions,
-            flags = ["-O2"],
+            flags = ["-O0"],
             features = ["fastbuild"],
         ),
 
