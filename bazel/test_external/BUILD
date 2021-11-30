@@ -38,7 +38,9 @@ config_setting(
 cc_binary(
     name = "hello-embind",
     srcs = ["hello-embind.cc"],
+    features = ["emcc_debug_link"],
     additional_linker_inputs = [
+        "hello-embind-externs.js",
         "hello-embind-interface.js",
     ],
     linkopts = select({

@@ -1016,6 +1016,7 @@ def _impl(ctx):
         ),
     ]
 
+    print("Emscripten dir", emscripten_dir)
     crosstool_default_env_sets = [
         # Globals
         env_set(
@@ -1030,6 +1031,11 @@ def _impl(ctx):
                 env_entry(
                     key = "EM_CONFIG_PATH",
                     value = ctx.file.em_config.path,
+                ),
+                env_entry(
+                    key = "EMCC_CLOSURE_ARGS",
+                    # TODO(kjlubick) This appears to need to be an absolute path.
+                    value = "--externs hello-embind-externs.js",
                 ),
             ],
         ),
@@ -1057,7 +1063,6 @@ def _impl(ctx):
                 with_feature_set(features = ["emcc_debug_link"]),
             ],
         ),
-        # TODO(kjlubick) set EMCC_CLOSURE_ARGS to "--externs" and use :closure_externs_file
     ]
 
     crosstool_default_flags_feature = feature(
