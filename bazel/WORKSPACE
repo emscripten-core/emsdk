@@ -4,6 +4,10 @@ load(":deps.bzl", "deps")
 
 deps()
 
+load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
+
+bazel_skylib_workspace()
+
 load(":emscripten_deps.bzl", "emscripten_deps")
 
 emscripten_deps()

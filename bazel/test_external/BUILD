@@ -13,6 +13,8 @@ wasm_cc_binary(
 BASE_LINKOPTS = [
     "--bind",  # Enable embind
     "-sMODULARIZE",
+    "--pre-js",
+    "hello-embind-interface.js",
 ]
 
 RELEASE_OPTS = [
@@ -36,6 +38,9 @@ config_setting(
 cc_binary(
     name = "hello-embind",
     srcs = ["hello-embind.cc"],
+    additional_linker_inputs = [
+        "hello-embind-interface.js",
+    ],
     linkopts = select({
         ":debug_opts": BASE_LINKOPTS + DEBUG_OPTS,
         ":release_opts": BASE_LINKOPTS + RELEASE_OPTS,
@@ -49,4 +54,6 @@ cc_binary(
 wasm_cc_binary(
     name = "hello-embind-wasm",
     cc_target = ":hello-embind",
+    closure_externs_file = "hello-embind-externs.js",
 )
+

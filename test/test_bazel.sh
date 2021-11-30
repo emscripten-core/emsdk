@@ -29,3 +29,5 @@ bazel build //:hello-world-wasm
 bazel build //:hello-embind-wasm --compilation_mode dbg # debug
 # Test use of the closure compiler
 bazel build //:hello-embind-wasm --compilation_mode opt # release
+# TODO(kjlubick) make sure hello-embind.js contains the string
+# "customJSFunctionToTestClosure" to make sure the externs file is used.

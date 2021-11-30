@@ -25,6 +25,8 @@ def _wasm_transition_impl(settings, attr):
     if attr.simd:
         features.append("wasm_simd")
 
+    print(attr.closure_externs_file) #TODO(kjlubick)
+
     return {
         "//command_line_option:compiler": "emscripten",
         "//command_line_option:crosstool_top": "@emsdk//emscripten_toolchain:everything",
@@ -34,6 +36,7 @@ def _wasm_transition_impl(settings, attr):
         "//command_line_option:linkopt": linkopts,
         "//command_line_option:platforms": [],
         "//command_line_option:custom_malloc": "@emsdk//emscripten_toolchain:malloc",
+        "@emsdk//emscripten_toolchain:closure_externs_file": "PLACEHOLDER_VALUE", #TODO(kjlubick)
     }
 
 _wasm_transition = transition(
@@ -51,6 +54,7 @@ _wasm_transition = transition(
         "//command_line_option:linkopt",
         "//command_line_option:platforms",
         "//command_line_option:custom_malloc",
+        "@emsdk//emscripten_toolchain:closure_externs_file",
     ],
 )
 
@@ -128,6 +132,7 @@ wasm_cc_binary = rule(
             cfg = _wasm_transition,
             mandatory = True,
         ),
+        "closure_externs_file": attr.label(allow_single_file=[".js"]),
         "exit_runtime": attr.bool(
             default = False,
         ),

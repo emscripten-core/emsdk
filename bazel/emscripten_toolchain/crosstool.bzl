@@ -1057,6 +1057,7 @@ def _impl(ctx):
                 with_feature_set(features = ["emcc_debug_link"]),
             ],
         ),
+        # TODO(kjlubick) set EMCC_CLOSURE_ARGS to "--externs" and use :closure_externs_file
     ]
 
     crosstool_default_flags_feature = feature(
