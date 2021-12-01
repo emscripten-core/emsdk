@@ -19,6 +19,8 @@ BASE_LINKOPTS = [
 
 RELEASE_OPTS = [
     "--closure=1",  # Run the closure compiler
+    # Tell closure about the externs file, so as not to minify our JS public API.
+    "--closure-args=--externs=hello-embind-externs.js"
 ]
 
 DEBUG_OPTS = [
@@ -56,6 +58,5 @@ cc_binary(
 wasm_cc_binary(
     name = "hello-embind-wasm",
     cc_target = ":hello-embind",
-    closure_externs_file = "hello-embind-externs.js",
 )
 
