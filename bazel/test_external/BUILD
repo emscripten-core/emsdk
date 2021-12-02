@@ -20,7 +20,7 @@ BASE_LINKOPTS = [
 RELEASE_OPTS = [
     "--closure=1",  # Run the closure compiler
     # Tell closure about the externs file, so as not to minify our JS public API.
-    "--closure-args=--externs=hello-embind-externs.js"
+    "--closure-args=--externs=$(location hello-embind-externs.js)"
 ]
 
 DEBUG_OPTS = [
