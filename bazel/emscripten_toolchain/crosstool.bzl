@@ -575,6 +575,7 @@ def _impl(ctx):
             flags = ["-O2"],
             features = ["opt"],
         ),
+
         # Users can override opt-level with semantic names...
         flag_set(
             actions = all_compile_actions +
