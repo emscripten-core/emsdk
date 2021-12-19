@@ -3186,7 +3186,7 @@ def main(args):
       errlog('No tools/SDKs found to activate! Usage:\n   emsdk activate tool/sdk1 [tool/sdk2] [...]')
       return 1
     if WINDOWS and not arg_permanent:
-      errlog('The changes made to environment variables only apply to the currently running shell instance. Use the \'emsdk_env.bat\' to re-enter this environment later, or if you\'d like to permanently register this environment permanently, rerun this command with the option --permanent.')
+      errlog('The changes made to environment variables only apply to the currently running shell instance. Use the \'emsdk_env.bat\' to re-enter this environment later, or if you\'d like to register this environment permanently, rerun this command with the option --permanent.')
     return 0
   elif cmd == 'install':
     global BUILD_FOR_TESTING, ENABLE_LLVM_ASSERTIONS, CPU_CORES, GIT_CLONE_SHALLOW
