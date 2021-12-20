@@ -39,7 +39,7 @@ if any(' ' in a for a in param_file_args):
   sys.argv[1] = '@' + new_param_filename
 
 emcc_py = os.path.join(os.environ['EMSCRIPTEN'], 'emcc.py')
-rtn = subprocess.call(['python3', emcc_py] + sys.argv[1:])
+rtn = subprocess.call([sys.executable, emcc_py] + sys.argv[1:])
 if rtn != 0:
   sys.exit(1)
 

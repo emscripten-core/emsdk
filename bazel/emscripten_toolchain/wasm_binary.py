@@ -20,7 +20,7 @@ WebAssembly binary into a larger web application.
 
 import argparse
 import os
-import subprocess
+import tarfile
 
 
 def ensure(f):
@@ -40,12 +40,14 @@ def main():
   parser.add_argument('--output_path', help='The path to extract into.')
   args = parser.parse_args()
 
+  args.archive = os.path.normpath(args.archive)
+
   basename = os.path.basename(args.archive)
   stem = basename.split('.')[0]
 
   # Extract all files from the tarball.
-  subprocess.check_call(
-      ['tar', 'xf', args.archive, '-C', args.output_path])
+  tar = tarfile.open(args.archive)
+  tar.extractall(args.output_path)
 
   # At least one of these two files should exist at this point.
   ensure(os.path.join(args.output_path, stem + '.js'))

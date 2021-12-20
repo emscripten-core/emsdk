@@ -12,13 +12,13 @@ EMSCRIPTEN_TAGS = {
         hash = "7fbe748230f2ce99abbf975d9ad997699efb3153",
         sha_linux = "10646b64daea15354f14f89f7e79937f420b77f31bda7c4b174de2474835950f",
         sha_mac = "ebb17bc91c6a72ca06d17337d27aa1a2be4c9af4c68644c221712123f663b8ab",
-        sha_win = "28a0a5983d8cdbe6b61439a111ef8a5f0f93ccb444d08e0540682b8d3c8c0f2e",
+        sha_win = "0d4f2ff5d88a8eef5ed769ee4ffc5d5574143911d2e0079325cdc5206c9e9bb1",
     ),
     "2.0.34": struct(
         hash = "d8fc1b92dbc0ce8d740a7adb937c5137ba4755e0",
         sha_linux = "a6304e3a52c172eb178c6f9817d74aa3ee411e97ef00bcae0884377799c49954",
         sha_mac = "975ae11000100362baf19d161fec04d82e1f7c9fb7d43c43864ddd65a47f1780",
-        sha_win = "30f64dbc6425490157360439d40141feae359dbf586f59fa23185d7e009f3209",
+        sha_win = "8167a44bb895a0fdc153836bed91bf387be57f2dc1b8f103bf70e68923b61d39",
     ),
     "2.0.33": struct(
         hash = "cef8850d57278271766fb2163eebcb07354018e7",
