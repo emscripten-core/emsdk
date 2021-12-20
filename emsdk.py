@@ -1520,18 +1520,11 @@ def build_binaryen_tool(tool):
   return success
 
 
-def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False,
-                       filename_prefix='', clobber=True):
+def download_and_unzip(zipfile, dest_dir, filename_prefix='', clobber=True):
   debug_print('download_and_unzip(zipfile=' + zipfile + ', dest_dir=' + dest_dir + ')')
 
   url = urljoin(emsdk_packages_url, zipfile)
   download_target = get_download_target(url, zips_subdir, filename_prefix)
-
-  # If the archive was already downloaded, and the directory it would be
-  # unpacked to has contents, assume it's the same contents and skip.
-  if not download_even_if_exists and num_files_in_directory(dest_dir) > 0:
-    print("The contents of file '" + zipfile + "' already exist in destination '" + dest_dir + "', skipping.")
-    return True
 
   received_download_target = download_file(url, zips_subdir, not KEEP_DOWNLOADS, filename_prefix)
   if not received_download_target:
@@ -2002,13 +1995,7 @@ class Tool(object):
     elif hasattr(self, 'git_branch'):
       success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch)
     elif url.endswith(ARCHIVE_SUFFIXES):
-      # The 'releases' sdk is doesn't include a verion number in the directory
-      # name and instead only one version can be install at the time and each
-      # one will clobber the other.  This means we always need to extract this
-      # archive even when the target directory exists.
-      download_even_if_exists = (self.id == 'releases')
-      filename_prefix = getattr(self, 'zipfile_prefix', '')
-      success = download_and_unzip(url, self.installation_path(), download_even_if_exists=download_even_if_exists, filename_prefix=filename_prefix)
+      success = download_and_unzip(url, self.installation_path(), filename_prefix=getattr(self, 'zipfile_prefix', ''))
     else:
       dst_file = download_file(urljoin(emsdk_packages_url, self.download_url()), self.installation_path())
       if dst_file:
@@ -2242,7 +2229,7 @@ def update_emsdk():
   if is_emsdk_sourced_from_github():
     errlog('You seem to have bootstrapped Emscripten SDK by cloning from GitHub. In this case, use "git pull" instead of "emsdk update" to update emsdk. (Not doing that automatically in case you have local changes)')
     sys.exit(1)
-  if not download_and_unzip(emsdk_zip_download_url, emsdk_path(), download_even_if_exists=True, clobber=False):
+  if not download_and_unzip(emsdk_zip_download_url, emsdk_path(), clobber=False):
     sys.exit(1)
 
 
