@@ -696,15 +696,14 @@ def download_with_urllib(url, file_name):
   debug_print('finished downloading (%d bytes)' % file_size_dl)
 
 
-def download_file(url, dstpath, download_even_if_exists=False,
-                  filename_prefix=''):
+def download_file(url, dstpath, filename_prefix=''):
   """On success, returns the filename on the disk pointing to the destination file that was produced
   On failure, returns None.
   """
   debug_print(f'download_file(url={url}, dstpath={dstpath})')
   file_name = get_download_target(url, dstpath, filename_prefix)
 
-  if os.path.exists(file_name) and not download_even_if_exists:
+  if KEEP_DOWNLOADS and os.path.exists(file_name):
     print(f"File '{file_name}' already downloaded, skipping.")
     return file_name
 
@@ -1530,7 +1529,7 @@ def download_and_extract(archive, dest_dir, filename_prefix='', clobber=True):
   url = urljoin(emsdk_packages_url, archive)
 
   def try_download(url):
-    return download_file(url, download_dir, not KEEP_DOWNLOADS, filename_prefix)
+    return download_file(url, download_dir, filename_prefix)
 
   # Special hack for the wasm-binaries we transitioned from `.bzip2` to
   # `.xz`, but we can't tell from the version/url which one to use, so
