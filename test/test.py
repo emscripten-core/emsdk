@@ -185,9 +185,9 @@ int main() {
 
     # Test the normal tools like node don't re-download on re-install
     print('another install must re-download')
-    checked_call_with_output(emsdk + ' uninstall node-14.15.5-64bit')
-    checked_call_with_output(emsdk + ' install node-14.15.5-64bit', expected='Downloading:', unexpected='already installed')
-    checked_call_with_output(emsdk + ' install node-14.15.5-64bit', unexpected='Downloading:', expected='already installed')
+    checked_call_with_output(emsdk + ' uninstall node-14.18.2-64bit')
+    checked_call_with_output(emsdk + ' install node-14.18.2-64bit', expected='Downloading:', unexpected='already installed')
+    checked_call_with_output(emsdk + ' install node-14.18.2-64bit', unexpected='Downloading:', expected='already installed')
 
   def test_tot_upstream(self):
     print('test update-tags')
