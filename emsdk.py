@@ -535,11 +535,7 @@ def run(cmd, cwd=None, quiet=False):
 
 
 # http://pythonicprose.blogspot.fi/2009/10/python-extract-targz-archive.html
-def untargz(source_filename, dest_dir, unpack_even_if_exists=False):
-  debug_print('untargz(source_filename=' + source_filename + ', dest_dir=' + dest_dir + ')')
-  if not unpack_even_if_exists and num_files_in_directory(dest_dir) > 0:
-    print("File '" + source_filename + "' has already been unpacked, skipping.")
-    return True
+def untargz(source_filename, dest_dir):
   print("Unpacking '" + source_filename + "' to '" + dest_dir + "'")
   mkdir_p(dest_dir)
   returncode = run(['tar', '-xvf' if VERBOSE else '-xf', sdk_path(source_filename), '--strip', '1'], cwd=dest_dir)
@@ -579,11 +575,7 @@ def move_with_overwrite(src, dest):
 
 
 # http://stackoverflow.com/questions/12886768/simple-way-to-unzip-file-in-python-on-all-oses
-def unzip(source_filename, dest_dir, unpack_even_if_exists=False):
-  debug_print('unzip(source_filename=' + source_filename + ', dest_dir=' + dest_dir + ')')
-  if not unpack_even_if_exists and num_files_in_directory(dest_dir) > 0:
-    print("File '" + source_filename + "' has already been unpacked, skipping.")
-    return True
+def unzip(source_filename, dest_dir):
   print("Unpacking '" + source_filename + "' to '" + dest_dir + "'")
   mkdir_p(dest_dir)
   common_subdir = None
@@ -1552,9 +1544,9 @@ def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False,
   if clobber:
     remove_tree(dest_dir)
   if zipfile.endswith('.zip'):
-    return unzip(download_target, dest_dir, unpack_even_if_exists=True)
+    return unzip(download_target, dest_dir)
   else:
-    return untargz(download_target, dest_dir, unpack_even_if_exists=True)
+    return untargz(download_target, dest_dir)
 
 
 def to_native_path(p):
