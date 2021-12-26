@@ -2926,7 +2926,7 @@ def main(args):
        be sure to match the same --build= option to both 'install' and
        'activate' commands and the invocation of 'emsdk_env', or otherwise
        these commands will default to operating on the default build type
-       which in and RelWithDebInfo.''')
+       which is RelWithDebInfo.''')
 
     print('''
 
