@@ -2479,7 +2479,7 @@ def can_simultaneously_activate(tool1, tool2):
 
 
 # Expands dependencies for each tool, and removes ones that don't exist.
-def process_tool_list(tools_to_activate, log_errors=True):
+def process_tool_list(tools_to_activate):
   i = 0
   # Gather dependencies for each tool
   while i < len(tools_to_activate):
@@ -2517,7 +2517,7 @@ def write_set_env_script(env_string):
 # and other environment variables.
 # Returns the full list of deduced tools that are now active.
 def set_active_tools(tools_to_activate, permanently_activate, system):
-  tools_to_activate = process_tool_list(tools_to_activate, log_errors=True)
+  tools_to_activate = process_tool_list(tools_to_activate)
 
   if tools_to_activate:
     tools = [x for x in tools_to_activate if not x.is_sdk]
@@ -3147,7 +3147,7 @@ def main(args):
     # Clean up old temp file up front, in case of failure later before we get
     # to write out the new one.
     tools_to_activate = currently_active_tools()
-    tools_to_activate = process_tool_list(tools_to_activate, log_errors=True)
+    tools_to_activate = process_tool_list(tools_to_activate)
     env_string = construct_env(tools_to_activate, arg_system, arg_permanent)
     if WINDOWS and not BASH:
       write_set_env_script(env_string)
