@@ -4,7 +4,9 @@ local_repository(
 )
 
 load("@emsdk//:deps.bzl", "deps")
+
 deps()
 
 load("@emsdk//:emscripten_deps.bzl", "emscripten_deps")
+
 emscripten_deps()
