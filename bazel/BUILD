@@ -24,12 +24,15 @@ config_setting(
     ],
 )
 
+filegroup(name = "empty")
+
 alias(
     name = "binaries",
     actual = select({
         ":linux": "@emscripten_bin_linux//:all",
         ":macos": "@emscripten_bin_mac//:all",
         ":windows": "@emscripten_bin_win//:all",
+        "//conditions:default": ":empty",
     }),
 )
 
@@ -39,5 +42,6 @@ alias(
         ":linux": "@emscripten_npm_linux//:node_modules",
         ":macos": "@emscripten_npm_mac//:node_modules",
         ":windows": "@emscripten_npm_win//:node_modules",
+        "//conditions:default": ":empty",
     }),
 )
