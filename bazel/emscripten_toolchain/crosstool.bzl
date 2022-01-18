@@ -298,10 +298,6 @@ def _impl(ctx):
         # Blaze also tests if this feature is supported, before setting the "pic" build-variable.
         feature(name = "pic"),
 
-        # Blaze requests this feature if fission is requested
-        # Blaze also tests if it's supported to see if we support fission.
-        feature(name = "per_object_debug_info"),
-
         # Blaze requests this feature by default.
         # Blaze also tests if this feature is supported before setting preprocessor_defines
         # (...but why?)
