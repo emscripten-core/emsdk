@@ -812,7 +812,7 @@ def git_clone(url, dstpath):
   if GIT_CLONE_SHALLOW:
     git_clone_args += ['--depth', '1']
   print('Cloning from ' + url + '...')
-  return run([GIT(), 'clone'] + git_clone_args + [url, dstpath]) == 0
+  return run([GIT(), 'clone', '--recurse-submodules'] + git_clone_args + [url, dstpath]) == 0
 
 
 def git_checkout_and_pull(repo_path, branch_or_tag):
@@ -827,7 +827,7 @@ def git_checkout_and_pull(repo_path, branch_or_tag):
       return False
     # this line assumes that the user has not gone and manually messed with the
     # repo and added new remotes to ambiguate the checkout.
-    ret = run([GIT(), 'checkout', '--quiet', branch_or_tag], repo_path)
+    ret = run([GIT(), 'checkout', '--recurse-submodules', '--quiet', branch_or_tag], repo_path)
     if ret != 0:
       return False
     # Test if branch_or_tag is a branch, or if it is a tag that needs to be updated
@@ -838,6 +838,7 @@ def git_checkout_and_pull(repo_path, branch_or_tag):
       ret = run([GIT(), 'merge', '--ff-only', 'origin/' + branch_or_tag], repo_path)
     if ret != 0:
       return False
+    run([GIT(), 'submodule', 'update', '--init'], repo_path, quiet=True)
   except:
     errlog('git operation failed!')
     return False
