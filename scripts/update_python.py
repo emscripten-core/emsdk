@@ -34,7 +34,7 @@ from subprocess import check_call
 version = '3.9.2'
 major_minor_version = '.'.join(version.split('.')[:2])  # e.g. '3.9.2' -> '3.9'
 base = 'https://www.python.org/ftp/python/%s/' % version
-revision = '1'
+revision = '2'
 
 pywin32_version = '227'
 pywin32_base = 'https://github.com/mhammond/pywin32/releases/download/b%s/' % pywin32_version
@@ -105,7 +105,7 @@ def build_python():
     if sys.platform.startswith('darwin'):
         osname = 'macos'
         # Take some rather drastic steps to link openssl statically
-        check_call(['brew', 'install', 'openssl', 'pkg-config'])
+        check_call(['brew', 'install', 'openssl', 'xz', 'pkg-config'])
         if platform.machine() == 'x86_64':
             prefix = '/usr/local'
             min_macos_version = '10.11'
@@ -113,11 +113,14 @@ def build_python():
             prefix = '/opt/homebrew'
             min_macos_version = '11.0'
 
-        osname += '-' + platform.machine()  # Append '-x86_64' or '-arm64' depending on current arch. (TODO: Do this for Linux too, move this below?)
+        # Append '-x86_64' or '-arm64' depending on current arch. (TODO: Do
+        # this for Linux too, move this below?)
+        osname += '-' + platform.machine()
 
         try:
             os.remove(os.path.join(prefix, 'opt', 'openssl', 'lib', 'libssl.dylib'))
             os.remove(os.path.join(prefix, 'opt', 'openssl', 'lib', 'libcrypto.dylib'))
+            os.remove(os.path.join(prefix, 'opt', 'xz', 'lib', 'liblzma.dylib'))
         except Exception:
             pass
         os.environ['PKG_CONFIG_PATH'] = os.path.join(prefix, 'opt', 'openssl', 'lib', 'pkgconfig')
@@ -129,11 +132,18 @@ def build_python():
       check_call(['git', 'clone', 'https://github.com/python/cpython'])
     check_call(['git', 'checkout', 'v' + version], cwd=src_dir)
 
-    min_macos_version_line = '-mmacosx-version-min=' + min_macos_version  # Specify the min OS version we want the build to work on
-    build_flags = min_macos_version_line + ' -Werror=partial-availability'  # Build against latest SDK, but issue an error if using any API that would not work on the min OS version
-    env = os.environ.copy()
-    env['MACOSX_DEPLOYMENT_TARGET'] = min_macos_version
-    check_call(['./configure', 'CFLAGS=' + build_flags, 'CXXFLAGS=' + build_flags, 'LDFLAGS=' + min_macos_version_line], cwd=src_dir, env=env)
+    env = os.environ
+    if sys.platform.startswith('darwin'):
+      # Specify the min OS version we want the build to work on
+      min_macos_version_line = '-mmacosx-version-min=' + min_macos_version
+      build_flags = min_macos_version_line + ' -Werror=partial-availability'
+      # Build against latest SDK, but issue an error if using any API that would not work on the min OS version
+      env = env.copy()
+      env['MACOSX_DEPLOYMENT_TARGET'] = min_macos_version
+      configure_args = ['CFLAGS=' + build_flags, 'CXXFLAGS=' + build_flags, 'LDFLAGS=' + min_macos_version_line]
+    else:
+      configure_args = []
+    check_call(['./configure'] + configure_args, cwd=src_dir, env=env)
     check_call(['make', '-j', str(multiprocessing.cpu_count())], cwd=src_dir, env=env)
     check_call(['make', 'install', 'DESTDIR=install'], cwd=src_dir, env=env)
 
@@ -143,6 +153,7 @@ def build_python():
     # SSL certificates are available (certifi in installed and used by requests).
     pybin = os.path.join(src_dir, 'install', 'usr', 'local', 'bin', 'python3')
     pip = os.path.join(src_dir, 'install', 'usr', 'local', 'bin', 'pip3')
+    check_call([pybin, '-m', 'ensurepip', '--upgrade'])
     check_call([pybin, pip, 'install', 'requests'])
 
     dirname = 'python-%s-%s' % (version, revision)
@@ -154,7 +165,7 @@ def build_python():
     shutil.rmtree(os.path.join(dirname, 'lib', 'python' + major_minor_version, 'test'))
     shutil.rmtree(os.path.join(dirname, 'include'))
     for lib in glob.glob(os.path.join(dirname, 'lib', 'lib*.a')):
-      os.remove(lib)
+        os.remove(lib)
     check_call(['tar', 'zcvf', tarball, dirname])
     print('Uploading: ' + upload_base + tarball)
     check_call(['gsutil', 'cp', '-n', tarball, upload_base + tarball])
