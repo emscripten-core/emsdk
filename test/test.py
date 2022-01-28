@@ -64,8 +64,8 @@ def failing_call_with_output(cmd, expected):
   if WINDOWS:
     print('warning: skipping part of failing_call_with_output() due to error codes not being propagated (see #592)')
   else:
-    assert proc.returncode, 'call must have failed: ' + str([stdout, "\n========\n", stderr])
-  assert expected in stdout or expected in stderr, 'call did not have the right output'
+    assert proc.returncode, 'call must have failed: ' + str([stdout, '\n========\n', stderr])
+  assert expected in stdout or expected in stderr, 'call did not have the expected output: %s: %s' % (expected, str([stdout, '\n========\n', stderr]))
 
 
 def hack_emsdk(marker, replacement):
@@ -81,7 +81,7 @@ def hack_emsdk(marker, replacement):
 
 # Set up
 
-TAGS = json.loads(open('emscripten-releases-tags.txt').read())
+TAGS = json.loads(open('emscripten-releases-tags.json').read())
 
 # Tests
 
@@ -89,12 +89,12 @@ TAGS = json.loads(open('emscripten-releases-tags.txt').read())
 def do_lib_building(emcc):
   cache_building_messages = ['generating system library: ']
 
-  def do_build(args, expected):
-    if expected:
+  def do_build(args, is_expected=None):
+    unexpected = None
+    expected = None
+    if is_expected is True:
       expected = cache_building_messages
-      unexpected = []
-    else:
-      expected = []
+    elif is_expected is False:
       unexpected = cache_building_messages
     checked_call_with_output(emcc + ' hello_world.c' + args,
                              expected=expected,
@@ -103,11 +103,15 @@ def do_lib_building(emcc):
 
   # The emsdk ships all system libraries so we don't expect to see any
   # cache population unless we explicly --clear-cache.
-  do_build('', expected=False)
+  do_build('', is_expected=False)
   check_call(emcc + ' --clear-cache')
-  do_build(' -O2', expected=True)
-  do_build(' -s WASM=0', expected=False)
-  do_build(' -O2 -s WASM=0', expected=False)
+  do_build(' -O2', is_expected=True)
+  # Do another build at -O0.  In nwers SDK versions this generates
+  # different libs, but not in older ones so don't assert here.
+  do_build('')
+  # Now verify that libs are *not* build
+  do_build(' -s WASM=0', is_expected=False)
+  do_build(' -O2 -s WASM=0', is_expected=False)
 
 
 def run_emsdk(cmd):
@@ -140,7 +144,7 @@ int main() {
   def test_list(self):
     # Test we report installed tools properly. The latest version should be
     # installed, but not some random old one.
-    checked_call_with_output(emsdk + ' list', expected=TAGS['latest'] + '    INSTALLED', unexpected='1.39.15    INSTALLED:')
+    checked_call_with_output(emsdk + ' list', expected=TAGS['aliases']['latest'] + '    INSTALLED', unexpected='1.39.15    INSTALLED:')
 
   def test_config_contents(self):
     print('test .emscripten contents')
@@ -170,7 +174,7 @@ int main() {
 
   def test_fastcomp_missing(self):
     print('verify that attempting to use newer fastcomp gives an error')
-    fastcomp_error = 'The fastcomp backend is not getting new builds or releases. Please use the upstream llvm backend or use an older version than 2.0.0 (such as 1.40.1).'
+    fastcomp_error = 'the fastcomp backend is not getting new builds or releases. Please use the upstream llvm backend or use an older version than 2.0.0 (such as 1.40.1).'
     failing_call_with_output(emsdk + ' install latest-fastcomp', fastcomp_error)
     failing_call_with_output(emsdk + ' install tot-fastcomp', fastcomp_error)
     failing_call_with_output(emsdk + ' install 2.0.0-fastcomp', fastcomp_error)
@@ -228,6 +232,8 @@ int main() {
     run_emsdk('activate sdk-tag-1.38.33-64bit')
 
   def test_binaryen_from_source(self):
+    if MACOS:
+      self.skipTest("https://github.com/WebAssembly/binaryen/issues/4299")
     print('test binaryen source build')
     run_emsdk(['install', '--build=Release', '--generator=Unix Makefiles', 'binaryen-main-64bit'])
 
@@ -257,6 +263,14 @@ int main() {
 
     # Check that its not re-downloaded
     checked_call_with_output(emsdk + ' install 5c776e6a91c0cb8edafca16a652ee1ee48f4f6d2', expected='Skipped', unexpected='Downloading:')
+
+  def test_install_tool(self):
+    # Test that its possible to install emscripten as tool instead of SDK
+    checked_call_with_output(emsdk + ' install releases-upstream-77b065ace39e6ab21446e13f92897f956c80476a', unexpected='Installing SDK')
+
+  def test_activate_missing(self):
+    run_emsdk('install latest')
+    failing_call_with_output(emsdk + ' activate 2.0.1', expected="error: tool is not installed and therefore cannot be activated: 'releases-upstream-13e29bd55185e3c12802bc090b4507901856b2ba-64bit'")
 
 
 if __name__ == '__main__':
