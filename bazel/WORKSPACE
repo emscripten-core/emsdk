@@ -4,6 +4,11 @@ load(":deps.bzl", "deps")
 
 deps()
 
+load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories")
+node_repositories(
+    node_version = "16.6.2",
+)
+
 load(":emscripten_deps.bzl", "emscripten_deps")
 
 emscripten_deps()
