@@ -14,8 +14,10 @@ sys.path.append(root_dir)
 import emsdk  # noqa
 
 
-def version_to_list(version_string):
-  return [int(part) for part in re.split('[.-]', version_string)[:3]]
+def version_key(version_string):
+  parts = re.split('[.-]', version_string)
+  key = [[int(part) for part in parts[:3]], -len(parts), parts[3:]]
+  return key
 
 
 def main(args):
@@ -24,7 +26,7 @@ def main(args):
     sys.exit(1)
 
   release_info = emsdk.load_releases_info()
-  new_version = version_to_list(release_info['aliases']['latest'])
+  new_version = version_key(release_info['aliases']['latest'])[0]
   new_version[-1] += 1
   branch_name = 'version_%s' % '_'.join(str(part) for part in new_version)
 
@@ -39,7 +41,7 @@ def main(args):
   print('Creating new release: %s -> %s' % (new_version, new_hash))
   release_info['releases'][new_version] = new_hash
   releases = [(k, v) for k, v in release_info['releases'].items()]
-  releases.sort(key=lambda pair: version_to_list(pair[0]))
+  releases.sort(key=lambda pair: version_key(pair[0]))
 
   release_info['releases'] = OrderedDict(reversed(releases))
   release_info['aliases']['latest'] = new_version
