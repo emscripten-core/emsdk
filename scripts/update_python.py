@@ -34,7 +34,7 @@ from subprocess import check_call
 version = '3.9.2'
 major_minor_version = '.'.join(version.split('.')[:2])  # e.g. '3.9.2' -> '3.9'
 base = 'https://www.python.org/ftp/python/%s/' % version
-revision = '2'
+revision = '3'
 
 pywin32_version = '227'
 pywin32_base = 'https://github.com/mhammond/pywin32/releases/download/b%s/' % pywin32_version
@@ -103,8 +103,9 @@ def make_python_patch(arch):
 
 def build_python():
     if sys.platform.startswith('darwin'):
+        # Take some rather drastic steps to link openssl and liblzma statically
+        # and avoid linking libintl completely.
         osname = 'macos'
-        # Take some rather drastic steps to link openssl statically
         check_call(['brew', 'install', 'openssl', 'xz', 'pkg-config'])
         if platform.machine() == 'x86_64':
             prefix = '/usr/local'
@@ -117,12 +118,13 @@ def build_python():
         # this for Linux too, move this below?)
         osname += '-' + platform.machine()
 
-        try:
-            os.remove(os.path.join(prefix, 'opt', 'openssl', 'lib', 'libssl.dylib'))
-            os.remove(os.path.join(prefix, 'opt', 'openssl', 'lib', 'libcrypto.dylib'))
-            os.remove(os.path.join(prefix, 'opt', 'xz', 'lib', 'liblzma.dylib'))
-        except Exception:
-            pass
+        for f in [os.path.join(prefix, 'lib', 'libintl.dylib'),
+                  os.path.join(prefix, 'include', 'libintl.h'),
+                  os.path.join(prefix, 'opt', 'xz', 'lib', 'liblzma.dylib'),
+                  os.path.join(prefix, 'opt', 'openssl', 'lib', 'libssl.dylib'),
+                  os.path.join(prefix, 'opt', 'openssl', 'lib', 'libcrypto.dylib')]:
+            if os.path.exists(f):
+                os.remove(f)
         os.environ['PKG_CONFIG_PATH'] = os.path.join(prefix, 'opt', 'openssl', 'lib', 'pkgconfig')
     else:
         osname = 'linux'
