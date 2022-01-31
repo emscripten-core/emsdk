@@ -1,5 +1,5 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("@build_bazel_rules_nodejs//:index.bzl", "npm_install")
+load("@build_bazel_rules_nodejs//:index.bzl", "npm_install", "node_repositories")
 load(":revisions.bzl", "EMSCRIPTEN_TAGS")
 
 def _parse_version(v):
@@ -24,6 +24,12 @@ def emscripten_deps(emscripten_version = "latest"):
     # This could potentially backfire for projects with multiple emscripten
     # dependencies that use different emscripten versions
     excludes = native.existing_rules().keys()
+    if "nodejs_toolchains" not in excludes:
+        # Node 16 is the first version that supports darwin_arm64
+        node_repositories(
+            node_version = "16.6.2",
+        )
+
     if "emscripten_bin_linux" not in excludes:
         http_archive(
             name = "emscripten_bin_linux",
