@@ -6,6 +6,7 @@ EMSCRIPTEN_TAGS = {
         hash = "2ddc66235392b37e5b33477fd86cbe01a14b8aa2",
         sha_linux = "8b840819eb88f9178c11bad25859ce448a0559e485823a863a6add21380636ca",
         sha_mac = "0cb3f9bfbcc744233eae9d20036155738409405eacf8a3d4f9beefc5919d809a",
+        sha_mac_arm64 = "ee2772f380419df17d154e00388a16bcddc78c7af035c16a2ee534d6ecf099aa",
         sha_win = "c0549e1dbaa581ae66934c38beebd4250cd450cc2778e9a602cd9431bc81bc37",
     ),
     "3.1.2": struct(
