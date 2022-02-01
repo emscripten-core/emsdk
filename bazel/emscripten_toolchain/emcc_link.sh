@@ -1,5 +1,5 @@
 #!/bin/bash
 
-source external/emsdk/emscripten_toolchain/env.sh
+source $(dirname $0)/env.sh
 
-exec python3 external/emsdk/emscripten_toolchain/link_wrapper.py "$@"
+exec python3 $(dirname $0)/link_wrapper.py "$@"

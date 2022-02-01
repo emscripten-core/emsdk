@@ -34,16 +34,16 @@ if [[ $ERR = 1 ]]; then
 fi
 
 URL1=https://storage.googleapis.com/webassembly/emscripten-releases-builds/
-URL2=/wasm-binaries.tbz2
+URL2=/wasm-binaries.
 
 # Get commit hash for $1 version
 get_hash () {
   echo $(grep "$1" emscripten-releases-tags.json | grep -v latest | cut -f4 -d\")
 }
 
-# Get sha256 for $1 os $2 hash
+# Get sha256 for $1 os $2 extname $3 hash
 get_sha () {
-  echo $(curl "${URL1}$1/$2${URL2}" 2>/dev/null | sha256sum | awk '{print $1}')
+  echo $(curl "${URL1}$1/$3${URL2}$2" 2>/dev/null | sha256sum | awk '{print $1}')
 }
 
 # Assemble dictionary line
@@ -52,9 +52,9 @@ revisions_item () {
   echo \
       "\    \"$1\": struct(\n" \
       "\       hash = \"$(get_hash ${hash})\",\n" \
-      "\       sha_linux = \"$(get_sha linux ${hash})\",\n" \
-      "\       sha_mac = \"$(get_sha mac ${hash})\",\n" \
-      "\       sha_win = \"$(get_sha win ${hash})\",\n" \
+      "\       sha_linux = \"$(get_sha linux tbz2 ${hash})\",\n" \
+      "\       sha_mac = \"$(get_sha mac tbz2 ${hash})\",\n" \
+      "\       sha_win = \"$(get_sha win zip ${hash})\",\n" \
       "\   ),"
 }
 

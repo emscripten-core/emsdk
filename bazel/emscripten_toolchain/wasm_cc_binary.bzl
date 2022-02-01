@@ -55,15 +55,10 @@ _wasm_transition = transition(
 )
 
 def _wasm_binary_impl(ctx):
-    cc_target = ctx.attr.cc_target[0]
+    args = ctx.actions.args()
+    args.add("--output_path", ctx.outputs.loader.dirname)
+    args.add_all("--archive", ctx.files.cc_target)
 
-    args = [
-        "--output_path={}".format(ctx.outputs.loader.dirname),
-    ] + [
-        ctx.expand_location("--archive=$(location {})".format(
-            cc_target.label,
-        ), [cc_target]),
-    ]
     outputs = [
         ctx.outputs.loader,
         ctx.outputs.wasm,
@@ -80,7 +75,7 @@ def _wasm_binary_impl(ctx):
     ctx.actions.run(
         inputs = ctx.files.cc_target,
         outputs = outputs,
-        arguments = args,
+        arguments = [args],
         executable = ctx.executable._wasm_binary_extractor,
     )
 

@@ -1,5 +1,5 @@
 #!/bin/bash
 
-source external/emsdk/emscripten_toolchain/env.sh
+source $(dirname $0)/env.sh
 
 exec python3 $EMSCRIPTEN/emar.py "$@"

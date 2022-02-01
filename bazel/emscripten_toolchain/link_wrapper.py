@@ -39,7 +39,7 @@ if any(' ' in a for a in param_file_args):
   sys.argv[1] = '@' + new_param_filename
 
 emcc_py = os.path.join(os.environ['EMSCRIPTEN'], 'emcc.py')
-rtn = subprocess.call(['python3', emcc_py] + sys.argv[1:])
+rtn = subprocess.call([sys.executable, emcc_py] + sys.argv[1:])
 if rtn != 0:
   sys.exit(1)
 
@@ -153,17 +153,14 @@ if os.path.exists(wasm_base + '.debug.wasm') and os.path.exists(wasm_base):
         wasm_base,
         '--add-section=external_debug_info=debugsection.tmp'])
 
-# If we have more than one output file then create tarball
-if len(files) > 1:
-  cmd = ['tar', 'cf', 'tmp.tar'] + files
-  subprocess.check_call(cmd, cwd=outdir)
-  os.rename(os.path.join(outdir, 'tmp.tar'), output_file)
-elif len(files) == 1:
-  # Otherwise, if only have a single output than move it to the expected name
-  if files[0] != os.path.basename(output_file):
-    os.rename(os.path.join(outdir, files[0]), output_file)
-else:
+# Make sure we have at least one output file.
+if not len(files):
   print('emcc.py did not appear to output any known files!')
   sys.exit(1)
+
+# cc_binary must output exactly one file; put all the output files in a tarball.
+cmd = ['tar', 'cf', 'tmp.tar'] + files
+subprocess.check_call(cmd, cwd=outdir)
+os.rename(os.path.join(outdir, 'tmp.tar'), output_file)
 
 sys.exit(0)

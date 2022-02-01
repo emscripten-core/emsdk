@@ -143,6 +143,9 @@ BUILD_FOR_TESTING = False
 # Other valid values are 'ON' and 'OFF'
 ENABLE_LLVM_ASSERTIONS = 'auto'
 
+# If true, keeps the downloaded archive files.
+KEEP_DOWNLOADS = bool(os.getenv('EMSDK_KEEP_DOWNLOADS'))
+
 
 def os_name():
   if WINDOWS:
@@ -532,11 +535,7 @@ def run(cmd, cwd=None, quiet=False):
 
 
 # http://pythonicprose.blogspot.fi/2009/10/python-extract-targz-archive.html
-def untargz(source_filename, dest_dir, unpack_even_if_exists=False):
-  debug_print('untargz(source_filename=' + source_filename + ', dest_dir=' + dest_dir + ')')
-  if not unpack_even_if_exists and num_files_in_directory(dest_dir) > 0:
-    print("File '" + source_filename + "' has already been unpacked, skipping.")
-    return True
+def untargz(source_filename, dest_dir):
   print("Unpacking '" + source_filename + "' to '" + dest_dir + "'")
   mkdir_p(dest_dir)
   returncode = run(['tar', '-xvf' if VERBOSE else '-xf', sdk_path(source_filename), '--strip', '1'], cwd=dest_dir)
@@ -576,11 +575,7 @@ def move_with_overwrite(src, dest):
 
 
 # http://stackoverflow.com/questions/12886768/simple-way-to-unzip-file-in-python-on-all-oses
-def unzip(source_filename, dest_dir, unpack_even_if_exists=False):
-  debug_print('unzip(source_filename=' + source_filename + ', dest_dir=' + dest_dir + ')')
-  if not unpack_even_if_exists and num_files_in_directory(dest_dir) > 0:
-    print("File '" + source_filename + "' has already been unpacked, skipping.")
-    return True
+def unzip(source_filename, dest_dir):
   print("Unpacking '" + source_filename + "' to '" + dest_dir + "'")
   mkdir_p(dest_dir)
   common_subdir = None
@@ -817,7 +812,7 @@ def git_clone(url, dstpath):
   if GIT_CLONE_SHALLOW:
     git_clone_args += ['--depth', '1']
   print('Cloning from ' + url + '...')
-  return run([GIT(), 'clone'] + git_clone_args + [url, dstpath]) == 0
+  return run([GIT(), 'clone', '--recurse-submodules'] + git_clone_args + [url, dstpath]) == 0
 
 
 def git_checkout_and_pull(repo_path, branch_or_tag):
@@ -832,7 +827,7 @@ def git_checkout_and_pull(repo_path, branch_or_tag):
       return False
     # this line assumes that the user has not gone and manually messed with the
     # repo and added new remotes to ambiguate the checkout.
-    ret = run([GIT(), 'checkout', '--quiet', branch_or_tag], repo_path)
+    ret = run([GIT(), 'checkout', '--recurse-submodules', '--quiet', branch_or_tag], repo_path)
     if ret != 0:
       return False
     # Test if branch_or_tag is a branch, or if it is a tag that needs to be updated
@@ -843,6 +838,7 @@ def git_checkout_and_pull(repo_path, branch_or_tag):
       ret = run([GIT(), 'merge', '--ff-only', 'origin/' + branch_or_tag], repo_path)
     if ret != 0:
       return False
+    run([GIT(), 'submodule', 'update', '--init'], repo_path, quiet=True)
   except:
     errlog('git operation failed!')
     return False
@@ -1525,25 +1521,13 @@ def build_binaryen_tool(tool):
   return success
 
 
-def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False,
-                       filename_prefix='', clobber=True):
+def download_and_unzip(zipfile, dest_dir, filename_prefix='', clobber=True):
   debug_print('download_and_unzip(zipfile=' + zipfile + ', dest_dir=' + dest_dir + ')')
 
   url = urljoin(emsdk_packages_url, zipfile)
   download_target = get_download_target(url, zips_subdir, filename_prefix)
 
-  # If the archive was already downloaded, and the directory it would be
-  # unpacked to has contents, assume it's the same contents and skip.
-  if not download_even_if_exists and num_files_in_directory(dest_dir) > 0:
-    print("The contents of file '" + zipfile + "' already exist in destination '" + dest_dir + "', skipping.")
-    return True
-  # Otherwise, if the archive must be downloaded, always write into the
-  # target directory, since it may be a new version of a tool that gets
-  # installed to the same place (that is, a different download name
-  # indicates different contents).
-  download_even_if_exists = True
-
-  received_download_target = download_file(url, zips_subdir, download_even_if_exists, filename_prefix)
+  received_download_target = download_file(url, zips_subdir, not KEEP_DOWNLOADS, filename_prefix)
   if not received_download_target:
     return False
   assert received_download_target == download_target
@@ -1554,9 +1538,9 @@ def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False,
   if clobber:
     remove_tree(dest_dir)
   if zipfile.endswith('.zip'):
-    return unzip(download_target, dest_dir, unpack_even_if_exists=download_even_if_exists)
+    return unzip(download_target, dest_dir)
   else:
-    return untargz(download_target, dest_dir, unpack_even_if_exists=download_even_if_exists)
+    return untargz(download_target, dest_dir)
 
 
 def to_native_path(p):
@@ -2012,13 +1996,7 @@ class Tool(object):
     elif hasattr(self, 'git_branch'):
       success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch)
     elif url.endswith(ARCHIVE_SUFFIXES):
-      # The 'releases' sdk is doesn't include a verion number in the directory
-      # name and instead only one version can be install at the time and each
-      # one will clobber the other.  This means we always need to extract this
-      # archive even when the target directory exists.
-      download_even_if_exists = (self.id == 'releases')
-      filename_prefix = getattr(self, 'zipfile_prefix', '')
-      success = download_and_unzip(url, self.installation_path(), download_even_if_exists=download_even_if_exists, filename_prefix=filename_prefix)
+      success = download_and_unzip(url, self.installation_path(), filename_prefix=getattr(self, 'zipfile_prefix', ''))
     else:
       dst_file = download_file(urljoin(emsdk_packages_url, self.download_url()), self.installation_path())
       if dst_file:
@@ -2068,6 +2046,8 @@ class Tool(object):
     return True
 
   def cleanup_temp_install_files(self):
+    if KEEP_DOWNLOADS:
+        return
     url = self.download_url()
     if url.endswith(ARCHIVE_SUFFIXES):
       download_target = get_download_target(url, zips_subdir, getattr(self, 'zipfile_prefix', ''))
@@ -2250,7 +2230,7 @@ def update_emsdk():
   if is_emsdk_sourced_from_github():
     errlog('You seem to have bootstrapped Emscripten SDK by cloning from GitHub. In this case, use "git pull" instead of "emsdk update" to update emsdk. (Not doing that automatically in case you have local changes)')
     sys.exit(1)
-  if not download_and_unzip(emsdk_zip_download_url, emsdk_path(), download_even_if_exists=True, clobber=False):
+  if not download_and_unzip(emsdk_zip_download_url, emsdk_path(), clobber=False):
     sys.exit(1)
 
 
@@ -2487,7 +2467,7 @@ def can_simultaneously_activate(tool1, tool2):
 
 
 # Expands dependencies for each tool, and removes ones that don't exist.
-def process_tool_list(tools_to_activate, log_errors=True):
+def process_tool_list(tools_to_activate):
   i = 0
   # Gather dependencies for each tool
   while i < len(tools_to_activate):
@@ -2525,7 +2505,7 @@ def write_set_env_script(env_string):
 # and other environment variables.
 # Returns the full list of deduced tools that are now active.
 def set_active_tools(tools_to_activate, permanently_activate, system):
-  tools_to_activate = process_tool_list(tools_to_activate, log_errors=True)
+  tools_to_activate = process_tool_list(tools_to_activate)
 
   if tools_to_activate:
     tools = [x for x in tools_to_activate if not x.is_sdk]
@@ -2733,7 +2713,7 @@ def construct_env_with_vars(env_vars_to_add):
   # if no such tool is active.
   # Ignore certain keys that are inputs to emsdk itself.
   ignore_keys = set(['EMSDK_POWERSHELL', 'EMSDK_CSH', 'EMSDK_CMD', 'EMSDK_BASH',
-                     'EMSDK_NUM_CORES', 'EMSDK_TTY'])
+                     'EMSDK_NUM_CORES', 'EMSDK_NOTTY', 'EMSDK_KEEP_DOWNLOADS'])
   env_keys_to_add = set(pair[0] for pair in env_vars_to_add)
   for key in os.environ:
     if key.startswith('EMSDK_') or key.startswith('EM_'):
@@ -2934,7 +2914,15 @@ def main(args):
        be sure to match the same --build= option to both 'install' and
        'activate' commands and the invocation of 'emsdk_env', or otherwise
        these commands will default to operating on the default build type
-       which in and RelWithDebInfo.''')
+       which is RelWithDebInfo.''')
+
+    print('''
+
+   Environment:
+      EMSDK_KEEP_DOWNLOADS=1     - if you want to keep the downloaded archives.
+      EMSDK_NOTTY=1              - override isatty() result (mainly to log progress).
+      EMSDK_NUM_CORES=n          - limit parallelism to n cores.
+      EMSDK_VERBOSE=1            - very verbose output, useful for debugging.''')
     return 0
 
   # Extracts a boolean command line argument from args and returns True if it was present
@@ -3147,7 +3135,7 @@ def main(args):
     # Clean up old temp file up front, in case of failure later before we get
     # to write out the new one.
     tools_to_activate = currently_active_tools()
-    tools_to_activate = process_tool_list(tools_to_activate, log_errors=True)
+    tools_to_activate = process_tool_list(tools_to_activate)
     env_string = construct_env(tools_to_activate, arg_system, arg_permanent)
     if WINDOWS and not BASH:
       write_set_env_script(env_string)
@@ -3186,7 +3174,7 @@ def main(args):
       errlog('No tools/SDKs found to activate! Usage:\n   emsdk activate tool/sdk1 [tool/sdk2] [...]')
       return 1
     if WINDOWS and not arg_permanent:
-      errlog('The changes made to environment variables only apply to the currently running shell instance. Use the \'emsdk_env.bat\' to re-enter this environment later, or if you\'d like to permanently register this environment permanently, rerun this command with the option --permanent.')
+      errlog('The changes made to environment variables only apply to the currently running shell instance. Use the \'emsdk_env.bat\' to re-enter this environment later, or if you\'d like to register this environment permanently, rerun this command with the option --permanent.')
     return 0
   elif cmd == 'install':
     global BUILD_FOR_TESTING, ENABLE_LLVM_ASSERTIONS, CPU_CORES, GIT_CLONE_SHALLOW
