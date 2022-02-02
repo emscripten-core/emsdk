@@ -103,6 +103,8 @@
     <Delete Files="$(ArtifactsObjDir)upstream\bin\wasm32-wasi-clang++.exe" />
     <Delete Files="$(ArtifactsObjDir)upstream\bin\ld64.lld.darwinnew.exe" />
     <Delete Files="$(ArtifactsObjDir)upstream\bin\ld64.lld.exe" />
+    <Delete Files="$(ArtifactsObjDir)upstream\bin\clang-repl.exe" />
+    <Delete Files="$(ArtifactsObjDir)upstream\bin\llvm-ml.exe" />
     <Delete Files="$(ArtifactsObjDir)upstream\emscripten\third_party\*.*" />
     <!--<Delete Files="$(ArtifactsObjDir)upstream\bin\wasm-ld.exe" />--> <!-- TODO: this is used by emcc but could be a symlink to ld.exe -->
 
