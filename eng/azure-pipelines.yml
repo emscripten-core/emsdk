@@ -73,8 +73,9 @@ stages:
           ${{ if eq(variables['System.TeamProject'], 'public') }}:
             vmImage: windows-2019
           ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-            name: NetCore1ESPool-Internal
-            demands: ImageOverride -equals Build.Server.Amd64.VS2019
+            vmImage: windows-2019
+            #            name: NetCore1ESPool-Internal
+ #           demands: ImageOverride -equals Build.Server.Amd64.VS2019
         steps:
         - script: |
             .\build.cmd -ci -configuration $(_BuildConfig) $(_InternalPublishArg) /p:PackageRID=win-x64 /p:AssetManifestOS=win /p:PlatformName=x64 /p:workloadPackagesPath=$(Build.SourcesDirectory)\artifacts\packages\$(_BuildConfig)\Shipping $(_InternalBuildArgs)
