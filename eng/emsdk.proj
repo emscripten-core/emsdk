@@ -29,8 +29,8 @@
 
     <Message Importance="High" Text="Pruning node modules in: $(UpstreamEmscriptenDirectory)" />
     <PropertyGroup>
-      <NpmPath>$(NodeDirectory):$(PATH)</NpmPath>
-      <NpmPath Condition="$([MSBuild]::IsOSPlatform(Windows))">$(NodeDirectory)%3B$(PATH.Replace(';', '%3B'))</NpmPath>
+      <NpmPath>$(NodeDirectory)/bin:$(PATH)</NpmPath>
+      <NpmPath Condition="$([MSBuild]::IsOSPlatform(Windows))">$(NodeDirectory)\bin%3B$(PATH.Replace(';', '%3B'))</NpmPath>
     </PropertyGroup>
     <ItemGroup>
       <NpmEnvironmentVariables Include="PATH=$(NpmPath)" />
