@@ -50,7 +50,11 @@ stages:
         displayName: Linux
         timeoutInMinutes: 30
         pool:
-          vmImage: ubuntu-20.04
+          ${{ if eq(variables['System.TeamProject'], 'public') }}:
+            vmImage: ubuntu-20.04
+          ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+            name: NetCore1ESPool-Internal
+            demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
         steps:
         - bash: |
             ./build.sh -ci -configuration $(_BuildConfig) $(_InternalPublishArg) /p:PackageRID=linux-x64 /p:AssetManifestOS=linux /p:PlatformName=x64 $(_InternalBuildArgs)
@@ -66,7 +70,11 @@ stages:
         displayName: Windows
         timeoutInMinutes: 30
         pool:
-          vmImage: windows-2019
+          ${{ if eq(variables['System.TeamProject'], 'public') }}:
+            vmImage: windows-2019
+          ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+            name: NetCore1ESPool-Internal
+            demands: ImageOverride -equals Build.Server.Amd64.VS2019
         steps:
         - script: |
             .\build.cmd -ci -configuration $(_BuildConfig) $(_InternalPublishArg) /p:PackageRID=win-x64 /p:AssetManifestOS=win /p:PlatformName=x64 /p:workloadPackagesPath=$(Build.SourcesDirectory)\artifacts\packages\$(_BuildConfig)\Shipping $(_InternalBuildArgs)
