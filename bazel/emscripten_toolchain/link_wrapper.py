@@ -22,7 +22,7 @@ import subprocess
 import sys
 
 # Only argument should be @path/to/parameter/file
-assert sys.argv[1][0] == '@'
+assert sys.argv[1][0] == '@', sys.argv
 param_filename = sys.argv[1][1:]
 param_file_args = [l.strip() for l in open(param_filename, 'r').readlines()]
 
@@ -51,7 +51,7 @@ parser.add_argument('--oformat')
 options = parser.parse_known_args(param_file_args)[0]
 output_file = options.o
 oformat = options.oformat
-outdir = os.path.dirname(output_file)
+outdir = os.path.normpath(os.path.dirname(output_file))
 base_name = os.path.basename(output_file)
 
 # The output file name is the name of the build rule that was built.
@@ -105,7 +105,7 @@ if os.path.exists(wasm_base + '.debug.wasm') and os.path.exists(wasm_base):
   # is the blaze output path; we want it to be just the filename.
 
   llvm_objcopy = os.path.join(
-      os.environ['EMSCRIPTEN'], 'llvm-bin/llvm-objcopy')
+      os.environ['EM_BIN_PATH'], 'bin/llvm-objcopy')
   # First, check to make sure the .wasm file has the header that needs to be
   # rewritten.
   rtn = subprocess.call([
