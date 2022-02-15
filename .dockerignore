@@ -1,21 +1,20 @@
-# Ignore all subdirectories
-*/*
+# Ignore everything
+*
 
 # Allow to run the test script inside the Docker container
 !/docker/test_dockerimage.sh
 
-# Ignore unnecessary files inside top-level directory
-*.bat
-*.csh
-*.fish
-*.ps1
-*.pyc
-.emscripten
-.emscripten.old
-.emscripten_cache
-.emscripten_cache__last_clear
-.emscripten_sanity
-.emscripten_sanity_wasm
-.flake8
-emscripten-releases-tot.txt
-README.md
+# Allow license file
+!LICENSE
+
+# Allow necessary build files in top-level directory
+!emscripten-releases-tags.json
+!emsdk
+!emsdk.py
+!emsdk_env.sh
+!emsdk_manifest.json
+
+# Allow files required to install legacy versions
+!legacy-binaryen-tags.txt
+!legacy-emscripten-tags.txt
+!llvm-tags-64bit.txt
