@@ -338,7 +338,7 @@ def win_set_environment_variable_direct(key, value, system=True):
   except Exception as e:
     # 'Access is denied.'
     if e.args[3] == 5:
-      exit_with_error('failed to set the environment variable \'' + key + '\'! Setting environment variables permanently requires administrator access. Please rerun this command with administrative privileges. This can be done for example by holding down the Ctrl and Shift keys while opening a command prompt in start menu.')
+      exit_with_error('Error! Failed to set the environment variable \'' + key + '\'! Setting environment variables permanently requires administrator access. Please rerun this command with administrative privileges. This can be done for example by holding down the Ctrl and Shift keys while opening a command prompt in start menu.')
     errlog('Failed to write environment variable ' + key + ':')
     errlog(str(e))
     return False
@@ -409,7 +409,7 @@ def win_set_environment_variable(key, value, system, user):
     # Escape % signs so that we don't expand references to environment variables.
     value = value.replace('%', '^%')
     if len(value) >= 1024:
-      exit_with_error('the new environment variable ' + key + ' is more than 1024 characters long! A value this long cannot be set via command line: please add the environment variable specified above to system environment manually via Control Panel.')
+      exit_with_error('ERROR! The new environment variable ' + key + ' is more than 1024 characters long! A value this long cannot be set via command line: please add the environment variable specified above to system environment manually via Control Panel.')
     cmd = ['SETX', key, value]
     debug_print(str(cmd))
     retcode = subprocess.call(cmd, stdout=subprocess.PIPE)
@@ -539,10 +539,10 @@ def untargz(source_filename, dest_dir, unpack_even_if_exists=False):
     return True
   print("Unpacking '" + source_filename + "' to '" + dest_dir + "'")
   mkdir_p(dest_dir)
-  returncode = run(['tar', '-xvf' if VERBOSE else '-xf', sdk_path(source_filename), '--strip', '1'], cwd=dest_dir)
+  run(['tar', '-xvf' if VERBOSE else '-xf', sdk_path(source_filename), '--strip', '1'], cwd=dest_dir)
   # tfile = tarfile.open(source_filename, 'r:gz')
   # tfile.extractall(dest_dir)
-  return returncode == 0
+  return True
 
 
 # On Windows, it is not possible to reference path names that are longer than
@@ -750,7 +750,7 @@ def download_file(url, dstpath, download_even_if_exists=False, filename_prefix='
     return None
   except KeyboardInterrupt:
     rmfile(file_name)
-    exit_with_error("aborted by user, exiting")
+    exit_with_error("Aborted by User, exiting")
   return file_name
 
 
@@ -779,13 +779,13 @@ def GIT(must_succeed=True):
       pass
   if must_succeed:
     if WINDOWS:
-      msg = "git executable was not found. Please install it by typing 'emsdk install git-1.9.4', or alternatively by installing it manually from http://git-scm.com/downloads . If you install git manually, remember to add it to PATH"
+      msg = "ERROR: git executable was not found. Please install it by typing 'emsdk install git-1.9.4', or alternatively by installing it manually from http://git-scm.com/downloads . If you install git manually, remember to add it to PATH"
     elif MACOS:
-      msg = "git executable was not found. Please install git for this operation! This can be done from http://git-scm.com/ , or by installing XCode and then the XCode Command Line Tools (see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools )"
+      msg = "ERROR: git executable was not found. Please install git for this operation! This can be done from http://git-scm.com/ , or by installing XCode and then the XCode Command Line Tools (see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools )"
     elif LINUX:
-      msg = "git executable was not found. Please install git for this operation! This can be probably be done using your package manager, see http://git-scm.com/book/en/Getting-Started-Installing-Git"
+      msg = "ERROR: git executable was not found. Please install git for this operation! This can be probably be done using your package manager, see http://git-scm.com/book/en/Getting-Started-Installing-Git"
     else:
-      msg = "git executable was not found. Please install git for this operation!"
+      msg = "ERROR: git executable was not found. Please install git for this operation!"
     exit_with_error(msg)
   # Not found
   return ''
@@ -1235,13 +1235,15 @@ def build_llvm(tool):
           # that prevent distributing the generated compiler for end users.
           '-DLLVM_ENABLE_LIBXML2=OFF', '-DLLVM_ENABLE_TERMINFO=OFF', '-DLLDB_ENABLE_LIBEDIT=OFF',
           '-DLLVM_ENABLE_LIBEDIT=OFF', '-DLLVM_ENABLE_LIBPFM=OFF']
-  # LLVM build system bug: compiler-rt does not build on Windows. It insists on performing a CMake install step that writes to C:\Program Files. Attempting
+  # LLVM build system bug: looks like everything needs to be passed to LLVM_ENABLE_PROJECTS twice. (or every second field is ignored?)
+
+  # LLVM build system bug #2: compiler-rt does not build on Windows. It insists on performing a CMake install step that writes to C:\Program Files. Attempting
   # to reroute that to build_root directory then fails on an error
   #  file INSTALL cannot find
   #  "C:/code/emsdk/llvm/git/build_master_vs2017_64/$(Configuration)/lib/clang/10.0.0/lib/windows/clang_rt.ubsan_standalone-x86_64.lib".
   # (there instead of $(Configuration), one would need ${CMAKE_BUILD_TYPE} ?)
   # It looks like compiler-rt is not compatible to build on Windows?
-  args += ['-DLLVM_ENABLE_PROJECTS=clang;lld']
+  args += ['-DLLVM_ENABLE_PROJECTS="clang;clang;lld;lld"']
   cmake_generator = CMAKE_GENERATOR
   if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
     # With Visual Studio 16 2019, CMake changed the way they specify target arch.
@@ -1661,14 +1663,8 @@ JS_ENGINES = [NODE_JS]
       print('    ' + p)
     print('- This can be done for the current shell by running:')
     print('    source "%s"' % emsdk_env)
-    print('- Configure emsdk in your shell startup scripts by running:')
-    shell = os.environ.get('SHELL', '')
-    if 'zsh' in shell:
-      print('    echo \'source "%s"\' >> $HOME/.zprofile' % emsdk_env)
-    elif 'csh' in shell:
-      print('    echo \'source "%s"\' >> $HOME/.cshrc' % emsdk_env)
-    else:
-      print('    echo \'source "%s"\' >> $HOME/.bash_profile' % emsdk_env)
+    print('- Configure emsdk in your bash profile by running:')
+    print('    echo \'source "%s"\' >> $HOME/.bash_profile' % emsdk_env)
 
 
 def find_msbuild_dir():
@@ -1979,7 +1975,7 @@ class Tool(object):
     for tool_name in self.uses:
       tool = find_tool(tool_name)
       if tool is None:
-        exit_with_error("manifest error: No tool by name '" + tool_name + "' found! This may indicate an internal SDK error!")
+        exit_with_error("Manifest error: No tool by name '" + tool_name + "' found! This may indicate an internal SDK error!")
       installed |= tool.install()
 
     if not installed:
@@ -2042,7 +2038,7 @@ class Tool(object):
         success = False
 
     if not success:
-      exit_with_error("installation failed!")
+      exit_with_error("Installation failed!")
 
     if hasattr(self, 'custom_install_script'):
       if self.custom_install_script == 'emscripten_post_install':
@@ -2059,7 +2055,7 @@ class Tool(object):
         raise Exception('Unknown custom_install_script command "' + self.custom_install_script + '"!')
 
     if not success:
-      exit_with_error("installation failed!")
+      exit_with_error("Installation failed!")
 
     # Install an emscripten-version.txt file if told to, and if there is one.
     # (If this is not an actual release, but some other build, then we do not
@@ -2076,7 +2072,7 @@ class Tool(object):
     # Sanity check that the installation succeeded, and if so, remove unneeded
     # leftover installation files.
     if not self.is_installed(skip_version_check=True):
-      exit_with_error("installation of '" + str(self) + "' failed, but no error was detected. Either something went wrong with the installation, or this may indicate an internal emsdk error.")
+      exit_with_error("Installation of '" + str(self) + "' failed, but no error was detected. Either something went wrong with the installation, or this may indicate an internal emsdk error.")
 
     self.cleanup_temp_install_files()
     self.update_installed_version()
@@ -2170,27 +2166,18 @@ def is_os_64bit():
   return platform.machine().endswith('64')
 
 
-def find_latest_version():
-  return resolve_sdk_aliases('latest')
-
-
-def find_latest_hash():
-  version = find_latest_version()
+def find_latest_releases_version():
   releases_info = load_releases_info()
-  return releases_info['releases'][version]
+  return releases_info['latest']
 
 
-def resolve_sdk_aliases(name, verbose=False):
+def find_latest_releases_hash():
   releases_info = load_releases_info()
-  while name in releases_info['aliases']:
-    if verbose:
-      print("Resolving SDK alias '%s' to '%s'" % (name, releases_info['aliases'][name]))
-    name = releases_info['aliases'][name]
-  return name
+  return releases_info['releases'][find_latest_releases_version()]
 
 
-def find_latest_sdk(which):
-  return 'sdk-releases-%s-%s-64bit' % (which, find_latest_hash())
+def find_latest_releases_sdk(which):
+  return 'sdk-releases-%s-%s-64bit' % (which, find_latest_releases_hash())
 
 
 def find_tot_sdk():
@@ -2204,7 +2191,7 @@ def parse_emscripten_version(emscripten_root):
   version_file = os.path.join(emscripten_root, 'emscripten-version.txt')
   with open(version_file) as f:
     version = f.read().strip()
-    version = version.strip('"').split('-')[0].split('.')
+    version = version.strip('"').split('.')
     return [int(v) for v in version]
 
 
@@ -2305,7 +2292,7 @@ def load_file_index_list(filename):
 
 
 def exit_with_error(msg):
-  errlog('error: %s' % msg)
+  errlog(str(msg))
   sys.exit(1)
 
 
@@ -2313,10 +2300,10 @@ def exit_with_error(msg):
 def load_releases_info():
   if not hasattr(load_releases_info, 'cached_info'):
     try:
-      text = open(sdk_path('emscripten-releases-tags.json'), 'r').read()
+      text = open(sdk_path('emscripten-releases-tags.txt'), 'r').read()
       load_releases_info.cached_info = json.loads(text)
     except Exception as e:
-      print('Error parsing emscripten-releases-tags.json!')
+      print('Error parsing emscripten-releases-tags.txt!')
       exit_with_error(str(e))
 
   return load_releases_info.cached_info
@@ -2501,6 +2488,19 @@ def can_simultaneously_activate(tool1, tool2):
   return tool1.id != tool2.id
 
 
+def remove_nonexisting_tools(tool_list, log_errors=True):
+  i = 0
+  while i < len(tool_list):
+    tool = tool_list[i]
+    if not tool.is_installed():
+      if log_errors:
+        errlog("Warning: The SDK/tool '" + str(tool) + "' cannot be activated since it is not installed! Skipping this tool...")
+      tool_list.pop(i)
+      continue
+    i += 1
+  return tool_list
+
+
 # Expands dependencies for each tool, and removes ones that don't exist.
 def process_tool_list(tools_to_activate, log_errors=True):
   i = 0
@@ -2511,9 +2511,7 @@ def process_tool_list(tools_to_activate, log_errors=True):
     tools_to_activate = tools_to_activate[:i] + deps + tools_to_activate[i:]
     i += len(deps) + 1
 
-  for tool in tools_to_activate:
-    if not tool.is_installed():
-      exit_with_error("error: tool is not installed and therefore cannot be activated: '%s'" % tool)
+  tools_to_activate = remove_nonexisting_tools(tools_to_activate, log_errors=log_errors)
 
   # Remove conflicting tools
   i = 0
@@ -2761,13 +2759,14 @@ def construct_env_with_vars(env_vars_to_add):
 
 def error_on_missing_tool(name):
   if name.endswith('-64bit') and not is_os_64bit():
-    exit_with_error("'%s' is only provided for 64-bit OSes" % name)
+    errlog("Error: '%s' is only provided for 64-bit OSes." % name)
   else:
-    exit_with_error("tool or SDK not found: '%s'" % name)
+    errlog("Error: No tool or SDK found by name '%s'." % name)
+  return 1
 
 
 def exit_with_fastcomp_error():
-    exit_with_error('the fastcomp backend is not getting new builds or releases. Please use the upstream llvm backend or use an older version than 2.0.0 (such as 1.40.1).')
+    exit_with_error('The fastcomp backend is not getting new builds or releases. Please use the upstream llvm backend or use an older version than 2.0.0 (such as 1.40.1).')
 
 
 def expand_sdk_name(name, activating):
@@ -2776,7 +2775,12 @@ def expand_sdk_name(name, activating):
     name = name.replace('upstream-master', 'upstream-main')
   if name in ('latest-fastcomp', 'latest-releases-fastcomp', 'tot-fastcomp', 'sdk-nightly-latest'):
     exit_with_fastcomp_error()
-  if name in ('tot', 'sdk-tot', 'tot-upstream'):
+  if name in ('latest', 'sdk-latest', 'latest-64bit', 'sdk-latest-64bit'):
+    # This is effectly the default SDK
+    return str(find_latest_releases_sdk('upstream'))
+  elif name in ('latest-upstream', 'latest-clang-upstream', 'latest-releases-upstream'):
+    return str(find_latest_releases_sdk('upstream'))
+  elif name in ('tot', 'sdk-tot', 'tot-upstream'):
     if activating:
       # When we are activating a tot release, assume that the currently
       # installed SDK, if any, is the tot release we want to activate.
@@ -2787,46 +2791,39 @@ def expand_sdk_name(name, activating):
         debug_print('activating currently installed SDK; not updating tot version')
         return 'sdk-releases-upstream-%s-64bit' % installed
     return str(find_tot_sdk())
-
-  name = resolve_sdk_aliases(name, verbose=True)
-
-  # check if it's a release handled by an emscripten-releases version,
-  # and if so use that by using the right hash. we support a few notations,
-  #   x.y.z[-(upstream|fastcomp_])
-  #   sdk-x.y.z[-(upstream|fastcomp_])-64bit
-  # TODO: support short notation for old builds too?
-  backend = None
-  fullname = name
-  if '-upstream' in fullname:
-    fullname = name.replace('-upstream', '')
-    backend = 'upstream'
-  elif '-fastcomp' in fullname:
-    fullname = fullname.replace('-fastcomp', '')
-    backend = 'fastcomp'
-  version = fullname.replace('sdk-', '').replace('releases-', '').replace('-64bit', '').replace('tag-', '')
-  sdk = 'sdk-' if not name.startswith('releases-') else ''
-  releases_info = load_releases_info()['releases']
-  release_hash = get_release_hash(version, releases_info)
-  if release_hash:
-    # Known release hash
-    if backend == 'fastcomp' and version_key(version) >= (2, 0, 0):
-      exit_with_fastcomp_error()
-    if backend is None:
-      if version_key(version) >= (1, 39, 0):
-        backend = 'upstream'
-      else:
-        backend = 'fastcomp'
-    full_name = '%sreleases-%s-%s-64bit' % (sdk, backend, release_hash)
-    print("Resolving SDK version '%s' to '%s'" % (version, full_name))
-    return full_name
-
-  if len(version) == 40:
-    if backend is None:
+  else:
+    # check if it's a release handled by an emscripten-releases version,
+    # and if so use that by using the right hash. we support a few notations,
+    #   x.y.z[-(upstream|fastcomp_])
+    #   sdk-x.y.z[-(upstream|fastcomp_])-64bit
+    # TODO: support short notation for old builds too?
+    backend = None
+    fullname = name
+    if '-upstream' in fullname:
+      fullname = name.replace('-upstream', '')
       backend = 'upstream'
-    global extra_release_tag
-    extra_release_tag = version
-    return '%sreleases-%s-%s-64bit' % (sdk, backend, version)
-
+    elif '-fastcomp' in fullname:
+      fullname = fullname.replace('-fastcomp', '')
+      backend = 'fastcomp'
+    version = fullname.replace('sdk-', '').replace('releases-', '').replace('-64bit', '').replace('tag-', '')
+    releases_info = load_releases_info()['releases']
+    release_hash = get_release_hash(version, releases_info)
+    if release_hash:
+      # Known release hash
+      if backend == 'fastcomp' and version_key(version) >= (2, 0, 0):
+        exit_with_fastcomp_error()
+      if backend is None:
+        if version_key(version) >= (1, 39, 0):
+          backend = 'upstream'
+        else:
+          backend = 'fastcomp'
+      return 'sdk-releases-%s-%s-64bit' % (backend, release_hash)
+    elif len(version) == 40:
+      if backend is None:
+        backend = 'upstream'
+      global extra_release_tag
+      extra_release_tag = version
+      return 'sdk-releases-%s-%s-64bit' % (backend, version)
   return name
 
 
@@ -3046,15 +3043,15 @@ def main(args):
       return 'INSTALLED' if sdk and sdk.is_installed() else ''
 
     if (LINUX or MACOS or WINDOWS) and (ARCH == 'x86' or ARCH == 'x86_64'):
-      print('The *recommended* precompiled SDK download is %s (%s).' % (find_latest_version(), find_latest_hash()))
+      print('The *recommended* precompiled SDK download is %s (%s).' % (find_latest_releases_version(), find_latest_releases_hash()))
       print()
       print('To install/activate it, use one of:')
       print('         latest                  [default (llvm) backend]')
       print('         latest-fastcomp         [legacy (fastcomp) backend]')
       print('')
       print('Those are equivalent to installing/activating the following:')
-      print('         %s             %s' % (find_latest_version(), installed_sdk_text(find_latest_sdk('upstream'))))
-      print('         %s-fastcomp    %s' % (find_latest_version(), installed_sdk_text(find_latest_sdk('fastcomp'))))
+      print('         %s             %s' % (find_latest_releases_version(), installed_sdk_text(find_latest_releases_sdk('upstream'))))
+      print('         %s-fastcomp    %s' % (find_latest_releases_version(), installed_sdk_text(find_latest_releases_sdk('fastcomp'))))
       print('')
     else:
       print('Warning: your platform does not have precompiled SDKs available.')
@@ -3191,7 +3188,7 @@ def main(args):
       if tool is None:
         tool = find_sdk(arg)
       if tool is None:
-        error_on_missing_tool(arg)
+        return error_on_missing_tool(arg)
       tools_to_activate += [tool]
     if not tools_to_activate:
       errlog('No tools/SDKs specified to activate! Usage:\n   emsdk activate tool/sdk1 [tool/sdk2] [...]')
@@ -3238,7 +3235,7 @@ def main(args):
       if tool is None:
         tool = find_sdk(t)
       if tool is None:
-        error_on_missing_tool(t)
+        return error_on_missing_tool(t)
       tool.install()
     return 0
   elif cmd == 'uninstall':

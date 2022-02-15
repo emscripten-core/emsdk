@@ -24,7 +24,7 @@ def main(args):
     sys.exit(1)
 
   release_info = emsdk.load_releases_info()
-  new_version = version_to_list(release_info['aliases']['latest'])
+  new_version = version_to_list(release_info['latest'])
   new_version[-1] += 1
   branch_name = 'version_%s' % '_'.join(str(part) for part in new_version)
 
@@ -42,9 +42,9 @@ def main(args):
   releases.sort(key=lambda pair: version_to_list(pair[0]))
 
   release_info['releases'] = OrderedDict(reversed(releases))
-  release_info['aliases']['latest'] = new_version
+  release_info['latest'] = new_version
 
-  with open(os.path.join(root_dir, 'emscripten-releases-tags.json'), 'w') as f:
+  with open(os.path.join(root_dir, 'emscripten-releases-tags.txt'), 'w') as f:
     f.write(json.dumps(release_info, indent=2))
     f.write('\n')
 

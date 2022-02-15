@@ -5,12 +5,12 @@ echo "test bazel"
 set -x
 set -e
 
-# Get the latest version number from emscripten-releases-tag.json.
+# Get the latest version number from emscripten-releases-tag.txt.
 VER=$(grep -oP '(?<=latest\": \")([\d\.]+)(?=\")' \
-        emscripten-releases-tags.json \
+        emscripten-releases-tags.txt \
       | sed --expression "s/\./\\\./g")
 # Based on the latest version number, get the commit hash for that version.
-HASH=$(grep "\"${VER}\"" emscripten-releases-tags.json \
+HASH=$(grep "\"${VER}\"" emscripten-releases-tags.txt \
       | grep -v latest \
       | cut -f4 -d\")
 
@@ -26,6 +26,3 @@ bazel build //hello-world:hello-world-wasm-simd
 
 cd test_external
 bazel build //:hello-world-wasm
-bazel build //:hello-embind-wasm --compilation_mode dbg # debug
-# Test use of the closure compiler
-bazel build //:hello-embind-wasm --compilation_mode opt # release
