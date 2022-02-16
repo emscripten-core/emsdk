@@ -6,9 +6,12 @@ filegroup(
     name = "common-script-includes",
     srcs = [
         "emar.sh",
+        "emar.bat",
         "emcc.sh",
+        "emcc.bat",
         "emscripten_config",
         "env.sh",
+        "env.bat",
         "@emsdk//:binaries",
         "@emsdk//:node_modules",
         "@nodejs//:node_files",
@@ -24,6 +27,7 @@ filegroup(
     name = "link-emscripten",
     srcs = [
         "emcc_link.sh",
+        "emcc_link.bat",
         "link_wrapper.py",
         ":common-script-includes",
         "@emsdk//:binaries",
@@ -51,6 +55,10 @@ emscripten_cc_toolchain_config_rule(
     cpu = "wasm",
     em_config = "emscripten_config",
     emscripten_binaries = "@emsdk//:binaries",
+    script_extension = select({
+        "@bazel_tools//src/conditions:host_windows": "bat",
+        "//conditions:default": "sh",
+    }),
 )
 
 cc_toolchain(

@@ -74,23 +74,27 @@ def _impl(ctx):
 
     builtin_sysroot = emscripten_dir + "/emscripten/cache/sysroot"
 
+    emcc_script = "emcc.%s" % ctx.attr.script_extension
+    emcc_link_script = "emcc_link.%s" % ctx.attr.script_extension
+    emar_script = "emar.%s" % ctx.attr.script_extension
+
     ################################################################
     # Tools
     ################################################################
-    clang_tool = tool(path = "emcc.sh")
+    clang_tool = tool(path = emcc_script)
     clif_match_tool = tool(path = "dummy_clif_matcher")
-    link_tool = tool(path = "emcc_link.sh")
-    archive_tool = tool(path = "emar.sh")
+    link_tool = tool(path = emcc_link_script)
+    archive_tool = tool(path = emar_script)
     strip_tool = tool(path = "NOT_USED_STRIP_TOOL")
 
     #### Legacy tool paths (much of this is redundant with action_configs, but
     #### these are still used for some things)
     tool_paths = [
-        tool_path(name = "ar", path = "emar.sh"),
+        tool_path(name = "ar", path = emar_script),
         tool_path(name = "cpp", path = "/bin/false"),
-        tool_path(name = "gcc", path = "emcc.sh"),
+        tool_path(name = "gcc", path = emcc_script),
         tool_path(name = "gcov", path = "/bin/false"),
-        tool_path(name = "ld", path = "emcc_link.sh"),
+        tool_path(name = "ld", path = emcc_link_script),
         tool_path(name = "nm", path = "NOT_USED"),
         tool_path(name = "objdump", path = "/bin/false"),
         tool_path(name = "strip", path = "NOT_USED"),
@@ -572,9 +576,10 @@ def _impl(ctx):
         flag_set(
             actions = all_compile_actions +
                       all_link_actions,
-            flags = ["-O3"],
+            flags = ["-O2"],
             features = ["opt"],
         ),
+
         # Users can override opt-level with semantic names...
         flag_set(
             actions = all_compile_actions +
@@ -598,7 +603,7 @@ def _impl(ctx):
         flag_set(
             actions = all_compile_actions +
                       all_link_actions,
-            flags = ["-O2"],
+            flags = ["-O0"],
             features = ["fastbuild"],
         ),
 
@@ -1105,6 +1110,7 @@ emscripten_cc_toolchain_config_rule = rule(
         "cpu": attr.string(mandatory = True, values = ["asmjs", "wasm"]),
         "em_config": attr.label(mandatory = True, allow_single_file = True),
         "emscripten_binaries": attr.label(mandatory = True),
+        "script_extension": attr.string(mandatory = True, values = ["sh", "bat"]),
     },
     provides = [CcToolchainConfigInfo],
 )

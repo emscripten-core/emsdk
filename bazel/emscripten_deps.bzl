@@ -19,7 +19,7 @@ def emscripten_deps(emscripten_version = "latest"):
 
     revision = EMSCRIPTEN_TAGS[version]
 
-    emscripten_url = "https://storage.googleapis.com/webassembly/emscripten-releases-builds/{}/{}/wasm-binaries.tbz2"
+    emscripten_url = "https://storage.googleapis.com/webassembly/emscripten-releases-builds/{}/{}/wasm-binaries.{}"
 
     # This could potentially backfire for projects with multiple emscripten
     # dependencies that use different emscripten versions
@@ -28,7 +28,7 @@ def emscripten_deps(emscripten_version = "latest"):
         http_archive(
             name = "emscripten_bin_linux",
             strip_prefix = "install",
-            url = emscripten_url.format("linux", revision.hash),
+            url = emscripten_url.format("linux", revision.hash, "tbz2"),
             sha256 = revision.sha_linux,
             build_file = "@emsdk//emscripten_toolchain:emscripten.BUILD",
             type = "tar.bz2",
@@ -38,7 +38,7 @@ def emscripten_deps(emscripten_version = "latest"):
         http_archive(
             name = "emscripten_bin_mac",
             strip_prefix = "install",
-            url = emscripten_url.format("mac", revision.hash),
+            url = emscripten_url.format("mac", revision.hash, "tbz2"),
             sha256 = revision.sha_mac,
             build_file = "@emsdk//emscripten_toolchain:emscripten.BUILD",
             type = "tar.bz2",
@@ -48,10 +48,10 @@ def emscripten_deps(emscripten_version = "latest"):
         http_archive(
             name = "emscripten_bin_win",
             strip_prefix = "install",
-            url = emscripten_url.format("win", revision.hash),
+            url = emscripten_url.format("win", revision.hash, "zip"),
             sha256 = revision.sha_win,
             build_file = "@emsdk//emscripten_toolchain:emscripten.BUILD",
-            type = "tar.bz2",
+            type = "zip",
         )
 
     if "emscripten_npm_linux" not in excludes:
