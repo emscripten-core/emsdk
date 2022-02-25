@@ -67,6 +67,11 @@ def errlog(msg):
   print(msg, file=sys.stderr)
 
 
+def exit_with_error(msg):
+  errlog('error: %s' % msg)
+  sys.exit(1)
+
+
 MINGW = False
 MSYS = False
 if os.getenv('MSYSTEM'):
@@ -111,20 +116,18 @@ if WINDOWS:
 else:
   ENVPATH_SEPARATOR = ':'
 
-ARCH = 'unknown'
 # platform.machine() may return AMD64 on windows, so standardize the case.
-machine = platform.machine().lower()
+machine = os.getenv('EMSDK_ARCH', platform.machine().lower())
 if machine.startswith('x64') or machine.startswith('amd64') or machine.startswith('x86_64'):
   ARCH = 'x86_64'
 elif machine.endswith('86'):
   ARCH = 'x86'
 elif machine.startswith('aarch64') or machine.lower().startswith('arm64'):
   ARCH = 'aarch64'
-elif platform.machine().startswith('arm'):
+elif machine.startswith('arm'):
   ARCH = 'arm'
 else:
-  errlog("Warning: unknown machine architecture " + machine)
-  errlog()
+  exit_with_error('unknown machine architecture: ' + machine)
 
 # Don't saturate all cores to not steal the whole system, but be aggressive.
 CPU_CORES = int(os.environ.get('EMSDK_NUM_CORES', max(multiprocessing.cpu_count() - 1, 1)))
@@ -2131,8 +2134,7 @@ def find_sdk(name):
 
 
 def is_os_64bit():
-  # http://stackoverflow.com/questions/2208828/detect-64bit-os-windows-in-python
-  return platform.machine().endswith('64')
+  return ARCH.endswith('64')
 
 
 def find_latest_version():
@@ -2267,11 +2269,6 @@ def load_file_index_list(filename):
   # Sort versions from oldest to newest (the default sort would be
   # lexicographic, i.e. '1.37.1 < 1.37.10 < 1.37.2')
   return sorted(items, key=version_key)
-
-
-def exit_with_error(msg):
-  errlog('error: %s' % msg)
-  sys.exit(1)
 
 
 # Load the json info for emscripten-releases.
