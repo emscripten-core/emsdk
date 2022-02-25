@@ -55,7 +55,7 @@ def main(args):
 
   subprocess.check_call([os.path.join(script_dir, 'update_bazel_workspace.sh')], cwd=root_dir)
 
-  branch_name = 'version_%s' % '_'.join(str(part) for part in new_version)
+  branch_name = 'version_' + new_version
 
   # Create a new git branch
   subprocess.check_call(['git', 'checkout', '-b', branch_name], cwd=root_dir)
