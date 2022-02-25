@@ -58,10 +58,6 @@ extra_release_tag = None
 VERBOSE = int(os.getenv('EMSDK_VERBOSE', '0'))
 TTY_OUTPUT = not os.getenv('EMSDK_NOTTY', not sys.stdout.isatty())
 
-WINDOWS = False
-if os.name == 'nt' or (os.getenv('SYSTEMROOT') is not None and 'windows' in os.getenv('SYSTEMROOT').lower()) or (os.getenv('COMSPEC') is not None and 'windows' in os.getenv('COMSPEC').lower()):
-  WINDOWS = True
-
 
 def errlog(msg):
   print(msg, file=sys.stderr)
@@ -72,26 +68,42 @@ def exit_with_error(msg):
   sys.exit(1)
 
 
+WINDOWS = False
 MINGW = False
 MSYS = False
-if os.getenv('MSYSTEM'):
-  MSYS = True
-  # Some functions like os.path.normpath() exhibit different behavior between
-  # different versions of Python, so we need to distinguish between the MinGW
-  # and MSYS versions of Python
-  if sysconfig.get_platform() == 'mingw':
-    MINGW = True
-  if os.getenv('MSYSTEM') != 'MSYS' and os.getenv('MSYSTEM') != 'MINGW64':
-    # https://stackoverflow.com/questions/37460073/msys-vs-mingw-internal-environment-variables
-    errlog('Warning: MSYSTEM environment variable is present, and is set to "' + os.getenv('MSYSTEM') + '". This shell has not been tested with emsdk and may not work.')
-
 MACOS = False
-if platform.mac_ver()[0] != '':
-  MACOS = True
-
 LINUX = False
-if not MACOS and (platform.system() == 'Linux'):
-  LINUX = True
+
+if 'EMSDK_OS' in os.environ:
+  EMSDK_OS = os.environ['EMSDK_OS']
+  if EMSDK_OS == 'windows':
+    WINDOWS = True
+  elif EMSDK_OS == 'linux':
+    LINUX = True
+  elif EMSDK_OS == 'macos':
+    MACOS = True
+  else:
+    assert False
+else:
+  if os.name == 'nt' or (os.getenv('SYSTEMROOT') is not None and 'windows' in os.getenv('SYSTEMROOT').lower()) or (os.getenv('COMSPEC') is not None and 'windows' in os.getenv('COMSPEC').lower()):
+    WINDOWS = True
+
+  if os.getenv('MSYSTEM'):
+    MSYS = True
+    # Some functions like os.path.normpath() exhibit different behavior between
+    # different versions of Python, so we need to distinguish between the MinGW
+    # and MSYS versions of Python
+    if sysconfig.get_platform() == 'mingw':
+      MINGW = True
+    if os.getenv('MSYSTEM') != 'MSYS' and os.getenv('MSYSTEM') != 'MINGW64':
+      # https://stackoverflow.com/questions/37460073/msys-vs-mingw-internal-environment-variables
+      errlog('Warning: MSYSTEM environment variable is present, and is set to "' + os.getenv('MSYSTEM') + '". This shell has not been tested with emsdk and may not work.')
+
+  if platform.mac_ver()[0] != '':
+    MACOS = True
+
+  if not MACOS and (platform.system() == 'Linux'):
+    LINUX = True
 
 UNIX = (MACOS or LINUX)
 
