@@ -1411,6 +1411,47 @@ def emscripten_npm_install(tool, directory):
     errlog('Error running %s:\n%s' % (e.cmd, e.output))
     return False
 
+  # Manually install the appropriate native Closure Compiler package
+  # This is currently needed because npm ci will install the packages
+  # for Closure for all platforms, adding 180MB to the download size
+  # There are two problems here:
+  #   1. npm ci does not consider the platform of optional dependencies
+  #      https://github.com/npm/cli/issues/558
+  #   2. A bug with the native compiler has bloated the packages from
+  #      30MB to almost 300MB
+  #      https://github.com/google/closure-compiler-npm/issues/186
+  # If either of these bugs are fixed then we can remove this exception
+  closure_compiler_native = ''
+  if LINUX and ARCH in ('x86', 'x86_64'):
+    closure_compiler_native = 'google-closure-compiler-linux'
+  if MACOS and ARCH in ('x86', 'x86_64'):
+    closure_compiler_native = 'google-closure-compiler-osx'
+  if WINDOWS and ARCH == 'x86_64':
+    closure_compiler_native = 'google-closure-compiler-windows'
+
+  if closure_compiler_native:
+    closure_compiler_native += '@20220104.0.0'
+    print('Running post-install step: npm install', closure_compiler_native)
+    try:
+      subprocess.check_output(
+        [npm, 'install', '--production', '--no-optional', closure_compiler_native],
+        cwd=directory, stderr=subprocess.STDOUT, env=env,
+        universal_newlines=True)
+
+      # Now that we succeeded to install the native version, delete the Java version
+      # since that takes up ~12.5MB of installation space that is no longer needed
+      # as we have a native version of the compiler instead.
+      # This process is currently a little bit hacky, see https://github.com/google/closure-compiler/issues/3926
+      remove_tree(os.path.join(directory, 'node_modules', 'google-closure-compiler-java'))
+
+      # Remove import of Java Closure Compiler module.
+      compiler_filename = os.path.join(directory, 'node_modules', 'google-closure-compiler', 'lib', 'node', 'closure-compiler.js')
+      compiler_js = open(compiler_filename, 'r').read().replace("require('google-closure-compiler-java')", "''/*require('google-closure-compiler-java') XXX Removed by Emsdk*/")
+      open(compiler_filename, 'w').write(compiler_js)
+    except subprocess.CalledProcessError as e:
+      errlog('Error running %s:\n%s' % (e.cmd, e.output))
+      return False
+
   print('Done running: npm ci')
   return True
 
