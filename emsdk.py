@@ -1439,16 +1439,22 @@ def emscripten_npm_install(tool, directory):
         cwd=directory, stderr=subprocess.STDOUT, env=env,
         universal_newlines=True)
 
-      # Now that we succeeded to install the native version, delete the Java version
-      # since that takes up ~12.5MB of installation space that is no longer needed
-      # as we have a native version of the compiler instead.
-      # This process is currently a little bit hacky, see https://github.com/google/closure-compiler/issues/3926
-      remove_tree(os.path.join(directory, 'node_modules', 'google-closure-compiler-java'))
-
       # Remove import of Java Closure Compiler module.
       compiler_filename = os.path.join(directory, 'node_modules', 'google-closure-compiler', 'lib', 'node', 'closure-compiler.js')
-      compiler_js = open(compiler_filename, 'r').read().replace("require('google-closure-compiler-java')", "''/*require('google-closure-compiler-java') XXX Removed by Emsdk*/")
-      open(compiler_filename, 'w').write(compiler_js)
+      if os.path.isfile(compiler_filename):
+        old_js = open(compiler_filename, 'r').read()
+        new_js = old_js.replace("require('google-closure-compiler-java')", "''/*require('google-closure-compiler-java') XXX Removed by Emsdk*/")
+        if old_js == new_js:
+          raise Exception('Failed to patch google-closure-compiler-java dependency away!')
+        open(compiler_filename, 'w').write(new_js)
+
+        # Now that we succeeded to install the native version and patch away the Java dependency, delete the Java version
+        # since that takes up ~12.5MB of installation space that is no longer needed.
+        # This process is currently a little bit hacky, see https://github.com/google/closure-compiler/issues/3926
+        remove_tree(os.path.join(directory, 'node_modules', 'google-closure-compiler-java'))
+        print('Removed google-closure-compiler-java dependency.')
+      else:
+        errlog('Failed to patch away google-closure-compiler Java dependency. ' + compiler_filename + ' does not exist.')
     except subprocess.CalledProcessError as e:
       errlog('Error running %s:\n%s' % (e.cmd, e.output))
       return False
