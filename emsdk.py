@@ -1421,6 +1421,7 @@ def emscripten_npm_install(tool, directory):
   #      30MB to almost 300MB
   #      https://github.com/google/closure-compiler-npm/issues/186
   # If either of these bugs are fixed then we can remove this exception
+  # See also https://github.com/google/closure-compiler/issues/3925
   closure_compiler_native = ''
   if LINUX and ARCH in ('x86', 'x86_64'):
     closure_compiler_native = 'google-closure-compiler-linux'
