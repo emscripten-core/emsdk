@@ -80,6 +80,7 @@ def _wasm_binary_impl(ctx):
     )
 
     return DefaultInfo(
+        executable = ctx.outputs.wasm,
         files = depset(outputs),
         # This is needed since rules like web_test usually have a data
         # dependency on this target.
