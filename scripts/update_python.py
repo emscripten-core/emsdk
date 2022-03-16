@@ -33,8 +33,8 @@ from subprocess import check_call
 
 version = '3.9.2'
 major_minor_version = '.'.join(version.split('.')[:2])  # e.g. '3.9.2' -> '3.9'
-base = 'https://www.python.org/ftp/python/%s/' % version
-revision = '3'
+download_url = 'https://www.nuget.org/api/v2/package/python/%s' % version
+revision = '4'
 
 pywin32_version = '227'
 pywin32_base = 'https://github.com/mhammond/pywin32/releases/download/b%s/' % pywin32_version
@@ -44,7 +44,7 @@ upload_base = 'gs://webassembly/emscripten-releases-builds/deps/'
 
 def unzip_cmd():
     # Use 7-Zip if available (https://www.7-zip.org/)
-    sevenzip = os.path.join(os.getenv('ProgramFiles'), '7-Zip', '7z.exe')
+    sevenzip = os.path.join(os.getenv('ProgramFiles', ''), '7-Zip', '7z.exe')
     if os.path.isfile(sevenzip):
         return [sevenzip, 'x']
     # Fall back to 'unzip' tool
@@ -53,52 +53,49 @@ def unzip_cmd():
 
 def zip_cmd():
     # Use 7-Zip if available (https://www.7-zip.org/)
-    sevenzip = os.path.join(os.getenv('ProgramFiles'), '7-Zip', '7z.exe')
+    sevenzip = os.path.join(os.getenv('ProgramFiles', ''), '7-Zip', '7z.exe')
     if os.path.isfile(sevenzip):
         return [sevenzip, 'a', '-mx9']
     # Fall back to 'zip' tool
     return ['zip', '-rq']
 
 
-def make_python_patch(arch):
-    if arch == 'amd64':
-      pywin32_filename = 'pywin32-%s.win-%s-py%s.exe' % (pywin32_version, arch, major_minor_version)
-    else:
-      pywin32_filename = 'pywin32-%s.%s-py%s.exe' % (pywin32_version, arch, major_minor_version)
-    filename = 'python-%s-embed-%s.zip' % (version, arch)
-    out_filename = 'python-%s-%s-embed-%s+pywin32.zip' % (version, revision, arch)
+def make_python_patch():
+    pywin32_filename = 'pywin32-%s.win-amd64-py%s.exe' % (pywin32_version, major_minor_version)
+    filename = 'python-%s-amd64.zip' % (version)
+    out_filename = 'python-%s-%s-amd64+pywin32.zip' % (version, revision)
     if not os.path.exists(pywin32_filename):
-        download_url = pywin32_base + pywin32_filename
-        print('Downloading pywin32: ' + download_url)
-        urllib.request.urlretrieve(download_url, pywin32_filename)
+        url = pywin32_base + pywin32_filename
+        print('Downloading pywin32: ' + url)
+        urllib.request.urlretrieve(url, pywin32_filename)
 
     if not os.path.exists(filename):
-        download_url = base + filename
         print('Downloading python: ' + download_url)
         urllib.request.urlretrieve(download_url, filename)
 
-    os.mkdir('python-embed')
-    check_call(unzip_cmd() + [os.path.abspath(filename)], cwd='python-embed')
-    os.remove(os.path.join('python-embed', 'python%s._pth' % major_minor_version.replace('.', '')))
+    os.mkdir('python-nuget')
+    check_call(unzip_cmd() + [os.path.abspath(filename)], cwd='python-nuget')
 
     os.mkdir('pywin32')
     rtn = subprocess.call(unzip_cmd() + [os.path.abspath(pywin32_filename)], cwd='pywin32')
     assert rtn in [0, 1]
 
-    os.mkdir(os.path.join('python-embed', 'lib'))
-    shutil.move(os.path.join('pywin32', 'PLATLIB'), os.path.join('python-embed', 'lib', 'site-packages'))
+    os.mkdir(os.path.join('python-nuget', 'lib'))
+    shutil.move(os.path.join('pywin32', 'PLATLIB'), os.path.join('python-nuget', 'toolss', 'Lib', 'site-packages'))
 
-    check_call(zip_cmd() + [os.path.join('..', out_filename), '.'], cwd='python-embed')
+    check_call(zip_cmd() + [os.path.join('..', '..', out_filename), '.'], cwd='python-nuget/tools')
 
     # cleanup if everything went fine
-    shutil.rmtree('python-embed')
+    shutil.rmtree('python-nuget')
     shutil.rmtree('pywin32')
 
-    upload_url = upload_base + out_filename
-    print('Uploading: ' + upload_url)
-    cmd = ['gsutil', 'cp', '-n', out_filename, upload_url]
-    print(' '.join(cmd))
-    check_call(cmd)
+    print('Created: %s' % out_filename)
+    if '--upload' in sys.argv:
+      upload_url = upload_base + out_filename
+      print('Uploading: ' + upload_url)
+      cmd = ['gsutil', 'cp', '-n', out_filename, upload_url]
+      print(' '.join(cmd))
+      check_call(cmd)
 
 
 def build_python():
@@ -169,14 +166,16 @@ def build_python():
     for lib in glob.glob(os.path.join(dirname, 'lib', 'lib*.a')):
         os.remove(lib)
     check_call(['tar', 'zcvf', tarball, dirname])
-    print('Uploading: ' + upload_base + tarball)
-    check_call(['gsutil', 'cp', '-n', tarball, upload_base + tarball])
+
+    print('Created: %s' % tarball)
+    if '--upload' in sys.argv:
+      print('Uploading: ' + upload_base + tarball)
+      check_call(['gsutil', 'cp', '-n', tarball, upload_base + tarball])
 
 
 def main():
-    if sys.platform.startswith('win'):
-        for arch in ('amd64', 'win32'):
-            make_python_patch(arch)
+    if sys.platform.startswith('win') or '--win32' in sys.argv:
+        make_python_patch()
     else:
         build_python()
     return 0
