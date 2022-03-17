@@ -17,6 +17,14 @@ config_setting(
 )
 
 config_setting(
+    name = "macos_arm64",
+    constraint_values = [
+        "@platforms//os:macos",
+        "@platforms//cpu:arm64",
+    ],
+)
+
+config_setting(
     name = "windows",
     constraint_values = [
         "@platforms//os:windows",
@@ -24,12 +32,16 @@ config_setting(
     ],
 )
 
+filegroup(name = "empty")
+
 alias(
     name = "binaries",
     actual = select({
         ":linux": "@emscripten_bin_linux//:all",
         ":macos": "@emscripten_bin_mac//:all",
+        ":macos_arm64": "@emscripten_bin_mac_arm64//:all",
         ":windows": "@emscripten_bin_win//:all",
+        "//conditions:default": ":empty",
     }),
 )
 
@@ -38,6 +50,8 @@ alias(
     actual = select({
         ":linux": "@emscripten_npm_linux//:node_modules",
         ":macos": "@emscripten_npm_mac//:node_modules",
+        ":macos_arm64": "@emscripten_npm_mac//:node_modules",
         ":windows": "@emscripten_npm_win//:node_modules",
+        "//conditions:default": ":empty",
     }),
 )

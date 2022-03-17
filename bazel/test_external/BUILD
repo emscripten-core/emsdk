@@ -13,10 +13,14 @@ wasm_cc_binary(
 BASE_LINKOPTS = [
     "--bind",  # Enable embind
     "-sMODULARIZE",
+    "--pre-js",
+    "hello-embind-interface.js",
 ]
 
 RELEASE_OPTS = [
     "--closure=1",  # Run the closure compiler
+    # Tell closure about the externs file, so as not to minify our JS public API.
+    "--closure-args=--externs=$(location hello-embind-externs.js)"
 ]
 
 DEBUG_OPTS = [
@@ -36,6 +40,11 @@ config_setting(
 cc_binary(
     name = "hello-embind",
     srcs = ["hello-embind.cc"],
+    features = ["emcc_debug_link"],
+    additional_linker_inputs = [
+        "hello-embind-externs.js",
+        "hello-embind-interface.js",
+    ],
     linkopts = select({
         ":debug_opts": BASE_LINKOPTS + DEBUG_OPTS,
         ":release_opts": BASE_LINKOPTS + RELEASE_OPTS,
@@ -50,3 +59,4 @@ wasm_cc_binary(
     name = "hello-embind-wasm",
     cc_target = ":hello-embind",
 )
+
