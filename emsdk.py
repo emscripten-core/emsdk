@@ -83,9 +83,9 @@ if 'EMSDK_OS' in os.environ:
   elif EMSDK_OS == 'macos':
     MACOS = True
   else:
-    assert False
+    assert False, 'EMSDK_OS must be one of: windows, linux, macos'
 else:
-  if os.name == 'nt' or (os.getenv('SYSTEMROOT') is not None and 'windows' in os.getenv('SYSTEMROOT').lower()) or (os.getenv('COMSPEC') is not None and 'windows' in os.getenv('COMSPEC').lower()):
+  if os.name == 'nt' or ('windows' in os.getenv('SYSTEMROOT', '').lower()) or ('windows' in os.getenv('COMSPEC', '').lower()):
     WINDOWS = True
 
   if os.getenv('MSYSTEM'):
@@ -256,7 +256,9 @@ def which(program):
 
 def vswhere(version):
   try:
-    program_files = os.environ['ProgramFiles(x86)'] if 'ProgramFiles(x86)' in os.environ else os.environ['ProgramFiles']
+    program_files = os.environ.get('ProgramFiles(x86)')
+    if not program_files:
+      program_files = os.environ['ProgramFiles']
     vswhere_path = os.path.join(program_files, 'Microsoft Visual Studio', 'Installer', 'vswhere.exe')
     output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-version', '[%s.0,%s.0)' % (version, version + 1), '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', '-property', 'installationPath', '-format', 'json']))
     # Visual Studio 2017 Express is not included in the above search, and it
@@ -291,7 +293,6 @@ if WINDOWS:
   elif '--vs2019' in sys.argv:
     CMAKE_GENERATOR = 'Visual Studio 16'
   else:
-    program_files = os.environ['ProgramFiles(x86)'] if 'ProgramFiles(x86)' in os.environ else os.environ['ProgramFiles']
     vs2019_exists = len(vswhere(16)) > 0
     vs2017_exists = len(vswhere(15)) > 0
     mingw_exists = which('mingw32-make') is not None and which('g++') is not None
@@ -566,7 +567,8 @@ def untargz(source_filename, dest_dir):
 def fix_potentially_long_windows_pathname(pathname):
   if not WINDOWS:
     return pathname
-  # Test if emsdk calls fix_potentially_long_windows_pathname() with long relative paths (which is problematic)
+  # Test if emsdk calls fix_potentially_long_windows_pathname() with long
+  # relative paths (which is problematic)
   if not os.path.isabs(pathname) and len(pathname) > 200:
     errlog('Warning: Seeing a relative path "' + pathname + '" which is dangerously long for being referenced as a short Windows path name. Refactor emsdk to be able to handle this!')
   if pathname.startswith('\\\\?\\'):
@@ -1671,14 +1673,8 @@ JS_ENGINES = [NODE_JS]
 
 
 def find_msbuild_dir():
-  if 'ProgramFiles' in os.environ and os.environ['ProgramFiles']:
-    program_files = os.environ['ProgramFiles']
-  else:
-    program_files = 'C:/Program Files'
-  if 'ProgramFiles(x86)' in os.environ and os.environ['ProgramFiles(x86)']:
-    program_files_x86 = os.environ['ProgramFiles(x86)']
-  else:
-    program_files_x86 = 'C:/Program Files (x86)'
+  program_files = os.environ.get('ProgramFiles', 'C:/Program Files')
+  program_files_x86 = os.environ.get('ProgramFiles(x86)', 'C:/Program Files (x86)')
   MSBUILDX86_DIR = os.path.join(program_files_x86, "MSBuild/Microsoft.Cpp/v4.0/Platforms")
   MSBUILD_DIR = os.path.join(program_files, "MSBuild/Microsoft.Cpp/v4.0/Platforms")
   if os.path.exists(MSBUILDX86_DIR):
