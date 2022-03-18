@@ -1743,9 +1743,6 @@ class Tool(object):
   # Specifies the target path where this tool will be installed to. This could
   # either be a directory or a filename (e.g. in case of node.js)
   def installation_path(self):
-    if WINDOWS and hasattr(self, 'windows_install_path'):
-      pth = self.expand_vars(self.windows_install_path)
-      return sdk_path(pth)
     if hasattr(self, 'install_path'):
       pth = self.expand_vars(self.install_path)
       return sdk_path(pth)
@@ -1804,7 +1801,7 @@ class Tool(object):
     if LINUX and hasattr(self, 'linux_url') and self.compatible_with_this_arch():
       return True
 
-    if WINDOWS and (hasattr(self, 'windows_url') or hasattr(self, 'windows_install_path')) and self.compatible_with_this_arch():
+    if WINDOWS and hasattr(self, 'windows_url') and self.compatible_with_this_arch():
       return True
 
     if UNIX and hasattr(self, 'unix_url'):
