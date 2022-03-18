@@ -168,17 +168,6 @@ def os_name():
   elif LINUX:
     return 'linux'
   elif MACOS:
-    return 'macos'
-  else:
-    raise Exception('unknown OS')
-
-
-def os_name_for_emscripten_releases():
-  if WINDOWS:
-    return 'win'
-  elif LINUX:
-    return 'linux'
-  elif MACOS:
     return 'mac'
   else:
     raise Exception('unknown OS')
@@ -491,20 +480,6 @@ def sdk_path(path):
   return to_unix_path(os.path.join(emsdk_path(), path))
 
 
-# Modifies the given file in-place to contain '\r\n' line endings.
-def file_to_crlf(filename):
-  text = open(filename, 'r').read()
-  text = text.replace('\r\n', '\n').replace('\n', '\r\n')
-  open(filename, 'wb').write(text)
-
-
-# Modifies the given file in-place to contain '\n' line endings.
-def file_to_lf(filename):
-  text = open(filename, 'r').read()
-  text = text.replace('\r\n', '\n')
-  open(filename, 'wb').write(text)
-
-
 # Removes a single file, suppressing exceptions on failure.
 def rmfile(filename):
   debug_print('rmfile(' + filename + ')')
@@ -512,13 +487,6 @@ def rmfile(filename):
     os.remove(filename)
   except:
     pass
-
-
-def fix_lineendings(filename):
-  if WINDOWS:
-    file_to_crlf(filename)
-  else:
-    file_to_lf(filename)
 
 
 # http://stackoverflow.com/questions/600268/mkdir-p-functionality-in-python
@@ -2200,7 +2168,7 @@ def get_emscripten_releases_tot():
   # that does.
   for release in recent_releases:
     url = emscripten_releases_download_url_template % (
-      os_name_for_emscripten_releases(),
+      os_name(),
       release,
       'tbz2' if not WINDOWS else 'zip'
     )
