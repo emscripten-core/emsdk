@@ -142,7 +142,7 @@ else:
   exit_with_error('unknown machine architecture: ' + machine)
 
 # Don't saturate all cores to not steal the whole system, but be aggressive.
-CPU_CORES = int(os.environ.get('EMSDK_NUM_CORES', max(multiprocessing.cpu_count() - 1, 1)))
+CPU_CORES = int(os.getenv('EMSDK_NUM_CORES', max(multiprocessing.cpu_count() - 1, 1)))
 
 CMAKE_BUILD_TYPE_OVERRIDE = None
 
@@ -256,7 +256,7 @@ def which(program):
 
 def vswhere(version):
   try:
-    program_files = os.environ.get('ProgramFiles(x86)')
+    program_files = os.getenv('ProgramFiles(x86)')
     if not program_files:
       program_files = os.environ['ProgramFiles']
     vswhere_path = os.path.join(program_files, 'Microsoft Visual Studio', 'Installer', 'vswhere.exe')
@@ -1191,14 +1191,14 @@ def build_fastcomp(tool):
       targets_to_build += ';'
     targets_to_build += 'JSBackend'
   args += ['-DLLVM_TARGETS_TO_BUILD=' + targets_to_build, '-DLLVM_INCLUDE_EXAMPLES=OFF', '-DCLANG_INCLUDE_EXAMPLES=OFF', '-DLLVM_INCLUDE_TESTS=' + tests_arg, '-DCLANG_INCLUDE_TESTS=' + tests_arg, '-DLLVM_ENABLE_ASSERTIONS=' + ('ON' if enable_assertions else 'OFF')]
-  if os.environ.get('LLVM_CMAKE_ARGS'):
+  if os.getenv('LLVM_CMAKE_ARGS'):
     extra_args = os.environ['LLVM_CMAKE_ARGS'].split(',')
     print('Passing the following extra arguments to LLVM CMake configuration: ' + str(extra_args))
     args += extra_args
 
   # MacOS < 10.13 workaround for LLVM build bug https://github.com/kripken/emscripten/issues/5418:
   # specify HAVE_FUTIMENS=0 in the build if building with target SDK that is older than 10.13.
-  if MACOS and (not os.environ.get('LLVM_CMAKE_ARGS') or 'HAVE_FUTIMENS' not in os.environ.get('LLVM_CMAKE_ARGS')) and xcode_sdk_version() < ['10', '13']:
+  if MACOS and ('HAVE_FUTIMENS' not in os.getenv('LLVM_CMAKE_ARGS', '')) and xcode_sdk_version() < ['10', '13']:
     print('Passing -DHAVE_FUTIMENS=0 to LLVM CMake configure to workaround https://github.com/kripken/emscripten/issues/5418. Please update to macOS 10.13 or newer')
     args += ['-DHAVE_FUTIMENS=0']
 
@@ -1266,7 +1266,7 @@ def build_llvm(tool):
     cmake_generator += ' Win64'
     args += ['-Thost=x64']
 
-  if os.environ.get('LLVM_CMAKE_ARGS'):
+  if os.getenv('LLVM_CMAKE_ARGS'):
     extra_args = os.environ['LLVM_CMAKE_ARGS'].split(',')
     print('Passing the following extra arguments to LLVM CMake configuration: ' + str(extra_args))
     args += extra_args
@@ -1617,7 +1617,7 @@ def load_dot_emscripten():
 
 def generate_dot_emscripten(active_tools):
   cfg = 'import os\n'
-  cfg += "emsdk_path = os.path.dirname(os.environ.get('EM_CONFIG')).replace('\\\\', '/')\n"
+  cfg += "emsdk_path = os.path.dirname(os.getenv('EM_CONFIG')).replace('\\\\', '/')\n"
 
   # Different tools may provide the same activated configs; the latest to be
   # activated is the relevant one.
@@ -1663,7 +1663,7 @@ JS_ENGINES = [NODE_JS]
     print('- This can be done for the current shell by running:')
     print('    source "%s"' % emsdk_env)
     print('- Configure emsdk in your shell startup scripts by running:')
-    shell = os.environ.get('SHELL', '')
+    shell = os.getenv('SHELL', '')
     if 'zsh' in shell:
       print('    echo \'source "%s"\' >> $HOME/.zprofile' % emsdk_env)
     elif 'csh' in shell:
@@ -1673,8 +1673,8 @@ JS_ENGINES = [NODE_JS]
 
 
 def find_msbuild_dir():
-  program_files = os.environ.get('ProgramFiles', 'C:/Program Files')
-  program_files_x86 = os.environ.get('ProgramFiles(x86)', 'C:/Program Files (x86)')
+  program_files = os.getenv('ProgramFiles', 'C:/Program Files')
+  program_files_x86 = os.getenv('ProgramFiles(x86)', 'C:/Program Files (x86)')
   MSBUILDX86_DIR = os.path.join(program_files_x86, "MSBuild/Microsoft.Cpp/v4.0/Platforms")
   MSBUILD_DIR = os.path.join(program_files, "MSBuild/Microsoft.Cpp/v4.0/Platforms")
   if os.path.exists(MSBUILDX86_DIR):
