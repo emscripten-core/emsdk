@@ -80,36 +80,25 @@ MSYS = False
 MACOS = False
 LINUX = False
 
-if 'EMSDK_OS' in os.environ:
-  EMSDK_OS = os.environ['EMSDK_OS']
-  if EMSDK_OS == 'windows':
-    WINDOWS = True
-  elif EMSDK_OS == 'linux':
-    LINUX = True
-  elif EMSDK_OS == 'macos':
-    MACOS = True
-  else:
-    assert False, 'EMSDK_OS must be one of: windows, linux, macos'
-else:
-  if os.name == 'nt' or ('windows' in os.getenv('SYSTEMROOT', '').lower()) or ('windows' in os.getenv('COMSPEC', '').lower()):
-    WINDOWS = True
+if os.name == 'nt' or ('windows' in os.getenv('SYSTEMROOT', '').lower()) or ('windows' in os.getenv('COMSPEC', '').lower()):
+  WINDOWS = True
 
-  if os.getenv('MSYSTEM'):
-    MSYS = True
-    # Some functions like os.path.normpath() exhibit different behavior between
-    # different versions of Python, so we need to distinguish between the MinGW
-    # and MSYS versions of Python
-    if sysconfig.get_platform() == 'mingw':
-      MINGW = True
-    if os.getenv('MSYSTEM') != 'MSYS' and os.getenv('MSYSTEM') != 'MINGW64':
-      # https://stackoverflow.com/questions/37460073/msys-vs-mingw-internal-environment-variables
-      errlog('Warning: MSYSTEM environment variable is present, and is set to "' + os.getenv('MSYSTEM') + '". This shell has not been tested with emsdk and may not work.')
+if os.getenv('MSYSTEM'):
+  MSYS = True
+  # Some functions like os.path.normpath() exhibit different behavior between
+  # different versions of Python, so we need to distinguish between the MinGW
+  # and MSYS versions of Python
+  if sysconfig.get_platform() == 'mingw':
+    MINGW = True
+  if os.getenv('MSYSTEM') != 'MSYS' and os.getenv('MSYSTEM') != 'MINGW64':
+    # https://stackoverflow.com/questions/37460073/msys-vs-mingw-internal-environment-variables
+    errlog('Warning: MSYSTEM environment variable is present, and is set to "' + os.getenv('MSYSTEM') + '". This shell has not been tested with emsdk and may not work.')
 
-  if platform.mac_ver()[0] != '':
-    MACOS = True
+if platform.mac_ver()[0] != '':
+  MACOS = True
 
-  if not MACOS and (platform.system() == 'Linux'):
-    LINUX = True
+if not MACOS and (platform.system() == 'Linux'):
+  LINUX = True
 
 UNIX = (MACOS or LINUX)
 
@@ -170,9 +159,12 @@ ENABLE_LLVM_ASSERTIONS = 'auto'
 # If true, keeps the downloaded archive files.
 KEEP_DOWNLOADS = bool(os.getenv('EMSDK_KEEP_DOWNLOADS'))
 
-
 def os_name():
-  if WINDOWS:
+  rtn = os.environ.get('EMSDK_OS')
+  if rtn:
+    assert rtn in ('win', 'linux', 'mac'), 'EMSDK_OS must be one of: win, linux, mac'
+    return rtn
+  elif WINDOWS:
     return 'win'
   elif LINUX:
     return 'linux'
@@ -606,15 +598,15 @@ def unzip(source_filename, dest_dir):
           stripped_filename = '.' + member.filename[len(common_subdir):]
           final_dst_filename = os.path.join(dest_dir, stripped_filename)
           # Check if a directory
+          final_dst_filename = fix_potentially_long_windows_pathname(final_dst_filename)
           if stripped_filename.endswith('/'):
-            d = fix_potentially_long_windows_pathname(final_dst_filename)
-            if not os.path.isdir(d):
-              os.mkdir(d)
+            if not os.path.isdir(final_dst_filename):
+              os.mkdir(final_dst_filename)
           else:
-            parent_dir = os.path.dirname(fix_potentially_long_windows_pathname(final_dst_filename))
+            parent_dir = os.path.dirname(final_dst_filename)
             if parent_dir and not os.path.exists(parent_dir):
               os.makedirs(parent_dir)
-            move_with_overwrite(fix_potentially_long_windows_pathname(dst_filename), fix_potentially_long_windows_pathname(final_dst_filename))
+            move_with_overwrite(fix_potentially_long_windows_pathname(dst_filename), final_dst_filename)
 
       if common_subdir:
         remove_tree(unzip_to_dir)
@@ -1134,7 +1126,10 @@ def build_fastcomp(tool):
     success = download_and_unzip(tool.download_url(), fastcomp_src_root, filename_prefix='llvm-e')
     if not success:
       return False
-    success = download_and_unzip(tool.windows_clang_url if WINDOWS else tool.unix_clang_url, os.path.join(fastcomp_src_root, 'tools/clang'), filename_prefix='clang-e')
+    clang_url = tool.unix_clang_url
+    if get_install_os() == 'windows':
+      clang_url = tool.windows_clang_url
+    success = download_and_unzip(clang_url, os.path.join(fastcomp_src_root, 'tools/clang'), filename_prefix='clang-e')
     if not success:
       return False
 
@@ -1968,11 +1963,12 @@ class Tool(object):
     return True
 
   def download_url(self):
-    if WINDOWS and hasattr(self, 'windows_url'):
+    os = os_name()
+    if os == 'win' and hasattr(self, 'windows_url'):
       return self.windows_url
-    elif MACOS and hasattr(self, 'macos_url'):
+    elif os == 'mac' and hasattr(self, 'macos_url'):
       return self.macos_url
-    elif LINUX and hasattr(self, 'linux_url'):
+    elif os == 'linux' and hasattr(self, 'linux_url'):
       return self.linux_url
     elif UNIX and hasattr(self, 'unix_url'):
       return self.unix_url
