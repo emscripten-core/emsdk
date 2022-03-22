@@ -108,6 +108,7 @@
     "bitness": 64,
     "arch": "aarch64",
     "macos_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/mac/%releases-tag%/wasm-binaries-arm64.tbz2",
+    "linux_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/linux/%releases-tag%/wasm-binaries-arm64.tbz2",
     "zipfile_prefix": "%releases-tag%-",
     "install_path": "upstream",
     "activated_path": "%installation_dir%/emscripten",

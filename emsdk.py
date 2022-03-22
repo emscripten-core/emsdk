@@ -42,7 +42,7 @@ emsdk_packages_url = 'https://storage.googleapis.com/webassembly/emscripten-rele
 
 emscripten_releases_repo = 'https://chromium.googlesource.com/emscripten-releases'
 
-emscripten_releases_download_url_template = "https://storage.googleapis.com/webassembly/emscripten-releases-builds/%s/%s/wasm-binaries.%s"
+emscripten_releases_download_url_template = "https://storage.googleapis.com/webassembly/emscripten-releases-builds/%s/%s/wasm-binaries%s.%s"
 
 # This was previously `master.zip` but we are transitioning to `main` and
 # `HEAD.zip` works for both cases.  In future we could switch this to
@@ -2166,10 +2166,14 @@ def get_emscripten_releases_tot():
   # The recent releases are the latest hashes in the git repo. There
   # may not be a build for the most recent ones yet; find the last
   # that does.
+  arch = ''
+  if ARCH == 'aarch64':
+    arch = '-arm64'
   for release in recent_releases:
     url = emscripten_releases_download_url_template % (
       os_name(),
       release,
+      arch,
       'tbz2' if not WINDOWS else 'zip'
     )
     try:
