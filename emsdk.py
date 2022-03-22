@@ -483,30 +483,24 @@ def sdk_path(path):
 # Removes a single file, suppressing exceptions on failure.
 def rmfile(filename):
   debug_print('rmfile(' + filename + ')')
-  try:
+  if os.path.lexists(filename):
     os.remove(filename)
-  except:
-    pass
 
 
 # http://stackoverflow.com/questions/600268/mkdir-p-functionality-in-python
 def mkdir_p(path):
   debug_print('mkdir_p(' + path + ')')
-  if os.path.exists(path):
-    return
   try:
     os.makedirs(path)
   except OSError as exc:  # Python >2.5
-    if exc.errno == errno.EEXIST and os.path.isdir(path):
-      pass
-    else:
+    if exc.errno != errno.EEXIST or not os.path.isdir(path):
       raise
 
 
-def num_files_in_directory(path):
+def is_nonempty_directory(path):
   if not os.path.isdir(path):
-    return 0
-  return len([name for name in os.listdir(path) if os.path.exists(os.path.join(path, name))])
+    return False
+  return len(os.listdir(path)) != 0
 
 
 def run(cmd, cwd=None, quiet=False):
@@ -1813,7 +1807,7 @@ class Tool(object):
       # This tool does not contain downloadable elements, so it is installed by default.
       return True
 
-    content_exists = os.path.exists(self.installation_path()) and (os.path.isfile(self.installation_path()) or num_files_in_directory(self.installation_path()) > 0)
+    content_exists = is_nonempty_directory(self.installation_path())
 
     # For e.g. fastcomp clang from git repo, the activated PATH is the
     # directory where the compiler is built to, and installation_path is
