@@ -1968,11 +1968,7 @@ class Tool(object):
     elif url.endswith(ARCHIVE_SUFFIXES):
       success = download_and_unzip(url, self.installation_path(), filename_prefix=getattr(self, 'zipfile_prefix', ''))
     else:
-      dst_file = download_file(urljoin(emsdk_packages_url, self.download_url()), self.installation_path())
-      if dst_file:
-        success = True
-      else:
-        success = False
+      assert False, 'unhandled url type: ' + url
 
     if not success:
       exit_with_error("installation failed!")
@@ -2017,7 +2013,7 @@ class Tool(object):
 
   def cleanup_temp_install_files(self):
     if KEEP_DOWNLOADS:
-        return
+      return
     url = self.download_url()
     if url.endswith(ARCHIVE_SUFFIXES):
       download_target = get_download_target(url, zips_subdir, getattr(self, 'zipfile_prefix', ''))
