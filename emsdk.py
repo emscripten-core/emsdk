@@ -1968,7 +1968,7 @@ class Tool(object):
     elif url.endswith(ARCHIVE_SUFFIXES):
       success = download_and_unzip(url, self.installation_path(), filename_prefix=getattr(self, 'zipfile_prefix', ''))
     else:
-      assert False
+      assert False, 'unhandled url type: ' + url
 
     if not success:
       exit_with_error("installation failed!")
