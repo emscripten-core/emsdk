@@ -52,14 +52,14 @@ def checked_call_with_output(cmd, expected=None, unexpected=None, stderr=None, e
 
   if expected:
     for x in listify(expected):
-      assert x in stdout, 'call had the right output: ' + stdout + '\n[[[' + x + ']]]'
+      assert x in stdout, 'expected output missing: ' + stdout + '\n[[[' + x + ']]]'
   if unexpected:
     for x in listify(unexpected):
-      assert x not in stdout, 'call had the wrong output: ' + stdout + '\n[[[' + x + ']]]'
+      assert x not in stdout, 'unexpected output present: ' + stdout + '\n[[[' + x + ']]]'
 
 
-def failing_call_with_output(cmd, expected):
-  proc = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+def failing_call_with_output(cmd, expected, env=None):
+  proc = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, env=env)
   stdout, stderr = proc.communicate()
   if WINDOWS:
     print('warning: skipping part of failing_call_with_output() due to error codes not being propagated (see #592)')
@@ -136,6 +136,20 @@ int main() {
   def setUp(self):
     run_emsdk('install latest')
     run_emsdk('activate latest')
+
+  def test_unknown_arch(self):
+    env = os.environ.copy()
+    env['EMSDK_ARCH'] = 'mips'
+    failing_call_with_output(emsdk + ' install latest',
+                             expected='unknown machine architecture: mips',
+                             env=env)
+
+  def test_wrong_bitness(self):
+    env = os.environ.copy()
+    env['EMSDK_ARCH'] = 'x86'
+    failing_call_with_output(emsdk + ' install sdk-latest-64bit',
+                             expected='is only provided for 64-bit OSe',
+                             env=env)
 
   def test_already_installed(self):
     # Test we don't re-download unnecessarily
@@ -251,11 +265,15 @@ int main() {
       if not filename.startswith('.') and not os.path.isdir(filename):
         shutil.copy2(filename, os.path.join(temp_dir, filename))
 
-    os.chdir(temp_dir)
-    run_emsdk('update')
+    olddir = os.getcwd()
+    try:
+      os.chdir(temp_dir)
+      run_emsdk('update')
 
-    print('second time')
-    run_emsdk('update')
+      print('second time')
+      run_emsdk('update')
+    finally:
+      os.chdir(olddir)
 
   def test_install_arbitrary(self):
     # Test that its possible to install arbrary emscripten-releases SDKs
@@ -278,6 +296,7 @@ int main() {
     # With EMSDK_KEEP_DOWNLOADS the downloading should happen on the first
     # install of 2.0.28, and again when we install 2.0.29, but not on the
     # second install of 2.0.28 because the zip should already be local.
+    shutil.rmtree('zips')
     checked_call_with_output(emsdk + ' install 2.0.28', expected='Downloading:', env=env)
     checked_call_with_output(emsdk + ' install 2.0.29', expected='Downloading:', env=env)
     checked_call_with_output(emsdk + ' install 2.0.28', expected='already downloaded, skipping', unexpected='Downloading:', env=env)

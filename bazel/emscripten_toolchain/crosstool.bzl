@@ -298,10 +298,6 @@ def _impl(ctx):
         # Blaze also tests if this feature is supported, before setting the "pic" build-variable.
         feature(name = "pic"),
 
-        # Blaze requests this feature if fission is requested
-        # Blaze also tests if it's supported to see if we support fission.
-        feature(name = "per_object_debug_info"),
-
         # Blaze requests this feature by default.
         # Blaze also tests if this feature is supported before setting preprocessor_defines
         # (...but why?)
@@ -915,7 +911,7 @@ def _impl(ctx):
                 "-iwithsysroot" + "/include/compat",
                 "-iwithsysroot" + "/include",
                 "-isystem",
-                emscripten_dir + "/lib/clang/14.0.0/include",
+                emscripten_dir + "/lib/clang/15.0.0/include",
             ],
         ),
         # Inputs and outputs
@@ -1077,7 +1073,7 @@ def _impl(ctx):
         emscripten_dir + "/emscripten/cache/sysroot/include/c++/v1",
         emscripten_dir + "/emscripten/cache/sysroot/include/compat",
         emscripten_dir + "/emscripten/cache/sysroot/include",
-        emscripten_dir + "/lib/clang/14.0.0/include",
+        emscripten_dir + "/lib/clang/15.0.0/include",
     ]
 
     artifact_name_patterns = []

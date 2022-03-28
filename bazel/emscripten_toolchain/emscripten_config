@@ -8,5 +8,7 @@ LLVM_ROOT = BINARYEN_ROOT + "/bin"
 FROZEN_CACHE = True
 
 system = platform.system()
+
+machine = "arm64" if platform.machine() == "arm64" else "amd64"
 nodejs_binary = "bin/nodejs/node.exe" if(system =="Windows") else "bin/node"
-NODE_JS = ROOT_DIR + "/external/nodejs_{}_amd64/{}".format(system.lower(), nodejs_binary)
+NODE_JS = ROOT_DIR + "/external/nodejs_{}_{}/{}".format(system.lower(), machine, nodejs_binary)

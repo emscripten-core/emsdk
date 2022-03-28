@@ -58,35 +58,52 @@ extra_release_tag = None
 VERBOSE = int(os.getenv('EMSDK_VERBOSE', '0'))
 TTY_OUTPUT = not os.getenv('EMSDK_NOTTY', not sys.stdout.isatty())
 
-WINDOWS = False
-if os.name == 'nt' or (os.getenv('SYSTEMROOT') is not None and 'windows' in os.getenv('SYSTEMROOT').lower()) or (os.getenv('COMSPEC') is not None and 'windows' in os.getenv('COMSPEC').lower()):
-  WINDOWS = True
-
 
 def errlog(msg):
   print(msg, file=sys.stderr)
 
 
+def exit_with_error(msg):
+  errlog('error: %s' % msg)
+  sys.exit(1)
+
+
+WINDOWS = False
 MINGW = False
 MSYS = False
-if os.getenv('MSYSTEM'):
-  MSYS = True
-  # Some functions like os.path.normpath() exhibit different behavior between
-  # different versions of Python, so we need to distinguish between the MinGW
-  # and MSYS versions of Python
-  if sysconfig.get_platform() == 'mingw':
-    MINGW = True
-  if os.getenv('MSYSTEM') != 'MSYS' and os.getenv('MSYSTEM') != 'MINGW64':
-    # https://stackoverflow.com/questions/37460073/msys-vs-mingw-internal-environment-variables
-    errlog('Warning: MSYSTEM environment variable is present, and is set to "' + os.getenv('MSYSTEM') + '". This shell has not been tested with emsdk and may not work.')
-
 MACOS = False
-if platform.mac_ver()[0] != '':
-  MACOS = True
-
 LINUX = False
-if not MACOS and (platform.system() == 'Linux'):
-  LINUX = True
+
+if 'EMSDK_OS' in os.environ:
+  EMSDK_OS = os.environ['EMSDK_OS']
+  if EMSDK_OS == 'windows':
+    WINDOWS = True
+  elif EMSDK_OS == 'linux':
+    LINUX = True
+  elif EMSDK_OS == 'macos':
+    MACOS = True
+  else:
+    assert False
+else:
+  if os.name == 'nt' or (os.getenv('SYSTEMROOT') is not None and 'windows' in os.getenv('SYSTEMROOT').lower()) or (os.getenv('COMSPEC') is not None and 'windows' in os.getenv('COMSPEC').lower()):
+    WINDOWS = True
+
+  if os.getenv('MSYSTEM'):
+    MSYS = True
+    # Some functions like os.path.normpath() exhibit different behavior between
+    # different versions of Python, so we need to distinguish between the MinGW
+    # and MSYS versions of Python
+    if sysconfig.get_platform() == 'mingw':
+      MINGW = True
+    if os.getenv('MSYSTEM') != 'MSYS' and os.getenv('MSYSTEM') != 'MINGW64':
+      # https://stackoverflow.com/questions/37460073/msys-vs-mingw-internal-environment-variables
+      errlog('Warning: MSYSTEM environment variable is present, and is set to "' + os.getenv('MSYSTEM') + '". This shell has not been tested with emsdk and may not work.')
+
+  if platform.mac_ver()[0] != '':
+    MACOS = True
+
+  if not MACOS and (platform.system() == 'Linux'):
+    LINUX = True
 
 UNIX = (MACOS or LINUX)
 
@@ -111,20 +128,18 @@ if WINDOWS:
 else:
   ENVPATH_SEPARATOR = ':'
 
-ARCH = 'unknown'
 # platform.machine() may return AMD64 on windows, so standardize the case.
-machine = platform.machine().lower()
+machine = os.getenv('EMSDK_ARCH', platform.machine().lower())
 if machine.startswith('x64') or machine.startswith('amd64') or machine.startswith('x86_64'):
   ARCH = 'x86_64'
 elif machine.endswith('86'):
   ARCH = 'x86'
 elif machine.startswith('aarch64') or machine.lower().startswith('arm64'):
   ARCH = 'aarch64'
-elif platform.machine().startswith('arm'):
+elif machine.startswith('arm'):
   ARCH = 'arm'
 else:
-  errlog("Warning: unknown machine architecture " + machine)
-  errlog()
+  exit_with_error('unknown machine architecture: ' + machine)
 
 # Don't saturate all cores to not steal the whole system, but be aggressive.
 CPU_CORES = int(os.environ.get('EMSDK_NUM_CORES', max(multiprocessing.cpu_count() - 1, 1)))
@@ -812,7 +827,7 @@ def git_clone(url, dstpath):
   if GIT_CLONE_SHALLOW:
     git_clone_args += ['--depth', '1']
   print('Cloning from ' + url + '...')
-  return run([GIT(), 'clone'] + git_clone_args + [url, dstpath]) == 0
+  return run([GIT(), 'clone', '--recurse-submodules'] + git_clone_args + [url, dstpath]) == 0
 
 
 def git_checkout_and_pull(repo_path, branch_or_tag):
@@ -827,7 +842,7 @@ def git_checkout_and_pull(repo_path, branch_or_tag):
       return False
     # this line assumes that the user has not gone and manually messed with the
     # repo and added new remotes to ambiguate the checkout.
-    ret = run([GIT(), 'checkout', '--quiet', branch_or_tag], repo_path)
+    ret = run([GIT(), 'checkout', '--recurse-submodules', '--quiet', branch_or_tag], repo_path)
     if ret != 0:
       return False
     # Test if branch_or_tag is a branch, or if it is a tag that needs to be updated
@@ -838,6 +853,7 @@ def git_checkout_and_pull(repo_path, branch_or_tag):
       ret = run([GIT(), 'merge', '--ff-only', 'origin/' + branch_or_tag], repo_path)
     if ret != 0:
       return False
+    run([GIT(), 'submodule', 'update', '--init'], repo_path, quiet=True)
   except:
     errlog('git operation failed!')
     return False
@@ -1520,18 +1536,11 @@ def build_binaryen_tool(tool):
   return success
 
 
-def download_and_unzip(zipfile, dest_dir, download_even_if_exists=False,
-                       filename_prefix='', clobber=True):
+def download_and_unzip(zipfile, dest_dir, filename_prefix='', clobber=True):
   debug_print('download_and_unzip(zipfile=' + zipfile + ', dest_dir=' + dest_dir + ')')
 
   url = urljoin(emsdk_packages_url, zipfile)
   download_target = get_download_target(url, zips_subdir, filename_prefix)
-
-  # If the archive was already downloaded, and the directory it would be
-  # unpacked to has contents, assume it's the same contents and skip.
-  if not download_even_if_exists and num_files_in_directory(dest_dir) > 0:
-    print("The contents of file '" + zipfile + "' already exist in destination '" + dest_dir + "', skipping.")
-    return True
 
   received_download_target = download_file(url, zips_subdir, not KEEP_DOWNLOADS, filename_prefix)
   if not received_download_target:
@@ -2002,13 +2011,7 @@ class Tool(object):
     elif hasattr(self, 'git_branch'):
       success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch)
     elif url.endswith(ARCHIVE_SUFFIXES):
-      # The 'releases' sdk is doesn't include a verion number in the directory
-      # name and instead only one version can be install at the time and each
-      # one will clobber the other.  This means we always need to extract this
-      # archive even when the target directory exists.
-      download_even_if_exists = (self.id == 'releases')
-      filename_prefix = getattr(self, 'zipfile_prefix', '')
-      success = download_and_unzip(url, self.installation_path(), download_even_if_exists=download_even_if_exists, filename_prefix=filename_prefix)
+      success = download_and_unzip(url, self.installation_path(), filename_prefix=getattr(self, 'zipfile_prefix', ''))
     else:
       dst_file = download_file(urljoin(emsdk_packages_url, self.download_url()), self.installation_path())
       if dst_file:
@@ -2143,8 +2146,7 @@ def find_sdk(name):
 
 
 def is_os_64bit():
-  # http://stackoverflow.com/questions/2208828/detect-64bit-os-windows-in-python
-  return platform.machine().endswith('64')
+  return ARCH.endswith('64')
 
 
 def find_latest_version():
@@ -2242,7 +2244,7 @@ def update_emsdk():
   if is_emsdk_sourced_from_github():
     errlog('You seem to have bootstrapped Emscripten SDK by cloning from GitHub. In this case, use "git pull" instead of "emsdk update" to update emsdk. (Not doing that automatically in case you have local changes)')
     sys.exit(1)
-  if not download_and_unzip(emsdk_zip_download_url, emsdk_path(), download_even_if_exists=True, clobber=False):
+  if not download_and_unzip(emsdk_zip_download_url, emsdk_path(), clobber=False):
     sys.exit(1)
 
 
@@ -2279,11 +2281,6 @@ def load_file_index_list(filename):
   # Sort versions from oldest to newest (the default sort would be
   # lexicographic, i.e. '1.37.1 < 1.37.10 < 1.37.2')
   return sorted(items, key=version_key)
-
-
-def exit_with_error(msg):
-  errlog('error: %s' % msg)
-  sys.exit(1)
 
 
 # Load the json info for emscripten-releases.
