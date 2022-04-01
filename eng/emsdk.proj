@@ -35,8 +35,15 @@
     <ItemGroup>
       <NpmEnvironmentVariables Include="PATH=$(NpmPath)" />
     </ItemGroup>
+
+    <Exec WorkingDirectory="$(UpstreamEmscriptenDirectory)"
+          Command="$(NpmFileName) i --package-lock-only"
+          EnvironmentVariables="@(NpmEnvironmentVariables)" />
     <Exec WorkingDirectory="$(UpstreamEmscriptenDirectory)"
           Command="$(NpmFileName) prune --production"
+          EnvironmentVariables="@(NpmEnvironmentVariables)" />
+    <Exec WorkingDirectory="$(UpstreamEmscriptenDirectory)"
+          Command="$(NpmFileName) audit fix --force"
           EnvironmentVariables="@(NpmEnvironmentVariables)" />
 
     <!-- These symlinks are broken after npm prune -->
