@@ -781,13 +781,13 @@ def git_recent_commits(repo_path, n=20):
     return []
 
 
-def git_clone(url, dstpath):
-  debug_print('git_clone(url=' + url + ', dstpath=' + dstpath + ')')
+def git_clone_no_checkout(url, dstpath):
+  debug_print('git_clone_no_checkout(url=' + url + ', dstpath=' + dstpath + ')')
   if os.path.isdir(os.path.join(dstpath, '.git')):
     debug_print("Repository '" + url + "' already cloned to directory '" + dstpath + "', skipping.")
     return True
   mkdir_p(dstpath)
-  git_clone_args = []
+  git_clone_args = ['--no-checkout'] # Do not check out a branch (installer will issue a checkout command right after)
   if GIT_CLONE_SHALLOW:
     git_clone_args += ['--depth', '1']
   print('Cloning from ' + url + '...')
@@ -828,7 +828,7 @@ def git_checkout_and_pull(repo_path, branch_or_tag):
 
 def git_clone_checkout_and_pull(url, dstpath, branch):
   debug_print('git_clone_checkout_and_pull(url=' + url + ', dstpath=' + dstpath + ', branch=' + branch + ')')
-  success = git_clone(url, dstpath)
+  success = git_clone_no_checkout(url, dstpath)
   if not success:
     return False
   success = git_checkout_and_pull(dstpath, branch)
