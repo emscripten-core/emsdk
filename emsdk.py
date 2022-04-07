@@ -743,6 +743,7 @@ cached_git_executable = None
 #               If true, the search is required to succeed, and the execution
 #               will terminate with sys.exit(1) if not found.
 def GIT(must_succeed=True):
+  global cached_git_executable
   if cached_git_executable is not None:
     return cached_git_executable
   # The order in the following is important, and specifies the preferred order
