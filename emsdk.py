@@ -734,7 +734,9 @@ def run_get_output(cmd, cwd=None):
   stdout, stderr = process.communicate()
   return (process.returncode, stdout, stderr)
 
+
 cached_git_executable = None
+
 
 # must_succeed: If false, the search is performed silently without printing out
 #               errors if not found. Empty string is returned if git is not found.
