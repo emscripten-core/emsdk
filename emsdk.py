@@ -735,11 +735,17 @@ def run_get_output(cmd, cwd=None):
   return (process.returncode, stdout, stderr)
 
 
+cached_git_executable = None
+
+
 # must_succeed: If false, the search is performed silently without printing out
 #               errors if not found. Empty string is returned if git is not found.
 #               If true, the search is required to succeed, and the execution
 #               will terminate with sys.exit(1) if not found.
 def GIT(must_succeed=True):
+  global cached_git_executable
+  if cached_git_executable is not None:
+    return cached_git_executable
   # The order in the following is important, and specifies the preferred order
   # of using the git tools.  Primarily use git from emsdk if installed. If not,
   # use system git.
@@ -748,6 +754,7 @@ def GIT(must_succeed=True):
     try:
       ret, stdout, stderr = run_get_output([git, '--version'])
       if ret == 0:
+        cached_git_executable = git
         return git
     except:
       pass
