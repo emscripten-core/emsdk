@@ -1402,6 +1402,8 @@ def emscripten_npm_install(tool, directory):
   env = os.environ.copy()
   env["PATH"] = node_path + os.pathsep + env["PATH"]
   print('Running post-install step: npm ci ...')
+  # Do a --no-optional install to avoid bloating disk size:
+  # https://github.com/emscripten-core/emscripten/issues/12406
   try:
     subprocess.check_output(
         [npm, 'ci', '--production', '--no-optional'],
@@ -1412,7 +1414,7 @@ def emscripten_npm_install(tool, directory):
     return False
 
   # Manually install the appropriate native Closure Compiler package
-  # This is currently needed because npm ci will install the packages
+  # This is currently needed because npm ci would install the packages
   # for Closure for all platforms, adding 180MB to the download size
   # There are two problems here:
   #   1. npm ci does not consider the platform of optional dependencies
@@ -1431,7 +1433,10 @@ def emscripten_npm_install(tool, directory):
     closure_compiler_native = 'google-closure-compiler-windows'
 
   if closure_compiler_native:
-    closure_compiler_native += '@20220104.0.0'
+    # Check which version of native Closure Compiler we want to install via npm.
+    # (npm install command has this requirement that we must explicitly tell the pinned version)
+    closure_version = json.load(open(os.path.join(directory, 'package.json')))['dependencies']['google-closure-compiler']
+    closure_compiler_native += '@' + closure_version
     print('Running post-install step: npm install', closure_compiler_native)
     try:
       subprocess.check_output(
@@ -1439,7 +1444,8 @@ def emscripten_npm_install(tool, directory):
         cwd=directory, stderr=subprocess.STDOUT, env=env,
         universal_newlines=True)
 
-      # Remove import of Java Closure Compiler module.
+      # Installation of native Closure compiler was successful, so remove import of Java Closure Compiler module to avoid
+      # a Java dependency.
       compiler_filename = os.path.join(directory, 'node_modules', 'google-closure-compiler', 'lib', 'node', 'closure-compiler.js')
       if os.path.isfile(compiler_filename):
         old_js = open(compiler_filename, 'r').read()
