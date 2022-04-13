@@ -1043,6 +1043,9 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
     # Target macOS 10.14 at minimum, to support widest range of Mac devices from "Early 2008" and newer:
     # https://en.wikipedia.org/wiki/MacBook_(2006-2012)#Supported_operating_systems
     cmdline += ['-DCMAKE_OSX_DEPLOYMENT_TARGET=10.14']
+    # To enable widest possible chance of success for building, let the code compile through with older toolchains
+    # that are about to be deprecated by upstream LLVM.
+    cmdline += ['-DLLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN=ON']
     cmdline += extra_cmake_args + [src_root]
 
     print('Running CMake: ' + str(cmdline))
