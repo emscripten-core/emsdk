@@ -1440,6 +1440,7 @@ def emscripten_npm_install(tool, directory):
     except KeyError as e:
       # The target version of Emscripten does not (did not) have a package.json that would contain google-closure-compiler. (fastcomp)
       # Skip manual native google-closure-compiler installation there.
+      print(str(e))
       print('Emscripten version does not have a npm package.json with google-closure-compiler dependency, skipping native google-closure-compiler install step')
       return True
 
