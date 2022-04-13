@@ -1538,7 +1538,7 @@ def build_binaryen_tool(tool):
   build_type = decide_cmake_build_type(tool)
 
   # Configure
-  args = ['-DENABLE_WERROR=0'] # -Werror is not useful for end users
+  args = ['-DENABLE_WERROR=0']  # -Werror is not useful for end users
 
   cmake_generator = CMAKE_GENERATOR
   if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
