@@ -1435,7 +1435,14 @@ def emscripten_npm_install(tool, directory):
   if closure_compiler_native:
     # Check which version of native Closure Compiler we want to install via npm.
     # (npm install command has this requirement that we must explicitly tell the pinned version)
-    closure_version = json.load(open(os.path.join(directory, 'package.json')))['dependencies']['google-closure-compiler']
+    try:
+      closure_version = json.load(open(os.path.join(directory, 'package.json')))['dependencies']['google-closure-compiler']
+    except KeyError as e:
+      # The target version of Emscripten does not (did not) have a package.json that would contain google-closure-compiler. (fastcomp)
+      # Skip manual native google-closure-compiler installation there.
+      print('Emscripten version does not have a npm package.json with google-closure-compiler dependency, skipping native google-closure-compiler install step')
+      return True
+
     closure_compiler_native += '@' + closure_version
     print('Running post-install step: npm install', closure_compiler_native)
     try:
