@@ -14,7 +14,7 @@ case $CLANG_NAME in
     clang)
         ;;
     clang++)
-        EXTRA_ARGS="--std=c++11"
+        EXTRA_ARGS="--driver-mode=g++"
         ;;
     *)
         echo "Unknown clang wrapper: $CLANG_NAME"
