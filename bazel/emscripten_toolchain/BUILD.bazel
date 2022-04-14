@@ -2,6 +2,11 @@ load(":crosstool.bzl", "emscripten_cc_toolchain_config_rule")
 
 package(default_visibility = ["//visibility:public"])
 
+# Name depends on rules_nodejs version being used.
+# https://github.com/emscripten-core/emsdk/issues/1020
+# https://github.com/bazelbuild/rules_nodejs/issues/3375
+node_files = "@nodejs_host//:node_files" if existing_rule("@nodejs_host//:node_files") else "@nodejs//:node_files"
+
 filegroup(
     name = "common-script-includes",
     srcs = [
@@ -14,7 +19,7 @@ filegroup(
         "env.bat",
         "@emsdk//:binaries",
         "@emsdk//:node_modules",
-        "@nodejs//:node_files",
+        node_files,
     ],
 )
 
@@ -31,7 +36,7 @@ filegroup(
         "link_wrapper.py",
         ":common-script-includes",
         "@emsdk//:binaries",
-        "@nodejs//:node_files",
+        node_files,
     ],
 )
 
@@ -41,7 +46,7 @@ filegroup(
         ":compile-emscripten",
         ":link-emscripten",
         "@emsdk//:binaries",
-        "@nodejs//:node_files",
+        node_files,
     ],
 )
 
