@@ -1,4 +1,4 @@
-load(":crosstool.bzl", "emscripten_cc_toolchain_config_rule")
+load(":toolchain.bzl", "emscripten_cc_toolchain_config_rule")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -84,6 +84,13 @@ cc_toolchain_suite(
         "wasm": ":cc-compiler-wasm",
         "wasm|emscripten": ":cc-compiler-wasm",
     },
+)
+
+toolchain(
+    name = "cc-toolchain-wasm",
+    target_compatible_with = ["@platforms//cpu:wasm32"],
+    toolchain = ":cc-compiler-wasm",
+    toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 )
 
 py_binary(

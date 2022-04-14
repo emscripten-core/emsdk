@@ -1105,7 +1105,7 @@ emscripten_cc_toolchain_config_rule = rule(
     attrs = {
         "cpu": attr.string(mandatory = True, values = ["asmjs", "wasm"]),
         "em_config": attr.label(mandatory = True, allow_single_file = True),
-        "emscripten_binaries": attr.label(mandatory = True),
+        "emscripten_binaries": attr.label(mandatory = True, cfg = "exec"),
         "script_extension": attr.string(mandatory = True, values = ["sh", "bat"]),
     },
     provides = [CcToolchainConfigInfo],
