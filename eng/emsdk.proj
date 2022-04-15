@@ -8,6 +8,8 @@
       <EmSdkFileName Condition="$([MSBuild]::IsOSPlatform(Windows))">emsdk.bat</EmSdkFileName>
       <NpmFileName Condition="!$([MSBuild]::IsOSPlatform(Windows))">npm</NpmFileName>
       <NpmFileName Condition="$([MSBuild]::IsOSPlatform(Windows))">npm.cmd</NpmFileName>
+      <PythonFileName Condition="!$([MSBuild]::IsOSPlatform(Windows))">python3</PythonFileName>
+      <PythonFileName Condition="$([MSBuild]::IsOSPlatform(Windows))">python.exe</PythonFileName>
       <StripCommand Condition="$([MSBuild]::IsOSPlatform(Linux))">strip -s</StripCommand>
       <StripCommand Condition="$([MSBuild]::IsOSPlatform(OSX))">strip</StripCommand>
       <UsesPythonFromEmsdk Condition="!$([MSBuild]::IsOSPlatform(Linux))">true</UsesPythonFromEmsdk>
@@ -36,15 +38,16 @@
       <NpmEnvironmentVariables Include="PATH=$(NpmPath)" />
     </ItemGroup>
 
-    <Exec WorkingDirectory="$(UpstreamEmscriptenDirectory)"
-          Command="$(NpmFileName) i --package-lock-only"
-          EnvironmentVariables="@(NpmEnvironmentVariables)" />
-    <Exec WorkingDirectory="$(UpstreamEmscriptenDirectory)"
-          Command="$(NpmFileName) prune --production"
-          EnvironmentVariables="@(NpmEnvironmentVariables)" />
-    <Exec WorkingDirectory="$(UpstreamEmscriptenDirectory)"
-          Command="$(NpmFileName) audit fix --force"
-          EnvironmentVariables="@(NpmEnvironmentVariables)" />
+    <Exec WorkingDirectory="$(RepoRoot)"
+      Command="$(PythonFileName) eng/sanitize.py $(RepoRoot)" />
+    <!-- clang-wrapper.sh hardcodes clang-15 at the moment so make sure it still exists -->
+    <Error Text="Update clang-wrapper.sh to point at the correct clang-* version"
+      Condition="!Exists('$(UpstreamDirectory)\bin\clang-15') and !$([MSBuild]::IsOSPlatform(Windows))" />
+    <Delete Files="$(UpstreamDirectory)\bin\clang"
+      Condition="!$([MSBuild]::IsOSPlatform(Windows))" />
+    <Copy SourceFiles="$(RepoRoot)\eng\clang-wrapper.sh"
+      DestinationFiles="$(UpstreamDirectory)\bin\clang"
+      Condition="!$([MSBuild]::IsOSPlatform(Windows))"/>
 
     <!-- These symlinks are broken after npm prune -->
     <Delete Files="$(UpstreamEmscriptenDirectory)\node_modules\.bin\es-check" />
@@ -108,6 +111,10 @@
     <Delete Files="$(ArtifactsObjDir)upstream\bin\wasm32-clang.exe" />
     <Delete Files="$(ArtifactsObjDir)upstream\bin\wasm32-wasi-clang.exe" />
     <Delete Files="$(ArtifactsObjDir)upstream\bin\wasm32-wasi-clang++.exe" />
+    <Delete Files="$(ArtifactsObjDir)upstream\bin\wasm32-clang++" />
+    <Delete Files="$(ArtifactsObjDir)upstream\bin\wasm32-clang" />
+    <Delete Files="$(ArtifactsObjDir)upstream\bin\wasm32-wasi-clang" />
+    <Delete Files="$(ArtifactsObjDir)upstream\bin\wasm32-wasi-clang++" />
     <Delete Files="$(ArtifactsObjDir)upstream\bin\ld64.lld.darwinnew.exe" />
     <Delete Files="$(ArtifactsObjDir)upstream\bin\ld64.lld.exe" />
     <Delete Files="$(ArtifactsObjDir)upstream\bin\clang-repl.exe" />
