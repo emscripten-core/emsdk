@@ -19,5 +19,5 @@ NODE_JS = ROOT_DIR + "/external/nodejs_{}_{}/{}".format(system.lower(), machine,
 # dependencies from the expected locations.
 # See https://github.com/emscripten-core/emscripten/pull/16640 for more
 if system != "Windows":
-    CLOSURE_COMPILER = os.path.join(EMSCRIPTEN_ROOT, "node_modules",
-                                    "google-closure-compiler", "cli.js")
+    CLOSURE_COMPILER = [NODE_JS, os.path.join(EMSCRIPTEN_ROOT, "node_modules",
+                                              "google-closure-compiler", "cli.js")]
