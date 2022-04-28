@@ -1,5 +1,8 @@
 *.pyc
 __pycache__
+emsdk.egg-info
+dist
+build
 
 # Support for --embedded configs
 /.emscripten

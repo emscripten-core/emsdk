@@ -2833,7 +2833,9 @@ def expand_sdk_name(name, activating):
   return name
 
 
-def main(args):
+def main():
+  args = sys.argv[1:]
+
   if not args:
     errlog("Missing command; Type 'emsdk help' to get a list of commands.")
     return 1
@@ -3268,4 +3270,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv[1:]))
+  sys.exit(main())
