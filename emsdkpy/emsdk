@@ -44,4 +44,4 @@ if [ -z "$EMSDK_PYTHON" ]; then
   EMSDK_PYTHON=python
 fi
 
-exec "$EMSDK_PYTHON" "emsdkpy/$0.py" "$@"
+exec "$EMSDK_PYTHON" "$0.py" "$@"
