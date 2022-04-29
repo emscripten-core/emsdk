@@ -29,7 +29,7 @@ mkdir -p "$ABS_LINK_DIR"
 (cd $DIR/.. && ln -s `pwd` "$ABS_LINK_DIR/emsdk")
 (cd $DIR/.. && ln -s `pwd`/emsdk_env.sh "$ABS_LINK_DIR")
 
-PATH1="$DIR/emsdk_env.sh"
+PATH1="$DIR/../emsdk_env.sh"
 PATH2="$REL_LINK_DIR/emsdk/emsdk_env.sh"
 PATH3="$REL_LINK_DIR/emsdk_env.sh"
 PATH4="$ABS_LINK_DIR/emsdk/emsdk_env.sh"
