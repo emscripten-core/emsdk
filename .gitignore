@@ -13,26 +13,26 @@ build
 /.emscripten_sanity_wasm
 
 # Tags files that get generated at runtime
-/emscripten-releases-tot.txt
+emsdkpy/emscripten-releases-tot.txt
 
 # File that get download/extracted by emsdk itself
-/ccache
-/gnu
-/upstream
-/fastcomp
-/fastcomp-clang/
-/llvm
-/ninja
-/releases
-/clang
-/emscripten
-/git
-/node
-/python
-/temp
-/zips
-/crunch
-/java
-/mingw
-/spidermonkey
-/binaryen
+emsdkpy/ccache
+emsdkpy/gnu
+emsdkpy/upstream
+emsdkpy/fastcomp
+emsdkpy/fastcomp-clang/
+emsdkpy/llvm
+emsdkpy/ninja
+emsdkpy/releases
+emsdkpy/clang
+emsdkpy/emscripten
+emsdkpy/git
+emsdkpy/node
+emsdkpy/python
+emsdkpy/temp
+emsdkpy/zips
+emsdkpy/crunch
+emsdkpy/java
+emsdkpy/mingw
+emsdkpy/spidermonkey
+emsdkpy/binaryen

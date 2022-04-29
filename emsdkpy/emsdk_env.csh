@@ -5,11 +5,11 @@
 # because it won't have any effect then.
 # That is, always run this script with
 #
-#     source ./emsdk_env.csh
+#     source emsdkpy/emsdk_env.csh
 #
 # instead of just plainly running with
 #
-#     ./emsdk_env.csh
+#     emsdkpy/emsdk_env.csh
 #
 # which won't have any effect.
 set SRC=($_)

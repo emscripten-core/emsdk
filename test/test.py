@@ -15,13 +15,13 @@ assert 'EM_CONFIG' in os.environ, "emsdk should be activated before running this
 emconfig = os.environ['EM_CONFIG']
 upstream_emcc = os.path.join('upstream', 'emscripten', 'emcc')
 fastcomp_emcc = os.path.join('fastcomp', 'emscripten', 'emcc')
-emsdk = './emsdk'
+emsdk = 'emsdkpy/emsdk'
 if WINDOWS:
   upstream_emcc += '.bat'
   fastcomp_emcc += '.bat'
-  emsdk = 'emsdk.bat'
+  emsdk = 'emsdkpy/emsdk.bat'
 else:
-  emsdk = './emsdk'
+  emsdk = 'emsdkpy/emsdk'
 
 # Utilities
 

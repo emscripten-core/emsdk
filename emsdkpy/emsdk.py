@@ -3158,7 +3158,7 @@ def main():
 
     print('Items marked with * are activated for the current user.')
     if has_partially_active_tools[0]:
-      env_cmd = 'emsdk_env.bat' if WINDOWS else 'source ./emsdk_env.sh'
+      env_cmd = 'emsdk_env.bat' if WINDOWS else 'source emsdkpy/emsdk_env.sh'
       print('Items marked with (*) are selected for use, but your current shell environment is not configured to use them. Type "' + env_cmd + '" to set up your current shell to use them' + (', or call "emsdk activate --permanent <name_of_sdk>" to permanently activate them.' if WINDOWS else '.'))
     if not arg_old:
       print('')
@@ -3168,7 +3168,7 @@ def main():
     if is_emsdk_sourced_from_github():
       print('Run "git pull" to pull in the latest list.')
     else:
-      print('Run "./emsdk update" to pull in the latest list.')
+      print('Run "emsdkpy/emsdk update" to pull in the latest list.')
 
     return 0
   elif cmd == 'construct_env':
