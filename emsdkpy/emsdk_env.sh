@@ -10,15 +10,15 @@
 # because it won't have any effect then.
 # That is, always run this script with
 #
-#     . /path/to/emsdk_env.sh
+#     . /path/to/emsdkpy/emsdk_env.sh
 #
 # or
 #
-#     source /path/to/emsdk_env.sh
+#     source /path/to/emsdkpy/emsdk_env.sh
 #
 # instead of just plainly running with
 #
-#     ./emsdk_env.sh
+#     emsdkpy/emsdk_env.sh
 #
 # which won't have any effect.
 

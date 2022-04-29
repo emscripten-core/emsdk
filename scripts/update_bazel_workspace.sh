@@ -12,7 +12,7 @@ cd $(dirname $0)/..
 # If the previous command succeeded. We are in the emsdk root. Check to make
 # sure the files and directories we need are present.
 if [[ $? = 0 ]]; then
-  if [[ ! -f emscripten-releases-tags.json ]]; then
+  if [[ ! -f emsdkpy/emscripten-releases-tags.json ]]; then
     echo "Cannot find emscripten-releases-tags.json."
     ERR=1
   fi
@@ -38,7 +38,7 @@ URL2=/wasm-binaries
 
 # Get commit hash for $1 version
 get_hash () {
-  echo $(grep "$1" emscripten-releases-tags.json | grep -v latest | grep -v asserts | cut -f4 -d\")
+  echo $(grep "$1" emsdkpy/emscripten-releases-tags.json | grep -v latest | grep -v asserts | cut -f4 -d\")
 }
 
 # Get sha256 for $1 os $2 extname $3 hash $4 architecture
@@ -65,7 +65,7 @@ append_revision () {
 
 # Get the latest version number from emscripten-releases-tag.json.
 VER=$(grep -oP '(?<=latest\": \")([\d\.]+)(?=\")' \
-        emscripten-releases-tags.json \
+        emsdkpy/emscripten-releases-tags.json \
       | sed --expression "s/\./\\\./g")
 
 append_revision ${VER}

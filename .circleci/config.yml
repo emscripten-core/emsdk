@@ -45,7 +45,7 @@ jobs:
       - run:
           name: test.py
           command: |
-            source emsdk_env.sh
+            source emsdkpy/emsdk_env.sh
             test/test.py
   test-mac:
     macos:
@@ -64,7 +64,7 @@ jobs:
       - run:
           name: test.py
           command: |
-            source emsdk_env.sh
+            source emsdkpy/emsdk_env.sh
             test/test.py
   test-windows:
     executor:
@@ -90,7 +90,7 @@ jobs:
       - run:
           name: test.py
           command: |
-            source emsdk_env.sh
+            source emsdkpy/emsdk_env.sh
             python test/test.py
 
       - run:

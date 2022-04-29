@@ -20,8 +20,8 @@ That explains how to use the emsdk to get the latest binary builds (without
 compiling from source). Basically, that amounts to
 
 ```
-./emsdk install latest
-./emsdk activate latest
+emsdkpy/emsdk install latest
+emsdkpy/emsdk activate latest
 ```
 
 ## SDK Concepts
@@ -100,8 +100,8 @@ available tools, run `emsdk list`.
 * If a tool/SDK is currently active, a star * will be shown next to it.
 * If a tool/SDK is currently active, but the terminal your are calling emsdk
   from does not have `PATH` and environment set up to utilize that tool, a star
-  in parentheses (\*) will be shown next to it. Run `emsdk_env.bat` (Windows) or
-  `source ./emsdk_env.sh` (Linux and OS X) to set up the environment for the
+  in parentheses (\*) will be shown next to it. Run `emsdkpy/emsdk_env.bat` (Windows) or
+  `source emsdkpy/emsdk_env.sh` (Linux and OS X) to set up the environment for the
   calling terminal.
 
 ### How do I install a tool/SDK version?

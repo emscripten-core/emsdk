@@ -23,7 +23,7 @@ COPY . ${EMSDK}
 
 RUN echo "## Install Emscripten" \
     && cd ${EMSDK} \
-    && ./emsdk install ${EMSCRIPTEN_VERSION} \
+    && emsdkpy/emsdk install ${EMSCRIPTEN_VERSION} \
     && echo "## Done"
 
 # This generates configuration that contains all valid paths according to installed SDK
@@ -31,7 +31,7 @@ RUN echo "## Install Emscripten" \
 # currently create the sanity file.
 RUN cd ${EMSDK} \
     && echo "## Generate standard configuration" \
-    && ./emsdk activate ${EMSCRIPTEN_VERSION} \
+    && emsdkpy/emsdk activate ${EMSCRIPTEN_VERSION} \
     && chmod 777 ${EMSDK}/upstream/emscripten \
     && chmod -R 777 ${EMSDK}/upstream/emscripten/cache \
     && echo "int main() { return 0; }" > hello.c \
@@ -41,7 +41,7 @@ RUN cd ${EMSDK} \
 
 # Cleanup Emscripten installation and strip some symbols
 RUN echo "## Aggressive optimization: Remove debug symbols" \
-    && cd ${EMSDK} && . ./emsdk_env.sh \
+    && cd ${EMSDK} && . emsdkpy/emsdk_env.sh \
     # Remove debugging symbols from embedded node (extra 7MB)
     && strip -s `which node` \
     # Tests consume ~80MB disc space

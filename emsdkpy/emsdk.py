@@ -2554,7 +2554,7 @@ def set_active_tools(tools_to_activate, permanently_activate, system):
 
   # Construct a .bat or .ps1 script that will be invoked to set env. vars and PATH
   # We only do this on cmd or powershell since emsdk.bat/ps1 is able to modify the
-  # calling shell environment.  On other shell `source emsdk_env.sh` is
+  # calling shell environment.  On other shell `source emsdkpy/emsdk_env.sh` is
   # required.
   if CMD or POWERSHELL:
     # always set local environment variables since permanently activating will only set the registry settings and
@@ -2833,7 +2833,9 @@ def expand_sdk_name(name, activating):
   return name
 
 
-def main(args):
+def main():
+  args = sys.argv[1:]
+
   if not args:
     errlog("Missing command; Type 'emsdk help' to get a list of commands.")
     return 1
@@ -3156,7 +3158,7 @@ def main(args):
 
     print('Items marked with * are activated for the current user.')
     if has_partially_active_tools[0]:
-      env_cmd = 'emsdk_env.bat' if WINDOWS else 'source ./emsdk_env.sh'
+      env_cmd = 'emsdk_env.bat' if WINDOWS else 'source emsdkpy/emsdk_env.sh'
       print('Items marked with (*) are selected for use, but your current shell environment is not configured to use them. Type "' + env_cmd + '" to set up your current shell to use them' + (', or call "emsdk activate --permanent <name_of_sdk>" to permanently activate them.' if WINDOWS else '.'))
     if not arg_old:
       print('')
@@ -3166,7 +3168,7 @@ def main(args):
     if is_emsdk_sourced_from_github():
       print('Run "git pull" to pull in the latest list.')
     else:
-      print('Run "./emsdk update" to pull in the latest list.')
+      print('Run "emsdkpy/emsdk update" to pull in the latest list.')
 
     return 0
   elif cmd == 'construct_env':
@@ -3268,4 +3270,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv[1:]))
+  sys.exit(main())

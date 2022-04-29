@@ -7,10 +7,10 @@ set -e
 
 # Get the latest version number from emscripten-releases-tag.json.
 VER=$(grep -oP '(?<=latest\": \")([\d\.]+)(?=\")' \
-        emscripten-releases-tags.json \
+        emsdkpy/emscripten-releases-tags.json \
       | sed --expression "s/\./\\\./g")
 # Based on the latest version number, get the commit hash for that version.
-HASH=$(grep "\"${VER}\"" emscripten-releases-tags.json \
+HASH=$(grep "\"${VER}\"" emsdkpy/emscripten-releases-tags.json \
       | grep -v latest \
       | cut -f4 -d\")
 
