@@ -2554,7 +2554,7 @@ def set_active_tools(tools_to_activate, permanently_activate, system):
 
   # Construct a .bat or .ps1 script that will be invoked to set env. vars and PATH
   # We only do this on cmd or powershell since emsdk.bat/ps1 is able to modify the
-  # calling shell environment.  On other shell `source emsdk_env.sh` is
+  # calling shell environment.  On other shell `source emsdkpy/emsdk_env.sh` is
   # required.
   if CMD or POWERSHELL:
     # always set local environment variables since permanently activating will only set the registry settings and

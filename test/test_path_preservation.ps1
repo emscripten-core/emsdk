@@ -13,10 +13,10 @@ $PATH_Process_BEFORE = [System.Environment]::GetEnvironmentVariable("PATH", "Pro
 try {
 
 
-    & "$repo_root/emsdk.ps1" install latest
+    & "$repo_root/emsdkpy/emsdk.ps1" install latest
 
     $esc = '--%'
-    & "$repo_root/emsdk.ps1" activate latest $esc $env:PERMANENT_FLAG $env:SYSTEM_FLAG
+    & "$repo_root/emsdkpy/emsdk.ps1" activate latest $esc $env:PERMANENT_FLAG $env:SYSTEM_FLAG
 
     $PATH_USER = [System.Environment]::GetEnvironmentVariable("PATH", "User")
     $PATH_MACHINE = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
