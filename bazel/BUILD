@@ -35,23 +35,34 @@ config_setting(
 filegroup(name = "empty")
 
 alias(
-    name = "binaries",
+    name = "compiler_files",
     actual = select({
-        ":linux": "@emscripten_bin_linux//:all",
-        ":macos": "@emscripten_bin_mac//:all",
-        ":macos_arm64": "@emscripten_bin_mac_arm64//:all",
-        ":windows": "@emscripten_bin_win//:all",
+        ":linux": "@emscripten_bin_linux//:compiler_files",
+        ":macos": "@emscripten_bin_mac//:compiler_files",
+        ":macos_arm64": "@emscripten_bin_mac_arm64//:compiler_files",
+        ":windows": "@emscripten_bin_win//:compiler_files",
         "//conditions:default": ":empty",
     }),
 )
 
 alias(
-    name = "node_modules",
+    name = "linker_files",
     actual = select({
-        ":linux": "@emscripten_npm_linux//:node_modules",
-        ":macos": "@emscripten_npm_mac//:node_modules",
-        ":macos_arm64": "@emscripten_npm_mac//:node_modules",
-        ":windows": "@emscripten_npm_win//:node_modules",
+        ":linux": "@emscripten_bin_linux//:linker_files",
+        ":macos": "@emscripten_bin_mac//:linker_files",
+        ":macos_arm64": "@emscripten_bin_mac_arm64//:linker_files",
+        ":windows": "@emscripten_bin_win//:linker_files",
+        "//conditions:default": ":empty",
+    }),
+)
+
+alias(
+    name = "ar_files",
+    actual = select({
+        ":linux": "@emscripten_bin_linux//:ar_files",
+        ":macos": "@emscripten_bin_mac//:ar_files",
+        ":macos_arm64": "@emscripten_bin_mac_arm64//:ar_files",
+        ":windows": "@emscripten_bin_win//:ar_files",
         "//conditions:default": ":empty",
     }),
 )
