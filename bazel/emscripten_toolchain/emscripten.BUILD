@@ -24,6 +24,7 @@ filegroup(
     name = "linker_files",
     srcs = [
         "emscripten/emcc.py",
+        "bin/clang",
         "bin/llvm-nm",
         "bin/llvm-objcopy",
         "bin/wasm-emscripten-finalize",
