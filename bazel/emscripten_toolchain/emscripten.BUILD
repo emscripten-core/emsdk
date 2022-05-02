@@ -26,6 +26,7 @@ filegroup(
         "emscripten/emcc.py",
         "bin/clang",
         "bin/llc",
+        "bin/llvm-ar",
         "bin/llvm-nm",
         "bin/llvm-objcopy",
         "bin/wasm-emscripten-finalize",
