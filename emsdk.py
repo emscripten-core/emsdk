@@ -42,7 +42,7 @@ emsdk_packages_url = 'https://storage.googleapis.com/webassembly/emscripten-rele
 
 emscripten_releases_repo = 'https://chromium.googlesource.com/emscripten-releases'
 
-emscripten_releases_download_url_template = "https://storage.googleapis.com/webassembly/emscripten-releases-builds/%s/%s/wasm-binaries.%s"
+emscripten_releases_download_url_template = "https://storage.googleapis.com/webassembly/emscripten-releases-builds/%s/%s/wasm-binaries%s.%s"
 
 # This was previously `master.zip` but we are transitioning to `main` and
 # `HEAD.zip` works for both cases.  In future we could switch this to
@@ -83,9 +83,9 @@ if 'EMSDK_OS' in os.environ:
   elif EMSDK_OS == 'macos':
     MACOS = True
   else:
-    assert False
+    assert False, 'EMSDK_OS must be one of: windows, linux, macos'
 else:
-  if os.name == 'nt' or (os.getenv('SYSTEMROOT') is not None and 'windows' in os.getenv('SYSTEMROOT').lower()) or (os.getenv('COMSPEC') is not None and 'windows' in os.getenv('COMSPEC').lower()):
+  if os.name == 'nt' or ('windows' in os.getenv('SYSTEMROOT', '').lower()) or ('windows' in os.getenv('COMSPEC', '').lower()):
     WINDOWS = True
 
   if os.getenv('MSYSTEM'):
@@ -142,7 +142,7 @@ else:
   exit_with_error('unknown machine architecture: ' + machine)
 
 # Don't saturate all cores to not steal the whole system, but be aggressive.
-CPU_CORES = int(os.environ.get('EMSDK_NUM_CORES', max(multiprocessing.cpu_count() - 1, 1)))
+CPU_CORES = int(os.getenv('EMSDK_NUM_CORES', max(multiprocessing.cpu_count() - 1, 1)))
 
 CMAKE_BUILD_TYPE_OVERRIDE = None
 
@@ -163,17 +163,6 @@ KEEP_DOWNLOADS = bool(os.getenv('EMSDK_KEEP_DOWNLOADS'))
 
 
 def os_name():
-  if WINDOWS:
-    return 'win'
-  elif LINUX:
-    return 'linux'
-  elif MACOS:
-    return 'macos'
-  else:
-    raise Exception('unknown OS')
-
-
-def os_name_for_emscripten_releases():
   if WINDOWS:
     return 'win'
   elif LINUX:
@@ -256,7 +245,9 @@ def which(program):
 
 def vswhere(version):
   try:
-    program_files = os.environ['ProgramFiles(x86)'] if 'ProgramFiles(x86)' in os.environ else os.environ['ProgramFiles']
+    program_files = os.getenv('ProgramFiles(x86)')
+    if not program_files:
+      program_files = os.environ['ProgramFiles']
     vswhere_path = os.path.join(program_files, 'Microsoft Visual Studio', 'Installer', 'vswhere.exe')
     output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-version', '[%s.0,%s.0)' % (version, version + 1), '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', '-property', 'installationPath', '-format', 'json']))
     # Visual Studio 2017 Express is not included in the above search, and it
@@ -291,7 +282,6 @@ if WINDOWS:
   elif '--vs2019' in sys.argv:
     CMAKE_GENERATOR = 'Visual Studio 16'
   else:
-    program_files = os.environ['ProgramFiles(x86)'] if 'ProgramFiles(x86)' in os.environ else os.environ['ProgramFiles']
     vs2019_exists = len(vswhere(16)) > 0
     vs2017_exists = len(vswhere(15)) > 0
     mingw_exists = which('mingw32-make') is not None and which('g++') is not None
@@ -490,54 +480,27 @@ def sdk_path(path):
   return to_unix_path(os.path.join(emsdk_path(), path))
 
 
-# Modifies the given file in-place to contain '\r\n' line endings.
-def file_to_crlf(filename):
-  text = open(filename, 'r').read()
-  text = text.replace('\r\n', '\n').replace('\n', '\r\n')
-  open(filename, 'wb').write(text)
-
-
-# Modifies the given file in-place to contain '\n' line endings.
-def file_to_lf(filename):
-  text = open(filename, 'r').read()
-  text = text.replace('\r\n', '\n')
-  open(filename, 'wb').write(text)
-
-
 # Removes a single file, suppressing exceptions on failure.
 def rmfile(filename):
   debug_print('rmfile(' + filename + ')')
-  try:
+  if os.path.lexists(filename):
     os.remove(filename)
-  except:
-    pass
-
-
-def fix_lineendings(filename):
-  if WINDOWS:
-    file_to_crlf(filename)
-  else:
-    file_to_lf(filename)
 
 
 # http://stackoverflow.com/questions/600268/mkdir-p-functionality-in-python
 def mkdir_p(path):
   debug_print('mkdir_p(' + path + ')')
-  if os.path.exists(path):
-    return
   try:
     os.makedirs(path)
   except OSError as exc:  # Python >2.5
-    if exc.errno == errno.EEXIST and os.path.isdir(path):
-      pass
-    else:
+    if exc.errno != errno.EEXIST or not os.path.isdir(path):
       raise
 
 
-def num_files_in_directory(path):
+def is_nonempty_directory(path):
   if not os.path.isdir(path):
-    return 0
-  return len([name for name in os.listdir(path) if os.path.exists(os.path.join(path, name))])
+    return False
+  return len(os.listdir(path)) != 0
 
 
 def run(cmd, cwd=None, quiet=False):
@@ -566,7 +529,8 @@ def untargz(source_filename, dest_dir):
 def fix_potentially_long_windows_pathname(pathname):
   if not WINDOWS:
     return pathname
-  # Test if emsdk calls fix_potentially_long_windows_pathname() with long relative paths (which is problematic)
+  # Test if emsdk calls fix_potentially_long_windows_pathname() with long
+  # relative paths (which is problematic)
   if not os.path.isabs(pathname) and len(pathname) > 200:
     errlog('Warning: Seeing a relative path "' + pathname + '" which is dangerously long for being referenced as a short Windows path name. Refactor emsdk to be able to handle this!')
   if pathname.startswith('\\\\?\\'):
@@ -771,11 +735,17 @@ def run_get_output(cmd, cwd=None):
   return (process.returncode, stdout, stderr)
 
 
+cached_git_executable = None
+
+
 # must_succeed: If false, the search is performed silently without printing out
 #               errors if not found. Empty string is returned if git is not found.
 #               If true, the search is required to succeed, and the execution
 #               will terminate with sys.exit(1) if not found.
 def GIT(must_succeed=True):
+  global cached_git_executable
+  if cached_git_executable is not None:
+    return cached_git_executable
   # The order in the following is important, and specifies the preferred order
   # of using the git tools.  Primarily use git from emsdk if installed. If not,
   # use system git.
@@ -784,6 +754,7 @@ def GIT(must_succeed=True):
     try:
       ret, stdout, stderr = run_get_output([git, '--version'])
       if ret == 0:
+        cached_git_executable = git
         return git
     except:
       pass
@@ -817,21 +788,21 @@ def git_recent_commits(repo_path, n=20):
     return []
 
 
-def git_clone(url, dstpath):
+def git_clone(url, dstpath, branch):
   debug_print('git_clone(url=' + url + ', dstpath=' + dstpath + ')')
   if os.path.isdir(os.path.join(dstpath, '.git')):
     debug_print("Repository '" + url + "' already cloned to directory '" + dstpath + "', skipping.")
     return True
   mkdir_p(dstpath)
-  git_clone_args = []
+  git_clone_args = ['--recurse-submodules', '--branch', branch]  # Do not check out a branch (installer will issue a checkout command right after)
   if GIT_CLONE_SHALLOW:
     git_clone_args += ['--depth', '1']
   print('Cloning from ' + url + '...')
-  return run([GIT(), 'clone', '--recurse-submodules'] + git_clone_args + [url, dstpath]) == 0
+  return run([GIT(), 'clone'] + git_clone_args + [url, dstpath]) == 0
 
 
-def git_checkout_and_pull(repo_path, branch_or_tag):
-  debug_print('git_checkout_and_pull(repo_path=' + repo_path + ', branch/tag=' + branch_or_tag + ')')
+def git_pull(repo_path, branch_or_tag):
+  debug_print('git_pull(repo_path=' + repo_path + ', branch/tag=' + branch_or_tag + ')')
   ret = run([GIT(), 'fetch', '--quiet', 'origin'], repo_path)
   if ret != 0:
     return False
@@ -864,11 +835,12 @@ def git_checkout_and_pull(repo_path, branch_or_tag):
 
 def git_clone_checkout_and_pull(url, dstpath, branch):
   debug_print('git_clone_checkout_and_pull(url=' + url + ', dstpath=' + dstpath + ', branch=' + branch + ')')
-  success = git_clone(url, dstpath)
-  if not success:
-    return False
-  success = git_checkout_and_pull(dstpath, branch)
-  return success
+
+  # If the repository has already been cloned before, issue a pull operation. Otherwise do a new clone.
+  if os.path.isdir(os.path.join(dstpath, '.git')):
+    return git_pull(dstpath, branch)
+  else:
+    return git_clone(url, dstpath, branch)
 
 
 # Each tool can have its own build type, or it can be overridden on the command
@@ -1069,16 +1041,20 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
       generator = []
 
     cmdline = ['cmake'] + generator + ['-DCMAKE_BUILD_TYPE=' + build_type, '-DPYTHON_EXECUTABLE=' + sys.executable]
-    # Target macOS 10.11 at minimum, to support widest range of Mac devices from "Mid 2007" and newer:
-    # https://en.wikipedia.org/wiki/MacBook_Pro#Supported_macOS_releases
-    cmdline += ['-DCMAKE_OSX_DEPLOYMENT_TARGET=10.11']
+    # Target macOS 10.14 at minimum, to support widest range of Mac devices from "Early 2008" and newer:
+    # https://en.wikipedia.org/wiki/MacBook_(2006-2012)#Supported_operating_systems
+    cmdline += ['-DCMAKE_OSX_DEPLOYMENT_TARGET=10.14']
+    # To enable widest possible chance of success for building, let the code
+    # compile through with older toolchains that are about to be deprecated by
+    # upstream LLVM.
+    cmdline += ['-DLLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN=ON']
     cmdline += extra_cmake_args + [src_root]
 
     print('Running CMake: ' + str(cmdline))
 
     # Specify the deployment target also as an env. var, since some Xcode versions
     # read this instead of the CMake field.
-    os.environ['MACOSX_DEPLOYMENT_TARGET'] = '10.11'
+    os.environ['MACOSX_DEPLOYMENT_TARGET'] = '10.14'
 
     def quote_parens(x):
       if ' ' in x:
@@ -1189,14 +1165,14 @@ def build_fastcomp(tool):
       targets_to_build += ';'
     targets_to_build += 'JSBackend'
   args += ['-DLLVM_TARGETS_TO_BUILD=' + targets_to_build, '-DLLVM_INCLUDE_EXAMPLES=OFF', '-DCLANG_INCLUDE_EXAMPLES=OFF', '-DLLVM_INCLUDE_TESTS=' + tests_arg, '-DCLANG_INCLUDE_TESTS=' + tests_arg, '-DLLVM_ENABLE_ASSERTIONS=' + ('ON' if enable_assertions else 'OFF')]
-  if os.environ.get('LLVM_CMAKE_ARGS'):
+  if os.getenv('LLVM_CMAKE_ARGS'):
     extra_args = os.environ['LLVM_CMAKE_ARGS'].split(',')
     print('Passing the following extra arguments to LLVM CMake configuration: ' + str(extra_args))
     args += extra_args
 
   # MacOS < 10.13 workaround for LLVM build bug https://github.com/kripken/emscripten/issues/5418:
   # specify HAVE_FUTIMENS=0 in the build if building with target SDK that is older than 10.13.
-  if MACOS and (not os.environ.get('LLVM_CMAKE_ARGS') or 'HAVE_FUTIMENS' not in os.environ.get('LLVM_CMAKE_ARGS')) and xcode_sdk_version() < ['10', '13']:
+  if MACOS and ('HAVE_FUTIMENS' not in os.getenv('LLVM_CMAKE_ARGS', '')) and xcode_sdk_version() < ['10', '13']:
     print('Passing -DHAVE_FUTIMENS=0 to LLVM CMake configure to workaround https://github.com/kripken/emscripten/issues/5418. Please update to macOS 10.13 or newer')
     args += ['-DHAVE_FUTIMENS=0']
 
@@ -1264,7 +1240,7 @@ def build_llvm(tool):
     cmake_generator += ' Win64'
     args += ['-Thost=x64']
 
-  if os.environ.get('LLVM_CMAKE_ARGS'):
+  if os.getenv('LLVM_CMAKE_ARGS'):
     extra_args = os.environ['LLVM_CMAKE_ARGS'].split(',')
     print('Passing the following extra arguments to LLVM CMake configuration: ' + str(extra_args))
     args += extra_args
@@ -1431,6 +1407,8 @@ def emscripten_npm_install(tool, directory):
   env = os.environ.copy()
   env["PATH"] = node_path + os.pathsep + env["PATH"]
   print('Running post-install step: npm ci ...')
+  # Do a --no-optional install to avoid bloating disk size:
+  # https://github.com/emscripten-core/emscripten/issues/12406
   try:
     subprocess.check_output(
         [npm, 'ci', '--production', '--no-optional'],
@@ -1439,6 +1417,66 @@ def emscripten_npm_install(tool, directory):
   except subprocess.CalledProcessError as e:
     errlog('Error running %s:\n%s' % (e.cmd, e.output))
     return False
+
+  # Manually install the appropriate native Closure Compiler package
+  # This is currently needed because npm ci would install the packages
+  # for Closure for all platforms, adding 180MB to the download size
+  # There are two problems here:
+  #   1. npm ci does not consider the platform of optional dependencies
+  #      https://github.com/npm/cli/issues/558
+  #   2. A bug with the native compiler has bloated the packages from
+  #      30MB to almost 300MB
+  #      https://github.com/google/closure-compiler-npm/issues/186
+  # If either of these bugs are fixed then we can remove this exception
+  # See also https://github.com/google/closure-compiler/issues/3925
+  closure_compiler_native = ''
+  if LINUX and ARCH in ('x86', 'x86_64'):
+    closure_compiler_native = 'google-closure-compiler-linux'
+  if MACOS and ARCH in ('x86', 'x86_64'):
+    closure_compiler_native = 'google-closure-compiler-osx'
+  if WINDOWS and ARCH == 'x86_64':
+    closure_compiler_native = 'google-closure-compiler-windows'
+
+  if closure_compiler_native:
+    # Check which version of native Closure Compiler we want to install via npm.
+    # (npm install command has this requirement that we must explicitly tell the pinned version)
+    try:
+      closure_version = json.load(open(os.path.join(directory, 'package.json')))['dependencies']['google-closure-compiler']
+    except KeyError as e:
+      # The target version of Emscripten does not (did not) have a package.json that would contain google-closure-compiler. (fastcomp)
+      # Skip manual native google-closure-compiler installation there.
+      print(str(e))
+      print('Emscripten version does not have a npm package.json with google-closure-compiler dependency, skipping native google-closure-compiler install step')
+      return True
+
+    closure_compiler_native += '@' + closure_version
+    print('Running post-install step: npm install', closure_compiler_native)
+    try:
+      subprocess.check_output(
+        [npm, 'install', '--production', '--no-optional', closure_compiler_native],
+        cwd=directory, stderr=subprocess.STDOUT, env=env,
+        universal_newlines=True)
+
+      # Installation of native Closure compiler was successful, so remove import of Java Closure Compiler module to avoid
+      # a Java dependency.
+      compiler_filename = os.path.join(directory, 'node_modules', 'google-closure-compiler', 'lib', 'node', 'closure-compiler.js')
+      if os.path.isfile(compiler_filename):
+        old_js = open(compiler_filename, 'r').read()
+        new_js = old_js.replace("require('google-closure-compiler-java')", "''/*require('google-closure-compiler-java') XXX Removed by Emsdk*/")
+        if old_js == new_js:
+          raise Exception('Failed to patch google-closure-compiler-java dependency away!')
+        open(compiler_filename, 'w').write(new_js)
+
+        # Now that we succeeded to install the native version and patch away the Java dependency, delete the Java version
+        # since that takes up ~12.5MB of installation space that is no longer needed.
+        # This process is currently a little bit hacky, see https://github.com/google/closure-compiler/issues/3926
+        remove_tree(os.path.join(directory, 'node_modules', 'google-closure-compiler-java'))
+        print('Removed google-closure-compiler-java dependency.')
+      else:
+        errlog('Failed to patch away google-closure-compiler Java dependency. ' + compiler_filename + ' does not exist.')
+    except subprocess.CalledProcessError as e:
+      errlog('Error running %s:\n%s' % (e.cmd, e.output))
+      return False
 
   print('Done running: npm ci')
   return True
@@ -1505,7 +1543,7 @@ def build_binaryen_tool(tool):
   build_type = decide_cmake_build_type(tool)
 
   # Configure
-  args = []
+  args = ['-DENABLE_WERROR=0']  # -Werror is not useful for end users
 
   cmake_generator = CMAKE_GENERATOR
   if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
@@ -1615,7 +1653,7 @@ def load_dot_emscripten():
 
 def generate_dot_emscripten(active_tools):
   cfg = 'import os\n'
-  cfg += "emsdk_path = os.path.dirname(os.environ.get('EM_CONFIG')).replace('\\\\', '/')\n"
+  cfg += "emsdk_path = os.path.dirname(os.getenv('EM_CONFIG')).replace('\\\\', '/')\n"
 
   # Different tools may provide the same activated configs; the latest to be
   # activated is the relevant one.
@@ -1661,7 +1699,7 @@ JS_ENGINES = [NODE_JS]
     print('- This can be done for the current shell by running:')
     print('    source "%s"' % emsdk_env)
     print('- Configure emsdk in your shell startup scripts by running:')
-    shell = os.environ.get('SHELL', '')
+    shell = os.getenv('SHELL', '')
     if 'zsh' in shell:
       print('    echo \'source "%s"\' >> $HOME/.zprofile' % emsdk_env)
     elif 'csh' in shell:
@@ -1671,14 +1709,8 @@ JS_ENGINES = [NODE_JS]
 
 
 def find_msbuild_dir():
-  if 'ProgramFiles' in os.environ and os.environ['ProgramFiles']:
-    program_files = os.environ['ProgramFiles']
-  else:
-    program_files = 'C:/Program Files'
-  if 'ProgramFiles(x86)' in os.environ and os.environ['ProgramFiles(x86)']:
-    program_files_x86 = os.environ['ProgramFiles(x86)']
-  else:
-    program_files_x86 = 'C:/Program Files (x86)'
+  program_files = os.getenv('ProgramFiles', 'C:/Program Files')
+  program_files_x86 = os.getenv('ProgramFiles(x86)', 'C:/Program Files (x86)')
   MSBUILDX86_DIR = os.path.join(program_files_x86, "MSBuild/Microsoft.Cpp/v4.0/Platforms")
   MSBUILD_DIR = os.path.join(program_files, "MSBuild/Microsoft.Cpp/v4.0/Platforms")
   if os.path.exists(MSBUILDX86_DIR):
@@ -1747,9 +1779,6 @@ class Tool(object):
   # Specifies the target path where this tool will be installed to. This could
   # either be a directory or a filename (e.g. in case of node.js)
   def installation_path(self):
-    if WINDOWS and hasattr(self, 'windows_install_path'):
-      pth = self.expand_vars(self.windows_install_path)
-      return sdk_path(pth)
     if hasattr(self, 'install_path'):
       pth = self.expand_vars(self.install_path)
       return sdk_path(pth)
@@ -1808,7 +1837,7 @@ class Tool(object):
     if LINUX and hasattr(self, 'linux_url') and self.compatible_with_this_arch():
       return True
 
-    if WINDOWS and (hasattr(self, 'windows_url') or hasattr(self, 'windows_install_path')) and self.compatible_with_this_arch():
+    if WINDOWS and hasattr(self, 'windows_url') and self.compatible_with_this_arch():
       return True
 
     if UNIX and hasattr(self, 'unix_url'):
@@ -1852,7 +1881,7 @@ class Tool(object):
       # This tool does not contain downloadable elements, so it is installed by default.
       return True
 
-    content_exists = os.path.exists(self.installation_path()) and (os.path.isfile(self.installation_path()) or num_files_in_directory(self.installation_path()) > 0)
+    content_exists = is_nonempty_directory(self.installation_path())
 
     # For e.g. fastcomp clang from git repo, the activated PATH is the
     # directory where the compiler is built to, and installation_path is
@@ -2013,11 +2042,7 @@ class Tool(object):
     elif url.endswith(ARCHIVE_SUFFIXES):
       success = download_and_unzip(url, self.installation_path(), filename_prefix=getattr(self, 'zipfile_prefix', ''))
     else:
-      dst_file = download_file(urljoin(emsdk_packages_url, self.download_url()), self.installation_path())
-      if dst_file:
-        success = True
-      else:
-        success = False
+      assert False, 'unhandled url type: ' + url
 
     if not success:
       exit_with_error("installation failed!")
@@ -2062,7 +2087,7 @@ class Tool(object):
 
   def cleanup_temp_install_files(self):
     if KEEP_DOWNLOADS:
-        return
+      return
     url = self.download_url()
     if url.endswith(ARCHIVE_SUFFIXES):
       download_target = get_download_target(url, zips_subdir, getattr(self, 'zipfile_prefix', ''))
@@ -2205,10 +2230,14 @@ def get_emscripten_releases_tot():
   # The recent releases are the latest hashes in the git repo. There
   # may not be a build for the most recent ones yet; find the last
   # that does.
+  arch = ''
+  if ARCH == 'aarch64':
+    arch = '-arm64'
   for release in recent_releases:
     url = emscripten_releases_download_url_template % (
-      os_name_for_emscripten_releases(),
+      os_name(),
       release,
+      arch,
       'tbz2' if not WINDOWS else 'zip'
     )
     try:
@@ -2506,7 +2535,7 @@ def process_tool_list(tools_to_activate):
 
 
 def write_set_env_script(env_string):
-  assert(WINDOWS)
+  assert(CMD or POWERSHELL)
   open(EMSDK_SET_ENV, 'w').write(env_string)
 
 
@@ -2523,18 +2552,18 @@ def set_active_tools(tools_to_activate, permanently_activate, system):
 
   generate_dot_emscripten(tools_to_activate)
 
-  # Construct a .bat script that will be invoked to set env. vars and PATH
-  # We only do this on windows since emsdk.bat is able to modify the
-  # calling shell environment.  On other platform `source emsdk_env.sh` is
+  # Construct a .bat or .ps1 script that will be invoked to set env. vars and PATH
+  # We only do this on cmd or powershell since emsdk.bat/ps1 is able to modify the
+  # calling shell environment.  On other shell `source emsdk_env.sh` is
   # required.
-  if WINDOWS:
+  if CMD or POWERSHELL:
     # always set local environment variables since permanently activating will only set the registry settings and
     # will not affect the current session
     env_vars_to_add = get_env_vars_to_add(tools_to_activate, system, user=permanently_activate)
     env_string = construct_env_with_vars(env_vars_to_add)
     write_set_env_script(env_string)
 
-    if permanently_activate:
+    if WINDOWS and permanently_activate:
       win_set_environment_variables(env_vars_to_add, system, user=permanently_activate)
 
   return tools_to_activate
@@ -3146,7 +3175,7 @@ def main(args):
     tools_to_activate = currently_active_tools()
     tools_to_activate = process_tool_list(tools_to_activate)
     env_string = construct_env(tools_to_activate, arg_system, arg_permanent)
-    if WINDOWS and not BASH:
+    if CMD or POWERSHELL:
       write_set_env_script(env_string)
     else:
       sys.stdout.write(env_string)
