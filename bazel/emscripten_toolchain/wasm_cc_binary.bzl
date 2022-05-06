@@ -54,56 +54,45 @@ _wasm_transition = transition(
     ],
 )
 
+_allow_output_extnames = [
+    '.js',
+    '.wasm',
+    '.wasm.map',
+    '.worker.js',
+    '.js.mem',
+    '.data',
+    '.fetch.js',
+    '.js.symbols',
+    '.wasm.debug.wasm',
+    '.html',
+]
+
 def _wasm_binary_impl(ctx):
     args = ctx.actions.args()
-    args.add("--output_path", ctx.outputs.loader.dirname)
+    args.add_joined("--outputs", ctx.outputs.outputs, join_with=",")
     args.add_all("--archive", ctx.files.cc_target)
 
-    outputs = [
-        ctx.outputs.loader,
-        ctx.outputs.wasm,
-        ctx.outputs.map,
-        ctx.outputs.mem,
-        ctx.outputs.fetch,
-        ctx.outputs.worker,
-        ctx.outputs.data,
-        ctx.outputs.symbols,
-        ctx.outputs.dwarf,
-        ctx.outputs.html,
-    ]
+    for output in ctx.outputs.outputs:
+        valid_extname = False
+        for allowed_extname in _allow_output_extnames:
+            if output.path.endswith(allowed_extname):
+                valid_extname = True
+                break
+        if not valid_extname:
+            fail("Invalid output '{}'. Allowed extnames: {}".format(output.basename, ", ".join(_allow_output_extnames)))
 
     ctx.actions.run(
         inputs = ctx.files.cc_target,
-        outputs = outputs,
+        outputs = ctx.outputs.outputs,
         arguments = [args],
         executable = ctx.executable._wasm_binary_extractor,
     )
 
     return DefaultInfo(
-        executable = ctx.outputs.wasm,
-        files = depset(outputs),
         # This is needed since rules like web_test usually have a data
         # dependency on this target.
-        data_runfiles = ctx.runfiles(transitive_files = depset(outputs)),
+        data_runfiles = ctx.runfiles(transitive_files = depset(ctx.outputs.outputs)),
     )
-
-def _wasm_binary_outputs(name, cc_target):
-    basename = cc_target.name
-    basename = basename.split(".")[0]
-    outputs = {
-        "loader": "{}/{}.js".format(name, basename),
-        "wasm": "{}/{}.wasm".format(name, basename),
-        "map": "{}/{}.wasm.map".format(name, basename),
-        "mem": "{}/{}.js.mem".format(name, basename),
-        "fetch": "{}/{}.fetch.js".format(name, basename),
-        "worker": "{}/{}.worker.js".format(name, basename),
-        "data": "{}/{}.data".format(name, basename),
-        "symbols": "{}/{}.js.symbols".format(name, basename),
-        "dwarf": "{}/{}.wasm.debug.wasm".format(name, basename),
-        "html": "{}/{}.html".format(name, basename),
-    }
-
-    return outputs
 
 # Wraps a C++ Blaze target, extracting the appropriate files.
 #
@@ -134,6 +123,10 @@ wasm_cc_binary = rule(
         "simd": attr.bool(
             default = False,
         ),
+        "outputs": attr.output_list(
+            allow_empty = False,
+            mandatory = True,
+        ),
         "_allowlist_function_transition": attr.label(
             default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
         ),
@@ -144,5 +137,4 @@ wasm_cc_binary = rule(
             default = Label("@emsdk//emscripten_toolchain:wasm_binary"),
         ),
     },
-    outputs = _wasm_binary_outputs,
 )
