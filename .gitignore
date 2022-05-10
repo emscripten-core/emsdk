@@ -13,11 +13,13 @@ __pycache__
 /emscripten-releases-tot.txt
 
 # File that get download/extracted by emsdk itself
+/ccache
 /gnu
 /upstream
 /fastcomp
 /fastcomp-clang/
 /llvm
+/ninja
 /releases
 /clang
 /emscripten
