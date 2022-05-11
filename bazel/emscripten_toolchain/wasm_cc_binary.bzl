@@ -103,7 +103,7 @@ def _wasm_binary_impl(ctx):
         files = depset(outputs),
         # This is needed since rules like web_test usually have a data
         # dependency on this target.
-        data_runfiles = ctx.runfiles(transitive_files = depset(ctx.outputs.outputs)),
+        data_runfiles = ctx.runfiles(transitive_files = depset(outputs)),
     )
 
 # Wraps a C++ Blaze target, extracting the appropriate files.
