@@ -16,10 +16,17 @@ import os
 import tarfile
 
 
+def ensure(f):
+  if not os.path.exists(f):
+    with open(f, 'w'):
+      pass
+
+
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--archive', help='The archive to extract from.')
-  parser.add_argument('--outputs', help='The path to extract into.')
+  parser.add_argument('--outputs', help='Comma separated list of files that should be extracted from the archive. Only the extname has to match a file in the archive.')
+  parser.add_argument('--allow_empty_outputs', help='If an output listed in --outputs does not exist, create it anyways.', action='store_true')
   args = parser.parse_args()
 
   args.archive = os.path.normpath(args.archive)
@@ -39,7 +46,10 @@ def main():
 
   for output in args.outputs:
     extname = '.' + output.split('.', 1)[1]
-    print("[ERROR] Archive does not contain file with extname: %s" % extname)
+    if args.allow_empty_outputs:
+      ensure(output)
+    else:
+      print("[ERROR] Archive does not contain file with extname: %s" % extname)
 
 
 if __name__ == '__main__':

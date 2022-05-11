@@ -55,40 +55,52 @@ _wasm_transition = transition(
 )
 
 _allow_output_extnames = [
-    '.js',
-    '.wasm',
-    '.wasm.map',
-    '.worker.js',
-    '.js.mem',
-    '.data',
-    '.fetch.js',
-    '.js.symbols',
-    '.wasm.debug.wasm',
-    '.html',
+    ".js",
+    ".wasm",
+    ".wasm.map",
+    ".worker.js",
+    ".js.mem",
+    ".data",
+    ".fetch.js",
+    ".js.symbols",
+    ".wasm.debug.wasm",
+    ".html",
 ]
 
 def _wasm_binary_impl(ctx):
     args = ctx.actions.args()
-    args.add_joined("--outputs", ctx.outputs.outputs, join_with=",")
-    args.add_all("--archive", ctx.files.cc_target)
+    outputs = []
+    cc_target = ctx.attr.cc_target[0]
 
-    for output in ctx.outputs.outputs:
-        valid_extname = False
-        for allowed_extname in _allow_output_extnames:
-            if output.path.endswith(allowed_extname):
-                valid_extname = True
-                break
-        if not valid_extname:
-            fail("Invalid output '{}'. Allowed extnames: {}".format(output.basename, ", ".join(_allow_output_extnames)))
+    if len(ctx.outputs.outputs) == 0:
+        args.add("--allow_empty_outputs")
+        basename = cc_target.label.name
+        basename = basename.split(".")[0]
+        for extname in _allow_output_extnames:
+            outputs.append(ctx.actions.declare_file("{}/{}{}".format(basename, cc_target.label.name, extname)))
+    else:
+        outputs = ctx.outputs.outputs
+        for output in ctx.outputs.outputs:
+            valid_extname = False
+            for allowed_extname in _allow_output_extnames:
+                if output.path.endswith(allowed_extname):
+                    valid_extname = True
+                    break
+            if not valid_extname:
+                fail("Invalid output '{}'. Allowed extnames: {}".format(output.basename, ", ".join(_allow_output_extnames)))
+
+    args.add_all("--archive", ctx.files.cc_target)
+    args.add_joined("--outputs", outputs, join_with = ",")
 
     ctx.actions.run(
         inputs = ctx.files.cc_target,
-        outputs = ctx.outputs.outputs,
+        outputs = outputs,
         arguments = [args],
         executable = ctx.executable._wasm_binary_extractor,
     )
 
     return DefaultInfo(
+        files = depset(outputs),
         # This is needed since rules like web_test usually have a data
         # dependency on this target.
         data_runfiles = ctx.runfiles(transitive_files = depset(ctx.outputs.outputs)),
@@ -124,8 +136,8 @@ wasm_cc_binary = rule(
             default = False,
         ),
         "outputs": attr.output_list(
-            allow_empty = False,
-            mandatory = True,
+            allow_empty = True,
+            mandatory = False,
         ),
         "_allowlist_function_transition": attr.label(
             default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
