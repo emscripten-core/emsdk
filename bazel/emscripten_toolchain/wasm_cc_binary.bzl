@@ -77,7 +77,7 @@ def _wasm_binary_impl(ctx):
         basename = cc_target.label.name
         basename = basename.split(".")[0]
         for extname in _allow_output_extnames:
-            outputs.append(ctx.actions.declare_file("{}/{}{}".format(basename, cc_target.label.name, extname)))
+            outputs.append(ctx.actions.declare_file("{}/{}{}".format(ctx.attr.name, cc_target.label.name, extname)))
     else:
         outputs = ctx.outputs.outputs
         for output in ctx.outputs.outputs:
