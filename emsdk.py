@@ -38,6 +38,8 @@ else:
   from urllib2 import urlopen
 
 
+skip_npm = False
+
 emsdk_packages_url = 'https://storage.googleapis.com/webassembly/emscripten-releases-builds/deps/'
 
 emscripten_releases_repo = 'https://chromium.googlesource.com/emscripten-releases'
@@ -1398,6 +1400,9 @@ def find_latest_installed_tool(name):
 
 # npm install in Emscripten root directory
 def emscripten_npm_install(tool, directory):
+  global skip_npm
+  if skip_npm:
+    return True
   node_tool = find_latest_installed_tool('node')
   if not node_tool:
     npm_fallback = which('npm')
@@ -1874,6 +1879,12 @@ class Tool(object):
     # installed for this tool to count as being installed.
     if hasattr(self, 'uses'):
       for tool_name in self.uses:
+        global skip_npm
+        if skip_npm:
+          if tool_name.startswith('node'):
+            continue
+          if tool_name.startswith('npm'):
+            continue
         tool = find_tool(tool_name)
         if tool is None:
           errlog("Manifest error: No tool by name '" + tool_name + "' found! This may indicate an internal SDK error!")
@@ -2521,6 +2532,9 @@ def process_tool_list(tools_to_activate):
     tools_to_activate = tools_to_activate[:i] + deps + tools_to_activate[i:]
     i += len(deps) + 1
 
+  if skip_npm:
+    tools_to_activate = [t for t in tools_to_activate if (not t.name.startswith("node-"))]
+
   for tool in tools_to_activate:
     if not tool.is_installed():
       exit_with_error("error: tool is not installed and therefore cannot be activated: '%s'" % tool)
@@ -2987,7 +3001,13 @@ def main(args):
         value = args[i + 1]
         del args[i:i + 2]
         return value
-
+  npm = extract_bool_arg('--skip-npm')
+  if npm:
+    global skip_npm
+    skip_npm = True
+    sys.stderr.write("--skip-npm found\n")
+  else:
+    sys.stderr.write("--skip-npm not found\n")
   arg_old = extract_bool_arg('--old')
   arg_uses = extract_bool_arg('--uses')
   arg_permanent = extract_bool_arg('--permanent')
