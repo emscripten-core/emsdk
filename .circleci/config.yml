@@ -201,9 +201,9 @@ jobs:
       - checkout
       - run: brew install grep
       - run:
-          name: install bazel
+          name: install bazelisk
           command: |
-            brew install bazel
+            brew install bazelisk
       - run: test/test_bazel_mac.sh
 
   test-bazel-windows:
