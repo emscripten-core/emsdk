@@ -1875,15 +1875,13 @@ class Tool(object):
     return None
 
   def is_installed(self, skip_version_check=False):
+    global skip_npm
     # If this tool/sdk depends on other tools, require that all dependencies are
     # installed for this tool to count as being installed.
     if hasattr(self, 'uses'):
       for tool_name in self.uses:
-        global skip_npm
         if skip_npm:
-          if tool_name.startswith('node'):
-            continue
-          if tool_name.startswith('npm'):
+          if tool_name.startswith('node') or tool_name.startswith('npm'):
             continue
         tool = find_tool(tool_name)
         if tool is None:
@@ -3001,13 +2999,9 @@ def main(args):
         value = args[i + 1]
         del args[i:i + 2]
         return value
-  npm = extract_bool_arg('--skip-npm')
-  if npm:
-    global skip_npm
-    skip_npm = True
-    sys.stderr.write("--skip-npm found\n")
-  else:
-    sys.stderr.write("--skip-npm not found\n")
+  global skip_npm
+  skip_npm = extract_bool_arg('--skip-npm')
+  # errlog("--skip-npm found")
   arg_old = extract_bool_arg('--old')
   arg_uses = extract_bool_arg('--uses')
   arg_permanent = extract_bool_arg('--permanent')
