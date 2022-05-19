@@ -1,5 +1,5 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("@build_bazel_rules_nodejs//:index.bzl", "npm_install", "node_repositories")
+load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories", "npm_install")
 load(":revisions.bzl", "EMSCRIPTEN_TAGS")
 
 def _parse_version(v):
@@ -40,7 +40,7 @@ filegroup(
         "bin/wasm-emscripten-finalize{bin_extension}",
         "bin/wasm-ld{bin_extension}",
         "bin/wasm-opt{bin_extension}",
-   ],
+   ] + glob(["emscripten/node_modules/**"]),
 )
 
 filegroup(
@@ -83,7 +83,7 @@ def emscripten_deps(emscripten_version = "latest"):
             strip_prefix = "install",
             url = emscripten_url.format("linux", revision.hash, "", "tbz2"),
             sha256 = revision.sha_linux,
-            build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(bin_extension=""),
+            build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(bin_extension = ""),
             type = "tar.bz2",
         )
 
@@ -93,7 +93,7 @@ def emscripten_deps(emscripten_version = "latest"):
             strip_prefix = "install",
             url = emscripten_url.format("mac", revision.hash, "", "tbz2"),
             sha256 = revision.sha_mac,
-            build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(bin_extension=""),
+            build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(bin_extension = ""),
             type = "tar.bz2",
         )
 
@@ -103,7 +103,7 @@ def emscripten_deps(emscripten_version = "latest"):
             strip_prefix = "install",
             url = emscripten_url.format("mac", revision.hash, "-arm64", "tbz2"),
             sha256 = revision.sha_mac_arm64,
-            build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(bin_extension=""),
+            build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(bin_extension = ""),
             type = "tar.bz2",
         )
 
@@ -113,7 +113,7 @@ def emscripten_deps(emscripten_version = "latest"):
             strip_prefix = "install",
             url = emscripten_url.format("win", revision.hash, "", "zip"),
             sha256 = revision.sha_win,
-            build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(bin_extension=".exe"),
+            build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(bin_extension = ".exe"),
             type = "zip",
         )
 
