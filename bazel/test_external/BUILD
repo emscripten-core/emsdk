@@ -8,6 +8,10 @@ cc_binary(
 wasm_cc_binary(
     name = "hello-world-wasm",
     cc_target = ":hello-world",
+    outputs = [
+        "hello-world.js",
+        "hello-world.wasm",
+    ],
 )
 
 BASE_LINKOPTS = [
