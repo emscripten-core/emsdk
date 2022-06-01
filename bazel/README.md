@@ -29,7 +29,13 @@ parameter of `emsdk_emscripten_deps()`. Supported versions are listed in `revisi
 
 ## Building
 
-First, write a new rule wrapping your `cc_binary`.
+Put the following line into your `.bazelrc`:
+
+```
+build --incompatible_enable_cc_toolchain_resolution
+```
+
+Then write a new rule wrapping your `cc_binary`.
 
 ```
 load("@rules_cc//cc:defs.bzl", "cc_binary")
