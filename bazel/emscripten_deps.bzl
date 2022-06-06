@@ -70,6 +70,7 @@ filegroup(
             "emscripten/src/**",
         ],
     ),
+)
 
 filegroup(
     name = "ar_files",
