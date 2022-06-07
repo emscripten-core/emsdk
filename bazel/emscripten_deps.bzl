@@ -19,7 +19,7 @@ filegroup(
 )
 
 filegroup(
-    name = "emcc",
+    name = "emcc_common",
     srcs = [
         "emscripten/emcc.py",
         "emscripten/emscripten.py",
@@ -43,7 +43,7 @@ filegroup(
     srcs = [
         "bin/clang{bin_extension}",
         "bin/clang++{bin_extension}",
-        ":emcc",
+        ":emcc_common",
         ":includes",
     ],
 )
@@ -60,7 +60,7 @@ filegroup(
         "bin/wasm-ld{bin_extension}",
         "bin/wasm-opt{bin_extension}",
         "bin/wasm-metadce{bin_extension}",
-        ":emcc",
+        ":emcc_common",
     ] + glob(
         include = [
             "emscripten/cache/sysroot/lib/**",
