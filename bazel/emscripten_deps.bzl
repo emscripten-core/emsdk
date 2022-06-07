@@ -41,7 +41,6 @@ filegroup(
 filegroup(
     name = "compiler_files",
     srcs = [
-        "emscripten/emcc.py",
         "bin/clang{bin_extension}",
         "bin/clang++{bin_extension}",
         ":emcc",
@@ -52,7 +51,6 @@ filegroup(
 filegroup(
     name = "linker_files",
     srcs = [
-        "emscripten/emcc.py",
         "bin/clang{bin_extension}",
         "bin/llc{bin_extension}",
         "bin/llvm-ar{bin_extension}",
