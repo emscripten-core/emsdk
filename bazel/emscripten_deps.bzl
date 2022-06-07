@@ -19,11 +19,31 @@ filegroup(
 )
 
 filegroup(
-    name = "compiler_files",
+    name = "emcc_common",
     srcs = [
         "emscripten/emcc.py",
+        "emscripten/emscripten.py",
+        "emscripten/emscripten-version.txt",
+        "emscripten/cache/sysroot_install.stamp",
+        "emscripten/src/settings.js",
+        "emscripten/src/settings_internal.js",
+    ] + glob(
+        include = [
+            "emscripten/third_party/**",
+            "emscripten/tools/**",
+        ],
+        exclude = [
+            "**/__pycache__/**",
+        ],
+    ),
+)
+
+filegroup(
+    name = "compiler_files",
+    srcs = [
         "bin/clang{bin_extension}",
         "bin/clang++{bin_extension}",
+        ":emcc_common",
         ":includes",
     ],
 )
@@ -31,7 +51,6 @@ filegroup(
 filegroup(
     name = "linker_files",
     srcs = [
-        "emscripten/emcc.py",
         "bin/clang{bin_extension}",
         "bin/llc{bin_extension}",
         "bin/llvm-ar{bin_extension}",
@@ -40,15 +59,33 @@ filegroup(
         "bin/wasm-emscripten-finalize{bin_extension}",
         "bin/wasm-ld{bin_extension}",
         "bin/wasm-opt{bin_extension}",
-   ] + glob(["emscripten/node_modules/**"]),
+        "bin/wasm-metadce{bin_extension}",
+        ":emcc_common",
+    ] + glob(
+        include = [
+            "emscripten/cache/sysroot/lib/**",
+            "emscripten/node_modules/**",
+            "emscripten/src/**",
+        ],
+    ),
 )
 
 filegroup(
     name = "ar_files",
     srcs = [
-        "emscripten/emar.py",
         "bin/llvm-ar{bin_extension}",
-   ],
+        "emscripten/emar.py",
+        "emscripten/emscripten-version.txt",
+        "emscripten/src/settings.js",
+        "emscripten/src/settings_internal.js",
+    ] + glob(
+        include = [
+            "emscripten/tools/**",
+        ],
+        exclude = [
+            "**/__pycache__/**",
+        ],
+    ),
 )
 """
 
