@@ -8,45 +8,43 @@ package(default_visibility = ["//visibility:public"])
 node_files = "@nodejs_host//:node_files" if existing_rule("@nodejs_host//:node_files") else "@nodejs//:node_files"
 
 filegroup(
-    name = "common-script-includes",
+    name = "common_files",
     srcs = [
-        "emar.sh",
-        "emar.bat",
-        "emcc.sh",
-        "emcc.bat",
         "emscripten_config",
         "env.sh",
         "env.bat",
-        "@emsdk//:binaries",
-        "@emsdk//:node_modules",
         node_files,
     ],
 )
 
 filegroup(
-    name = "compile-emscripten",
-    srcs = [":common-script-includes"],
+    name = "compiler_files",
+    srcs = [
+        "emcc.sh",
+        "emcc.bat",
+        "@emsdk//:compiler_files",
+        ":common_files",
+    ],
 )
 
 filegroup(
-    name = "link-emscripten",
+    name = "linker_files",
     srcs = [
         "emcc_link.sh",
         "emcc_link.bat",
         "link_wrapper.py",
-        ":common-script-includes",
-        "@emsdk//:binaries",
-        node_files,
+        "@emsdk//:linker_files",
+        ":common_files",
     ],
 )
 
 filegroup(
-    name = "every-file",
+    name = "ar_files",
     srcs = [
-        ":compile-emscripten",
-        ":link-emscripten",
-        "@emsdk//:binaries",
-        node_files,
+        "emar.sh",
+        "emar.bat",
+        "@emsdk//:ar_files",
+        ":common_files",
     ],
 )
 
@@ -59,7 +57,7 @@ emscripten_cc_toolchain_config_rule(
     name = "wasm",
     cpu = "wasm",
     em_config = "emscripten_config",
-    emscripten_binaries = "@emsdk//:binaries",
+    emscripten_binaries = "@emsdk//:compiler_files",
     script_extension = select({
         "@bazel_tools//src/conditions:host_windows": "bat",
         "//conditions:default": "sh",
@@ -68,12 +66,12 @@ emscripten_cc_toolchain_config_rule(
 
 cc_toolchain(
     name = "cc-compiler-wasm",
-    all_files = ":every-file",
-    ar_files = ":common-script-includes",
+    all_files = ":empty",
+    ar_files = ":ar_files",
     as_files = ":empty",
-    compiler_files = ":compile-emscripten",
+    compiler_files = ":compiler_files",
     dwp_files = ":empty",
-    linker_files = ":link-emscripten",
+    linker_files = ":linker_files",
     objcopy_files = ":empty",
     strip_files = ":empty",
     toolchain_config = "wasm",
