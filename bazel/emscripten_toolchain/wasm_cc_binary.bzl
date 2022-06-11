@@ -26,6 +26,9 @@ def _wasm_transition_impl(settings, attr):
         features.append("wasm_simd")
 
     return {
+        "//command_line_option:compiler": "emscripten",
+        "//command_line_option:crosstool_top": "@emsdk//emscripten_toolchain:everything",
+        "//command_line_option:cpu": "wasm",
         "//command_line_option:features": features,
         "//command_line_option:dynamic_mode": "off",
         "//command_line_option:linkopt": linkopts,
@@ -40,6 +43,9 @@ _wasm_transition = transition(
         "//command_line_option:linkopt",
     ],
     outputs = [
+        "//command_line_option:compiler",
+        "//command_line_option:cpu",
+        "//command_line_option:crosstool_top",
         "//command_line_option:features",
         "//command_line_option:dynamic_mode",
         "//command_line_option:linkopt",
