@@ -54,12 +54,10 @@ CROSSTOOL_DEFAULT_WARNINGS = [
     "-Wall",
 ]
 
-def _impl(ctx):
+def _emscripten_cc_toolchain_config(ctx):
     target_cpu = ctx.attr.cpu
     toolchain_identifier = "emscripten-" + target_cpu
     target_system_name = target_cpu + "-unknown-emscripten"
-
-    host_system_name = "i686-unknown-linux-gnu"
 
     target_libc = "musl/js"
 
@@ -67,8 +65,6 @@ def _impl(ctx):
 
     compiler = "emscripten"
     abi_libc_version = "default"
-
-    cc_target_os = "emscripten"
 
     emscripten_dir = ctx.attr.emscripten_binaries.label.workspace_root
 
@@ -150,8 +146,9 @@ def _impl(ctx):
         flag_sets = [
             flag_set(
                 flag_groups = [
+                    flag_group(flags = ["rcsD"]),
                     flag_group(
-                        flags = ["rcsD", "%{output_execpath}"],
+                        flags = ["%{output_execpath}"],
                         expand_if_available = "output_execpath",
                     ),
                 ],
@@ -323,11 +320,11 @@ def _impl(ctx):
             implies = ["crosstool_cpu_" + target_cpu],
         ),
         feature(
-            name = "crosstool_cpu_asmjs",
+            name = "crosstool_cpu_wasm64",
             provides = ["variant:crosstool_cpu"],
         ),
         feature(
-            name = "crosstool_cpu_wasm",
+            name = "crosstool_cpu_wasm32",
             provides = ["variant:crosstool_cpu"],
         ),
 
@@ -409,7 +406,6 @@ def _impl(ctx):
         feature(name = "emcc_debug_link"),
         feature(
             name = "llvm_backend",
-            requires = [feature_set(features = ["crosstool_cpu_wasm"])],
             enabled = True,
         ),
 
@@ -523,8 +519,8 @@ def _impl(ctx):
         # Emscripten-specific settings:
         flag_set(
             actions = all_compile_actions + all_link_actions,
-            flags = ["-s", "WASM=0"],
-            features = ["crosstool_cpu_asmjs"],
+            flags = ["-s", "MEMORY64=1"],
+            features = ["crosstool_cpu_wasm64"],
         ),
         flag_set(
             actions = all_compile_actions +
@@ -1087,7 +1083,6 @@ def _impl(ctx):
         artifact_name_patterns = artifact_name_patterns,
         cxx_builtin_include_directories = cxx_builtin_include_directories,
         toolchain_identifier = toolchain_identifier,
-        host_system_name = host_system_name,
         target_system_name = target_system_name,
         target_cpu = target_cpu,
         target_libc = target_libc,
@@ -1097,15 +1092,14 @@ def _impl(ctx):
         tool_paths = tool_paths,
         make_variables = make_variables,
         builtin_sysroot = builtin_sysroot,
-        cc_target_os = cc_target_os,
     )
 
-emscripten_cc_toolchain_config_rule = rule(
-    implementation = _impl,
+emscripten_cc_toolchain_config = rule(
+    implementation = _emscripten_cc_toolchain_config,
     attrs = {
-        "cpu": attr.string(mandatory = True, values = ["asmjs", "wasm"]),
+        "cpu": attr.string(mandatory = True, values = ["wasm32", "wasm64"]),
         "em_config": attr.label(mandatory = True, allow_single_file = True),
-        "emscripten_binaries": attr.label(mandatory = True),
+        "emscripten_binaries": attr.label(mandatory = True, cfg = "exec"),
         "script_extension": attr.string(mandatory = True, values = ["sh", "bat"]),
     },
     provides = [CcToolchainConfigInfo],

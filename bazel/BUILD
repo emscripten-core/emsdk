@@ -1,5 +1,19 @@
 package(default_visibility = ["//visibility:public"])
 
+platform(
+    name = "cpu_wasm32",
+    constraint_values = [
+        "@platforms//cpu:wasm32",
+    ],
+)
+
+platform(
+    name = "cpu_wasm64",
+    constraint_values = [
+        "@platforms//cpu:wasm64",
+    ],
+)
+
 filegroup(name = "empty")
 
 alias(

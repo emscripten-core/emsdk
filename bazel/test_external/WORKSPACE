@@ -10,3 +10,7 @@ deps()
 load("@emsdk//:emscripten_deps.bzl", "emscripten_deps")
 
 emscripten_deps()
+
+load("@emsdk//:toolchains.bzl", "emsdk_register_toolchains")
+
+emsdk_register_toolchains()
