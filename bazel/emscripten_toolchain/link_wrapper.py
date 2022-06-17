@@ -21,22 +21,24 @@ import os
 import subprocess
 import sys
 
-# Only argument should be @path/to/parameter/file
-assert sys.argv[1][0] == '@', sys.argv
-param_filename = sys.argv[1][1:]
-param_file_args = [l.strip() for l in open(param_filename, 'r').readlines()]
+if sys.argv[1][0] == '@':
+  param_filename = sys.argv[1][1:]
+  param_file_args = [l.strip() for l in open(param_filename, 'r').readlines()]
 
-# Re-write response file if needed.
-if any(' ' in a for a in param_file_args):
-  new_param_filename = param_filename + '.modified'
-  with open(new_param_filename, 'w') as f:
-    for param in param_file_args:
-      if ' ' in param:
-        f.write('"%s"' % param)
-      else:
-        f.write(param)
-      f.write('\n')
-  sys.argv[1] = '@' + new_param_filename
+  # Re-write response file if needed.
+  if any(' ' in a for a in param_file_args):
+    new_param_filename = param_filename + '.modified'
+    with open(new_param_filename, 'w') as f:
+      for param in param_file_args:
+        if ' ' in param:
+          f.write('"%s"' % param)
+        else:
+          f.write(param)
+        f.write('\n')
+    sys.argv[1] = '@' + new_param_filename
+else:
+    # Any other case
+    param_file_args = sys.argv[1:]
 
 emcc_py = os.path.join(os.environ['EMSCRIPTEN'], 'emcc.py')
 rtn = subprocess.call([sys.executable, emcc_py] + sys.argv[1:])
