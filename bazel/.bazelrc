@@ -1,1 +1,2 @@
-build:wasm32 --incompatible_enable_cc_toolchain_resolution
+build:wasm --incompatible_enable_cc_toolchain_resolution
+build:wasm --platforms='@emsdk//:cpu_wasm32'
