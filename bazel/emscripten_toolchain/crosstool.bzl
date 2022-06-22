@@ -1009,11 +1009,11 @@ def _impl(ctx):
                 '-D__TIME__="redacted"',
             ],
         ),
-        flag_set(
-            actions = all_compile_actions,
-            flags = ["-Werror"],
-            features = ["wasm_warnings_as_errors"],
-        ),
+        #flag_set(
+        #    actions = all_compile_actions,
+        #    flags = ["-Werror"],
+        #    features = ["wasm_warnings_as_errors"],
+        #),
     ]
 
     crosstool_default_env_sets = [
