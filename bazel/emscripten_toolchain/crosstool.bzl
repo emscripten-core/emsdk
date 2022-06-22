@@ -491,13 +491,13 @@ def _impl(ctx):
             ],
         ),
         # C++ compiles (and implicitly link)
-        flag_set(
-            actions = all_cpp_compile_actions,
-            flags = [
-                "-fno-exceptions",
-            ],
-            not_features = ["exceptions"],
-        ),
+        #flag_set(
+        #    actions = all_cpp_compile_actions,
+        #    flags = [
+        #        "-fno-exceptions",
+        #    ],
+        #    not_features = ["exceptions"],
+        #),
         flag_set(
             actions = all_cpp_compile_actions,
             flags = [
