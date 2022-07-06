@@ -1,4 +1,4 @@
-load(":crosstool.bzl", "emscripten_cc_toolchain_config_rule")
+load(":crosstool.bzl", "emscripten_cc_toolchain_config")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -8,11 +8,20 @@ package(default_visibility = ["//visibility:public"])
 node_files = "@nodejs_host//:node_files" if existing_rule("@nodejs_host//:node_files") else "@nodejs//:node_files"
 
 filegroup(
+    name = "all_files",
+    srcs = [
+        ":ar_files",
+        ":compiler_files",
+        ":linker_files",
+    ],
+)
+
+filegroup(
     name = "common_files",
     srcs = [
         "emscripten_config",
-        "env.sh",
         "env.bat",
+        "env.sh",
         node_files,
     ],
 )
@@ -20,31 +29,31 @@ filegroup(
 filegroup(
     name = "compiler_files",
     srcs = [
-        "emcc.sh",
         "emcc.bat",
-        "@emsdk//:compiler_files",
+        "emcc.sh",
         ":common_files",
+        "@emsdk//:compiler_files",
     ],
 )
 
 filegroup(
     name = "linker_files",
     srcs = [
-        "emcc_link.sh",
         "emcc_link.bat",
+        "emcc_link.sh",
         "link_wrapper.py",
-        "@emsdk//:linker_files",
         ":common_files",
+        "@emsdk//:linker_files",
     ],
 )
 
 filegroup(
     name = "ar_files",
     srcs = [
-        "emar.sh",
         "emar.bat",
-        "@emsdk//:ar_files",
+        "emar.sh",
         ":common_files",
+        "@emsdk//:ar_files",
     ],
 )
 
@@ -53,9 +62,20 @@ filegroup(name = "empty")
 # dlmalloc.bc is implictly added by the emscripten toolchain
 cc_library(name = "malloc")
 
-emscripten_cc_toolchain_config_rule(
-    name = "wasm",
-    cpu = "wasm",
+emscripten_cc_toolchain_config(
+    name = "wasm32_cc_toolchain_config",
+    cpu = "wasm32",
+    em_config = "emscripten_config",
+    emscripten_binaries = "@emsdk//:compiler_files",
+    script_extension = select({
+        "@bazel_tools//src/conditions:host_windows": "bat",
+        "//conditions:default": "sh",
+    }),
+)
+
+emscripten_cc_toolchain_config(
+    name = "wasm64_cc_toolchain_config",
+    cpu = "wasm64",
     em_config = "emscripten_config",
     emscripten_binaries = "@emsdk//:compiler_files",
     script_extension = select({
@@ -65,25 +85,47 @@ emscripten_cc_toolchain_config_rule(
 )
 
 cc_toolchain(
-    name = "cc-compiler-wasm",
-    all_files = ":empty",
+    name = "wasm32_cc_toolchain",
+    all_files = ":all_files",
     ar_files = ":ar_files",
-    as_files = ":empty",
     compiler_files = ":compiler_files",
     dwp_files = ":empty",
     linker_files = ":linker_files",
     objcopy_files = ":empty",
     strip_files = ":empty",
-    toolchain_config = "wasm",
+    toolchain_config = ":wasm32_cc_toolchain_config",
     toolchain_identifier = "emscripten-wasm",
 )
 
-cc_toolchain_suite(
-    name = "everything",
-    toolchains = {
-        "wasm": ":cc-compiler-wasm",
-        "wasm|emscripten": ":cc-compiler-wasm",
-    },
+cc_toolchain(
+    name = "wasm64_cc_toolchain",
+    all_files = ":all_files",
+    ar_files = ":ar_files",
+    compiler_files = ":compiler_files",
+    dwp_files = ":empty",
+    linker_files = ":linker_files",
+    objcopy_files = ":empty",
+    strip_files = ":empty",
+    toolchain_config = ":wasm64_cc_toolchain_config",
+    toolchain_identifier = "emscripten-wasm",
+)
+
+toolchain(
+    name = "cc_wasm32_toolchain",
+    target_compatible_with = [
+        "@platforms//cpu:wasm32",
+    ],
+    toolchain = ":wasm32_cc_toolchain",
+    toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
+)
+
+toolchain(
+    name = "cc_wasm64_toolchain",
+    target_compatible_with = [
+        "@platforms//cpu:wasm64",
+    ],
+    toolchain = ":wasm64_cc_toolchain",
+    toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 )
 
 py_binary(

@@ -6,6 +6,7 @@ def _wasm_transition_impl(settings, attr):
 
     features = list(settings["//command_line_option:features"])
     linkopts = list(settings["//command_line_option:linkopt"])
+    platforms = list(settings["//command_line_option:platforms"])
 
     if attr.threads == "emscripten":
         # threads enabled
@@ -24,16 +25,17 @@ def _wasm_transition_impl(settings, attr):
 
     if attr.simd:
         features.append("wasm_simd")
+    
+    if "@emsdk//:cpu_wasm32" not in platforms and "@emsdk//:cpu_wasm64" not in platforms:
+        platforms = ["@emsdk//:cpu_wasm32"] + platforms
 
     return {
-        "//command_line_option:compiler": "emscripten",
-        "//command_line_option:crosstool_top": "@emsdk//emscripten_toolchain:everything",
-        "//command_line_option:cpu": "wasm",
-        "//command_line_option:features": features,
-        "//command_line_option:dynamic_mode": "off",
-        "//command_line_option:linkopt": linkopts,
-        "//command_line_option:platforms": [],
         "//command_line_option:custom_malloc": "@emsdk//emscripten_toolchain:malloc",
+        "//command_line_option:dynamic_mode": "off",
+        "//command_line_option:features": features,
+        "//command_line_option:incompatible_enable_cc_toolchain_resolution": True,
+        "//command_line_option:linkopt": linkopts,
+        "//command_line_option:platforms": platforms,
     }
 
 _wasm_transition = transition(
@@ -41,16 +43,15 @@ _wasm_transition = transition(
     inputs = [
         "//command_line_option:features",
         "//command_line_option:linkopt",
+        "//command_line_option:platforms",
     ],
     outputs = [
-        "//command_line_option:compiler",
-        "//command_line_option:cpu",
-        "//command_line_option:crosstool_top",
-        "//command_line_option:features",
+        "//command_line_option:custom_malloc",
         "//command_line_option:dynamic_mode",
+        "//command_line_option:features",
+        "//command_line_option:incompatible_enable_cc_toolchain_resolution",
         "//command_line_option:linkopt",
         "//command_line_option:platforms",
-        "//command_line_option:custom_malloc",
     ],
 )
 

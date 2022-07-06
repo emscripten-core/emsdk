@@ -1,34 +1,16 @@
 package(default_visibility = ["//visibility:public"])
 
-config_setting(
-    name = "linux",
+platform(
+    name = "cpu_wasm32",
     constraint_values = [
-        "@platforms//os:linux",
-        "@platforms//cpu:x86_64",
+        "@platforms//cpu:wasm32",
     ],
 )
 
-config_setting(
-    name = "macos",
+platform(
+    name = "cpu_wasm64",
     constraint_values = [
-        "@platforms//os:macos",
-        "@platforms//cpu:x86_64",
-    ],
-)
-
-config_setting(
-    name = "macos_arm64",
-    constraint_values = [
-        "@platforms//os:macos",
-        "@platforms//cpu:arm64",
-    ],
-)
-
-config_setting(
-    name = "windows",
-    constraint_values = [
-        "@platforms//os:windows",
-        "@platforms//cpu:x86_64",
+        "@platforms//cpu:wasm64",
     ],
 )
 
@@ -37,10 +19,10 @@ filegroup(name = "empty")
 alias(
     name = "compiler_files",
     actual = select({
-        ":linux": "@emscripten_bin_linux//:compiler_files",
-        ":macos": "@emscripten_bin_mac//:compiler_files",
-        ":macos_arm64": "@emscripten_bin_mac_arm64//:compiler_files",
-        ":windows": "@emscripten_bin_win//:compiler_files",
+        "@bazel_tools//src/conditions:linux_x86_64": "@emscripten_bin_linux//:compiler_files",
+        "@bazel_tools//src/conditions:darwin_x86_64": "@emscripten_bin_mac//:compiler_files",
+        "@bazel_tools//src/conditions:darwin_arm64": "@emscripten_bin_mac_arm64//:compiler_files",
+        "@bazel_tools//src/conditions:windows": "@emscripten_bin_win//:compiler_files",
         "//conditions:default": ":empty",
     }),
 )
@@ -48,10 +30,10 @@ alias(
 alias(
     name = "linker_files",
     actual = select({
-        ":linux": "@emscripten_bin_linux//:linker_files",
-        ":macos": "@emscripten_bin_mac//:linker_files",
-        ":macos_arm64": "@emscripten_bin_mac_arm64//:linker_files",
-        ":windows": "@emscripten_bin_win//:linker_files",
+        "@bazel_tools//src/conditions:linux_x86_64": "@emscripten_bin_linux//:linker_files",
+        "@bazel_tools//src/conditions:darwin_x86_64": "@emscripten_bin_mac//:linker_files",
+        "@bazel_tools//src/conditions:darwin_arm64": "@emscripten_bin_mac_arm64//:linker_files",
+        "@bazel_tools//src/conditions:windows": "@emscripten_bin_win//:linker_files",
         "//conditions:default": ":empty",
     }),
 )
@@ -59,10 +41,10 @@ alias(
 alias(
     name = "ar_files",
     actual = select({
-        ":linux": "@emscripten_bin_linux//:ar_files",
-        ":macos": "@emscripten_bin_mac//:ar_files",
-        ":macos_arm64": "@emscripten_bin_mac_arm64//:ar_files",
-        ":windows": "@emscripten_bin_win//:ar_files",
+        "@bazel_tools//src/conditions:linux_x86_64": "@emscripten_bin_linux//:ar_files",
+        "@bazel_tools//src/conditions:darwin_x86_64": "@emscripten_bin_mac//:ar_files",
+        "@bazel_tools//src/conditions:darwin_arm64": "@emscripten_bin_mac_arm64//:ar_files",
+        "@bazel_tools//src/conditions:windows": "@emscripten_bin_win//:ar_files",
         "//conditions:default": ":empty",
     }),
 )
