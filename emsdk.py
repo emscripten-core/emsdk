@@ -529,6 +529,8 @@ def untargz(source_filename, dest_dir):
 def fix_potentially_long_windows_pathname(pathname):
   if not WINDOWS:
     return pathname
+  if MSYS:
+    return pathname
   # Test if emsdk calls fix_potentially_long_windows_pathname() with long
   # relative paths (which is problematic)
   if not os.path.isabs(pathname) and len(pathname) > 200:
