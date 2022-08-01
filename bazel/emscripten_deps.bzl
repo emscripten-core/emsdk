@@ -14,7 +14,7 @@ filegroup(
         "emscripten/cache/sysroot/include/c++/v1/**",
         "emscripten/cache/sysroot/include/compat/**",
         "emscripten/cache/sysroot/include/**",
-        "lib/clang/15.0.0/include/**",
+        "lib/clang/16.0.0/include/**",
     ]),
 )
 
