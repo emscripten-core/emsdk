@@ -2,7 +2,7 @@
 # DO NOT MODIFY
 
 EMSCRIPTEN_TAGS = {
-    "3.1.19": struct(
+    "3.1.18-2": struct(
         hash = "49d45744895c7d7e28acd94a385d7ee361653b4a",
         sha_linux = "6ef373c4ff3cdf33d7beecea47d4eaee7795693f8ca9469f33785cb9c54f40bb",
         sha_mac = "ad0e645abdb6d3f0b6c6ad0ee70761010a712949c9b0b193aefc78ecbc3f1710",
