@@ -12,7 +12,13 @@ variables:
     value: ''
   - name: _InternalPublishArg
     value: ''
+  - name: PostBuildSign
+    value: true
 
+  # If post build signing, then OSX and Linux don't publish during their main pass. Otherwise, always publish
+  - ${{ if eq(variables['PostBuildSign'], 'true') }}:
+    - name: _NonWindowsInternalPublishArg
+      value: -publish
   - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - name: _RunAsPublic
       value: False
@@ -25,8 +31,6 @@ variables:
     - group: Publish-Build-Assets
     - group: DotNet-HelixApi-Access
     - group: SDL_Settings
-    - name: _InternalPublishArg
-      value: -publish
     - name: _InternalBuildArgs
       value: /p:DotNetSignType=$(_SignType) 
         /p:TeamName=$(_TeamName)

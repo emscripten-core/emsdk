@@ -3,7 +3,6 @@
    <PropertyGroup>
       <PublishingVersion>3</PublishingVersion>
       <AutoGenerateSymbolPackages>false</AutoGenerateSymbolPackages> <!-- we don't need symbol packages for emsdk -->
-      <PostBuildSign>true</PostBuildSign>
    </PropertyGroup>
 
   <PropertyGroup>
