@@ -16,8 +16,8 @@ variables:
     value: true
 
   # If post build signing, then OSX and Linux don't publish during their main pass. Otherwise, always publish
-  - ${{ if eq(variables['PostBuildSign'], 'true') }}:
-    - name: _NonWindowsInternalPublishArg
+  - name: _NonWindowsInternalPublishArg
+    ${{ if eq(variables['PostBuildSign'], 'true') }}:
       value: -publish
   - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - name: _RunAsPublic
