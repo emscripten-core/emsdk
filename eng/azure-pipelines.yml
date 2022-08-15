@@ -25,6 +25,7 @@ stages:
       enablePublishBuildArtifacts: true
       enablePublishBuildAssets: true
       enablePublishUsingPipelines: true
+      enableMicrobuild: true
       variables:
         - _BuildConfig: Release
       jobs:
@@ -37,13 +38,32 @@ stages:
           vmImage: macOS-10.15
         steps:
         - bash: |
-            ./build.sh -ci -configuration $(_BuildConfig) $(_InternalPublishArg) /p:PackageRID=osx-x64 /p:AssetManifestOS=osx /p:PlatformName=x64 $(_InternalBuildArgs)
-          displayName: Build and Publish
+            ./build.sh -ci -configuration $(_BuildConfig) /p:PackageRID=osx-x64 /p:AssetManifestOS=osx /p:PlatformName=x64 $(_InternalBuildArgs) $(_NonWindowsInternalPublishArg)
+          displayName: Build
         - publish: artifacts/packages
           artifact: Packages_macOS
         - bash: |
             rm -rf upstream node python
           displayName: Remove temporary artifacts
+
+      # Only run in case of in-build signing
+      - ${{ if and(ne(variables['System.TeamProject'], 'public'), ne(variables['Build.Reason'], 'PullRequest'), ne(variables['PostBuildSign'], 'true')) }}:
+        - job: Sign_macOS
+          dependsOn: Build_macOS
+          displayName: Sign macOS
+          timeoutInMinutes: 30
+          pool:
+            name: NetCore1ESPool-Internal
+            demands: ImageOverride -equals Build.Server.Amd64.VS2019
+          steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifact: Packages_macOS
+              path: 'artifacts/packages'
+
+          - powershell: |
+              ./eng/common/build.ps1 -ci -configuration $(_BuildConfig) -restore -sign -publish /p:PackageRID=osx-x64 /p:AssetManifestOS=osx /p:PlatformName=x64 $(_InternalBuildArgs)
+            displayName: Sign and Publish
 
       ############ Linux BUILD ############
       - job: Build_Linux
@@ -57,18 +77,37 @@ stages:
             demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
         steps:
         - bash: |
-            ./build.sh -ci -configuration $(_BuildConfig) $(_InternalPublishArg) /p:PackageRID=linux-x64 /p:AssetManifestOS=linux /p:PlatformName=x64 $(_InternalBuildArgs)
-          displayName: Build and Publish
+            ./build.sh -ci -configuration $(_BuildConfig) /p:PackageRID=linux-x64 /p:AssetManifestOS=linux /p:PlatformName=x64 $(_InternalBuildArgs) $(_NonWindowsInternalPublishArg)
+          displayName: Build
         - publish: artifacts/packages
           artifact: Packages_Linux
         - bash: |
             rm -rf upstream node python
           displayName: Remove temporary artifacts
 
+      # Only run in case of in-build signing
+      - ${{ if and(ne(variables['System.TeamProject'], 'public'), ne(variables['Build.Reason'], 'PullRequest'), ne(variables['PostBuildSign'], 'true')) }}:
+        - job: Sign_Linux
+          dependsOn: Build_Linux
+          displayName: Sign Linux
+          timeoutInMinutes: 30
+          pool:
+            name: NetCore1ESPool-Internal
+            demands: ImageOverride -equals Build.Server.Amd64.VS2019
+          steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifact: Packages_Linux
+              path: 'artifacts/packages'
+
+          - powershell: |
+              ./eng/common/build.ps1 -ci -configuration $(_BuildConfig) -restore -sign -publish /p:PackageRID=linux-x64 /p:AssetManifestOS=linux /p:PlatformName=x64 $(_InternalBuildArgs)
+            displayName: Sign and Publish
+
       ############ Windows BUILD ############
       - job: Build_Windows
         displayName: Windows
-        timeoutInMinutes: 30
+        timeoutInMinutes: 60
         pool:
           ${{ if eq(variables['System.TeamProject'], 'public') }}:
             vmImage: windows-2019
@@ -105,7 +144,7 @@ stages:
           displayName: Fetch storage.googleapis.com certificate
           condition: eq(variables['System.TeamProject'], 'internal')
         - script: |
-            .\build.cmd -ci -configuration $(_BuildConfig) $(_InternalPublishArg) /p:PackageRID=win-x64 /p:AssetManifestOS=win /p:PlatformName=x64 /p:workloadPackagesPath=$(Build.SourcesDirectory)\artifacts\packages\$(_BuildConfig)\Shipping $(_InternalBuildArgs)
+            .\build.cmd -ci -configuration $(_BuildConfig) -sign -publish /p:PackageRID=win-x64 /p:AssetManifestOS=win /p:PlatformName=x64 /p:workloadPackagesPath=$(Build.SourcesDirectory)\artifacts\packages\$(_BuildConfig)\Shipping $(_InternalBuildArgs)
           displayName: Build and Publish
         - publish: artifacts/packages
           artifact: Packages_Windows
