@@ -2,6 +2,10 @@ variables:
   - template: /eng/common-variables.yml
   - name: Build.Repository.Clean
     value: true
+  - name: CheckNuGetSizesScript
+    value: >-
+      $nupkgs_large=(Get-ChildItem artifacts/packages/$(_BuildConfig)/Shipping -recurse -include "*.nupkg" | Select-Object Name,Length | Where-Object { $_.Length -gt 250*1MB });
+      if ($nupkgs_large.Length -gt 0) { Write-Error "NuGet size exceeds 250MiB: $($nupkgs_large | Format-Table | Out-String)"; exit 1 }
 
 trigger:
   batch: true
@@ -45,6 +49,8 @@ stages:
         - bash: |
             rm -rf upstream node python
           displayName: Remove temporary artifacts
+        - powershell: $(CheckNuGetSizesScript)
+          displayName: Check NuGet sizes
 
       # Only run in case of in-build signing
       - ${{ if and(ne(variables['System.TeamProject'], 'public'), ne(variables['Build.Reason'], 'PullRequest'), ne(variables['PostBuildSign'], 'true')) }}:
@@ -84,6 +90,8 @@ stages:
         - bash: |
             rm -rf upstream node python
           displayName: Remove temporary artifacts
+        - powershell: $(CheckNuGetSizesScript)
+          displayName: Check NuGet sizes
 
       # Only run in case of in-build signing
       - ${{ if and(ne(variables['System.TeamProject'], 'public'), ne(variables['Build.Reason'], 'PullRequest'), ne(variables['PostBuildSign'], 'true')) }}:
@@ -175,6 +183,8 @@ stages:
             artifactName: 'Workloads'
           continueOnError: true
           condition: always()
+        - powershell: $(CheckNuGetSizesScript)
+          displayName: Check NuGet sizes
 
 ############ POST BUILD ARCADE LOGIC ############
 - ${{ if and(ne(variables['System.TeamProject'], 'public'), ne(variables['Build.Reason'], 'PullRequest')) }}:
