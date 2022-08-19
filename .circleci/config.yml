@@ -58,8 +58,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install cmake
-          command: brew install cmake python
+          name: Install cmake/python2
+          command: brew install cmake python2
       - run: test/test.sh
       - run:
           name: test.py
