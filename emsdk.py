@@ -56,7 +56,13 @@ extra_release_tag = None
 # Enable this to do very verbose printing about the different steps that are
 # being run. Useful for debugging.
 VERBOSE = int(os.getenv('EMSDK_VERBOSE', '0'))
+QUIET = int(os.getenv('EMSDK_QUIET', '0'))
 TTY_OUTPUT = not os.getenv('EMSDK_NOTTY', not sys.stdout.isatty())
+
+
+def info(msg):
+  if not QUIET:
+    print(msg, file=sys.stderr)
 
 
 def errlog(msg):
@@ -2663,10 +2669,10 @@ def get_env_vars_to_add(tools_to_activate, system, user):
     env_vars_to_add += [('PATH', newpath)]
 
     if added_path:
-      errlog('Adding directories to PATH:')
+      info('Adding directories to PATH:')
       for item in added_path:
-        errlog('PATH += ' + item)
-      errlog('')
+        info('PATH += ' + item)
+      info('')
 
   # A core variable EMSDK points to the root of Emscripten SDK directory.
   env_vars_to_add += [('EMSDK', to_unix_path(emsdk_path()))]
@@ -2705,6 +2711,7 @@ def get_env_vars_to_add(tools_to_activate, system, user):
 
 
 def construct_env(tools_to_activate, system, user):
+  info('Setting up EMSDK environment (suppress these messages with EMSDK_QUIET=1)')
   return construct_env_with_vars(get_env_vars_to_add(tools_to_activate, system, user))
 
 
@@ -2723,13 +2730,13 @@ def unset_env(key):
 def construct_env_with_vars(env_vars_to_add):
   env_string = ''
   if env_vars_to_add:
-    errlog('Setting environment variables:')
+    info('Setting environment variables:')
 
     for key, value in env_vars_to_add:
       # Don't set env vars which are already set to the correct value.
       if key in os.environ and to_unix_path(os.environ[key]) == to_unix_path(value):
         continue
-      errlog(key + ' = ' + value)
+      info(key + ' = ' + value)
       if POWERSHELL:
         env_string += '$env:' + key + '="' + value + '"\n'
       elif CMD:
@@ -2757,9 +2764,9 @@ def construct_env_with_vars(env_vars_to_add):
                      'EMSDK_NUM_CORES', 'EMSDK_NOTTY', 'EMSDK_KEEP_DOWNLOADS'])
   env_keys_to_add = set(pair[0] for pair in env_vars_to_add)
   for key in os.environ:
-    if key.startswith('EMSDK_') or key.startswith('EM_'):
+    if key.startswith('EMSDK_') or key.startswith('EM_CACHE'):
       if key not in env_keys_to_add and key not in ignore_keys:
-        errlog('Clearing existing environment variable: %s' % key)
+        info('Clearing existing environment variable: %s' % key)
         env_string += unset_env(key)
 
   return env_string
