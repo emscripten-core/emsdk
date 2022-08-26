@@ -7,7 +7,6 @@
     <FileExtensionSignInfo Update="@(FileExtensionSignInfo)" CertificateName="3PartySHA2" />
     <FileExtensionSignInfo Update=".nupkg" CertificateName="NuGet" />
     <FileExtensionSignInfo Update=".zip" CertificateName="None" />
-    <FileExtensionSignInfo Include=".cat" CertificateName="3PartySHA2" />
     <FileExtensionSignInfo Include=".msi" CertificateName="MicrosoftDotNet500" />
     <FileExtensionSignInfo Include=".pyd" CertificateName="3PartySHA2" />
 
@@ -18,6 +17,9 @@
     <FileExtensionSignInfo Update=".ps1" CertificateName="None" />
     <FileExtensionSignInfo Update=".js" CertificateName="None" />
     <FileExtensionSignInfo Include=".vbs" CertificateName="None" />
+
+    <!-- python.cat is already signed and cannot be re-signed -->
+    <FileSignInfo Include="python.cat" CertificateName="None" />
   </ItemGroup>
   
   <ItemGroup>

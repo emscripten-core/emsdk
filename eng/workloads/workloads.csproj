@@ -64,16 +64,23 @@
 
     <!-- Shorten package names to avoid long path issues in Visual Studio -->
     <ItemGroup>
+      <ShortNames Include="microsoft.net.workload.emscripten.net;Microsoft.NET.Workload.Emscripten.net">
+        <Replacement>Emsdk.</Replacement>
+      </ShortNames>
       <ShortNames Include="microsoft.netcore.app.runtime;Microsoft.NETCore.App.Runtime;microsoft.net.runtime;Microsoft.NET.Runtime">
         <Replacement>Microsoft</Replacement>
       </ShortNames>
     </ItemGroup>
 
     <ItemGroup>
-      <ManifestPackages Include="$(PackageSource)Microsoft.NET.Workload.Emscripten.Manifest*.nupkg" />
+      <ManifestPackages Include="$(PackageSource)Microsoft.NET.Workload.Emscripten.*Manifest*.nupkg" />
     </ItemGroup>
 
+    <Error Text="Could not find any manifest packages in $(PackageSource)"
+           Condition="@(ManifestPackages -> Count()) == 0" />
+
     <CreateVisualStudioWorkload BaseIntermediateOutputPath="$(WorkloadIntermediateOutputPath)"
+          AllowMissingPacks="True"
           BaseOutputPath="$(WorkloadOutputPath)"
           ComponentResources="$(ComponentResources)"
           PackageSource="$(PackageSource)"

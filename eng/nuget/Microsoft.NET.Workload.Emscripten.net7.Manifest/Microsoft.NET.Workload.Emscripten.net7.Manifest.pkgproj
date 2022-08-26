@@ -13,7 +13,7 @@
   <Target Name="_PrepareForPack" BeforeTargets="GetPackageFiles" Returns="@(PackageFile)">
     <!-- Override the id to include the sdk band as per the workload installer spec -->
     <PropertyGroup>
-      <Id>Microsoft.NET.Workload.Emscripten.Manifest-$(WorkloadSdkBandVersion)</Id>
+      <Id>Microsoft.NET.Workload.Emscripten.net7.Manifest-$(WorkloadSdkBandVersion)</Id>
     </PropertyGroup>
 
     <PropertyGroup>

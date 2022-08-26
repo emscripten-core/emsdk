@@ -12,8 +12,12 @@ variables:
     value: ''
   - name: _InternalPublishArg
     value: ''
-  - name: PostBuildSign
-    value: true
+  - ${{ if or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/')) }}:
+    - name: PostBuildSign
+      value: false
+  - ${{ else }}:
+    - name: PostBuildSign
+      value: true
 
   # If post build signing, then OSX and Linux don't publish during their main pass. Otherwise, always publish
   - name: _NonWindowsInternalPublishArg

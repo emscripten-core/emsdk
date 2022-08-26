@@ -1,0 +1,7 @@
+<Project>
+  <ImportGroup Condition="'$(RuntimeIdentifier)' == 'browser-wasm' and '$(UsingBrowserRuntimeWorkload)' == 'true' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionEquals('$(TargetFrameworkVersion)', '6.0'))">
+    <Import Project="Sdk.props" Sdk="Microsoft.NET.Runtime.Emscripten.Python.net6" Condition="!$([MSBuild]::IsOsPlatform('Linux'))" />
+    <Import Project="Sdk.props" Sdk="Microsoft.NET.Runtime.Emscripten.Node.net6" />
+    <Import Project="Sdk.props" Sdk="Microsoft.NET.Runtime.Emscripten.Sdk.net6" />
+  </ImportGroup>
+</Project>
