@@ -15,8 +15,7 @@
 
   <ItemGroup>
     <_InstallersToPublish Include="$(ArtifactsDir)**\*.wixpack.zip" />
-    <_InstallerManifestFilesToPublish Include="$(ArtifactsDir)VSSetup\$(Configuration)\Insertion\**\*.json" />
-    <_InstallerManifestFilesToPublish Include="$(ArtifactsDir)VSSetup\$(Configuration)\Insertion\**\*.msi" />
+    <_InstallerManifestFilesToPublish Include="$(ArtifactsDir)VSSetup\$(Configuration)\Insertion\**\*.zip" />
   </ItemGroup>
 
   <Target Name="_PublishInstallers">
