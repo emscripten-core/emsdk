@@ -39,7 +39,7 @@ stages:
         displayName: macOS
         timeoutInMinutes: 30
         pool:
-          vmImage: macOS-10.15
+          vmImage: macOS-11
         steps:
         - bash: |
             ./build.sh -ci -configuration $(_BuildConfig) /p:PackageRID=osx-x64 /p:AssetManifestOS=osx /p:PlatformName=x64 $(_InternalBuildArgs) $(_NonWindowsInternalPublishArg)
