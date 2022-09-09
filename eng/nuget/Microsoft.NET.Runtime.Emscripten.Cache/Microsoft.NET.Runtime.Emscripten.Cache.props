@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <ArtifactsDirToPackage>$(ArtifactsObjDir).cache-sdk\</ArtifactsDirToPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <File Include="$(ArtifactsDirToPackage)**" TargetPath="tools\%(RecursiveDir)" SkipPackageFileCheck="true" />
+    <File Include="$(RepoRoot)eng\sdk_files\Emscripten.Cache.props" TargetPath="Sdk\Sdk.props" SkipPackageFileCheck="true" />
+    <File Include="$(RepoRoot)eng\sdk_files\Emscripten.Cache.targets" TargetPath="Sdk\Sdk.targets" SkipPackageFileCheck="true" />
+  </ItemGroup>
+</Project>

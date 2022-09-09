@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <EmscriptenCacheSdkToolsPath>$(MSBuildThisFileDirectory)..\tools\</EmscriptenCacheSdkToolsPath>
+    <EmscriptenCacheSdkCacheDir>$([MSBuild]::NormalizeDirectory('$(EmscriptenCacheSdkToolsPath)', 'emscripten', 'cache'))</EmscriptenCacheSdkCacheDir>
+  </PropertyGroup>
+
+</Project>

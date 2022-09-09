@@ -7,6 +7,7 @@
       "packs": [
         "Microsoft.NET.Runtime.Emscripten.Node.net7",
         "Microsoft.NET.Runtime.Emscripten.Python.net7",
+        "Microsoft.NET.Runtime.Emscripten.Cache.net7",
         "Microsoft.NET.Runtime.Emscripten.Sdk.net7"
       ],
       "platforms": [ "win-x64", "linux-x64", "osx-x64", "osx-arm64" ]
@@ -30,6 +31,16 @@
         "win-x64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Python.win-x64",
         "osx-x64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Python.osx-x64",
         "osx-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Python.osx-x64"
+      }
+    },
+    "Microsoft.NET.Runtime.Emscripten.Cache.net7" : {
+      "kind": "Sdk",
+      "version": "${PackageVersion}",
+      "alias-to": {
+        "win-x64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Cache.win-x64",
+        "linux-x64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Cache.linux-x64",
+        "osx-x64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Cache.osx-x64",
+        "osx-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Cache.osx-x64"
       }
     },
     "Microsoft.NET.Runtime.Emscripten.Sdk.net7" : {

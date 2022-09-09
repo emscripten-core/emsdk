@@ -22,5 +22,7 @@
     <Import Project="Sdk.props" Sdk="Microsoft.NET.Runtime.Emscripten.Python.net7" Condition="!$([MSBuild]::IsOsPlatform('Linux'))" />
     <Import Project="Sdk.props" Sdk="Microsoft.NET.Runtime.Emscripten.Node.net7" />
     <Import Project="Sdk.props" Sdk="Microsoft.NET.Runtime.Emscripten.Sdk.net7" />
+    <Import Project="Sdk.props" Sdk="Microsoft.NET.Runtime.Emscripten.Cache.net7" />
+    <Import Project="Sdk.targets" Sdk="Microsoft.NET.Runtime.Emscripten.Cache.net7" />
   </ImportGroup>
 </Project>

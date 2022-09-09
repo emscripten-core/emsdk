@@ -124,29 +124,42 @@
     <Delete Files="$(ArtifactsObjDir)upstream\emscripten\third_party\*.*" />
     <!--<Delete Files="$(ArtifactsObjDir)upstream\bin\wasm-ld.exe" />--> <!-- TODO: this is used by emcc but could be a symlink to ld.exe -->
 
+    <PropertyGroup>
+      <CacheSdkFilesDir>$(ArtifactsObjDir)\.cache-sdk\</CacheSdkFilesDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <CacheSdkFilesToMove Include="$(ArtifactsObjDir)upstream\emscripten\cache\**\*" />
+    </ItemGroup>
+
+    <!-- move the emscripten cache to a separate directory -->
+    <Move SourceFiles="@(CacheSdkFilesToMove)"
+          DestinationFiles="$(CacheSdkFilesDir)emscripten\cache\%(RecursiveDir)%(Filename)%(Extension)" />
+
     <ItemGroup>
       <!-- delete these libs from the cache to reduce windows nuget size context: https://github.com/dotnet/emsdk/pull/34#issuecomment-872691739 -->
-      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libasan_js.a" />
-      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libasan_rt-mt.a" />
-      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libasan_rt.a" />
-      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libc_rt_wasm-asan-optz.a" />
-      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libc_rt_wasm-asan.a" />
-      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libc-asan.a" />
-      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libc-mt-asan.a" />
-      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\liblsan_common_rt-mt.a" />
-      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\liblsan_common_rt.a" />
-      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\liblsan_rt-mt.a" />
-      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\liblsan_rt.a" />
-      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libprintf_long_double-asan.a" />
-      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libprintf_long_double-mt-asan.a" />
-      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libsanitizer_common_rt-mt.a" />
-      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libsanitizer_common_rt.a" />
-      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libubsan_minimal_rt_wasm-mt.a" />
-      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libubsan_minimal_rt_wasm.a" />
-      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libubsan_rt-mt.a" />
-      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\libubsan_rt.a" />
-      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\lib*-mt.a" />
-      <DeleteCacheFiles Include="$(ArtifactsObjDir)upstream\emscripten\cache\sysroot\lib\wasm32-emscripten\lib*-mt-*.a" />
+      <DeleteCacheFiles Include="$(CacheSdkFilesDir)emscripten\cache\sysroot\lib\wasm32-emscripten\libasan_js.a" />
+      <DeleteCacheFiles Include="$(CacheSdkFilesDir)emscripten\cache\sysroot\lib\wasm32-emscripten\libasan_rt-mt.a" />
+      <DeleteCacheFiles Include="$(CacheSdkFilesDir)emscripten\cache\sysroot\lib\wasm32-emscripten\libasan_rt.a" />
+      <DeleteCacheFiles Include="$(CacheSdkFilesDir)emscripten\cache\sysroot\lib\wasm32-emscripten\libc_rt_wasm-asan-optz.a" />
+      <DeleteCacheFiles Include="$(CacheSdkFilesDir)emscripten\cache\sysroot\lib\wasm32-emscripten\libc_rt_wasm-asan.a" />
+      <DeleteCacheFiles Include="$(CacheSdkFilesDir)emscripten\cache\sysroot\lib\wasm32-emscripten\libc-asan.a" />
+      <DeleteCacheFiles Include="$(CacheSdkFilesDir)emscripten\cache\sysroot\lib\wasm32-emscripten\libc-mt-asan.a" />
+      <DeleteCacheFiles Include="$(CacheSdkFilesDir)emscripten\cache\sysroot\lib\wasm32-emscripten\liblsan_common_rt-mt.a" />
+      <DeleteCacheFiles Include="$(CacheSdkFilesDir)emscripten\cache\sysroot\lib\wasm32-emscripten\liblsan_common_rt.a" />
+      <DeleteCacheFiles Include="$(CacheSdkFilesDir)emscripten\cache\sysroot\lib\wasm32-emscripten\liblsan_rt-mt.a" />
+      <DeleteCacheFiles Include="$(CacheSdkFilesDir)emscripten\cache\sysroot\lib\wasm32-emscripten\liblsan_rt.a" />
+      <DeleteCacheFiles Include="$(CacheSdkFilesDir)emscripten\cache\sysroot\lib\wasm32-emscripten\libprintf_long_double-asan.a" />
+      <DeleteCacheFiles Include="$(CacheSdkFilesDir)emscripten\cache\sysroot\lib\wasm32-emscripten\libprintf_long_double-mt-asan.a" />
+      <DeleteCacheFiles Include="$(CacheSdkFilesDir)emscripten\cache\sysroot\lib\wasm32-emscripten\libsanitizer_common_rt-mt.a" />
+      <DeleteCacheFiles Include="$(CacheSdkFilesDir)emscripten\cache\sysroot\lib\wasm32-emscripten\libsanitizer_common_rt.a" />
+      <DeleteCacheFiles Include="$(CacheSdkFilesDir)emscripten\cache\sysroot\lib\wasm32-emscripten\libubsan_minimal_rt_wasm-mt.a" />
+      <DeleteCacheFiles Include="$(CacheSdkFilesDir)emscripten\cache\sysroot\lib\wasm32-emscripten\libubsan_minimal_rt_wasm.a" />
+      <DeleteCacheFiles Include="$(CacheSdkFilesDir)emscripten\cache\sysroot\lib\wasm32-emscripten\libubsan_rt-mt.a" />
+      <DeleteCacheFiles Include="$(CacheSdkFilesDir)emscripten\cache\sysroot\lib\wasm32-emscripten\libubsan_rt.a" />
+      <!-- delete the non-pthreads Emscripten WebWorker API libs -->
+      <DeleteCacheFiles Include="$(CacheSdkFilesDir)emscripten\cache\sysroot\lib\wasm32-emscripten\lib*-ww.a" />
+      <DeleteCacheFiles Include="$(CacheSdkFilesDir)emscripten\cache\sysroot\lib\wasm32-emscripten\lib*-ww-*.a" />
     </ItemGroup>
     <Delete Files="@(DeleteCacheFiles)" />
 
@@ -165,6 +178,7 @@
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.Node\Microsoft.NET.Runtime.Emscripten.Node.pkgproj" Targets="Build" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.Python\Microsoft.NET.Runtime.Emscripten.Python.pkgproj" Targets="Build" Condition="'$(UsesPythonFromEmsdk)' == 'true'" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.Sdk\Microsoft.NET.Runtime.Emscripten.Sdk.pkgproj" Targets="Build" />
+    <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.Cache\Microsoft.NET.Runtime.Emscripten.Cache.pkgproj" Targets="Build" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Workload.Emscripten.net6.Manifest\Microsoft.NET.Workload.Emscripten.net6.Manifest.pkgproj" Targets="Build" Condition="'$(AssetManifestOS)' == '' or '$(AssetManifestOS)' == 'win'" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Workload.Emscripten.net7.Manifest\Microsoft.NET.Workload.Emscripten.net7.Manifest.pkgproj" Targets="Build" Condition="'$(AssetManifestOS)' == '' or '$(AssetManifestOS)' == 'win'" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.Sdk.Internal\Microsoft.NET.Runtime.Emscripten.Sdk.Internal.pkgproj" Targets="Build" Condition="'$(OS)' == 'Windows_NT'" />
