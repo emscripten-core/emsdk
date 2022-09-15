@@ -625,6 +625,27 @@
   },
   {
     "id": "ninja",
+    "version": "1.13.2",
+    "bitness": 64,
+    "windows_url": "ninja-1.13.2-win-x64.zip",
+    "linux_url": "ninja-1.13.2-linux-x64.zip",
+    "macos_url": "ninja-1.13.2-mac.zip",
+    "arch": "x86_64",
+    "activated_cfg": "NINJA_ROOT='%installation_dir%'",
+    "activated_path": "%installation_dir%"
+  },
+  {
+    "id": "ninja",
+    "version": "1.13.2",
+    "bitness": 64,
+    "macos_url": "ninja-1.13.2-mac.zip",
+    "os": "macos",
+    "arch": "arm64",
+    "activated_cfg": "NINJA_ROOT='%installation_dir%'",
+    "activated_path": "%installation_dir%"
+  },
+  {
+    "id": "ninja",
     "version": "git-release",
     "bitness": 64,
     "url": "https://github.com/ninja-build/ninja.git",
