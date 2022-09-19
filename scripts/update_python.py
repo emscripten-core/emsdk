@@ -31,12 +31,12 @@ import subprocess
 import sys
 from subprocess import check_call
 
-version = '3.9.2'
+version = '3.10.7'
 major_minor_version = '.'.join(version.split('.')[:2])  # e.g. '3.9.2' -> '3.9'
 download_url = 'https://www.nuget.org/api/v2/package/python/%s' % version
-revision = '4'
+revision = '1'
 
-pywin32_version = '227'
+pywin32_version = '304'
 pywin32_base = 'https://github.com/mhammond/pywin32/releases/download/b%s/' % pywin32_version
 
 upload_base = 'gs://webassembly/emscripten-releases-builds/deps/'

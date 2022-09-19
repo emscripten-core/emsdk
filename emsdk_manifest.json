@@ -432,6 +432,15 @@
   },
   {
     "id": "python",
+    "version": "3.10.7-nuget",
+    "bitness": 64,
+    "arch": "x86_64",
+    "windows_url": "python-3.10.7-1-amd64+pywin32.zip",
+    "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
+  },
+  {
+    "id": "python",
     "version": "3.9.2",
     "bitness": 64,
     "arch": "x86_64",
