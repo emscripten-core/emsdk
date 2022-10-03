@@ -142,6 +142,9 @@ elif machine.endswith('86'):
   ARCH = 'x86'
 elif machine.startswith('aarch64') or machine.lower().startswith('arm64'):
   ARCH = 'aarch64'
+  if WINDOWS:
+      errlog('No support for Windows on Arm, fallback to x64')
+      ARCH = 'x86_64'
 elif machine.startswith('arm'):
   ARCH = 'arm'
 else:
