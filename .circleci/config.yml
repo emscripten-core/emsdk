@@ -140,8 +140,7 @@ jobs:
       - run:
           name: install docker
           command: apt-get update -q && apt-get install -q -y docker.io
-      - setup_remote_docker:
-          version: 20.10.17
+      - setup_remote_docker
       # Build and test the tip-of-tree build of EMSDK
       - run:
           name: build
@@ -157,8 +156,7 @@ jobs:
       - run:
           name: install docker
           command: apt-get update -q && apt-get install -q -y docker.io
-      - setup_remote_docker:
-          version: 20.10.17
+      - setup_remote_docker
       - run:
           name: build
           command: make -C ./docker version=${CIRCLE_TAG} build
