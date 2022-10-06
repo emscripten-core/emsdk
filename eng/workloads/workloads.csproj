@@ -74,9 +74,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ManifestPackages Include="$(PackageSource)Microsoft.NET.Workload.Emscripten*.Manifest*.nupkg"
+      <ManifestPackages Include="$(PackageSource)Microsoft.NET.Workload.Emscripten.Manifest-%(WorkloadSdkBandVersions.Identity).nupkg"
                         Exclude="$(PackageSource)Microsoft.NET.Workload.Emscripten*.Manifest*.msi*.nupkg"
-                        MsiVersion="$(MsiVersion)"/>
+                        MsiVersion="$(MsiVersion)"
+                        SupportsMachineArch="%(SupportsMachineArch)" />
     </ItemGroup>
 
     <Error Text="Could not find any manifest packages in $(PackageSource)"
