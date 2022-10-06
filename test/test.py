@@ -10,9 +10,9 @@ import unittest
 WINDOWS = sys.platform.startswith('win')
 MACOS = sys.platform == 'darwin'
 
-assert 'EM_CONFIG' in os.environ, "emsdk should be activated before running this script"
+emconfig = os.path.abspath('.emscripten')
+assert os.path.exists(emconfig)
 
-emconfig = os.environ['EM_CONFIG']
 upstream_emcc = os.path.join('upstream', 'emscripten', 'emcc')
 fastcomp_emcc = os.path.join('fastcomp', 'emscripten', 'emcc')
 emsdk = './emsdk'

@@ -2676,7 +2676,6 @@ def get_env_vars_to_add(tools_to_activate, system, user):
 
   # A core variable EMSDK points to the root of Emscripten SDK directory.
   env_vars_to_add += [('EMSDK', to_unix_path(emsdk_path()))]
-  env_vars_to_add += [('EM_CONFIG', os.path.normpath(dot_emscripten_path()))]
 
   for tool in tools_to_activate:
     config = tool.activated_config()
@@ -2692,6 +2691,9 @@ def get_env_vars_to_add(tools_to_activate, system, user):
       #   https://github.com/emscripten-core/emscripten/pull/11091
       # - Default to embedded cache also started in 1.39.16
       #   https://github.com/emscripten-core/emscripten/pull/11126
+      # - Emscripten supports automatically locating the embedded
+      #   config in 1.39.13:
+      #   https://github.com/emscripten-core/emscripten/pull/10935
       #
       # Since setting EM_CACHE in the environment effects the entire machine
       # we want to avoid this except when installing these older emscripten
@@ -2700,6 +2702,8 @@ def get_env_vars_to_add(tools_to_activate, system, user):
       if version < [1, 39, 16]:
         em_cache_dir = os.path.join(config['EMSCRIPTEN_ROOT'], 'cache')
         env_vars_to_add += [('EM_CACHE', em_cache_dir)]
+      if version < [1, 39, 13]:
+        env_vars_to_add += [('EM_CONFIG', os.path.normpath(dot_emscripten_path()))]
 
     envs = tool.activated_environment()
     for env in envs:
@@ -2764,7 +2768,7 @@ def construct_env_with_vars(env_vars_to_add):
                      'EMSDK_NUM_CORES', 'EMSDK_NOTTY', 'EMSDK_KEEP_DOWNLOADS'])
   env_keys_to_add = set(pair[0] for pair in env_vars_to_add)
   for key in os.environ:
-    if key.startswith('EMSDK_') or key.startswith('EM_CACHE'):
+    if key.startswith('EMSDK_') or key in ('EM_CACHE', 'EM_CONFIG'):
       if key not in env_keys_to_add and key not in ignore_keys:
         info('Clearing existing environment variable: %s' % key)
         env_string += unset_env(key)

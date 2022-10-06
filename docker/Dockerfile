@@ -64,7 +64,6 @@ COPY --from=stage_build /emsdk /emsdk
 # This will let use tools offered by this image inside other Docker images
 # (sub-stages) or with custom / no entrypoint
 ENV EMSDK=/emsdk \
-    EM_CONFIG=/emsdk/.emscripten \
     EMSDK_NODE=/emsdk/node/14.18.2_64bit/bin/node \
     PATH="/emsdk:/emsdk/upstream/emscripten:/emsdk/upstream/bin:/emsdk/node/14.18.2_64bit/bin:${PATH}"
 
