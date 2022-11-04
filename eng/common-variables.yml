@@ -40,3 +40,9 @@ variables:
         /p:TeamName=$(_TeamName)
         /p:DotNetPublishUsingPipelines=true
         /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+    - name: Codeql.Enabled
+      value: True
+    - name: Codeql.BuildIdentifier
+      value: $(System.JobDisplayName)
+    - name: Codeql.TSAEnabled
+      value: True
