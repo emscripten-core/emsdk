@@ -163,7 +163,6 @@ def _wasm_cc_binary_legacy_impl(ctx):
     )
 
 _wasm_cc_binary = rule(
-    name = "wasm_cc_binary",
     implementation = _wasm_cc_binary_impl,
     attrs = dict(
         _WASM_BINARY_COMMON_ATTRS,
@@ -193,7 +192,6 @@ def _wasm_binary_legacy_outputs(name, cc_target):
     return outputs
 
 _wasm_cc_binary_legacy = rule(
-    name = "wasm_cc_binary",
     implementation = _wasm_cc_binary_legacy_impl,
     attrs = _WASM_BINARY_COMMON_ATTRS,
     outputs = _wasm_binary_legacy_outputs,
