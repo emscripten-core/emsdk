@@ -1,4 +1,4 @@
-FROM ubuntu:focal AS stage_build
+FROM ubuntu:jammy AS stage_build
 
 ARG EMSCRIPTEN_VERSION=tot
 ENV EMSDK /emsdk
@@ -56,7 +56,7 @@ RUN echo "## Aggressive optimization: Remove debug symbols" \
 # -------------------------------- STAGE DEPLOY --------------------------------
 # ------------------------------------------------------------------------------
 
-FROM ubuntu:focal AS stage_deploy
+FROM ubuntu:jammy AS stage_deploy
 
 COPY --from=stage_build /emsdk /emsdk
 
@@ -105,7 +105,7 @@ RUN echo "## Update and install packages" \
         build-essential \
         make \
         ant \
-        libidn11 \
+        libidn12 \
         cmake \
         openjdk-11-jre-headless \
     # Standard Cleanup on Debian images
