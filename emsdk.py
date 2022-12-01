@@ -191,15 +191,13 @@ def to_unix_path(p):
   return p.replace('\\', '/')
 
 
-def emsdk_path():
-  return to_unix_path(os.path.dirname(os.path.realpath(__file__)))
-
+EMSDK_PATH = to_unix_path(os.path.dirname(os.path.realpath(__file__)))
 
 EMSDK_SET_ENV = ""
 if POWERSHELL:
-  EMSDK_SET_ENV = os.path.join(emsdk_path(), 'emsdk_set_env.ps1')
+  EMSDK_SET_ENV = os.path.join(EMSDK_PATH, 'emsdk_set_env.ps1')
 else:
-  EMSDK_SET_ENV = os.path.join(emsdk_path(), 'emsdk_set_env.bat')
+  EMSDK_SET_ENV = os.path.join(EMSDK_PATH, 'emsdk_set_env.bat')
 
 
 # Parses https://github.com/emscripten-core/emscripten/tree/d6aced8 to a pair (https://github.com/emscripten-core/emscripten, d6aced8)
@@ -486,7 +484,7 @@ def sdk_path(path):
   if os.path.isabs(path):
     return path
 
-  return to_unix_path(os.path.join(emsdk_path(), path))
+  return to_unix_path(os.path.join(EMSDK_PATH, path))
 
 
 # Removes a single file, suppressing exceptions on failure.
@@ -1615,7 +1613,7 @@ def to_native_path(p):
 # Finds and returns a list of the directories that need to be added to PATH for
 # the given set of tools.
 def get_required_path(active_tools):
-  path_add = [to_native_path(emsdk_path())]
+  path_add = [to_native_path(EMSDK_PATH)]
   for tool in active_tools:
     if hasattr(tool, 'activated_path'):
       path = to_native_path(tool.expand_vars(tool.activated_path))
@@ -1625,11 +1623,8 @@ def get_required_path(active_tools):
 
 # Returns the absolute path to the file '.emscripten' for the current user on
 # this system.
-def dot_emscripten_path():
-  return os.path.join(emsdk_path(), ".emscripten")
-
-
-dot_emscripten = {}
+EM_CONFIG_PATH = os.path.join(EMSDK_PATH, ".emscripten")
+EM_CONFIG_DICT = {}
 
 
 def parse_key_value(line):
@@ -1644,23 +1639,23 @@ def parse_key_value(line):
     return (key, '')
 
 
-def load_dot_emscripten():
-  dot_emscripten.clear()
+def load_em_config():
+  EM_CONFIG_DICT.clear()
   lines = []
   try:
-    lines = open(dot_emscripten_path(), "r").read().split('\n')
+    lines = open(EM_CONFIG_PATH, "r").read().split('\n')
   except:
     pass
   for line in lines:
     try:
       key, value = parse_key_value(line)
       if value != '':
-        dot_emscripten[key] = value
+        EM_CONFIG_DICT[key] = value
     except:
       pass
 
 
-def generate_dot_emscripten(active_tools):
+def generate_em_config(active_tools):
   cfg = 'import os\n'
   cfg += "emsdk_path = os.path.dirname(os.getenv('EM_CONFIG')).replace('\\\\', '/')\n"
 
@@ -1685,17 +1680,17 @@ COMPILER_ENGINE = NODE_JS
 JS_ENGINES = [NODE_JS]
 '''
 
-  cfg = cfg.replace("'" + emsdk_path(), "emsdk_path + '")
+  cfg = cfg.replace("'" + EMSDK_PATH, "emsdk_path + '")
 
-  if os.path.exists(dot_emscripten_path()):
-    backup_path = dot_emscripten_path() + ".old"
-    move_with_overwrite(dot_emscripten_path(), backup_path)
+  if os.path.exists(EM_CONFIG_PATH):
+    backup_path = EM_CONFIG_PATH + ".old"
+    move_with_overwrite(EM_CONFIG_PATH, backup_path)
 
-  with open(dot_emscripten_path(), "w") as text_file:
+  with open(EM_CONFIG_PATH, "w") as text_file:
     text_file.write(cfg)
 
   # Clear old emscripten content.
-  rmfile(os.path.join(emsdk_path(), ".emscripten_sanity"))
+  rmfile(os.path.join(EMSDK_PATH, ".emscripten_sanity"))
 
   path_add = get_required_path(active_tools)
   if not WINDOWS:
@@ -1927,16 +1922,16 @@ class Tool(object):
       return len(deps) > 0
 
     for key, value in activated_cfg.items():
-      if key not in dot_emscripten:
+      if key not in EM_CONFIG_DICT:
         debug_print(str(self) + ' is not active, because key="' + key + '" does not exist in .emscripten')
         return False
 
       # all paths are stored dynamically relative to the emsdk root, so
       # normalize those first.
-      dot_emscripten_key = dot_emscripten[key].replace("emsdk_path + '", "'" + emsdk_path())
-      dot_emscripten_key = dot_emscripten_key.strip("'")
-      if dot_emscripten_key != value:
-        debug_print(str(self) + ' is not active, because key="' + key + '" has value "' + dot_emscripten_key + '" but should have value "' + value + '"')
+      config_value = EM_CONFIG_DICT[key].replace("emsdk_path + '", "'" + EMSDK_PATH)
+      config_value = config_value.strip("'")
+      if config_value != value:
+        debug_print(str(self) + ' is not active, because key="' + key + '" has value "' + config_value + '" but should have value "' + value + '"')
         return False
     return True
 
@@ -2013,7 +2008,7 @@ class Tool(object):
     if getattr(self, 'custom_install_script', None) == 'emscripten_npm_install':
       # upstream tools have hardcoded paths that are not stored in emsdk_manifest.json registry
       install_path = 'upstream' if 'releases-upstream' in self.version else 'fastcomp'
-      emscripten_dir = os.path.join(emsdk_path(), install_path, 'emscripten')
+      emscripten_dir = os.path.join(EMSDK_PATH, install_path, 'emscripten')
       # Older versions of the sdk did not include the node_modules directory
       # and require `npm ci` to be run post-install
       if not os.path.exists(os.path.join(emscripten_dir, 'node_modules')):
@@ -2278,14 +2273,14 @@ def python_2_3_sorted(arr, cmp):
 
 
 def is_emsdk_sourced_from_github():
-  return os.path.exists(os.path.join(emsdk_path(), '.git'))
+  return os.path.exists(os.path.join(EMSDK_PATH, '.git'))
 
 
 def update_emsdk():
   if is_emsdk_sourced_from_github():
     errlog('You seem to have bootstrapped Emscripten SDK by cloning from GitHub. In this case, use "git pull" instead of "emsdk update" to update emsdk. (Not doing that automatically in case you have local changes)')
     sys.exit(1)
-  if not download_and_unzip(emsdk_zip_download_url, emsdk_path(), clobber=False):
+  if not download_and_unzip(emsdk_zip_download_url, EMSDK_PATH, clobber=False):
     sys.exit(1)
 
 
@@ -2547,7 +2542,7 @@ def process_tool_list(tools_to_activate):
 
 
 def write_set_env_script(env_string):
-  assert(CMD or POWERSHELL)
+  assert CMD or POWERSHELL
   open(EMSDK_SET_ENV, 'w').write(env_string)
 
 
@@ -2562,7 +2557,7 @@ def set_active_tools(tools_to_activate, permanently_activate, system):
     print('Setting the following tools as active:\n   ' + '\n   '.join(map(lambda x: str(x), tools)))
     print('')
 
-  generate_dot_emscripten(tools_to_activate)
+  generate_em_config(tools_to_activate)
 
   # Construct a .bat or .ps1 script that will be invoked to set env. vars and PATH
   # We only do this on cmd or powershell since emsdk.bat/ps1 is able to modify the
@@ -2630,12 +2625,11 @@ def adjusted_path(tools_to_activate, system=False, user=False):
     existing_path = win_get_environment_variable('PATH', system=system, user=user, fallback=True).split(ENVPATH_SEPARATOR)
   else:
     existing_path = os.environ['PATH'].split(ENVPATH_SEPARATOR)
-  emsdk_root_path = to_unix_path(emsdk_path())
 
   existing_emsdk_tools = []
   existing_nonemsdk_path = []
   for entry in existing_path:
-    if to_unix_path(entry).startswith(emsdk_root_path):
+    if to_unix_path(entry).startswith(EMSDK_PATH):
       existing_emsdk_tools.append(entry)
     else:
       existing_nonemsdk_path.append(entry)
@@ -2678,7 +2672,7 @@ def get_env_vars_to_add(tools_to_activate, system, user):
       info('')
 
   # A core variable EMSDK points to the root of Emscripten SDK directory.
-  env_vars_to_add += [('EMSDK', to_unix_path(emsdk_path()))]
+  env_vars_to_add += [('EMSDK', EMSDK_PATH)]
 
   for tool in tools_to_activate:
     config = tool.activated_config()
@@ -2706,7 +2700,7 @@ def get_env_vars_to_add(tools_to_activate, system, user):
         em_cache_dir = os.path.join(config['EMSCRIPTEN_ROOT'], 'cache')
         env_vars_to_add += [('EM_CACHE', em_cache_dir)]
       if version < [1, 39, 13]:
-        env_vars_to_add += [('EM_CONFIG', os.path.normpath(dot_emscripten_path()))]
+        env_vars_to_add += [('EM_CONFIG', os.path.normpath(EM_CONFIG_PATH))]
 
     envs = tool.activated_environment()
     for env in envs:
@@ -3020,7 +3014,7 @@ def main(args):
     activating = cmd == 'activate'
     args = [expand_sdk_name(a, activating=activating) for a in args]
 
-  load_dot_emscripten()
+  load_em_config()
   load_sdk_manifest()
 
   # Apply any overrides to git branch names to clone from.
