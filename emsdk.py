@@ -38,7 +38,7 @@ else:
   from urllib2 import urlopen
 
 
-skip_npm = False
+skip_node = False
 
 emsdk_packages_url = 'https://storage.googleapis.com/webassembly/emscripten-releases-builds/deps/'
 
@@ -1400,8 +1400,7 @@ def find_latest_installed_tool(name):
 
 # npm install in Emscripten root directory
 def emscripten_npm_install(tool, directory):
-  global skip_npm
-  if skip_npm:
+  if skip_node:
     return True
   node_tool = find_latest_installed_tool('node')
   if not node_tool:
@@ -1875,12 +1874,11 @@ class Tool(object):
     return None
 
   def is_installed(self, skip_version_check=False):
-    global skip_npm
     # If this tool/sdk depends on other tools, require that all dependencies are
     # installed for this tool to count as being installed.
     if hasattr(self, 'uses'):
       for tool_name in self.uses:
-        if skip_npm:
+        if skip_node:
           if tool_name.startswith('node') or tool_name.startswith('npm'):
             continue
         tool = find_tool(tool_name)
@@ -2530,7 +2528,7 @@ def process_tool_list(tools_to_activate):
     tools_to_activate = tools_to_activate[:i] + deps + tools_to_activate[i:]
     i += len(deps) + 1
 
-  if skip_npm:
+  if skip_node:
     tools_to_activate = [t for t in tools_to_activate if (not t.name.startswith("node-"))]
 
   for tool in tools_to_activate:
@@ -2999,8 +2997,8 @@ def main(args):
         value = args[i + 1]
         del args[i:i + 2]
         return value
-  global skip_npm
-  skip_npm = extract_bool_arg('--skip-npm')
+  global skip_node
+  skip_node = extract_bool_arg('--skip-npm')
   # errlog("--skip-npm found")
   arg_old = extract_bool_arg('--old')
   arg_uses = extract_bool_arg('--uses')
