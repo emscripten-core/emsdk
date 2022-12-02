@@ -1020,7 +1020,7 @@ def _impl(ctx):
         ),
         flag_set(
             actions = all_link_actions,
-            flags = ["-s", "STANDALONE_WASM"],
+            flags = ["-sSTANDALONE_WASM"],
             features = ["standalone_wasm"],
         ),
     ]
