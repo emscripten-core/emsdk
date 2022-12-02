@@ -441,6 +441,9 @@ def _impl(ctx):
             name = "output_format_js",
             enabled = True,
         ),
+        feature(
+            name = "standalone_wasm",
+        ),
     ]
 
     crosstool_default_flag_sets = [
@@ -1014,6 +1017,11 @@ def _impl(ctx):
             actions = all_compile_actions,
             flags = ["-Werror"],
             features = ["wasm_warnings_as_errors"],
+        ),
+        flag_set(
+            actions = all_link_actions,
+            flags = ["-s", "STANDALONE_WASM"],
+            features = ["standalone_wasm"],
         ),
     ]
 
