@@ -1769,8 +1769,8 @@ class Tool(object):
     if hasattr(self, 'cmake_build_type'):
       return True
 
-    if hasattr(self, 'uses'):
-      for tool_name in self.uses:
+    if hasattr(self, 'requires'):
+      for tool_name in self.requires:
         tool = find_tool(tool_name)
         if not tool:
           debug_print('Tool ' + str(self) + ' depends on ' + tool_name + ' which does not exist!')
@@ -1872,8 +1872,8 @@ class Tool(object):
   def is_installed(self, skip_version_check=False):
     # If this tool/sdk depends on other tools, require that all dependencies are
     # installed for this tool to count as being installed.
-    if hasattr(self, 'uses'):
-      for tool_name in self.uses:
+    if hasattr(self, 'requires'):
+      for tool_name in self.requires:
         tool = find_tool(tool_name)
         if tool is None:
           errlog("Manifest error: No tool by name '" + tool_name + "' found! This may indicate an internal SDK error!")
@@ -1995,7 +1995,7 @@ class Tool(object):
     print("Installing SDK '" + str(self) + "'..")
     installed = False
 
-    for tool_name in self.uses:
+    for tool_name in self.requires:
       tool = find_tool(tool_name)
       if tool is None:
         exit_with_error("manifest error: No tool by name '" + tool_name + "' found! This may indicate an internal SDK error!")
@@ -2115,21 +2115,21 @@ class Tool(object):
     print("Done uninstalling '" + str(self) + "'.")
 
   def dependencies(self):
-    if not hasattr(self, 'uses'):
+    if not hasattr(self, 'requires'):
       return []
     deps = []
 
-    for tool_name in self.uses:
+    for tool_name in self.requires:
       tool = find_tool(tool_name)
       if tool:
         deps += [tool]
     return deps
 
   def recursive_dependencies(self):
-    if not hasattr(self, 'uses'):
+    if not hasattr(self, 'requires'):
       return []
     deps = []
-    for tool_name in self.uses:
+    for tool_name in self.requires:
       tool = find_tool(tool_name)
       if tool:
         deps += [tool]
@@ -2393,7 +2393,7 @@ def load_sdk_manifest():
   releases_tags, releases_tags_fastcomp = load_releases_tags()
 
   def dependencies_exist(sdk):
-    for tool_name in sdk.uses:
+    for tool_name in sdk.requires:
       tool = find_tool(tool_name)
       if not tool:
         debug_print('missing dependency: ' + tool_name)
@@ -2436,8 +2436,8 @@ def load_sdk_manifest():
       if not found_param:
         continue
       t2.is_old = i < len(category_list) - 2
-      if hasattr(t2, 'uses'):
-        t2.uses = [x.replace(param, ver) for x in t2.uses]
+      if hasattr(t2, 'requires'):
+        t2.requires = [x.replace(param, ver) for x in t2.requires]
 
       # Filter out expanded tools by version requirements, such as ["tag", "<=", "1.37.22"]
       if hasattr(t2, 'version_filter'):
@@ -2855,12 +2855,12 @@ def main(args):
     print(' emsdk: Available commands:')
 
     print('''
-   emsdk list [--old] [--uses]  - Lists all available SDKs and tools and their
-                                  current installation status. With the --old
-                                  parameter, also historical versions are
-                                  shown. If --uses is passed, displays the
-                                  composition of different SDK packages and
-                                  dependencies.
+   emsdk list [--old] [--depends]  - Lists all available SDKs and tools and their
+                                     current installation status. With the --old
+                                     parameter, also historical versions are
+                                     shown. If --depends is passed, displays the
+                                     composition of different SDK packages and
+                                     dependencies.
 
    emsdk update                 - Updates emsdk to the newest version. If you have
                                   bootstrapped emsdk via cloning directly from
@@ -2989,7 +2989,8 @@ def main(args):
         return value
 
   arg_old = extract_bool_arg('--old')
-  arg_uses = extract_bool_arg('--uses')
+  # For compat, allow the old --uses flag as well
+  arg_depends = extract_bool_arg('--depends') or extract_bool_arg('--uses')
   arg_permanent = extract_bool_arg('--permanent')
   arg_global = extract_bool_arg('--global')
   arg_system = extract_bool_arg('--system')
@@ -3113,8 +3114,8 @@ def main(args):
           installed = '\tINSTALLED' if sdk.is_installed() else ''
           active = '*' if sdk.is_active() else ' '
           print('    ' + active + '    {0: <25}'.format(str(sdk)) + installed)
-          if arg_uses:
-            for dep in sdk.uses:
+          if arg_depends:
+            for dep in sdk.requires:
               print('          - {0: <25}'.format(dep))
         print('')
       print('The additional following precompiled SDKs are also available for download:')
