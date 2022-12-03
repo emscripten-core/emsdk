@@ -654,19 +654,22 @@
   {
     "version": "upstream-main",
     "bitness": 64,
-    "requires": ["python-3.9.2-nuget-64bit", "llvm-git-main-64bit", "node-14.18.2-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
+    "requires": ["python-3.9.2-nuget-64bit", "llvm-git-main-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
+    "recommends": ["node-14.18.2-64bit"],
     "os": "win"
   },
   {
     "version": "upstream-main",
     "bitness": 64,
-    "requires": ["python-3.9.2-64bit", "llvm-git-main-64bit", "node-14.18.2-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
+    "requires": ["python-3.9.2-64bit", "llvm-git-main-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
+    "recommends": ["node-14.18.2-64bit"],
     "os": "macos"
   },
   {
     "version": "upstream-main",
     "bitness": 64,
-    "requires": ["llvm-git-main-64bit", "node-14.18.2-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
+    "requires": ["llvm-git-main-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
+    "recommends": ["node-14.18.2-64bit"],
     "os": "linux"
   },
   {
@@ -678,7 +681,8 @@
   {
     "version": "fastcomp-tag-%tag%",
     "bitness": 32,
-    "requires": ["fastcomp-clang-tag-e%tag%-32bit", "node-8.9.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-tag-%tag%-32bit", "binaryen-tag-%tag%-32bit"],
+    "requires": ["fastcomp-clang-tag-e%tag%-32bit", "python-2.7.13.1-32bit", "emscripten-tag-%tag%-32bit", "binaryen-tag-%tag%-32bit"],
+    "recommends": ["node-8.9.1-32bit", "java-8.152-32bit"],
     "os": "win",
     "version_filter": [
       ["%tag%", ">", "1.37.22"]
@@ -687,7 +691,8 @@
   {
     "version": "fastcomp-tag-%tag%",
     "bitness": 64,
-    "requires": ["fastcomp-clang-tag-e%tag%-64bit", "node-8.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-tag-%tag%-64bit", "binaryen-tag-%tag%-64bit"],
+    "requires": ["fastcomp-clang-tag-e%tag%-64bit", "python-2.7.13.1-64bit", "emscripten-tag-%tag%-64bit", "binaryen-tag-%tag%-64bit"],
+    "recommends": ["node-8.9.1-64bit", "java-8.152-64bit"],
     "os": "win",
     "version_filter": [
       ["%tag%", ">", "1.37.22"]
@@ -696,7 +701,8 @@
   {
     "version": "fastcomp-tag-%tag%",
     "bitness": 32,
-    "requires": ["fastcomp-clang-tag-e%tag%-32bit", "node-8.9.1-32bit", "emscripten-tag-%tag%-32bit", "binaryen-tag-%tag%-32bit"],
+    "requires": ["fastcomp-clang-tag-e%tag%-32bit", "emscripten-tag-%tag%-32bit", "binaryen-tag-%tag%-32bit"],
+    "recommends": ["node-8.9.1-32bit"],
     "os": "linux",
     "version_filter": [
       ["%tag%", ">", "1.37.22"]
@@ -705,7 +711,8 @@
   {
     "version": "fastcomp-tag-%tag%",
     "bitness": 64,
-    "requires": ["fastcomp-clang-tag-e%tag%-64bit", "node-8.9.1-64bit", "emscripten-tag-%tag%-64bit", "binaryen-tag-%tag%-64bit"],
+    "requires": ["fastcomp-clang-tag-e%tag%-64bit", "emscripten-tag-%tag%-64bit", "binaryen-tag-%tag%-64bit"],
+    "recommends": ["node-8.9.1-64bit"],
     "os": "unix",
     "version_filter": [
       ["%tag%", ">", "1.37.22"]
@@ -714,14 +721,16 @@
   {
     "version": "releases-upstream-%releases-tag%",
     "bitness": 64,
-    "requires": ["node-14.18.2-64bit", "releases-upstream-%releases-tag%-64bit"],
+    "requires": ["releases-upstream-%releases-tag%-64bit"],
+    "recommends": ["node-14.18.2-64bit"],
     "os": "linux",
     "custom_install_script": "emscripten_npm_install"
   },
   {
     "version": "releases-upstream-%releases-tag%",
     "bitness": 64,
-    "requires": ["node-14.18.2-64bit", "python-3.9.2-64bit", "releases-upstream-%releases-tag%-64bit"],
+    "requires": ["python-3.9.2-64bit", "releases-upstream-%releases-tag%-64bit"],
+    "recommends": ["node-14.18.2-64bit"],
     "os": "macos",
     "arch": "x86_64",
     "custom_install_script": "emscripten_npm_install"
@@ -729,7 +738,8 @@
   {
     "version": "releases-upstream-%releases-tag%",
     "bitness": 64,
-    "requires": ["node-14.18.2-64bit", "python-3.9.2-64bit", "releases-upstream-%releases-tag%-64bit"],
+    "requires": ["python-3.9.2-64bit", "releases-upstream-%releases-tag%-64bit"],
+    "recommends": ["node-14.18.2-64bit"],
     "os": "macos",
     "arch": "aarch64",
     "custom_install_script": "emscripten_npm_install"
@@ -737,21 +747,24 @@
   {
     "version": "releases-upstream-%releases-tag%",
     "bitness": 64,
-    "requires": ["node-14.18.2-64bit", "python-3.9.2-nuget-64bit", "java-8.152-64bit", "releases-upstream-%releases-tag%-64bit"],
+    "requires": ["python-3.9.2-nuget-64bit", "releases-upstream-%releases-tag%-64bit"],
+    "recommends": ["node-14.18.2-64bit", "java-8.152-64bit"],
     "os": "win",
     "custom_install_script": "emscripten_npm_install"
   },
   {
     "version": "releases-fastcomp-%releases-tag%",
     "bitness": 64,
-    "requires": ["node-14.18.2-64bit", "releases-fastcomp-%releases-tag%-64bit"],
+    "requires": ["releases-fastcomp-%releases-tag%-64bit"],
+    "recommends": ["node-14.18.2-64bit"],
     "os": "linux",
     "custom_install_script": "emscripten_npm_install"
   },
   {
     "version": "releases-fastcomp-%releases-tag%",
     "bitness": 64,
-    "requires": ["node-14.18.2-64bit", "python-3.7.4-2-64bit", "releases-fastcomp-%releases-tag%-64bit"],
+    "requires": ["python-3.7.4-2-64bit", "releases-fastcomp-%releases-tag%-64bit"],
+    "recommends": ["node-14.18.2-64bit"],
     "os": "macos",
     "arch": "x86_64",
     "custom_install_script": "emscripten_npm_install"
@@ -759,7 +772,8 @@
   {
     "version": "releases-fastcomp-%releases-tag%",
     "bitness": 64,
-    "requires": ["node-14.18.2-64bit", "python-3.9.2-64bit", "releases-fastcomp-%releases-tag%-64bit"],
+    "requires": ["python-3.9.2-64bit", "releases-fastcomp-%releases-tag%-64bit"],
+    "recommends": ["node-14.18.2-64bit"],
     "os": "macos",
     "arch": "aarch64",
     "custom_install_script": "emscripten_npm_install"
@@ -767,14 +781,16 @@
   {
     "version": "releases-fastcomp-%releases-tag%",
     "bitness": 64,
-    "requires": ["node-14.18.2-64bit", "python-3.7.4-pywin32-64bit", "java-8.152-64bit", "releases-fastcomp-%releases-tag%-64bit"],
+    "requires": ["python-3.7.4-pywin32-64bit", "releases-fastcomp-%releases-tag%-64bit"],
+    "recommends": ["node-14.18.2-64bit", "java-8.152-64bit"],
     "os": "win",
     "custom_install_script": "emscripten_npm_install"
   },
   {
     "version": "fastcomp-%precompiled_tag32%",
     "bitness": 32,
-    "requires": ["fastcomp-clang-e%precompiled_tag32%-32bit", "node-8.9.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-%precompiled_tag32%"],
+    "requires": ["fastcomp-clang-e%precompiled_tag32%-32bit", "python-2.7.13.1-32bit", "emscripten-%precompiled_tag32%"],
+    "recommends": ["node-8.9.1-32bit", "java-8.152-32bit"],
     "os": "win",
     "version_filter": [
       ["%precompiled_tag32%", ">", "1.37.22"]
@@ -783,7 +799,8 @@
   {
     "version": "fastcomp-%precompiled_tag64%",
     "bitness": 64,
-    "requires": ["fastcomp-clang-e%precompiled_tag64%-64bit", "node-8.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-%precompiled_tag64%"],
+    "requires": ["fastcomp-clang-e%precompiled_tag64%-64bit", "python-2.7.13.1-64bit", "emscripten-%precompiled_tag64%"],
+    "recommends": ["node-8.9.1-64bit", "java-8.152-64bit"],
     "os": "win",
     "version_filter": [
       ["%precompiled_tag64%", ">", "1.37.22"]
@@ -792,7 +809,8 @@
   {
     "version": "fastcomp-%precompiled_tag32%",
     "bitness": 32,
-    "requires": ["fastcomp-clang-e%precompiled_tag32%-32bit", "node-8.9.1-32bit", "emscripten-%precompiled_tag32%"],
+    "requires": ["fastcomp-clang-e%precompiled_tag32%-32bit", "emscripten-%precompiled_tag32%"],
+    "recommends": ["node-8.9.1-32bit"],
     "os": "linux",
     "version_filter": [
       ["%precompiled_tag32%", ">", "1.37.22"]
@@ -801,7 +819,8 @@
   {
     "version": "fastcomp-%precompiled_tag64%",
     "bitness": 64,
-    "requires": ["fastcomp-clang-e%precompiled_tag64%-64bit", "node-8.9.1-64bit", "emscripten-%precompiled_tag64%"],
+    "requires": ["fastcomp-clang-e%precompiled_tag64%-64bit", "emscripten-%precompiled_tag64%"],
+    "recommends": ["node-8.9.1-64bit"],
     "os": "linux",
     "version_filter": [
       ["%precompiled_tag64%", ">", "1.37.22"]
@@ -810,7 +829,8 @@
   {
     "version": "fastcomp-%precompiled_tag32%",
     "bitness": 32,
-    "requires": ["fastcomp-clang-e%precompiled_tag32%-32bit", "node-8.9.1-32bit", "python-3.7.4-2-64bit", "emscripten-%precompiled_tag32%"],
+    "requires": ["fastcomp-clang-e%precompiled_tag32%-32bit", "python-3.7.4-2-64bit", "emscripten-%precompiled_tag32%"],
+    "recommends": ["node-8.9.1-32bit"],
     "os": "macos",
     "arch": "x86_64",
     "version_filter": [
@@ -820,7 +840,8 @@
   {
     "version": "fastcomp-%precompiled_tag64%",
     "bitness": 64,
-    "requires": ["fastcomp-clang-e%precompiled_tag64%-64bit", "node-8.9.1-64bit", "python-3.7.4-2-64bit", "emscripten-%precompiled_tag64%"],
+    "requires": ["fastcomp-clang-e%precompiled_tag64%-64bit", "python-3.7.4-2-64bit", "emscripten-%precompiled_tag64%"],
+    "recommends": ["node-8.9.1-64bit"],
     "os": "macos",
     "arch": "x86_64",
     "version_filter": [
