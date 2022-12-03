@@ -23,7 +23,7 @@ COPY . ${EMSDK}
 
 RUN echo "## Install Emscripten" \
     && cd ${EMSDK} \
-    && ./emsdk install ${EMSCRIPTEN_VERSION} \
+    && ./emsdk install ${EMSCRIPTEN_VERSION} --no-install-recommends \
     && echo "## Done"
 
 # This generates configuration that contains all valid paths according to installed SDK
@@ -42,8 +42,6 @@ RUN cd ${EMSDK} \
 # Cleanup Emscripten installation and strip some symbols
 RUN echo "## Aggressive optimization: Remove debug symbols" \
     && cd ${EMSDK} && . ./emsdk_env.sh \
-    # Remove debugging symbols from embedded node (extra 7MB)
-    && strip -s `which node` \
     # Tests consume ~80MB disc space
     && rm -fr ${EMSDK}/upstream/emscripten/tests \
     # Fastcomp is not supported
@@ -64,8 +62,7 @@ COPY --from=stage_build /emsdk /emsdk
 # This will let use tools offered by this image inside other Docker images
 # (sub-stages) or with custom / no entrypoint
 ENV EMSDK=/emsdk \
-    EMSDK_NODE=/emsdk/node/14.18.2_64bit/bin/node \
-    PATH="/emsdk:/emsdk/upstream/emscripten:/emsdk/upstream/bin:/emsdk/node/14.18.2_64bit/bin:${PATH}"
+    PATH="/emsdk:/emsdk/upstream/emscripten:/emsdk/upstream/bin:${PATH}"
 
 # ------------------------------------------------------------------------------
 # Create a 'standard` 1000:1000 user
@@ -108,6 +105,9 @@ RUN echo "## Update and install packages" \
         libidn12 \
         cmake \
         openjdk-11-jre-headless \
+    # Install the latest LTS version of Node.js from NodeSource
+    && curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - \
+    && apt-get install -qqy nodejs \
     # Standard Cleanup on Debian images
     && apt-get -y clean \
     && apt-get -y autoclean \
