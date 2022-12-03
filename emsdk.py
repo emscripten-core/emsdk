@@ -1769,16 +1769,7 @@ class Tool(object):
     if hasattr(self, 'cmake_build_type'):
       return True
 
-    if hasattr(self, 'requires'):
-      for tool_name in self.requires:
-        tool = find_tool(tool_name)
-        if not tool:
-          debug_print('Tool ' + str(self) + ' depends on ' + tool_name + ' which does not exist!')
-          continue
-        if tool.needs_compilation():
-          return True
-
-    return False
+    return any(tool.needs_compilation() for tool in self.resolve_tools())
 
   # Specifies the target path where this tool will be installed to. This could
   # either be a directory or a filename (e.g. in case of node.js)
@@ -1870,16 +1861,15 @@ class Tool(object):
     return None
 
   def is_installed(self, skip_version_check=False):
-    # If this tool/sdk depends on other tools, require that all dependencies are
-    # installed for this tool to count as being installed.
-    if hasattr(self, 'requires'):
-      for tool_name in self.requires:
-        tool = find_tool(tool_name)
-        if tool is None:
-          errlog("Manifest error: No tool by name '" + tool_name + "' found! This may indicate an internal SDK error!")
-          return False
-        if not tool.is_installed():
-          return False
+    # If this tool/sdk depends on other tools, require that all non-weak
+    # dependencies are installed before it's count as installed.
+    for tool_name in self.dependencies(include_weak_deps=False):
+      tool = find_tool(tool_name)
+      if tool is None:
+        errlog("Manifest error: No tool by name '" + tool_name + "' found! This may indicate an internal SDK error!")
+        return False
+      if not tool.is_installed():
+        return False
 
     if self.download_url() is None:
       # This tool does not contain downloadable elements, so it is installed by default.
@@ -1911,8 +1901,8 @@ class Tool(object):
     if not self.is_installed():
       return False
 
-    # All dependencies of this tool must be active as well.
-    deps = self.dependencies()
+    # All non-weak dependencies of this tool must be active as well.
+    deps = self.resolve_tools(resolve_weak_deps=False)
     for tool in deps:
       if not tool.is_active():
         return False
@@ -1976,7 +1966,7 @@ class Tool(object):
     else:
       return None
 
-  def install(self):
+  def install(self, install_weak_deps):
     """Returns True if the Tool was installed of False if was skipped due to
     already being installed.
     """
@@ -1984,22 +1974,22 @@ class Tool(object):
       exit_with_error("The tool '" + str(self) + "' is not available due to the reason: " + self.can_be_installed())
 
     if self.id == 'sdk':
-      return self.install_sdk()
+      return self.install_sdk(install_weak_deps)
     else:
       return self.install_tool()
 
-  def install_sdk(self):
+  def install_sdk(self, install_weak_deps):
     """Returns True if any SDK component was installed of False all componented
     were already installed.
     """
     print("Installing SDK '" + str(self) + "'..")
     installed = False
 
-    for tool_name in self.requires:
+    for tool_name in self.dependencies(include_weak_deps=install_weak_deps):
       tool = find_tool(tool_name)
       if tool is None:
         exit_with_error("manifest error: No tool by name '" + tool_name + "' found! This may indicate an internal SDK error!")
-      installed |= tool.install()
+      installed |= tool.install(install_weak_deps)
 
     if not installed:
       print("All SDK components already installed: '" + str(self) + "'.")
@@ -2114,27 +2104,45 @@ class Tool(object):
     remove_tree(self.installation_path())
     print("Done uninstalling '" + str(self) + "'.")
 
-  def dependencies(self):
-    if not hasattr(self, 'requires'):
-      return []
+  def weak_dependencies(self):
     deps = []
-
-    for tool_name in self.requires:
-      tool = find_tool(tool_name)
-      if tool:
-        deps += [tool]
+    if hasattr(self, 'recommends'):
+      deps += self.recommends
     return deps
 
-  def recursive_dependencies(self):
-    if not hasattr(self, 'requires'):
-      return []
+  def dependencies(self, include_weak_deps=True):
     deps = []
-    for tool_name in self.requires:
-      tool = find_tool(tool_name)
-      if tool:
-        deps += [tool]
-        deps += tool.recursive_dependencies()
+    if hasattr(self, 'requires'):
+      deps += self.requires
+    if include_weak_deps:
+      deps += self.weak_dependencies()
     return deps
+
+  def resolve_tools(self, resolve_weak_deps=True, recursive=False):
+    tools = []
+    for tool_name in self.dependencies(include_weak_deps=resolve_weak_deps):
+      tool = find_tool(tool_name)
+      if tool is None:
+        debug_print('Tool ' + str(self) + ' depends on ' + tool_name + ' which does not exist!')
+        continue
+      tools += [tool]
+      if recursive:
+        tools += tool.resolve_tools(resolve_weak_deps, recursive=True)
+    return tools
+
+  # This tool should be treated as remnant or conflicting when:
+  #  - it's a weak-dependency on the given tool and not installed (non-installed
+  #    weak dependencies should not be made active at all)
+  #  - the id portion matches each other (i.e., different versions of the
+  #    same tool cannot be active at the same time)
+  def is_remnant_or_conflicting_with(self, tool):
+    if self.id == tool.id:
+      return True
+
+    if self.name in tool.weak_dependencies() and not self.is_installed():
+      return True
+
+    return False
 
 
 # A global registry of all known Emscripten SDK tools available in the SDK manifest.
@@ -2393,12 +2401,10 @@ def load_sdk_manifest():
   releases_tags, releases_tags_fastcomp = load_releases_tags()
 
   def dependencies_exist(sdk):
-    for tool_name in sdk.requires:
-      tool = find_tool(tool_name)
-      if not tool:
-        debug_print('missing dependency: ' + tool_name)
-        return False
-    return True
+    valid = all(find_tool(tool_name) for tool_name in sdk.dependencies())
+    if not valid:
+      debug_print('SDK ' + str(sdk) + ' depends on non-existent tools!')
+    return valid
 
   def cmp_version(ver, cmp_operand, reference):
     if cmp_operand == '<=':
@@ -2438,6 +2444,8 @@ def load_sdk_manifest():
       t2.is_old = i < len(category_list) - 2
       if hasattr(t2, 'requires'):
         t2.requires = [x.replace(param, ver) for x in t2.requires]
+      if hasattr(t2, 'recommends'):
+        t2.recommends = [x.replace(param, ver) for x in t2.recommends]
 
       # Filter out expanded tools by version requirements, such as ["tag", "<=", "1.37.22"]
       if hasattr(t2, 'version_filter'):
@@ -2504,40 +2512,35 @@ def load_sdk_manifest():
         add_sdk(sdk)
 
 
-# Tests if the two given tools can be active at the same time.
-# Currently only a simple check for name for same tool with different versions,
-# possibly adds more logic in the future.
-def can_simultaneously_activate(tool1, tool2):
-  return tool1.id != tool2.id
-
-
-# Expands dependencies for each tool, and removes ones that don't exist.
+# Expands dependencies for each tool, and removes the ones that are not installed
+# and are classified as a weak dependency or do not exist at all
 def process_tool_list(tools_to_activate):
   i = 0
   # Gather dependencies for each tool
   while i < len(tools_to_activate):
     tool = tools_to_activate[i]
-    deps = tool.recursive_dependencies()
+    deps = tool.resolve_tools(recursive=True)
     tools_to_activate = tools_to_activate[:i] + deps + tools_to_activate[i:]
     i += len(deps) + 1
 
-  for tool in tools_to_activate:
-    if not tool.is_installed():
-      exit_with_error("error: tool is not installed and therefore cannot be activated: '%s'" % tool)
-
-  # Remove conflicting tools
+  # Remove remnant or conflicting tools
   i = 0
   while i < len(tools_to_activate):
     j = 0
     while j < i:
       secondary_tool = tools_to_activate[j]
       primary_tool = tools_to_activate[i]
-      if not can_simultaneously_activate(primary_tool, secondary_tool):
+      if secondary_tool.is_remnant_or_conflicting_with(primary_tool):
         tools_to_activate.pop(j)
         j -= 1
         i -= 1
       j += 1
     i += 1
+
+  for tool in tools_to_activate:
+    if not tool.is_installed():
+      exit_with_error("error: tool is not installed and therefore cannot be activated: '%s'" % tool)
+
   return tools_to_activate
 
 
@@ -2576,6 +2579,7 @@ def set_active_tools(tools_to_activate, permanently_activate, system):
   return tools_to_activate
 
 
+# FIXME: unused function
 def currently_active_sdk():
   for sdk in reversed(sdks):
     if sdk.is_active():
@@ -2991,6 +2995,7 @@ def main(args):
   arg_old = extract_bool_arg('--old')
   # For compat, allow the old --uses flag as well
   arg_depends = extract_bool_arg('--depends') or extract_bool_arg('--uses')
+  arg_install_recommends = not extract_bool_arg('--no-install-recommends')
   arg_permanent = extract_bool_arg('--permanent')
   arg_global = extract_bool_arg('--global')
   arg_system = extract_bool_arg('--system')
@@ -3115,7 +3120,7 @@ def main(args):
           active = '*' if sdk.is_active() else ' '
           print('    ' + active + '    {0: <25}'.format(str(sdk)) + installed)
           if arg_depends:
-            for dep in sdk.requires:
+            for dep in sdk.dependencies(include_weak_deps=arg_install_recommends):
               print('          - {0: <25}'.format(dep))
         print('')
       print('The additional following precompiled SDKs are also available for download:')
@@ -3262,7 +3267,7 @@ def main(args):
         tool = find_sdk(t)
       if tool is None:
         error_on_missing_tool(t)
-      tool.install()
+      tool.install(arg_install_recommends)
     return 0
   elif cmd == 'uninstall':
     if not args:
