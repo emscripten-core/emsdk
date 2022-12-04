@@ -252,6 +252,12 @@ int main() {
     # Test that its possible to install emscripten as tool instead of SDK
     checked_call_with_output(emsdk + ' install releases-77b065ace39e6ab21446e13f92897f956c80476a', unexpected='Installing SDK')
 
+  def test_install_alias(self):
+    # 3.1.18 is 49d45744895c7d7e28acd94a385d7ee361653b4a
+    run_emsdk('install 3.1.18-base')
+    checked_call_with_output(emsdk + ' install install 3.1.18-base', unexpected='Installing SDK')
+    checked_call_with_output(emsdk + ' install install releases-upstream-49d45744895c7d7e28acd94a385d7ee361653b4a', unexpected='already downloaded, skipping', unexpected='Downloading:')
+
   def test_activate_missing(self):
     run_emsdk('install latest')
     failing_call_with_output(emsdk + ' activate 2.0.1', expected="error: tool is not installed and therefore cannot be activated: 'releases-13e29bd55185e3c12802bc090b4507901856b2ba-64bit'")

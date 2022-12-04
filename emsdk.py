@@ -2110,11 +2110,17 @@ def load_file_index_list(filename):
 def load_releases_info():
   if not hasattr(load_releases_info, 'cached_info'):
     try:
-      text = open(sdk_path('emscripten-releases-tags.json'), 'r').read()
-      load_releases_info.cached_info = json.loads(text)
+      with open(sdk_path('emscripten-releases-tags.json')) as f:
+        text = f.read()
+      info = json.loads(text)
     except Exception as e:
       print('Error parsing emscripten-releases-tags.json!')
       exit_with_error(str(e))
+    for key, value in dict(info['aliases']).items():
+      info['aliases'][key + '-base'] = value + '-base'
+    for key, value in dict(info['releases']).items():
+      info['releases'][key + '-base'] = value + '-base'
+    load_releases_info.cached_info = info
 
   return load_releases_info.cached_info
 
@@ -2589,20 +2595,25 @@ def expand_sdk_name(name, activating):
   #   sdk-x.y.z-64bit
   # TODO: support short notation for old builds too?
   fullname = name
-  version = fullname.replace('sdk-', '').replace('releases-', '').replace('-64bit', '').replace('tag-', '')
-  sdk = 'sdk-' if not name.startswith('releases-') else ''
+  version = fullname
+  for pattern in ('sdk-', 'releases-', '-64bit', 'tag-', '-base'):
+    version = version.replace(pattern, '')
+  if name.startswith('releases-') or name.endswith('-base'):
+    sdk_prefix = ''
+  else:
+    sdk_prefix = 'sdk-'
   releases_info = load_releases_info()['releases']
   release_hash = get_release_hash(version, releases_info)
   if release_hash:
     # Known release hash
-    full_name = '%sreleases-%s-64bit' % (sdk, release_hash)
+    full_name = '%sreleases-%s-64bit' % (sdk_prefix, release_hash)
     print("Resolving SDK version '%s' to '%s'" % (version, full_name))
     return full_name
 
   if len(version) == 40:
     global extra_release_tag
     extra_release_tag = version
-    return '%sreleases-%s-64bit' % (sdk, version)
+    return '%sreleases-%s-64bit' % (sdk_prefix, version)
 
   return name
 
@@ -2848,7 +2859,8 @@ def main(args):
     releases_versions = sorted(load_releases_versions(), key=version_key, reverse=True)
     releases_info = load_releases_info()['releases']
     for ver in releases_versions:
-      print('         %s    %s' % (ver, installed_sdk_text('sdk-releases-%s-64bit' % get_release_hash(ver, releases_info))))
+      if not ver.endswith('-base'):
+        print('         %s    %s' % (ver, installed_sdk_text('sdk-releases-%s-64bit' % get_release_hash(ver, releases_info))))
     print()
 
     # Use array to work around the lack of being able to mutate from enclosing
