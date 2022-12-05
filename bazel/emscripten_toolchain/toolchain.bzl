@@ -442,7 +442,7 @@ def _impl(ctx):
             enabled = True,
         ),
         feature(
-            name = "standalone_wasm",
+            name = "wasm_standalone",
         ),
     ]
 
@@ -1021,7 +1021,7 @@ def _impl(ctx):
         flag_set(
             actions = all_link_actions,
             flags = ["-sSTANDALONE_WASM"],
-            features = ["standalone_wasm"],
+            features = ["wasm_standalone"],
         ),
     ]
 
