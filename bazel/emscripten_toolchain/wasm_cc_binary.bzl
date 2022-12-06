@@ -25,6 +25,9 @@ def _wasm_transition_impl(settings, attr):
     if attr.simd:
         features.append("wasm_simd")
 
+    if attr.standalone:
+        features.append("wasm_standalone")
+
     return {
         "//command_line_option:compiler": "emscripten",
         "//command_line_option:crosstool_top": "@emsdk//emscripten_toolchain:everything",
@@ -84,6 +87,9 @@ _WASM_BINARY_COMMON_ATTRS = {
         values = ["_default", "emscripten", "off"],
     ),
     "simd": attr.bool(
+        default = False,
+    ),
+    "standalone": attr.bool(
         default = False,
     ),
     "_allowlist_function_transition": attr.label(
