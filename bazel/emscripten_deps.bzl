@@ -52,7 +52,6 @@ filegroup(
     name = "linker_files",
     srcs = [
         "bin/clang{bin_extension}",
-        "bin/llc{bin_extension}",
         "bin/llvm-ar{bin_extension}",
         "bin/llvm-nm{bin_extension}",
         "bin/llvm-objcopy{bin_extension}",
