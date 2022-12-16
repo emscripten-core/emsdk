@@ -1040,6 +1040,10 @@ def _impl(ctx):
                     key = "EM_CONFIG_PATH",
                     value = ctx.file.em_config.path,
                 ),
+                env_entry(
+                    key = "NODE_JS",
+                    value = ctx.file.node_binary.path,
+                )
             ],
         ),
         # Use llvm backend.  Off by default, enabled via --features=llvm_backend
@@ -1115,6 +1119,7 @@ emscripten_cc_toolchain_config_rule = rule(
         "em_config": attr.label(mandatory = True, allow_single_file = True),
         "emscripten_binaries": attr.label(mandatory = True, cfg = "exec"),
         "script_extension": attr.string(mandatory = True, values = ["sh", "bat"]),
+        "node_binary": attr.label(mandatory = True, allow_single_file = True, cfg = "exec"),
     },
     provides = [CcToolchainConfigInfo],
 )
