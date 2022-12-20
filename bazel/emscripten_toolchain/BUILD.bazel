@@ -62,7 +62,10 @@ emscripten_cc_toolchain_config_rule(
         "@bazel_tools//src/conditions:host_windows": "bat",
         "//conditions:default": "sh",
     }),
-    node_binary = "@nodejs//:node",
+    node_binary = select({
+        "@bazel_tools//src/conditions:host_windows": "@nodejs//:node_bin",
+        "//conditions:default": "@nodejs//:node",
+    }),
 )
 
 cc_toolchain(

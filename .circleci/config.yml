@@ -211,6 +211,7 @@ jobs:
     environment:
       PYTHONUNBUFFERED: "1"
       EMSDK_NOTTY: "1"
+      USE_BAZEL_VERSION: "5.4.0"
     steps:
       - checkout
       - run:
