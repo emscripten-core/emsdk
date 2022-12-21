@@ -2737,7 +2737,7 @@ def construct_env_with_vars(env_vars_to_add):
       # Don't set env vars which are already set to the correct value.
       if key in os.environ and to_unix_path(os.environ[key]) == to_unix_path(value):
         continue
-      info(key + ' = ' + value)
+      info(key + '=' + value)
       if POWERSHELL:
         env_string += '$env:' + key + '="' + value + '"\n'
       elif CMD:
