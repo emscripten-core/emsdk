@@ -128,7 +128,8 @@ def emscripten_deps(emscripten_version = "latest"):
             name = "emscripten_bin_linux_arm64",
             strip_prefix = "install",
             url = emscripten_url.format("linux", revision.hash, "-arm64", "tbz2"),
-            sha256 = revision.sha_linux_arm64,
+            # Not all versions have a linux/arm64 release: https://github.com/emscripten-core/emsdk/issues/547
+            sha256 = getattr(revision, "sha_linux_arm64", None),
             build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(bin_extension = ""),
             type = "tar.bz2",
         )
