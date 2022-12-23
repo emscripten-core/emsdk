@@ -1878,9 +1878,8 @@ class Tool(object):
     # installed for this tool to count as being installed.
     if hasattr(self, 'uses'):
       for tool_name in self.uses:
-        if skip_node:
-          if tool_name.startswith('node') or tool_name.startswith('npm'):
-            continue
+        if skip_node and tool_name.startswith('node'):
+          continue
         tool = find_tool(tool_name)
         if tool is None:
           errlog("Manifest error: No tool by name '" + tool_name + "' found! This may indicate an internal SDK error!")
