@@ -8,8 +8,7 @@ ignore =
 exclude =
   ./llvm
   ./gnu
-  ./upstream
-  ./fastcomp
+  ./prebuilt
   ./fastcomp-clang
   ./releases
   ./clang

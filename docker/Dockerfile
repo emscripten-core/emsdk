@@ -32,11 +32,11 @@ RUN echo "## Install Emscripten" \
 RUN cd ${EMSDK} \
     && echo "## Generate standard configuration" \
     && ./emsdk activate ${EMSCRIPTEN_VERSION} \
-    && chmod 777 ${EMSDK}/upstream/emscripten \
-    && chmod -R 777 ${EMSDK}/upstream/emscripten/cache \
+    && chmod 777 ${EMSDK}/prebuilt/emscripten \
+    && chmod -R 777 ${EMSDK}/prebuilt/emscripten/cache \
     && echo "int main() { return 0; }" > hello.c \
-    && ${EMSDK}/upstream/emscripten/emcc -c hello.c \
-    && cat ${EMSDK}/upstream/emscripten/cache/sanity.txt \
+    && ${EMSDK}/prebuilt/emscripten/emcc -c hello.c \
+    && cat ${EMSDK}/prebuilt/emscripten/cache/sanity.txt \
     && echo "## Done"
 
 # Cleanup Emscripten installation and strip some symbols
@@ -45,11 +45,11 @@ RUN echo "## Aggressive optimization: Remove debug symbols" \
     # Remove debugging symbols from embedded node (extra 7MB)
     && strip -s `which node` \
     # Tests consume ~80MB disc space
-    && rm -fr ${EMSDK}/upstream/emscripten/tests \
+    && rm -fr ${EMSDK}/prebuilt/emscripten/tests \
     # Fastcomp is not supported
-    && rm -fr ${EMSDK}/upstream/fastcomp \
+    && rm -fr ${EMSDK}/prebuilt/fastcomp \
     # strip out symbols from clang (~extra 50MB disc space)
-    && find ${EMSDK}/upstream/bin -type f -exec strip -s {} + || true \
+    && find ${EMSDK}/prebuilt/bin -type f -exec strip -s {} + || true \
     && echo "## Done"
 
 # ------------------------------------------------------------------------------
@@ -65,7 +65,7 @@ COPY --from=stage_build /emsdk /emsdk
 # (sub-stages) or with custom / no entrypoint
 ENV EMSDK=/emsdk \
     EMSDK_NODE=/emsdk/node/14.18.2_64bit/bin/node \
-    PATH="/emsdk:/emsdk/upstream/emscripten:/emsdk/upstream/bin:/emsdk/node/14.18.2_64bit/bin:${PATH}"
+    PATH="/emsdk:/emsdk/prebuilt/emscripten:/emsdk/prebuilt/bin:/emsdk/node/14.18.2_64bit/bin:${PATH}"
 
 # ------------------------------------------------------------------------------
 # Create a 'standard` 1000:1000 user

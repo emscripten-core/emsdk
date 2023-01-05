@@ -1919,9 +1919,9 @@ class Tool(object):
       return False
 
     if getattr(self, 'custom_install_script', None) == 'emscripten_npm_install':
-      # upstream tools have hardcoded paths that are not stored in emsdk_manifest.json registry
-      install_path = 'upstream'
-      emscripten_dir = os.path.join(EMSDK_PATH, install_path, 'emscripten')
+      # prebuilt sdk tools have hardcoded paths that are not stored in
+      # emsdk_manifest.json registry
+      emscripten_dir = os.path.join(EMSDK_PATH, 'prebuilt', 'emscripten')
       # Older versions of the sdk did not include the node_modules directory
       # and require `npm ci` to be run post-install
       if not os.path.exists(os.path.join(emscripten_dir, 'node_modules')):
@@ -2244,7 +2244,7 @@ def load_releases_info():
 
 
 def get_installed_sdk_version():
-  version_file = sdk_path(os.path.join('upstream', '.emsdk_version'))
+  version_file = sdk_path(os.path.join('prebuilt', '.emsdk_version'))
   if not os.path.exists(version_file):
     return None
   with open(version_file) as f:
