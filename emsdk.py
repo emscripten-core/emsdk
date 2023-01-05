@@ -3081,13 +3081,11 @@ def main(args):
     if (LINUX or MACOS or WINDOWS) and (ARCH == 'x86' or ARCH == 'x86_64'):
       print('The *recommended* precompiled SDK download is %s (%s).' % (find_latest_version(), find_latest_hash()))
       print()
-      print('To install/activate it, use one of:')
-      print('         latest                  [default (llvm) backend]')
-      print('         latest-fastcomp         [legacy (fastcomp) backend]')
+      print('To install/activate it use:')
+      print('         latest')
       print('')
-      print('Those are equivalent to installing/activating the following:')
+      print('This is equivalent to installing/activating:')
       print('         %s             %s' % (find_latest_version(), installed_sdk_text(find_latest_sdk('upstream'))))
-      print('         %s-fastcomp    %s' % (find_latest_version(), installed_sdk_text(find_latest_sdk('fastcomp'))))
       print('')
     else:
       print('Warning: your platform does not have precompiled SDKs available.')
