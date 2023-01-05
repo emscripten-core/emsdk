@@ -886,7 +886,7 @@ def exe_suffix(filename):
 
 # The directory where the binaries are produced. (relative to the installation
 # root directory of the tool)
-def fastcomp_build_bin_dir(tool):
+def llvm_build_bin_dir(tool):
   build_dir = llvm_build_dir(tool)
   if WINDOWS and 'Visual Studio' in CMAKE_GENERATOR:
     old_llvm_bin_dir = os.path.join(build_dir, 'bin', decide_cmake_build_type(tool))
@@ -1108,92 +1108,6 @@ def xcode_sdk_version():
     return subprocess.checkplatform.mac_ver()[0].split('.')
 
 
-def build_fastcomp(tool):
-  debug_print('build_fastcomp(' + str(tool) + ')')
-  fastcomp_root = tool.installation_path()
-  fastcomp_src_root = os.path.join(fastcomp_root, 'src')
-  # Does this tool want to be git cloned from github?
-  if hasattr(tool, 'git_branch'):
-    success = git_clone_checkout_and_pull(tool.download_url(), fastcomp_src_root, tool.git_branch)
-    if not success:
-      return False
-    if hasattr(tool, 'clang_url'):
-      clang_root = os.path.join(fastcomp_src_root, 'tools/clang')
-      success = git_clone_checkout_and_pull(tool.clang_url, clang_root, tool.git_branch)
-      if not success:
-        return False
-    if hasattr(tool, 'lld_url'):
-      lld_root = os.path.join(fastcomp_src_root, 'tools/lld')
-      success = git_clone_checkout_and_pull(tool.lld_url, lld_root, tool.git_branch)
-      if not success:
-        return False
-  else:
-    # Not a git cloned tool, so instead download from git tagged releases
-    success = download_and_unzip(tool.download_url(), fastcomp_src_root, filename_prefix='llvm-e')
-    if not success:
-      return False
-    success = download_and_unzip(tool.windows_clang_url if WINDOWS else tool.unix_clang_url, os.path.join(fastcomp_src_root, 'tools/clang'), filename_prefix='clang-e')
-    if not success:
-      return False
-
-  args = []
-
-  cmake_generator = CMAKE_GENERATOR
-  if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
-    # With Visual Studio 16 2019, CMake changed the way they specify target arch.
-    # Instead of appending it into the CMake generator line, it is specified
-    # with a -A arch parameter.
-    args += ['-A', 'x64' if tool.bitness == 64 else 'x86']
-  elif 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
-    cmake_generator += ' Win64'
-
-  build_dir = llvm_build_dir(tool)
-  build_root = os.path.join(fastcomp_root, build_dir)
-
-  build_type = decide_cmake_build_type(tool)
-
-  # Configure
-  tests_arg = 'ON' if BUILD_FOR_TESTING else 'OFF'
-
-  enable_assertions = ENABLE_LLVM_ASSERTIONS.lower() == 'on' or (ENABLE_LLVM_ASSERTIONS == 'auto' and build_type.lower() != 'release' and build_type.lower() != 'minsizerel')
-
-  only_supports_wasm = hasattr(tool, 'only_supports_wasm')
-  if ARCH == 'x86' or ARCH == 'x86_64':
-    targets_to_build = 'X86'
-  elif ARCH == 'arm':
-    targets_to_build = 'ARM'
-  elif ARCH == 'aarch64':
-    targets_to_build = 'AArch64'
-  else:
-    # May have problems with emconfigure
-    targets_to_build = ''
-  if not only_supports_wasm:
-    if targets_to_build != '':
-      targets_to_build += ';'
-    targets_to_build += 'JSBackend'
-  args += ['-DLLVM_TARGETS_TO_BUILD=' + targets_to_build, '-DLLVM_INCLUDE_EXAMPLES=OFF', '-DCLANG_INCLUDE_EXAMPLES=OFF', '-DLLVM_INCLUDE_TESTS=' + tests_arg, '-DCLANG_INCLUDE_TESTS=' + tests_arg, '-DLLVM_ENABLE_ASSERTIONS=' + ('ON' if enable_assertions else 'OFF')]
-  if os.getenv('LLVM_CMAKE_ARGS'):
-    extra_args = os.environ['LLVM_CMAKE_ARGS'].split(',')
-    print('Passing the following extra arguments to LLVM CMake configuration: ' + str(extra_args))
-    args += extra_args
-
-  # MacOS < 10.13 workaround for LLVM build bug https://github.com/kripken/emscripten/issues/5418:
-  # specify HAVE_FUTIMENS=0 in the build if building with target SDK that is older than 10.13.
-  if MACOS and ('HAVE_FUTIMENS' not in os.getenv('LLVM_CMAKE_ARGS', '')) and xcode_sdk_version() < ['10', '13']:
-    print('Passing -DHAVE_FUTIMENS=0 to LLVM CMake configure to workaround https://github.com/kripken/emscripten/issues/5418. Please update to macOS 10.13 or newer')
-    args += ['-DHAVE_FUTIMENS=0']
-
-  success = cmake_configure(cmake_generator, build_root, fastcomp_src_root, build_type, args)
-  if not success:
-    return False
-
-  # Make
-  success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'Win32')
-  return success
-
-
-# LLVM git source tree migrated to a single repository instead of multiple
-# ones, build_llvm() builds via that repository structure
 def build_llvm(tool):
   debug_print('build_llvm(' + str(tool) + ')')
   llvm_root = tool.installation_path()
@@ -1758,10 +1672,9 @@ class Tool(object):
     if '%generator_prefix%' in str:
       str = str.replace('%generator_prefix%', cmake_generator_prefix())
     str = str.replace('%.exe%', '.exe' if WINDOWS else '')
-    if '%fastcomp_build_dir%' in str:
-      str = str.replace('%fastcomp_build_dir%', llvm_build_dir(self))
-    if '%fastcomp_build_bin_dir%' in str:
-      str = str.replace('%fastcomp_build_bin_dir%', fastcomp_build_bin_dir(self))
+    if '%llvm_build_bin_dir%' in str:
+      str = str.replace('%llvm_build_bin_dir%', llvm_build_bin_dir(self))
+
     return str
 
   # Return true if this tool requires building from source, and false if this is a precompiled tool.
@@ -2007,7 +1920,7 @@ class Tool(object):
 
     if getattr(self, 'custom_install_script', None) == 'emscripten_npm_install':
       # upstream tools have hardcoded paths that are not stored in emsdk_manifest.json registry
-      install_path = 'upstream' if 'releases-upstream' in self.version else 'fastcomp'
+      install_path = 'upstream'
       emscripten_dir = os.path.join(EMSDK_PATH, install_path, 'emscripten')
       # Older versions of the sdk did not include the node_modules directory
       # and require `npm ci` to be run post-install
@@ -2033,9 +1946,7 @@ class Tool(object):
     print("Installing tool '" + str(self) + "'..")
     url = self.download_url()
 
-    if hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_fastcomp':
-      success = build_fastcomp(self)
-    elif hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_llvm':
+    if hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_llvm':
       success = build_llvm(self)
     elif hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_ninja':
       success = build_ninja(self)
@@ -2056,8 +1967,8 @@ class Tool(object):
         success = emscripten_post_install(self)
       elif self.custom_install_script == 'emscripten_npm_install':
         success = emscripten_npm_install(self, self.installation_path())
-      elif self.custom_install_script in ('build_fastcomp', 'build_llvm', 'build_ninja', 'build_ccache'):
-        # 'build_fastcomp' is a special one that does the download on its
+      elif self.custom_install_script in ('build_llvm', 'build_ninja', 'build_ccache'):
+        # 'build_llvm' is a special one that does the download on its
         # own, others do the download manually.
         pass
       elif self.custom_install_script == 'build_binaryen':
@@ -2344,25 +2255,22 @@ def get_installed_sdk_version():
 # Get a list of tags for emscripten-releases.
 def load_releases_tags():
   tags = []
-  tags_fastcomp = []
   info = load_releases_info()
 
   for version, sha in sorted(info['releases'].items(), key=lambda x: version_key(x[0])):
     tags.append(sha)
-    # Only include versions older than 1.39.0 in fastcomp releases
-    if version_key(version) < (2, 0, 0):
-      tags_fastcomp.append(sha)
 
   if extra_release_tag:
     tags.append(extra_release_tag)
 
   # Explicitly add the currently installed SDK version.  This could be a custom
-  # version (installed explicitly) so it might not be part of the main list loaded above.
+  # version (installed explicitly) so it might not be part of the main list
+  # loaded above.
   installed = get_installed_sdk_version()
   if installed and installed not in tags:
     tags.append(installed)
 
-  return tags, tags_fastcomp
+  return tags
 
 
 def load_releases_versions():
@@ -2390,7 +2298,7 @@ def load_sdk_manifest():
   llvm_precompiled_tags_64bit = load_file_index_list('llvm-tags-64bit.txt')
   llvm_precompiled_tags = llvm_precompiled_tags_32bit + llvm_precompiled_tags_64bit
   binaryen_tags = load_legacy_binaryen_tags()
-  releases_tags, releases_tags_fastcomp = load_releases_tags()
+  releases_tags = load_releases_tags()
 
   def dependencies_exist(sdk):
     for tool_name in sdk.uses:
@@ -2474,8 +2382,6 @@ def load_sdk_manifest():
         expand_category_param('%precompiled_tag64%', llvm_precompiled_tags_64bit, t, is_sdk=False)
       elif '%binaryen_tag%' in t.version:
         expand_category_param('%binaryen_tag%', binaryen_tags, t, is_sdk=False)
-      elif '%releases-tag%' in t.version and 'fastcomp' in t.version:
-        expand_category_param('%releases-tag%', releases_tags_fastcomp, t, is_sdk=False)
       elif '%releases-tag%' in t.version:
         expand_category_param('%releases-tag%', releases_tags, t, is_sdk=False)
       else:
@@ -2496,8 +2402,6 @@ def load_sdk_manifest():
         expand_category_param('%precompiled_tag32%', llvm_precompiled_tags_32bit, sdk, is_sdk=True)
       elif '%precompiled_tag64%' in sdk.version:
         expand_category_param('%precompiled_tag64%', llvm_precompiled_tags_64bit, sdk, is_sdk=True)
-      elif '%releases-tag%' in sdk.version and 'fastcomp' in sdk.version:
-        expand_category_param('%releases-tag%', releases_tags_fastcomp, sdk, is_sdk=True)
       elif '%releases-tag%' in sdk.version:
         expand_category_param('%releases-tag%', releases_tags, sdk, is_sdk=True)
       else:
@@ -2780,16 +2684,12 @@ def error_on_missing_tool(name):
     exit_with_error("tool or SDK not found: '%s'" % name)
 
 
-def exit_with_fastcomp_error():
-    exit_with_error('the fastcomp backend is not getting new builds or releases. Please use the upstream llvm backend or use an older version than 2.0.0 (such as 1.40.1).')
-
-
 def expand_sdk_name(name, activating):
   if 'upstream-master' in name:
     errlog('upstream-master SDK has been renamed upstream-main')
     name = name.replace('upstream-master', 'upstream-main')
-  if name in ('latest-fastcomp', 'latest-releases-fastcomp', 'tot-fastcomp', 'sdk-nightly-latest'):
-    exit_with_fastcomp_error()
+  if 'fastcomp' in name:
+    exit_with_error('the fastcomp backend is no longer supported.  Please use an older version of emsdk (for example 3.1.29) if you want to install the old fastcomp-based SDK')
   if name in ('tot', 'sdk-tot', 'tot-upstream'):
     if activating:
       # When we are activating a tot release, assume that the currently
@@ -2806,37 +2706,24 @@ def expand_sdk_name(name, activating):
 
   # check if it's a release handled by an emscripten-releases version,
   # and if so use that by using the right hash. we support a few notations,
-  #   x.y.z[-(upstream|fastcomp_])
-  #   sdk-x.y.z[-(upstream|fastcomp_])-64bit
+  #   x.y.z[-upstream]
+  #   sdk-x.y.z[-upstream]-64bit
   # TODO: support short notation for old builds too?
-  backend = None
+  backend = 'upstream'
   fullname = name
   if '-upstream' in fullname:
     fullname = name.replace('-upstream', '')
-    backend = 'upstream'
-  elif '-fastcomp' in fullname:
-    fullname = fullname.replace('-fastcomp', '')
-    backend = 'fastcomp'
   version = fullname.replace('sdk-', '').replace('releases-', '').replace('-64bit', '').replace('tag-', '')
   sdk = 'sdk-' if not name.startswith('releases-') else ''
   releases_info = load_releases_info()['releases']
   release_hash = get_release_hash(version, releases_info)
   if release_hash:
     # Known release hash
-    if backend == 'fastcomp' and version_key(version) >= (2, 0, 0):
-      exit_with_fastcomp_error()
-    if backend is None:
-      if version_key(version) >= (1, 39, 0):
-        backend = 'upstream'
-      else:
-        backend = 'fastcomp'
     full_name = '%sreleases-%s-%s-64bit' % (sdk, backend, release_hash)
     print("Resolving SDK version '%s' to '%s'" % (version, full_name))
     return full_name
 
   if len(version) == 40:
-    if backend is None:
-      backend = 'upstream'
     global extra_release_tag
     extra_release_tag = version
     return '%sreleases-%s-%s-64bit' % (sdk, backend, version)
