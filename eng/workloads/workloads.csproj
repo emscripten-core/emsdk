@@ -2,7 +2,7 @@
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props" />
 
   <PropertyGroup>
-    <MicrosoftDotNetBuildTasksInstallersTaskTargetFramework>net7.0</MicrosoftDotNetBuildTasksInstallersTaskTargetFramework>
+    <MicrosoftDotNetBuildTasksInstallersTaskTargetFramework>net8.0</MicrosoftDotNetBuildTasksInstallersTaskTargetFramework>
     <MicrosoftDotNetBuildTasksInstallersPath>$(NuGetPackageRoot)microsoft.dotnet.build.tasks.installers\$(MicrosoftDotNetBuildTasksInstallersPackageVersion)</MicrosoftDotNetBuildTasksInstallersPath>
     <MicrosoftDotNetBuildTasksInstallersTaskAssembly>$(MicrosoftDotNetBuildTasksInstallersPath)\tools\$(MicrosoftDotNetBuildTasksInstallersTaskTargetFramework)\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
   </PropertyGroup>
