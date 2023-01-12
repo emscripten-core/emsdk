@@ -1,0 +1,61 @@
+{
+  "version": "${WorkloadVersion}",
+  "workloads": {
+    "microsoft-net-sdk-emscripten-net7": {
+      "abstract": true,
+      "description": "Emscripten SDK compiler tooling",
+      "packs": [
+        "Microsoft.NET.Runtime.Emscripten.Node.net7",
+        "Microsoft.NET.Runtime.Emscripten.Python.net7",
+        "Microsoft.NET.Runtime.Emscripten.Cache.net7",
+        "Microsoft.NET.Runtime.Emscripten.Sdk.net7"
+      ],
+      "platforms": [ "win-x64", "win-arm64", "linux-x64", "osx-x64", "osx-arm64" ]
+    }
+  },
+  "packs": {
+    "Microsoft.NET.Runtime.Emscripten.Node.net7" : {
+      "kind": "Sdk",
+      "version": "${PackageVersion}",
+      "alias-to": {
+        "win-x64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Node.win-x64",
+        "win-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Node.win-x64",
+        "linux-x64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Node.linux-x64",
+        "osx-x64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Node.osx-x64",
+        "osx-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Node.osx-x64"
+      }
+    },
+    "Microsoft.NET.Runtime.Emscripten.Python.net7" : {
+      "kind": "Sdk",
+      "version": "${PackageVersion}",
+      "alias-to": {
+        "win-x64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Python.win-x64",
+        "win-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Python.win-x64",
+        "osx-x64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Python.osx-x64",
+        "osx-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Python.osx-x64"
+      }
+    },
+    "Microsoft.NET.Runtime.Emscripten.Cache.net7" : {
+      "kind": "Sdk",
+      "version": "${PackageVersion}",
+      "alias-to": {
+        "win-x64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Cache.win-x64",
+        "win-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Cache.win-x64",
+        "linux-x64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Cache.linux-x64",
+        "osx-x64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Cache.osx-x64",
+        "osx-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Cache.osx-x64"
+      }
+    },
+    "Microsoft.NET.Runtime.Emscripten.Sdk.net7" : {
+      "kind": "Sdk",
+      "version": "${PackageVersion}",
+      "alias-to": {
+        "win-x64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Sdk.win-x64",
+        "win-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Sdk.win-x64",
+        "linux-x64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Sdk.linux-x64",
+        "osx-x64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Sdk.osx-x64",
+        "osx-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Sdk.osx-x64"
+      }
+    }
+  }
+}
