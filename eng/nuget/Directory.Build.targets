@@ -1,4 +1,8 @@
 <Project>
+  <PropertyGroup>
+    <WorkloadVersionSuffix Condition="'$(PreReleaseVersionLabel)' != 'release'">-$(VersionSuffix)</WorkloadVersionSuffix>
+  </PropertyGroup>
+
   <Target Name="GenerateUnixPermissionsFile" Condition="!$([MSBuild]::IsOSPlatform('windows'))">
     <PropertyGroup>
       <UnixFilePermissionsOutFile>$(ArtifactsObjDir)\$(MSBuildProjectName).UnixFilePermissions.xml</UnixFilePermissionsOutFile>
