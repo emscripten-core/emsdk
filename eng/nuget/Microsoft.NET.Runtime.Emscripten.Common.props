@@ -16,6 +16,10 @@
     <SkipIndexCheck>true</SkipIndexCheck>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <WorkloadVersionSuffix Condition="'$(PreReleaseVersionLabel)' != 'release'">-$(VersionSuffix)</WorkloadVersionSuffix>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageIndex Include="$(PackageIndexFile)" />
   </ItemGroup>
