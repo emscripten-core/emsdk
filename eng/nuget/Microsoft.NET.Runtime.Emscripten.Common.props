@@ -17,7 +17,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <WorkloadVersionSuffix Condition="'$(PreReleaseVersionLabel)' != 'release'">-$(VersionSuffix)</WorkloadVersionSuffix>
+    <WorkloadVersionSuffix Condition="'$(PreReleaseVersionLabel)' != 'release'">-$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</WorkloadVersionSuffix>
   </PropertyGroup>
 
   <ItemGroup>
