@@ -31,7 +31,7 @@
 
   {
     "id": "releases",
-    "version": "upstream-%releases-tag%",
+    "version": "%releases-tag%",
     "bitness": 64,
     "arch": "x86_64",
     "linux_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/linux/%releases-tag%/wasm-binaries.tbz2",
@@ -45,7 +45,7 @@
   },
   {
     "id": "releases",
-    "version": "upstream-%releases-tag%",
+    "version": "%releases-tag%",
     "bitness": 64,
     "arch": "aarch64",
     "macos_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/mac/%releases-tag%/wasm-binaries-arm64.tbz2",
@@ -543,56 +543,56 @@
 
   "sdks": [
   {
-    "version": "upstream-main",
+    "version": "main",
     "bitness": 64,
     "uses": ["python-3.9.2-nuget-64bit", "llvm-git-main-64bit", "node-14.18.2-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
     "os": "win"
   },
   {
-    "version": "upstream-main",
+    "version": "main",
     "bitness": 64,
     "uses": ["python-3.9.2-64bit", "llvm-git-main-64bit", "node-14.18.2-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
     "os": "macos"
   },
   {
-    "version": "upstream-main",
+    "version": "main",
     "bitness": 64,
     "uses": ["llvm-git-main-64bit", "node-14.18.2-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
     "os": "linux"
   },
   {
-    "version": "upstream-main",
+    "version": "main",
     "bitness": 32,
     "uses": ["llvm-git-main-32bit", "emscripten-main-32bit", "binaryen-main-32bit"],
     "os": "linux"
   },
   {
-    "version": "releases-upstream-%releases-tag%",
+    "version": "releases-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-14.18.2-64bit", "releases-upstream-%releases-tag%-64bit"],
+    "uses": ["node-14.18.2-64bit", "releases-%releases-tag%-64bit"],
     "os": "linux",
     "custom_install_script": "emscripten_npm_install"
   },
   {
-    "version": "releases-upstream-%releases-tag%",
+    "version": "releases-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-14.18.2-64bit", "python-3.9.2-64bit", "releases-upstream-%releases-tag%-64bit"],
+    "uses": ["node-14.18.2-64bit", "python-3.9.2-64bit", "releases-%releases-tag%-64bit"],
     "os": "macos",
     "arch": "x86_64",
     "custom_install_script": "emscripten_npm_install"
   },
   {
-    "version": "releases-upstream-%releases-tag%",
+    "version": "releases-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-14.18.2-64bit", "python-3.9.2-64bit", "releases-upstream-%releases-tag%-64bit"],
+    "uses": ["node-14.18.2-64bit", "python-3.9.2-64bit", "releases-%releases-tag%-64bit"],
     "os": "macos",
     "arch": "aarch64",
     "custom_install_script": "emscripten_npm_install"
   },
   {
-    "version": "releases-upstream-%releases-tag%",
+    "version": "releases-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-14.18.2-64bit", "python-3.9.2-nuget-64bit", "java-8.152-64bit", "releases-upstream-%releases-tag%-64bit"],
+    "uses": ["node-14.18.2-64bit", "python-3.9.2-nuget-64bit", "java-8.152-64bit", "releases-%releases-tag%-64bit"],
     "os": "win",
     "custom_install_script": "emscripten_npm_install"
   }
