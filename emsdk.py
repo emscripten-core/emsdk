@@ -2111,15 +2111,15 @@ def resolve_sdk_aliases(name, verbose=False):
   return name
 
 
-def find_latest_sdk(which):
-  return 'sdk-releases-%s-%s-64bit' % (which, find_latest_hash())
+def find_latest_sdk():
+  return 'sdk-releases-%s-64bit' % (find_latest_hash())
 
 
 def find_tot_sdk():
   debug_print('Fetching emscripten-releases repository...')
   global extra_release_tag
   extra_release_tag = get_emscripten_releases_tot()
-  return 'sdk-releases-upstream-%s-64bit' % (extra_release_tag)
+  return 'sdk-releases-%s-64bit' % (extra_release_tag)
 
 
 def parse_emscripten_version(emscripten_root):
@@ -2249,7 +2249,7 @@ def get_installed_sdk_version():
     return None
   with open(version_file) as f:
     version = f.read()
-  return version.split('-')[2]
+  return version.split('-')[1]
 
 
 # Get a list of tags for emscripten-releases.
@@ -2686,8 +2686,8 @@ def error_on_missing_tool(name):
 
 def expand_sdk_name(name, activating):
   if 'upstream-master' in name:
-    errlog('upstream-master SDK has been renamed upstream-main')
-    name = name.replace('upstream-master', 'upstream-main')
+    errlog('upstream-master SDK has been renamed main')
+    name = name.replace('upstream-master', 'main')
   if 'fastcomp' in name:
     exit_with_error('the fastcomp backend is no longer supported.  Please use an older version of emsdk (for example 3.1.29) if you want to install the old fastcomp-based SDK')
   if name in ('tot', 'sdk-tot', 'tot-upstream'):
@@ -2699,34 +2699,34 @@ def expand_sdk_name(name, activating):
       installed = get_installed_sdk_version()
       if installed:
         debug_print('activating currently installed SDK; not updating tot version')
-        return 'sdk-releases-upstream-%s-64bit' % installed
+        return 'sdk-releases-%s-64bit' % installed
     return str(find_tot_sdk())
+
+  if '-upstream' in name:
+    name = name.replace('-upstream', '')
 
   name = resolve_sdk_aliases(name, verbose=True)
 
   # check if it's a release handled by an emscripten-releases version,
   # and if so use that by using the right hash. we support a few notations,
-  #   x.y.z[-upstream]
-  #   sdk-x.y.z[-upstream]-64bit
+  #   x.y.z
+  #   sdk-x.y.z-64bit
   # TODO: support short notation for old builds too?
-  backend = 'upstream'
   fullname = name
-  if '-upstream' in fullname:
-    fullname = name.replace('-upstream', '')
   version = fullname.replace('sdk-', '').replace('releases-', '').replace('-64bit', '').replace('tag-', '')
   sdk = 'sdk-' if not name.startswith('releases-') else ''
   releases_info = load_releases_info()['releases']
   release_hash = get_release_hash(version, releases_info)
   if release_hash:
     # Known release hash
-    full_name = '%sreleases-%s-%s-64bit' % (sdk, backend, release_hash)
+    full_name = '%sreleases-%s-64bit' % (sdk, release_hash)
     print("Resolving SDK version '%s' to '%s'" % (version, full_name))
     return full_name
 
   if len(version) == 40:
     global extra_release_tag
     extra_release_tag = version
-    return '%sreleases-%s-%s-64bit' % (sdk, backend, version)
+    return '%sreleases-%s-64bit' % (sdk, version)
 
   return name
 
@@ -2961,7 +2961,7 @@ def main(args):
       print('         latest')
       print('')
       print('This is equivalent to installing/activating:')
-      print('         %s             %s' % (find_latest_version(), installed_sdk_text(find_latest_sdk('upstream'))))
+      print('         %s             %s' % (find_latest_version(), installed_sdk_text(find_latest_sdk())))
       print('')
     else:
       print('Warning: your platform does not have precompiled SDKs available.')
@@ -2976,7 +2976,7 @@ def main(args):
     )
     releases_info = load_releases_info()['releases']
     for ver in releases_versions:
-      print('         %s    %s' % (ver, installed_sdk_text('sdk-releases-upstream-%s-64bit' % get_release_hash(ver, releases_info))))
+      print('         %s    %s' % (ver, installed_sdk_text('sdk-releases-%s-64bit' % get_release_hash(ver, releases_info))))
     print()
 
     # Use array to work around the lack of being able to mutate from enclosing
