@@ -136,11 +136,11 @@ using git, and compile the package on demand.
 When you run `emsdk list`, it will group the Tools and SDKs under these two
 categories.
 
-To obtain and build latest upstream wasm SDK from source, run
+To obtain and build latest wasm SDK from source, run
 
 ```
-emsdk install sdk-upstream-main-64bit
-emsdk activate sdk-upstream-main-64bit
+emsdk install sdk-main-64bit
+emsdk activate sdk-main-64bit
 ```
 
 You can use this target for example to bootstrap developing patches to LLVM,
@@ -156,7 +156,7 @@ https://emscripten.org/docs/contributing/developers_guide.html?highlight=develop
 ### When working on git branches compiled from source, how do I update to a newer compiler version?
 
 Unlike tags and precompiled versions, a few of the SDK packages are based on
-"moving" git branches and compiled from source (e.g. sdk-upstream-main,
+"moving" git branches and compiled from source (e.g. sdk-main,
 sdk-main, emscripten-main, binaryen-main). Because of that, the
 compiled versions will eventually go out of date as new commits are introduced
 to the development branches. To update an old compiled installation of one of
@@ -198,11 +198,11 @@ where you directly interact with the github repositories. This allows you to
 obtain new features and latest fixes immediately as they are pushed to the
 github repository, without having to wait for release to be tagged. You do not
 need a github account or a fork of Emscripten to do this. To switch to using the
-latest upstream git development branch `main`, run the following:
+latest git development branch `main`, run the following:
 
     emsdk install git-1.9.4 # Install git. Skip if the system already has it.
-    emsdk install sdk-upstream-main-64bit # Clone+pull the latest emscripten-core/emscripten/main.
-    emsdk activate sdk-upstream-main-64bit # Set the main SDK as the currently active one.
+    emsdk install sdk-main-64bit # Clone+pull the latest emscripten-core/emscripten/main.
+    emsdk activate sdk-main-64bit # Set the main SDK as the currently active one.
 
 ### How do I use my own Emscripten github fork with the SDK?
 
