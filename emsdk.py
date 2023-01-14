@@ -2700,7 +2700,7 @@ def expand_sdk_name(name, activating):
       if installed:
         debug_print('activating currently installed SDK; not updating tot version')
         return 'sdk-releases-%s-64bit' % installed
-    return str(find_tot_sdk())
+    return find_tot_sdk()
 
   if '-upstream' in name:
     name = name.replace('-upstream', '')
