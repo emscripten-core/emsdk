@@ -1,20 +1,20 @@
 {
   "version": "${WorkloadVersion}",
   "workloads": {
-    "microsoft-net-sdk-emscripten-net7": {
+    "microsoft-net-sdk-emscripten": {
       "abstract": true,
       "description": "Emscripten SDK compiler tooling",
       "packs": [
-        "Microsoft.NET.Runtime.Emscripten.Node.net7",
-        "Microsoft.NET.Runtime.Emscripten.Python.net7",
-        "Microsoft.NET.Runtime.Emscripten.Cache.net7",
-        "Microsoft.NET.Runtime.Emscripten.Sdk.net7"
+        "Microsoft.NET.Runtime.Emscripten.Node",
+        "Microsoft.NET.Runtime.Emscripten.Python",
+        "Microsoft.NET.Runtime.Emscripten.Cache",
+        "Microsoft.NET.Runtime.Emscripten.Sdk"
       ],
       "platforms": [ "win-x64", "win-arm64", "linux-x64", "osx-x64", "osx-arm64" ]
     }
   },
   "packs": {
-    "Microsoft.NET.Runtime.Emscripten.Node.net7" : {
+    "Microsoft.NET.Runtime.Emscripten.Node" : {
       "kind": "Sdk",
       "version": "${PackageVersion}",
       "alias-to": {
@@ -25,7 +25,7 @@
         "osx-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Node.osx-x64"
       }
     },
-    "Microsoft.NET.Runtime.Emscripten.Python.net7" : {
+    "Microsoft.NET.Runtime.Emscripten.Python" : {
       "kind": "Sdk",
       "version": "${PackageVersion}",
       "alias-to": {
@@ -35,7 +35,7 @@
         "osx-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Python.osx-x64"
       }
     },
-    "Microsoft.NET.Runtime.Emscripten.Cache.net7" : {
+    "Microsoft.NET.Runtime.Emscripten.Cache" : {
       "kind": "Sdk",
       "version": "${PackageVersion}",
       "alias-to": {
@@ -46,7 +46,7 @@
         "osx-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Cache.osx-x64"
       }
     },
-    "Microsoft.NET.Runtime.Emscripten.Sdk.net7" : {
+    "Microsoft.NET.Runtime.Emscripten.Sdk" : {
       "kind": "Sdk",
       "version": "${PackageVersion}",
       "alias-to": {
