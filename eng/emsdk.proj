@@ -179,7 +179,7 @@
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.Python\Microsoft.NET.Runtime.Emscripten.Python.pkgproj" Targets="Build" Condition="'$(UsesPythonFromEmsdk)' == 'true'" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.Sdk\Microsoft.NET.Runtime.Emscripten.Sdk.pkgproj" Targets="Build" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.Cache\Microsoft.NET.Runtime.Emscripten.Cache.pkgproj" Targets="Build" />
-    <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Workload.Emscripten.Manifest\Microsoft.NET.Workload.Emscripten.Manifest.pkgproj" 
+    <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Workload.Emscripten.Current.Manifest\Microsoft.NET.Workload.Emscripten.Current.Manifest.pkgproj" 
              Condition="'$(AssetManifestOS)' == '' or '$(AssetManifestOS)' == 'win'" 
              Targets="Build" 
              Properties="PreReleaseVersionLabel=$(PreReleaseVersionLabel);PreReleaseVersionIteration=$(PreReleaseVersionIteration)" />
