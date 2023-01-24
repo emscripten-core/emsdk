@@ -66,7 +66,7 @@
 
     <!-- Shorten package names to avoid long path issues in Visual Studio -->
     <ItemGroup>
-      <ShortNames Include="microsoft.net.workload.emscripten.net;Microsoft.NET.Workload.Emscripten.net">
+      <ShortNames Include="microsoft.net.workload.emscripten.net;Microsoft.NET.Workload.Emscripten.net;microsoft.net.workload.emscripten.current">
         <Replacement>Emsdk.</Replacement>
       </ShortNames>
       <ShortNames Include="microsoft.netcore.app.runtime;Microsoft.NETCore.App.Runtime;microsoft.net.runtime;Microsoft.NET.Runtime">
@@ -75,7 +75,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ManifestPackages Include="$(PackageSource)Microsoft.NET.Workload.Emscripten*.Manifest-%(WorkloadSdkBandVersions.Identity).*.nupkg"
+      <ManifestPackages Include="$(PackageSource)Microsoft.NET.Workload.Emscripten*.Manifest-%(WorkloadSdkBandVersions.Identity)*.*.nupkg"
                         Exclude="$(PackageSource)Microsoft.NET.Workload.Emscripten*.Manifest*.msi*.nupkg"
                         MsiVersion="$(MsiVersion)"
                         SupportsMachineArch="%(SupportsMachineArch)" />
