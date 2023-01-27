@@ -257,13 +257,6 @@ def vswhere(version):
       program_files = os.environ['ProgramFiles']
     vswhere_path = os.path.join(program_files, 'Microsoft Visual Studio', 'Installer', 'vswhere.exe')
     output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-version', '[%s.0,%s.0)' % (version, version + 1), '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', '-property', 'installationPath', '-format', 'json']))
-    # Visual Studio 2017 Express is not included in the above search, and it
-    # does not have the VC.Tools.x86.x64 tool, so do a catch-all attempt as a
-    # fallback, to detect Express version.
-    if not output:
-      output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-version', '[%s.0,%s.0)' % (version, version + 1), '-products', '*', '-property', 'installationPath', '-format', 'json']))
-      if not output:
-        return ''
     return str(output[0]['installationPath'])
   except Exception:
     return ''
@@ -288,16 +281,10 @@ if WINDOWS:
     CMAKE_GENERATOR = 'Visual Studio 17'
   elif '--vs2019' in sys.argv:
     CMAKE_GENERATOR = 'Visual Studio 16'
-  elif '--vs2017' in sys.argv:
-    CMAKE_GENERATOR = 'Visual Studio 15'
   elif len(vswhere(17)) > 0:
     CMAKE_GENERATOR = 'Visual Studio 17'
   elif len(vswhere(16)) > 0:
     CMAKE_GENERATOR = 'Visual Studio 16'
-  elif len(vswhere(15)) > 0:
-    # VS2017 has an LLVM build issue, see
-    # https://github.com/kripken/emscripten-fastcomp/issues/185
-    CMAKE_GENERATOR = 'Visual Studio 15'
   elif which('mingw32-make') is not None and which('g++') is not None:
     CMAKE_GENERATOR = 'MinGW Makefiles'
   else:
@@ -305,7 +292,7 @@ if WINDOWS:
     CMAKE_GENERATOR = ''
 
 
-sys.argv = [a for a in sys.argv if a not in ('--mingw', '--vs2017', '--vs2019', '--vs2022')]
+sys.argv = [a for a in sys.argv if a not in ('--mingw', '--vs2019', '--vs2022')]
 
 
 # Computes a suitable path prefix to use when building with a given generator.
@@ -314,8 +301,6 @@ def cmake_generator_prefix():
     return '_vs2022'
   if CMAKE_GENERATOR == 'Visual Studio 16':
     return '_vs2019'
-  if CMAKE_GENERATOR == 'Visual Studio 15':
-    return '_vs2017'
   elif CMAKE_GENERATOR == 'MinGW Makefiles':
     return '_mingw'
   # Unix Makefiles do not specify a path prefix for backwards path compatibility
@@ -2685,7 +2670,7 @@ def main(args):
                                   purposes. Default: Enabled
             --disable-assertions: Forces assertions off during the build.
 
-      --vs2017/--vs2019/--vs2022: If building from source, overrides to build
+               --vs2019/--vs2022: If building from source, overrides to build
                                   using the specified compiler. When installing
                                   precompiled packages, this has no effect.
                                   Note: The same compiler specifier must be
@@ -2708,7 +2693,7 @@ def main(args):
 
     if WINDOWS:
       print('''
-   emsdk activate [--permanent] [--system] [--build=type] [--vs2017/--vs2019/--vs2022] <tool/sdk>
+   emsdk activate [--permanent] [--system] [--build=type] [--vs2019/--vs2022] <tool/sdk>
 
                                 - Activates the given tool or SDK in the
                                   environment of the current shell.
@@ -2722,7 +2707,7 @@ def main(args):
                                   (uses Machine environment variables).
 
                                 - If a custom compiler version was used to override
-                                  the compiler to use, pass the same --vs2017/--vs2019/--vs2022
+                                  the compiler to use, pass the same --vs2019/--vs2022
                                   parameter here to choose which version to activate.
 
    emcmdprompt.bat              - Spawns a new command prompt window with the
