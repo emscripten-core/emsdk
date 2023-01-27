@@ -926,14 +926,18 @@ def make_build(build_root, build_type, build_target_platform='x64'):
   else:
     print('Performing a singlethreaded build.')
 
-  make = ['cmake', '--build', '.', '--config', build_type, '-j', str(CPU_CORES)]
+  make = ['cmake', '--build', '.', '--config', build_type]
   if 'Visual Studio' in CMAKE_GENERATOR:
     # Visual Studio historically has had a two-tier problem in its build system design. A single MSBuild.exe instance only governs
     # the build of a single project (.exe/.lib/.dll) in a solution. Passing the -j parameter above will only enable multiple MSBuild.exe
     # instances to be spawned to build multiple projects in parallel, but each MSBuild.exe is still singlethreaded.
     # To enable each MSBuild.exe instance to also compile several .cpp files in parallel inside a single project, pass the extra
     # MSBuild.exe specific "Multi-ToolTask" (MTT) setting /p:CL_MPCount. This enables each MSBuild.exe to parallelize builds wide.
-    make += ['--', '/p:CL_MPCount=' + str(CPU_CORES)]
+    # This requires CMake 3.12 or newer.
+    make += ['-j', str(CPU_CORES), '--', '/p:CL_MPCount=' + str(CPU_CORES)]
+  else:
+    # Pass -j to native make, CMake might not support -j option.
+    make += ['--', '-j', str(CPU_CORES)]
 
   # Build
   try:
