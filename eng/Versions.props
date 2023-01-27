@@ -8,6 +8,8 @@
     <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
     <EmscriptenVersion>3.1.12</EmscriptenVersion>
     <EmscriptenVersionNet6>2.0.23</EmscriptenVersionNet6>
+    <EmscriptenVersionNet7>3.1.12</EmscriptenVersionNet7>
+    <PackageVersionNet7>7.0.2</PackageVersionNet7>
     <PackageVersionNet6>6.0.13</PackageVersionNet6>
   </PropertyGroup>
   <PropertyGroup>
