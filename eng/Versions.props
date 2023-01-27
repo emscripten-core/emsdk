@@ -10,7 +10,7 @@
     <EmscriptenVersionNet6>2.0.23</EmscriptenVersionNet6>
     <EmscriptenVersionNet7>3.1.12</EmscriptenVersionNet7>
     <PackageVersionNet7>7.0.2</PackageVersionNet7>
-    <PackageVersionNet6>6.0.13</PackageVersionNet6>
+    <PackageVersionNet6>6.0.$([MSBuild]::Add($([System.Version]::Parse('$(PackageVersionNet7)').Build),11))</PackageVersionNet6>
   </PropertyGroup>
   <PropertyGroup>
     <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
