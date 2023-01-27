@@ -933,7 +933,7 @@ def make_build(build_root, build_type, build_target_platform='x64'):
     # instances to be spawned to build multiple projects in parallel, but each MSBuild.exe is still singlethreaded.
     # To enable each MSBuild.exe instance to also compile several .cpp files in parallel inside a single project, pass the extra
     # MSBuild.exe specific "Multi-ToolTask" (MTT) setting /p:CL_MPCount. This enables each MSBuild.exe to parallelize builds wide.
-    make += ['--', f'/p:CL_MPCount={CPU_CORES}']
+    make += ['--', '/p:CL_MPCount=' + str(CPU_CORES)]
 
   # Build
   try:
