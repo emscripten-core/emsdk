@@ -62,6 +62,14 @@
                           Version="$(AssemblyVersion)"
                           Title=".NET WebAssembly Build Tools (Emscripten)"
                           Description="Build tools for WebAssembly ahead-of-time (AoT) compilation and native linking."/>
+      <ComponentResources Include="microsoft-net-sdk-emscripten-net7"
+                          Version="$(AssemblyVersion)"
+                          Title=".NET WebAssembly Build Tools for .NET7 (Emscripten)"
+                          Description="Build tools for WebAssembly ahead-of-time (AoT) compilation and native linking on .NET7."/>
+      <ComponentResources Include="microsoft-net-sdk-emscripten-net6"
+                          Version="$(AssemblyVersion)"
+                          Title=".NET WebAssembly Build Tools for .NET6 (Emscripten)"
+                          Description="Build tools for WebAssembly ahead-of-time (AoT) compilation and native linking on .NET6."/>
     </ItemGroup>
 
     <!-- Shorten package names to avoid long path issues in Visual Studio -->
