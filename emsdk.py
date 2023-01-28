@@ -284,32 +284,34 @@ if WINDOWS:
   # Detect which CMake generator to use when building on Windows
   if '--mingw' in sys.argv:
     CMAKE_GENERATOR = 'MinGW Makefiles'
-  elif '--vs2017' in sys.argv:
-    CMAKE_GENERATOR = 'Visual Studio 15'
+  elif '--vs2022' in sys.argv:
+    CMAKE_GENERATOR = 'Visual Studio 17'
   elif '--vs2019' in sys.argv:
     CMAKE_GENERATOR = 'Visual Studio 16'
+  elif '--vs2017' in sys.argv:
+    CMAKE_GENERATOR = 'Visual Studio 15'
+  elif len(vswhere(17)) > 0:
+    CMAKE_GENERATOR = 'Visual Studio 17'
+  elif len(vswhere(16)) > 0:
+    CMAKE_GENERATOR = 'Visual Studio 16'
+  elif len(vswhere(15)) > 0:
+    # VS2017 has an LLVM build issue, see
+    # https://github.com/kripken/emscripten-fastcomp/issues/185
+    CMAKE_GENERATOR = 'Visual Studio 15'
+  elif which('mingw32-make') is not None and which('g++') is not None:
+    CMAKE_GENERATOR = 'MinGW Makefiles'
   else:
-    vs2019_exists = len(vswhere(16)) > 0
-    vs2017_exists = len(vswhere(15)) > 0
-    mingw_exists = which('mingw32-make') is not None and which('g++') is not None
-    if vs2019_exists:
-      CMAKE_GENERATOR = 'Visual Studio 16'
-    elif vs2017_exists:
-      # VS2017 has an LLVM build issue, see
-      # https://github.com/kripken/emscripten-fastcomp/issues/185
-      CMAKE_GENERATOR = 'Visual Studio 15'
-    elif mingw_exists:
-      CMAKE_GENERATOR = 'MinGW Makefiles'
-    else:
-      # No detected generator
-      CMAKE_GENERATOR = ''
+    # No detected generator
+    CMAKE_GENERATOR = ''
 
 
-sys.argv = [a for a in sys.argv if a not in ('--mingw', '--vs2017', '--vs2019')]
+sys.argv = [a for a in sys.argv if a not in ('--mingw', '--vs2017', '--vs2019', '--vs2022')]
 
 
 # Computes a suitable path prefix to use when building with a given generator.
 def cmake_generator_prefix():
+  if CMAKE_GENERATOR == 'Visual Studio 17':
+    return '_vs2022'
   if CMAKE_GENERATOR == 'Visual Studio 16':
     return '_vs2019'
   if CMAKE_GENERATOR == 'Visual Studio 15':
@@ -861,14 +863,7 @@ def decide_cmake_build_type(tool):
 
 # The root directory of the build.
 def llvm_build_dir(tool):
-  generator_suffix = ''
-  if CMAKE_GENERATOR == 'Visual Studio 15':
-    generator_suffix = '_vs2017'
-  elif CMAKE_GENERATOR == 'Visual Studio 16':
-    generator_suffix = '_vs2019'
-  elif CMAKE_GENERATOR == 'MinGW Makefiles':
-    generator_suffix = '_mingw'
-
+  generator_suffix = cmake_generator_prefix()
   bitness_suffix = '_32' if tool.bitness == 32 else '_64'
 
   if hasattr(tool, 'git_branch'):
@@ -916,79 +911,12 @@ def build_env(generator):
   # See https://groups.google.com/forum/#!topic/emscripten-discuss/5Or6QIzkqf0
   if MACOS:
     build_env['CXXFLAGS'] = ((build_env['CXXFLAGS'] + ' ') if hasattr(build_env, 'CXXFLAGS') else '') + '-stdlib=libc++'
-  elif 'Visual Studio 15' in generator or 'Visual Studio 16' in generator:
-    if 'Visual Studio 16' in generator:
-      path = vswhere(16)
-    else:
-      path = vswhere(15)
-
-    # Configuring CMake for Visual Studio needs and env. var VCTargetsPath to be present.
-    # How this is supposed to work is unfortunately very undocumented. See
-    # https://discourse.cmake.org/t/cmake-failed-to-get-the-value-of-vctargetspath-with-vs2019-16-7/1839/16
-    # for some conversation. Try a couple of common paths if one of them would work.
-    # In the future as new versions of VS come out, we likely need to add new paths into this list.
-    if 'VCTargetsPath' not in build_env:
-      vctargets_paths = [
-        os.path.join(path, 'MSBuild\\Microsoft\\VC\\v160\\'),
-        os.path.join(path, 'Common7\\IDE\\VC\\VCTargets')
-      ]
-      for p in vctargets_paths:
-        if os.path.isfile(os.path.join(p, 'Microsoft.Cpp.Default.props')):
-          debug_print('Set env. var VCTargetsPath=' + p + ' for CMake.')
-          build_env['VCTargetsPath'] = p
-          break
-        else:
-          debug_print('Searched path ' + p + ' as candidate for VCTargetsPath, not working.')
-
-      if 'VCTargetsPath' not in build_env:
-        errlog('Unable to locate Visual Studio compiler installation for generator "' + generator + '"!')
-        errlog('Either rerun installation in Visual Studio Command Prompt, or locate directory to Microsoft.Cpp.Default.props manually')
-        sys.exit(1)
-
-    # CMake and VS2017 cl.exe needs to have mspdb140.dll et al. in its PATH.
-    vc_bin_paths = [vs_filewhere(path, 'amd64', 'cl.exe'),
-                    vs_filewhere(path, 'x86', 'cl.exe')]
-    for path in vc_bin_paths:
-      if os.path.isdir(path):
-          build_env['PATH'] = build_env['PATH'] + ';' + path
-
+  if WINDOWS:
+    # MSBuild.exe has an internal mechanism to avoid N^2 oversubscription of threads in its two-tier build model, see
+    # https://devblogs.microsoft.com/cppblog/improved-parallelism-in-msbuild/
+    build_env['UseMultiToolTask'] = 'true'
+    build_env['EnforceProcessCountAcrossBuilds'] = 'true'
   return build_env
-
-
-def get_generator_for_sln_file(sln_file):
-  contents = open(sln_file, 'r').read()
-  if '# Visual Studio 16' in contents or '# Visual Studio Version 16' in contents:  # VS2019
-    return 'Visual Studio 16'
-  if '# Visual Studio 15' in contents:  # VS2017
-    return 'Visual Studio 15'
-  raise Exception('Unknown generator used to build solution file ' + sln_file)
-
-
-def find_msbuild(sln_file):
-  # The following logic attempts to find a Visual Studio version specific
-  # MSBuild.exe from a list of known locations.
-  generator = get_generator_for_sln_file(sln_file)
-  debug_print('find_msbuild looking for generator ' + str(generator))
-  if generator == 'Visual Studio 16':  # VS2019
-    path = vswhere(16)
-    search_paths = [os.path.join(path, 'MSBuild/Current/Bin'),
-                    os.path.join(path, 'MSBuild/15.0/Bin/amd64'),
-                    os.path.join(path, 'MSBuild/15.0/Bin')]
-  elif generator == 'Visual Studio 15':  # VS2017
-    path = vswhere(15)
-    search_paths = [os.path.join(path, 'MSBuild/15.0/Bin/amd64'),
-                    os.path.join(path, 'MSBuild/15.0/Bin')]
-  else:
-    raise Exception('Unknown generator!')
-
-  for path in search_paths:
-    p = os.path.join(path, 'MSBuild.exe')
-    debug_print('Searching for MSBuild.exe: ' + p)
-    if os.path.isfile(p):
-      return p
-  debug_print('MSBuild.exe in PATH? ' + str(which('MSBuild.exe')))
-  # Last fallback, try any MSBuild from PATH (might not be compatible, but best effort)
-  return which('MSBuild.exe')
 
 
 def make_build(build_root, build_type, build_target_platform='x64'):
@@ -998,30 +926,23 @@ def make_build(build_root, build_type, build_target_platform='x64'):
   else:
     print('Performing a singlethreaded build.')
 
-  generator_to_use = CMAKE_GENERATOR
-
-  if WINDOWS:
-    if 'Visual Studio' in CMAKE_GENERATOR:
-      solution_name = str(subprocess.check_output(['dir', '/b', '*.sln'], shell=True, cwd=build_root).decode('utf-8').strip())
-      generator_to_use = get_generator_for_sln_file(os.path.join(build_root, solution_name))
-      # Disabled for now: Don't pass /maxcpucount argument to msbuild, since it
-      # looks like when building, msbuild already automatically spawns the full
-      # amount of logical cores the system has, and passing the number of
-      # logical cores here has been observed to give a quadratic N*N explosion
-      # on the number of spawned processes (e.g. on a Core i7 5960X with 16
-      # logical cores, it would spawn 16*16=256 cl.exe processes, which would
-      # start crashing when running out of system memory)
-      #      make = [find_msbuild(os.path.join(build_root, solution_name)), '/maxcpucount:' + str(CPU_CORES), '/t:Build', '/p:Configuration=' + build_type, '/nologo', '/verbosity:minimal', solution_name]
-      make = [find_msbuild(os.path.join(build_root, solution_name)), '/t:Build', '/p:Configuration=' + build_type, '/p:Platform=' + build_target_platform, '/nologo', '/verbosity:minimal', solution_name]
-    else:
-      make = ['mingw32-make', '-j' + str(CPU_CORES)]
+  make = ['cmake', '--build', '.', '--config', build_type]
+  if 'Visual Studio' in CMAKE_GENERATOR:
+    # Visual Studio historically has had a two-tier problem in its build system design. A single MSBuild.exe instance only governs
+    # the build of a single project (.exe/.lib/.dll) in a solution. Passing the -j parameter above will only enable multiple MSBuild.exe
+    # instances to be spawned to build multiple projects in parallel, but each MSBuild.exe is still singlethreaded.
+    # To enable each MSBuild.exe instance to also compile several .cpp files in parallel inside a single project, pass the extra
+    # MSBuild.exe specific "Multi-ToolTask" (MTT) setting /p:CL_MPCount. This enables each MSBuild.exe to parallelize builds wide.
+    # This requires CMake 3.12 or newer.
+    make += ['-j', str(CPU_CORES), '--', '/p:CL_MPCount=' + str(CPU_CORES)]
   else:
-    make = ['cmake', '--build', '.', '--', '-j' + str(CPU_CORES)]
+    # Pass -j to native make, CMake might not support -j option.
+    make += ['--', '-j', str(CPU_CORES)]
 
   # Build
   try:
     print('Running build: ' + str(make))
-    ret = subprocess.check_call(make, cwd=build_root, env=build_env(generator_to_use))
+    ret = subprocess.check_call(make, cwd=build_root, env=build_env(CMAKE_GENERATOR))
     if ret != 0:
       errlog('Build failed with exit code ' + ret + '!')
       errlog('Working directory: ' + build_root)
@@ -1108,6 +1029,21 @@ def xcode_sdk_version():
     return subprocess.checkplatform.mac_ver()[0].split('.')
 
 
+def get_generator_and_config_args(tool):
+  args = []
+  cmake_generator = CMAKE_GENERATOR
+  if 'Visual Studio 16' in CMAKE_GENERATOR or 'Visual Studio 17' in CMAKE_GENERATOR:  # VS2019 or VS2022
+    # With Visual Studio 16 2019, CMake changed the way they specify target arch.
+    # Instead of appending it into the CMake generator line, it is specified
+    # with a -A arch parameter.
+    args += ['-A', 'x64' if tool.bitness == 64 else 'x86']
+    args += ['-Thost=x64']
+  elif 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
+    cmake_generator += ' Win64'
+    args += ['-Thost=x64']
+  return (cmake_generator, args)
+
+
 def build_llvm(tool):
   debug_print('build_llvm(' + str(tool) + ')')
   llvm_root = tool.installation_path()
@@ -1150,16 +1086,7 @@ def build_llvm(tool):
   # (there instead of $(Configuration), one would need ${CMAKE_BUILD_TYPE} ?)
   # It looks like compiler-rt is not compatible to build on Windows?
   args += ['-DLLVM_ENABLE_PROJECTS=clang;lld']
-  cmake_generator = CMAKE_GENERATOR
-  if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
-    # With Visual Studio 16 2019, CMake changed the way they specify target arch.
-    # Instead of appending it into the CMake generator line, it is specified
-    # with a -A arch parameter.
-    args += ['-A', 'x64' if tool.bitness == 64 else 'x86']
-    args += ['-Thost=x64']
-  elif 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
-    cmake_generator += ' Win64'
-    args += ['-Thost=x64']
+  cmake_generator, args = get_generator_and_config_args(tool)
 
   if os.getenv('LLVM_CMAKE_ARGS'):
     extra_args = os.environ['LLVM_CMAKE_ARGS'].split(',')
@@ -1190,17 +1117,7 @@ def build_ninja(tool):
   build_type = decide_cmake_build_type(tool)
 
   # Configure
-  cmake_generator = CMAKE_GENERATOR
-  args = []
-  if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
-    # With Visual Studio 16 2019, CMake changed the way they specify target arch.
-    # Instead of appending it into the CMake generator line, it is specified
-    # with a -A arch parameter.
-    args += ['-A', 'x64' if tool.bitness == 64 else 'x86']
-    args += ['-Thost=x64']
-  elif 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
-    cmake_generator += ' Win64'
-    args += ['-Thost=x64']
+  cmake_generator, args = get_generator_and_config_args(tool)
 
   cmakelists_dir = os.path.join(src_root)
   success = cmake_configure(cmake_generator, build_root, cmakelists_dir, build_type, args)
@@ -1239,17 +1156,8 @@ def build_ccache(tool):
   build_type = decide_cmake_build_type(tool)
 
   # Configure
-  cmake_generator = CMAKE_GENERATOR
-  args = ['-DZSTD_FROM_INTERNET=ON']
-  if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
-    # With Visual Studio 16 2019, CMake changed the way they specify target arch.
-    # Instead of appending it into the CMake generator line, it is specified
-    # with a -A arch parameter.
-    args += ['-A', 'x64' if tool.bitness == 64 else 'x86']
-    args += ['-Thost=x64']
-  elif 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
-    cmake_generator += ' Win64'
-    args += ['-Thost=x64']
+  cmake_generator, args = get_generator_and_config_args(tool)
+  args += ['-DZSTD_FROM_INTERNET=ON']
 
   cmakelists_dir = os.path.join(src_root)
   success = cmake_configure(cmake_generator, build_root, cmakelists_dir, build_type, args)
@@ -1409,17 +1317,8 @@ def emscripten_post_install(tool):
   build_root = optimizer_build_root(tool)
   build_type = decide_cmake_build_type(tool)
 
-  args = []
-
   # Configure
-  cmake_generator = CMAKE_GENERATOR
-  if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
-    # With Visual Studio 16 2019, CMake changed the way they specify target arch.
-    # Instead of appending it into the CMake generator line, it is specified
-    # with a -A arch parameter.
-    args += ['-A', 'x64' if tool.bitness == 64 else 'x86']
-  elif 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
-    cmake_generator += ' Win64'
+  cmake_generator, args = get_generator_and_config_args(tool)
 
   success = cmake_configure(cmake_generator, build_root, src_root, build_type, args)
   if not success:
@@ -1464,16 +1363,8 @@ def build_binaryen_tool(tool):
   build_type = decide_cmake_build_type(tool)
 
   # Configure
-  args = ['-DENABLE_WERROR=0']  # -Werror is not useful for end users
-
-  cmake_generator = CMAKE_GENERATOR
-  if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
-    # With Visual Studio 16 2019, CMake changed the way they specify target arch.
-    # Instead of appending it into the CMake generator line, it is specified
-    # with a -A arch parameter.
-    args += ['-A', 'x64' if tool.bitness == 64 else 'x86']
-  elif 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
-    cmake_generator += ' Win64'
+  cmake_generator, args = get_generator_and_config_args(tool)
+  args += ['-DENABLE_WERROR=0']  # -Werror is not useful for end users
 
   if 'Visual Studio' in CMAKE_GENERATOR:
     if BUILD_FOR_TESTING:
@@ -2794,7 +2685,7 @@ def main(args):
                                   purposes. Default: Enabled
             --disable-assertions: Forces assertions off during the build.
 
-               --vs2017/--vs2019: If building from source, overrides to build
+      --vs2017/--vs2019/--vs2022: If building from source, overrides to build
                                   using the specified compiler. When installing
                                   precompiled packages, this has no effect.
                                   Note: The same compiler specifier must be
@@ -2817,7 +2708,7 @@ def main(args):
 
     if WINDOWS:
       print('''
-   emsdk activate [--permanent] [--system] [--build=type] [--vs2017/--vs2019] <tool/sdk>
+   emsdk activate [--permanent] [--system] [--build=type] [--vs2017/--vs2019/--vs2022] <tool/sdk>
 
                                 - Activates the given tool or SDK in the
                                   environment of the current shell.
@@ -2831,8 +2722,8 @@ def main(args):
                                   (uses Machine environment variables).
 
                                 - If a custom compiler version was used to override
-                                  the compiler to use, pass the same --vs2017/--vs2019 parameter
-                                  here to choose which version to activate.
+                                  the compiler to use, pass the same --vs2017/--vs2019/--vs2022
+                                  parameter here to choose which version to activate.
 
    emcmdprompt.bat              - Spawns a new command prompt window with the
                                   Emscripten environment active.''')
