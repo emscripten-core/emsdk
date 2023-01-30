@@ -2845,11 +2845,7 @@ def main(args):
       print('')
 
     print('All recent (non-legacy) installable versions are:')
-    releases_versions = sorted(
-      load_releases_versions(),
-      key=lambda x: [int(v) if v.isdigit() else -1 for v in x.split('.')],
-      reverse=True,
-    )
+    releases_versions = sorted(load_releases_versions(), key=version_key, reverse=True)
     releases_info = load_releases_info()['releases']
     for ver in releases_versions:
       print('         %s    %s' % (ver, installed_sdk_text('sdk-releases-%s-64bit' % get_release_hash(ver, releases_info))))
