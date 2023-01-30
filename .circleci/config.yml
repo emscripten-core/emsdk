@@ -4,13 +4,13 @@ orbs:
   win: circleci/windows@1.0.0
 
 executors:
-  bionic:
+  ubuntu:
     docker:
-      - image: buildpack-deps:bionic
+      - image: ubuntu-2204:current
 
 jobs:
   flake8:
-    executor: bionic
+    executor: ubuntu
     steps:
       - checkout
       - run:
@@ -25,7 +25,7 @@ jobs:
       - run: python2 -m flake8 --show-source --statistics
       - run: python3 -m flake8 --show-source --statistics
   test-linux:
-    executor: bionic
+    executor: ubuntu
     environment:
       EMSDK_NOTTY: "1"
       # This is needed because the old gcc-7 that is installed on debian/bionic
@@ -134,7 +134,7 @@ jobs:
             test/test_path_preservation.ps1
 
   build-docker-image:
-    executor: bionic
+    executor: ubuntu
     steps:
       - checkout
       - run:
@@ -150,7 +150,7 @@ jobs:
           command: make -C ./docker version=tot test
 
   publish-docker-image:
-    executor: bionic
+    executor: ubuntu
     steps:
       - checkout
       - run:
@@ -170,7 +170,7 @@ jobs:
             make -C ./docker version=${CIRCLE_TAG} alias=latest push
 
   test-bazel-linux:
-    executor: bionic
+    executor: ubuntu
     steps:
       - checkout
       - run: apt-get install -q -y curl gnupg
