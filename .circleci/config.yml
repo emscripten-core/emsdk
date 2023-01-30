@@ -6,7 +6,7 @@ orbs:
 executors:
   ubuntu:
     docker:
-      - image: ubuntu-2204:current
+      - image: buildpack-deps:jammy
 
 jobs:
   flake8:
