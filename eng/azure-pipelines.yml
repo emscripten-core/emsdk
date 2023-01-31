@@ -31,8 +31,6 @@ stages:
       enablePublishUsingPipelines: true
       enableMicrobuild: true
       enableSourceBuild: true
-      sourceBuildParameters:
-        - /p:ForceBuildManifestOnly=true
       variables:
         - _BuildConfig: Release
       jobs:
