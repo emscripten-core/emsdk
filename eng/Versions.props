@@ -6,7 +6,7 @@
     <VersionPrefix>8.0.0</VersionPrefix>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>2</PreReleaseVersionIteration>
-    <EmscriptenVersion>3.1.12</EmscriptenVersion>
+    <EmscriptenVersion>3.1.30</EmscriptenVersion>
     <EmscriptenVersionNet6>2.0.23</EmscriptenVersionNet6>
     <EmscriptenVersionNet7>3.1.12</EmscriptenVersionNet7>
     <PackageVersionNet7>7.0.2</PackageVersionNet7>
