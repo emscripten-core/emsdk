@@ -140,15 +140,7 @@ jobs:
       - checkout
       - run:
           name: install docker
-          command: |
-            apt-get update -q 
-            apt-get install -q -y ca-certificates curl gnupg lsb-release
-            mkdir -p /etc/apt/keyrings
-            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-            apt-get update -q
-            apt-get install -q -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-      - setup_remote_docker
+          command: apt-get update -q && apt-get install -q -y docker.io
       # Build and test the tip-of-tree build of EMSDK
       - run:
           name: build
@@ -163,14 +155,7 @@ jobs:
       - checkout
       - run:
           name: install docker
-          command: |
-            apt-get update -q 
-            apt-get install -q -y ca-certificates curl gnupg lsb-release
-            mkdir -p /etc/apt/keyrings
-            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-            apt-get update -q
-            apt-get install -q -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+          command: apt-get update -q && apt-get install -q -y docker.io
       - setup_remote_docker
       - run:
           name: build
