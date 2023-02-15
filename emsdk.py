@@ -144,9 +144,6 @@ elif machine.endswith('86'):
   ARCH = 'x86'
 elif machine.startswith('aarch64') or machine.lower().startswith('arm64'):
   ARCH = 'aarch64'
-  if WINDOWS:
-      errlog('No support for Windows on Arm, fallback to x64')
-      ARCH = 'x86_64'
 elif machine.startswith('arm'):
   ARCH = 'arm'
 else:
@@ -258,7 +255,11 @@ def vswhere(version):
     if not program_files:
       program_files = os.environ['ProgramFiles']
     vswhere_path = os.path.join(program_files, 'Microsoft Visual Studio', 'Installer', 'vswhere.exe')
-    output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-version', '[%s.0,%s.0)' % (version, version + 1), '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', '-property', 'installationPath', '-format', 'json']))
+    # Source: https://learn.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-build-tools?view=vs-2022
+    tools_arch = 'ARM64' if ARCH == 'aarch64' else 'x86.x64'
+    # The "-products *" allows detection of Build Tools, the "-prerelease" allows detection of Preview version
+    # of Visual Studio and Build Tools.
+    output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-products', '*', '-prerelease', '-version', '[%s.0,%s.0)' % (version, version + 1), '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.' + tools_arch, '-property', 'installationPath', '-format', 'json']))
     return str(output[0]['installationPath'])
   except Exception:
     return ''
@@ -1016,6 +1017,32 @@ def xcode_sdk_version():
     return subprocess.checkplatform.mac_ver()[0].split('.')
 
 
+def cmake_target_platform(tool):
+  # Source: https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2017%202022.html#platform-selection
+  if hasattr(tool, 'arch'):
+    if tool.arch == 'aarch64':
+      return 'ARM64'
+    elif tool.arch == 'x86_64':
+      return 'x64'
+    elif tool.arch == 'x86':
+      return 'Win32'
+  if ARCH == 'aarch64':
+    return 'ARM64'
+  else:
+    return 'x64' if tool.bitness == 64 else 'Win32'
+
+
+def cmake_host_platform():
+  # Source: https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2017%202022.html#toolset-selection
+  arch_to_cmake_host_platform = {
+    'aarch64': 'ARM64',
+    'arm': 'ARM',
+    'x86_64': 'x64',
+    'x86': 'x86'
+  }
+  return arch_to_cmake_host_platform[ARCH]
+
+
 def get_generator_and_config_args(tool):
   args = []
   cmake_generator = CMAKE_GENERATOR
@@ -1023,8 +1050,8 @@ def get_generator_and_config_args(tool):
     # With Visual Studio 16 2019, CMake changed the way they specify target arch.
     # Instead of appending it into the CMake generator line, it is specified
     # with a -A arch parameter.
-    args += ['-A', 'x64' if tool.bitness == 64 else 'x86']
-    args += ['-Thost=x64']
+    args += ['-A', cmake_target_platform(tool)]
+    args += ['-Thost=' + cmake_host_platform()]
   elif 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
     cmake_generator += ' Win64'
     args += ['-Thost=x64']
@@ -1837,6 +1864,10 @@ class Tool(object):
     elif hasattr(self, 'git_branch'):
       success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch)
     elif url.endswith(ARCHIVE_SUFFIXES):
+      global ARCH
+      if WINDOWS and ARCH == 'aarch64':
+        errlog('No support for Windows on Arm, fallback to x64')
+        ARCH = 'x86_64'
       success = download_and_unzip(url, self.installation_path(), filename_prefix=getattr(self, 'zipfile_prefix', ''))
     else:
       assert False, 'unhandled url type: ' + url
