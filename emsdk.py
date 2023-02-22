@@ -56,7 +56,13 @@ extra_release_tag = None
 # Enable this to do very verbose printing about the different steps that are
 # being run. Useful for debugging.
 VERBOSE = int(os.getenv('EMSDK_VERBOSE', '0'))
+QUIET = int(os.getenv('EMSDK_QUIET', '0'))
 TTY_OUTPUT = not os.getenv('EMSDK_NOTTY', not sys.stdout.isatty())
+
+
+def info(msg):
+  if not QUIET:
+    print(msg, file=sys.stderr)
 
 
 def errlog(msg):
@@ -136,6 +142,9 @@ elif machine.endswith('86'):
   ARCH = 'x86'
 elif machine.startswith('aarch64') or machine.lower().startswith('arm64'):
   ARCH = 'aarch64'
+  if WINDOWS:
+      errlog('No support for Windows on Arm, fallback to x64')
+      ARCH = 'x86_64'
 elif machine.startswith('arm'):
   ARCH = 'arm'
 else:
@@ -182,15 +191,13 @@ def to_unix_path(p):
   return p.replace('\\', '/')
 
 
-def emsdk_path():
-  return to_unix_path(os.path.dirname(os.path.realpath(__file__)))
-
+EMSDK_PATH = to_unix_path(os.path.dirname(os.path.realpath(__file__)))
 
 EMSDK_SET_ENV = ""
 if POWERSHELL:
-  EMSDK_SET_ENV = os.path.join(emsdk_path(), 'emsdk_set_env.ps1')
+  EMSDK_SET_ENV = os.path.join(EMSDK_PATH, 'emsdk_set_env.ps1')
 else:
-  EMSDK_SET_ENV = os.path.join(emsdk_path(), 'emsdk_set_env.bat')
+  EMSDK_SET_ENV = os.path.join(EMSDK_PATH, 'emsdk_set_env.bat')
 
 
 # Parses https://github.com/emscripten-core/emscripten/tree/d6aced8 to a pair (https://github.com/emscripten-core/emscripten, d6aced8)
@@ -477,7 +484,7 @@ def sdk_path(path):
   if os.path.isabs(path):
     return path
 
-  return to_unix_path(os.path.join(emsdk_path(), path))
+  return to_unix_path(os.path.join(EMSDK_PATH, path))
 
 
 # Removes a single file, suppressing exceptions on failure.
@@ -527,7 +534,7 @@ def untargz(source_filename, dest_dir):
 # See https://msdn.microsoft.com/en-us/library/aa365247.aspx#maxpath and http://stackoverflow.com/questions/3555527/python-win32-filename-length-workaround
 # In that mode, forward slashes cannot be used as delimiters.
 def fix_potentially_long_windows_pathname(pathname):
-  if not WINDOWS:
+  if not WINDOWS or MSYS:
     return pathname
   # Test if emsdk calls fix_potentially_long_windows_pathname() with long
   # relative paths (which is problematic)
@@ -879,7 +886,7 @@ def exe_suffix(filename):
 
 # The directory where the binaries are produced. (relative to the installation
 # root directory of the tool)
-def fastcomp_build_bin_dir(tool):
+def llvm_build_bin_dir(tool):
   build_dir = llvm_build_dir(tool)
   if WINDOWS and 'Visual Studio' in CMAKE_GENERATOR:
     old_llvm_bin_dir = os.path.join(build_dir, 'bin', decide_cmake_build_type(tool))
@@ -1101,92 +1108,6 @@ def xcode_sdk_version():
     return subprocess.checkplatform.mac_ver()[0].split('.')
 
 
-def build_fastcomp(tool):
-  debug_print('build_fastcomp(' + str(tool) + ')')
-  fastcomp_root = tool.installation_path()
-  fastcomp_src_root = os.path.join(fastcomp_root, 'src')
-  # Does this tool want to be git cloned from github?
-  if hasattr(tool, 'git_branch'):
-    success = git_clone_checkout_and_pull(tool.download_url(), fastcomp_src_root, tool.git_branch)
-    if not success:
-      return False
-    if hasattr(tool, 'clang_url'):
-      clang_root = os.path.join(fastcomp_src_root, 'tools/clang')
-      success = git_clone_checkout_and_pull(tool.clang_url, clang_root, tool.git_branch)
-      if not success:
-        return False
-    if hasattr(tool, 'lld_url'):
-      lld_root = os.path.join(fastcomp_src_root, 'tools/lld')
-      success = git_clone_checkout_and_pull(tool.lld_url, lld_root, tool.git_branch)
-      if not success:
-        return False
-  else:
-    # Not a git cloned tool, so instead download from git tagged releases
-    success = download_and_unzip(tool.download_url(), fastcomp_src_root, filename_prefix='llvm-e')
-    if not success:
-      return False
-    success = download_and_unzip(tool.windows_clang_url if WINDOWS else tool.unix_clang_url, os.path.join(fastcomp_src_root, 'tools/clang'), filename_prefix='clang-e')
-    if not success:
-      return False
-
-  args = []
-
-  cmake_generator = CMAKE_GENERATOR
-  if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
-    # With Visual Studio 16 2019, CMake changed the way they specify target arch.
-    # Instead of appending it into the CMake generator line, it is specified
-    # with a -A arch parameter.
-    args += ['-A', 'x64' if tool.bitness == 64 else 'x86']
-  elif 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
-    cmake_generator += ' Win64'
-
-  build_dir = llvm_build_dir(tool)
-  build_root = os.path.join(fastcomp_root, build_dir)
-
-  build_type = decide_cmake_build_type(tool)
-
-  # Configure
-  tests_arg = 'ON' if BUILD_FOR_TESTING else 'OFF'
-
-  enable_assertions = ENABLE_LLVM_ASSERTIONS.lower() == 'on' or (ENABLE_LLVM_ASSERTIONS == 'auto' and build_type.lower() != 'release' and build_type.lower() != 'minsizerel')
-
-  only_supports_wasm = hasattr(tool, 'only_supports_wasm')
-  if ARCH == 'x86' or ARCH == 'x86_64':
-    targets_to_build = 'X86'
-  elif ARCH == 'arm':
-    targets_to_build = 'ARM'
-  elif ARCH == 'aarch64':
-    targets_to_build = 'AArch64'
-  else:
-    # May have problems with emconfigure
-    targets_to_build = ''
-  if not only_supports_wasm:
-    if targets_to_build != '':
-      targets_to_build += ';'
-    targets_to_build += 'JSBackend'
-  args += ['-DLLVM_TARGETS_TO_BUILD=' + targets_to_build, '-DLLVM_INCLUDE_EXAMPLES=OFF', '-DCLANG_INCLUDE_EXAMPLES=OFF', '-DLLVM_INCLUDE_TESTS=' + tests_arg, '-DCLANG_INCLUDE_TESTS=' + tests_arg, '-DLLVM_ENABLE_ASSERTIONS=' + ('ON' if enable_assertions else 'OFF')]
-  if os.getenv('LLVM_CMAKE_ARGS'):
-    extra_args = os.environ['LLVM_CMAKE_ARGS'].split(',')
-    print('Passing the following extra arguments to LLVM CMake configuration: ' + str(extra_args))
-    args += extra_args
-
-  # MacOS < 10.13 workaround for LLVM build bug https://github.com/kripken/emscripten/issues/5418:
-  # specify HAVE_FUTIMENS=0 in the build if building with target SDK that is older than 10.13.
-  if MACOS and ('HAVE_FUTIMENS' not in os.getenv('LLVM_CMAKE_ARGS', '')) and xcode_sdk_version() < ['10', '13']:
-    print('Passing -DHAVE_FUTIMENS=0 to LLVM CMake configure to workaround https://github.com/kripken/emscripten/issues/5418. Please update to macOS 10.13 or newer')
-    args += ['-DHAVE_FUTIMENS=0']
-
-  success = cmake_configure(cmake_generator, build_root, fastcomp_src_root, build_type, args)
-  if not success:
-    return False
-
-  # Make
-  success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'Win32')
-  return success
-
-
-# LLVM git source tree migrated to a single repository instead of multiple
-# ones, build_llvm() builds via that repository structure
 def build_llvm(tool):
   debug_print('build_llvm(' + str(tool) + ')')
   llvm_root = tool.installation_path()
@@ -1606,7 +1527,7 @@ def to_native_path(p):
 # Finds and returns a list of the directories that need to be added to PATH for
 # the given set of tools.
 def get_required_path(active_tools):
-  path_add = [to_native_path(emsdk_path())]
+  path_add = [to_native_path(EMSDK_PATH)]
   for tool in active_tools:
     if hasattr(tool, 'activated_path'):
       path = to_native_path(tool.expand_vars(tool.activated_path))
@@ -1616,11 +1537,8 @@ def get_required_path(active_tools):
 
 # Returns the absolute path to the file '.emscripten' for the current user on
 # this system.
-def dot_emscripten_path():
-  return os.path.join(emsdk_path(), ".emscripten")
-
-
-dot_emscripten = {}
+EM_CONFIG_PATH = os.path.join(EMSDK_PATH, ".emscripten")
+EM_CONFIG_DICT = {}
 
 
 def parse_key_value(line):
@@ -1635,23 +1553,23 @@ def parse_key_value(line):
     return (key, '')
 
 
-def load_dot_emscripten():
-  dot_emscripten.clear()
+def load_em_config():
+  EM_CONFIG_DICT.clear()
   lines = []
   try:
-    lines = open(dot_emscripten_path(), "r").read().split('\n')
+    lines = open(EM_CONFIG_PATH, "r").read().split('\n')
   except:
     pass
   for line in lines:
     try:
       key, value = parse_key_value(line)
       if value != '':
-        dot_emscripten[key] = value
+        EM_CONFIG_DICT[key] = value
     except:
       pass
 
 
-def generate_dot_emscripten(active_tools):
+def generate_em_config(active_tools):
   cfg = 'import os\n'
   cfg += "emsdk_path = os.path.dirname(os.getenv('EM_CONFIG')).replace('\\\\', '/')\n"
 
@@ -1676,17 +1594,17 @@ COMPILER_ENGINE = NODE_JS
 JS_ENGINES = [NODE_JS]
 '''
 
-  cfg = cfg.replace("'" + emsdk_path(), "emsdk_path + '")
+  cfg = cfg.replace("'" + EMSDK_PATH, "emsdk_path + '")
 
-  if os.path.exists(dot_emscripten_path()):
-    backup_path = dot_emscripten_path() + ".old"
-    move_with_overwrite(dot_emscripten_path(), backup_path)
+  if os.path.exists(EM_CONFIG_PATH):
+    backup_path = EM_CONFIG_PATH + ".old"
+    move_with_overwrite(EM_CONFIG_PATH, backup_path)
 
-  with open(dot_emscripten_path(), "w") as text_file:
+  with open(EM_CONFIG_PATH, "w") as text_file:
     text_file.write(cfg)
 
   # Clear old emscripten content.
-  rmfile(os.path.join(emsdk_path(), ".emscripten_sanity"))
+  rmfile(os.path.join(EMSDK_PATH, ".emscripten_sanity"))
 
   path_add = get_required_path(active_tools)
   if not WINDOWS:
@@ -1754,10 +1672,9 @@ class Tool(object):
     if '%generator_prefix%' in str:
       str = str.replace('%generator_prefix%', cmake_generator_prefix())
     str = str.replace('%.exe%', '.exe' if WINDOWS else '')
-    if '%fastcomp_build_dir%' in str:
-      str = str.replace('%fastcomp_build_dir%', llvm_build_dir(self))
-    if '%fastcomp_build_bin_dir%' in str:
-      str = str.replace('%fastcomp_build_bin_dir%', fastcomp_build_bin_dir(self))
+    if '%llvm_build_bin_dir%' in str:
+      str = str.replace('%llvm_build_bin_dir%', llvm_build_bin_dir(self))
+
     return str
 
   # Return true if this tool requires building from source, and false if this is a precompiled tool.
@@ -1918,16 +1835,16 @@ class Tool(object):
       return len(deps) > 0
 
     for key, value in activated_cfg.items():
-      if key not in dot_emscripten:
+      if key not in EM_CONFIG_DICT:
         debug_print(str(self) + ' is not active, because key="' + key + '" does not exist in .emscripten')
         return False
 
       # all paths are stored dynamically relative to the emsdk root, so
       # normalize those first.
-      dot_emscripten_key = dot_emscripten[key].replace("emsdk_path + '", "'" + emsdk_path())
-      dot_emscripten_key = dot_emscripten_key.strip("'")
-      if dot_emscripten_key != value:
-        debug_print(str(self) + ' is not active, because key="' + key + '" has value "' + dot_emscripten_key + '" but should have value "' + value + '"')
+      config_value = EM_CONFIG_DICT[key].replace("emsdk_path + '", "'" + EMSDK_PATH)
+      config_value = config_value.strip("'")
+      if config_value != value:
+        debug_print(str(self) + ' is not active, because key="' + key + '" has value "' + config_value + '" but should have value "' + value + '"')
         return False
     return True
 
@@ -2003,8 +1920,8 @@ class Tool(object):
 
     if getattr(self, 'custom_install_script', None) == 'emscripten_npm_install':
       # upstream tools have hardcoded paths that are not stored in emsdk_manifest.json registry
-      install_path = 'upstream' if 'releases-upstream' in self.version else 'fastcomp'
-      emscripten_dir = os.path.join(emsdk_path(), install_path, 'emscripten')
+      install_path = 'upstream'
+      emscripten_dir = os.path.join(EMSDK_PATH, install_path, 'emscripten')
       # Older versions of the sdk did not include the node_modules directory
       # and require `npm ci` to be run post-install
       if not os.path.exists(os.path.join(emscripten_dir, 'node_modules')):
@@ -2029,9 +1946,7 @@ class Tool(object):
     print("Installing tool '" + str(self) + "'..")
     url = self.download_url()
 
-    if hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_fastcomp':
-      success = build_fastcomp(self)
-    elif hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_llvm':
+    if hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_llvm':
       success = build_llvm(self)
     elif hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_ninja':
       success = build_ninja(self)
@@ -2052,8 +1967,8 @@ class Tool(object):
         success = emscripten_post_install(self)
       elif self.custom_install_script == 'emscripten_npm_install':
         success = emscripten_npm_install(self, self.installation_path())
-      elif self.custom_install_script in ('build_fastcomp', 'build_llvm', 'build_ninja', 'build_ccache'):
-        # 'build_fastcomp' is a special one that does the download on its
+      elif self.custom_install_script in ('build_llvm', 'build_ninja', 'build_ccache'):
+        # 'build_llvm' is a special one that does the download on its
         # own, others do the download manually.
         pass
       elif self.custom_install_script == 'build_binaryen':
@@ -2186,6 +2101,9 @@ def find_latest_hash():
 
 def resolve_sdk_aliases(name, verbose=False):
   releases_info = load_releases_info()
+  if name == 'latest' and LINUX and ARCH == 'aarch64':
+    print("warning: 'latest' on arm64-linux may be slightly behind other architectures")
+    name = 'latest-arm64-linux'
   while name in releases_info['aliases']:
     if verbose:
       print("Resolving SDK alias '%s' to '%s'" % (name, releases_info['aliases'][name]))
@@ -2266,14 +2184,14 @@ def python_2_3_sorted(arr, cmp):
 
 
 def is_emsdk_sourced_from_github():
-  return os.path.exists(os.path.join(emsdk_path(), '.git'))
+  return os.path.exists(os.path.join(EMSDK_PATH, '.git'))
 
 
 def update_emsdk():
   if is_emsdk_sourced_from_github():
     errlog('You seem to have bootstrapped Emscripten SDK by cloning from GitHub. In this case, use "git pull" instead of "emsdk update" to update emsdk. (Not doing that automatically in case you have local changes)')
     sys.exit(1)
-  if not download_and_unzip(emsdk_zip_download_url, emsdk_path(), clobber=False):
+  if not download_and_unzip(emsdk_zip_download_url, EMSDK_PATH, clobber=False):
     sys.exit(1)
 
 
@@ -2337,25 +2255,22 @@ def get_installed_sdk_version():
 # Get a list of tags for emscripten-releases.
 def load_releases_tags():
   tags = []
-  tags_fastcomp = []
   info = load_releases_info()
 
   for version, sha in sorted(info['releases'].items(), key=lambda x: version_key(x[0])):
     tags.append(sha)
-    # Only include versions older than 1.39.0 in fastcomp releases
-    if version_key(version) < (2, 0, 0):
-      tags_fastcomp.append(sha)
 
   if extra_release_tag:
     tags.append(extra_release_tag)
 
   # Explicitly add the currently installed SDK version.  This could be a custom
-  # version (installed explicitly) so it might not be part of the main list loaded above.
+  # version (installed explicitly) so it might not be part of the main list
+  # loaded above.
   installed = get_installed_sdk_version()
   if installed and installed not in tags:
     tags.append(installed)
 
-  return tags, tags_fastcomp
+  return tags
 
 
 def load_releases_versions():
@@ -2383,7 +2298,7 @@ def load_sdk_manifest():
   llvm_precompiled_tags_64bit = load_file_index_list('llvm-tags-64bit.txt')
   llvm_precompiled_tags = llvm_precompiled_tags_32bit + llvm_precompiled_tags_64bit
   binaryen_tags = load_legacy_binaryen_tags()
-  releases_tags, releases_tags_fastcomp = load_releases_tags()
+  releases_tags = load_releases_tags()
 
   def dependencies_exist(sdk):
     for tool_name in sdk.uses:
@@ -2467,8 +2382,6 @@ def load_sdk_manifest():
         expand_category_param('%precompiled_tag64%', llvm_precompiled_tags_64bit, t, is_sdk=False)
       elif '%binaryen_tag%' in t.version:
         expand_category_param('%binaryen_tag%', binaryen_tags, t, is_sdk=False)
-      elif '%releases-tag%' in t.version and 'fastcomp' in t.version:
-        expand_category_param('%releases-tag%', releases_tags_fastcomp, t, is_sdk=False)
       elif '%releases-tag%' in t.version:
         expand_category_param('%releases-tag%', releases_tags, t, is_sdk=False)
       else:
@@ -2489,8 +2402,6 @@ def load_sdk_manifest():
         expand_category_param('%precompiled_tag32%', llvm_precompiled_tags_32bit, sdk, is_sdk=True)
       elif '%precompiled_tag64%' in sdk.version:
         expand_category_param('%precompiled_tag64%', llvm_precompiled_tags_64bit, sdk, is_sdk=True)
-      elif '%releases-tag%' in sdk.version and 'fastcomp' in sdk.version:
-        expand_category_param('%releases-tag%', releases_tags_fastcomp, sdk, is_sdk=True)
       elif '%releases-tag%' in sdk.version:
         expand_category_param('%releases-tag%', releases_tags, sdk, is_sdk=True)
       else:
@@ -2535,7 +2446,7 @@ def process_tool_list(tools_to_activate):
 
 
 def write_set_env_script(env_string):
-  assert(CMD or POWERSHELL)
+  assert CMD or POWERSHELL
   open(EMSDK_SET_ENV, 'w').write(env_string)
 
 
@@ -2550,7 +2461,7 @@ def set_active_tools(tools_to_activate, permanently_activate, system):
     print('Setting the following tools as active:\n   ' + '\n   '.join(map(lambda x: str(x), tools)))
     print('')
 
-  generate_dot_emscripten(tools_to_activate)
+  generate_em_config(tools_to_activate)
 
   # Construct a .bat or .ps1 script that will be invoked to set env. vars and PATH
   # We only do this on cmd or powershell since emsdk.bat/ps1 is able to modify the
@@ -2618,12 +2529,11 @@ def adjusted_path(tools_to_activate, system=False, user=False):
     existing_path = win_get_environment_variable('PATH', system=system, user=user, fallback=True).split(ENVPATH_SEPARATOR)
   else:
     existing_path = os.environ['PATH'].split(ENVPATH_SEPARATOR)
-  emsdk_root_path = to_unix_path(emsdk_path())
 
   existing_emsdk_tools = []
   existing_nonemsdk_path = []
   for entry in existing_path:
-    if to_unix_path(entry).startswith(emsdk_root_path):
+    if to_unix_path(entry).startswith(EMSDK_PATH):
       existing_emsdk_tools.append(entry)
     else:
       existing_nonemsdk_path.append(entry)
@@ -2660,14 +2570,13 @@ def get_env_vars_to_add(tools_to_activate, system, user):
     env_vars_to_add += [('PATH', newpath)]
 
     if added_path:
-      errlog('Adding directories to PATH:')
+      info('Adding directories to PATH:')
       for item in added_path:
-        errlog('PATH += ' + item)
-      errlog('')
+        info('PATH += ' + item)
+      info('')
 
   # A core variable EMSDK points to the root of Emscripten SDK directory.
-  env_vars_to_add += [('EMSDK', to_unix_path(emsdk_path()))]
-  env_vars_to_add += [('EM_CONFIG', os.path.normpath(dot_emscripten_path()))]
+  env_vars_to_add += [('EMSDK', EMSDK_PATH)]
 
   for tool in tools_to_activate:
     config = tool.activated_config()
@@ -2683,6 +2592,9 @@ def get_env_vars_to_add(tools_to_activate, system, user):
       #   https://github.com/emscripten-core/emscripten/pull/11091
       # - Default to embedded cache also started in 1.39.16
       #   https://github.com/emscripten-core/emscripten/pull/11126
+      # - Emscripten supports automatically locating the embedded
+      #   config in 1.39.13:
+      #   https://github.com/emscripten-core/emscripten/pull/10935
       #
       # Since setting EM_CACHE in the environment effects the entire machine
       # we want to avoid this except when installing these older emscripten
@@ -2691,6 +2603,8 @@ def get_env_vars_to_add(tools_to_activate, system, user):
       if version < [1, 39, 16]:
         em_cache_dir = os.path.join(config['EMSCRIPTEN_ROOT'], 'cache')
         env_vars_to_add += [('EM_CACHE', em_cache_dir)]
+      if version < [1, 39, 13]:
+        env_vars_to_add += [('EM_CONFIG', os.path.normpath(EM_CONFIG_PATH))]
 
     envs = tool.activated_environment()
     for env in envs:
@@ -2702,6 +2616,7 @@ def get_env_vars_to_add(tools_to_activate, system, user):
 
 
 def construct_env(tools_to_activate, system, user):
+  info('Setting up EMSDK environment (suppress these messages with EMSDK_QUIET=1)')
   return construct_env_with_vars(get_env_vars_to_add(tools_to_activate, system, user))
 
 
@@ -2720,13 +2635,13 @@ def unset_env(key):
 def construct_env_with_vars(env_vars_to_add):
   env_string = ''
   if env_vars_to_add:
-    errlog('Setting environment variables:')
+    info('Setting environment variables:')
 
     for key, value in env_vars_to_add:
       # Don't set env vars which are already set to the correct value.
       if key in os.environ and to_unix_path(os.environ[key]) == to_unix_path(value):
         continue
-      errlog(key + ' = ' + value)
+      info(key + ' = ' + value)
       if POWERSHELL:
         env_string += '$env:' + key + '="' + value + '"\n'
       elif CMD:
@@ -2754,9 +2669,9 @@ def construct_env_with_vars(env_vars_to_add):
                      'EMSDK_NUM_CORES', 'EMSDK_NOTTY', 'EMSDK_KEEP_DOWNLOADS'])
   env_keys_to_add = set(pair[0] for pair in env_vars_to_add)
   for key in os.environ:
-    if key.startswith('EMSDK_') or key.startswith('EM_'):
+    if key.startswith('EMSDK_') or key in ('EM_CACHE', 'EM_CONFIG'):
       if key not in env_keys_to_add and key not in ignore_keys:
-        errlog('Clearing existing environment variable: %s' % key)
+        info('Clearing existing environment variable: %s' % key)
         env_string += unset_env(key)
 
   return env_string
@@ -2769,16 +2684,12 @@ def error_on_missing_tool(name):
     exit_with_error("tool or SDK not found: '%s'" % name)
 
 
-def exit_with_fastcomp_error():
-    exit_with_error('the fastcomp backend is not getting new builds or releases. Please use the upstream llvm backend or use an older version than 2.0.0 (such as 1.40.1).')
-
-
 def expand_sdk_name(name, activating):
   if 'upstream-master' in name:
     errlog('upstream-master SDK has been renamed upstream-main')
     name = name.replace('upstream-master', 'upstream-main')
-  if name in ('latest-fastcomp', 'latest-releases-fastcomp', 'tot-fastcomp', 'sdk-nightly-latest'):
-    exit_with_fastcomp_error()
+  if 'fastcomp' in name:
+    exit_with_error('the fastcomp backend is no longer supported.  Please use an older version of emsdk (for example 3.1.29) if you want to install the old fastcomp-based SDK')
   if name in ('tot', 'sdk-tot', 'tot-upstream'):
     if activating:
       # When we are activating a tot release, assume that the currently
@@ -2795,37 +2706,24 @@ def expand_sdk_name(name, activating):
 
   # check if it's a release handled by an emscripten-releases version,
   # and if so use that by using the right hash. we support a few notations,
-  #   x.y.z[-(upstream|fastcomp_])
-  #   sdk-x.y.z[-(upstream|fastcomp_])-64bit
+  #   x.y.z[-upstream]
+  #   sdk-x.y.z[-upstream]-64bit
   # TODO: support short notation for old builds too?
-  backend = None
+  backend = 'upstream'
   fullname = name
   if '-upstream' in fullname:
     fullname = name.replace('-upstream', '')
-    backend = 'upstream'
-  elif '-fastcomp' in fullname:
-    fullname = fullname.replace('-fastcomp', '')
-    backend = 'fastcomp'
   version = fullname.replace('sdk-', '').replace('releases-', '').replace('-64bit', '').replace('tag-', '')
   sdk = 'sdk-' if not name.startswith('releases-') else ''
   releases_info = load_releases_info()['releases']
   release_hash = get_release_hash(version, releases_info)
   if release_hash:
     # Known release hash
-    if backend == 'fastcomp' and version_key(version) >= (2, 0, 0):
-      exit_with_fastcomp_error()
-    if backend is None:
-      if version_key(version) >= (1, 39, 0):
-        backend = 'upstream'
-      else:
-        backend = 'fastcomp'
     full_name = '%sreleases-%s-%s-64bit' % (sdk, backend, release_hash)
     print("Resolving SDK version '%s' to '%s'" % (version, full_name))
     return full_name
 
   if len(version) == 40:
-    if backend is None:
-      backend = 'upstream'
     global extra_release_tag
     extra_release_tag = version
     return '%sreleases-%s-%s-64bit' % (sdk, backend, version)
@@ -3003,7 +2901,7 @@ def main(args):
     activating = cmd == 'activate'
     args = [expand_sdk_name(a, activating=activating) for a in args]
 
-  load_dot_emscripten()
+  load_em_config()
   load_sdk_manifest()
 
   # Apply any overrides to git branch names to clone from.
@@ -3059,13 +2957,11 @@ def main(args):
     if (LINUX or MACOS or WINDOWS) and (ARCH == 'x86' or ARCH == 'x86_64'):
       print('The *recommended* precompiled SDK download is %s (%s).' % (find_latest_version(), find_latest_hash()))
       print()
-      print('To install/activate it, use one of:')
-      print('         latest                  [default (llvm) backend]')
-      print('         latest-fastcomp         [legacy (fastcomp) backend]')
+      print('To install/activate it use:')
+      print('         latest')
       print('')
-      print('Those are equivalent to installing/activating the following:')
+      print('This is equivalent to installing/activating:')
       print('         %s             %s' % (find_latest_version(), installed_sdk_text(find_latest_sdk('upstream'))))
-      print('         %s-fastcomp    %s' % (find_latest_version(), installed_sdk_text(find_latest_sdk('fastcomp'))))
       print('')
     else:
       print('Warning: your platform does not have precompiled SDKs available.')
