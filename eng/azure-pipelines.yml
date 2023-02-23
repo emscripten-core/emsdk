@@ -1,5 +1,6 @@
 variables:
   - template: /eng/common-variables.yml
+  - template: /eng/common/templates/variables/pool-providers.yml
   - name: Build.Repository.Clean
     value: true
   - name: CheckNuGetSizesScript
@@ -60,8 +61,8 @@ stages:
           displayName: Sign macOS
           timeoutInMinutes: 30
           pool:
-            name: NetCore1ESPool-Internal
-            demands: ImageOverride -equals windows.vs2019.amd64
+            name: $(DncEngInternalBuildPool)
+            demands: ImageOverride -equals windows.vs2022.amd64
           steps:
           - task: DownloadPipelineArtifact@2
             inputs:
@@ -78,10 +79,11 @@ stages:
         timeoutInMinutes: 30
         pool:
           ${{ if eq(variables['System.TeamProject'], 'public') }}:
-            vmImage: ubuntu-20.04
+            name: $(DncEngPublicBuildPool)
+            demands: ImageOverride -equals build.ubuntu.2204.amd64.open
           ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-            name: NetCore1ESPool-Internal
-            demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
+            name: $(DncEngInternalBuildPool)
+            demands: ImageOverride -equals build.ubuntu.2204.amd64
         steps:
         - bash: |
             ./build.sh -ci -configuration $(_BuildConfig) /p:PackageRID=linux-x64 /p:AssetManifestOS=linux /p:PlatformName=x64 $(_InternalBuildArgs) $(_NonWindowsInternalPublishArg)
@@ -101,8 +103,8 @@ stages:
           displayName: Sign Linux
           timeoutInMinutes: 30
           pool:
-            name: NetCore1ESPool-Internal
-            demands: ImageOverride -equals windows.vs2019.amd64
+            name: $(DncEngInternalBuildPool)
+            demands: ImageOverride -equals windows.vs2022.amd64
           steps:
           - task: DownloadPipelineArtifact@2
             inputs:
@@ -119,10 +121,11 @@ stages:
         timeoutInMinutes: 60
         pool:
           ${{ if eq(variables['System.TeamProject'], 'public') }}:
-            vmImage: windows-2019
+            name: $(DncEngPublicBuildPool)
+            demands: ImageOverride -equals windows.vs2022.amd64.open
           ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-            name: NetCore1ESPool-Internal
-            demands: ImageOverride -equals windows.vs2019.amd64
+            name: $(DncEngInternalBuildPool)
+            demands: ImageOverride -equals windows.vs2022.amd64
         steps:
         - powershell: |
             # update the machine cert store so that python can download the files as required by emscripten's install
