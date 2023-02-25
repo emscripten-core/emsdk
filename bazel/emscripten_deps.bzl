@@ -53,12 +53,16 @@ filegroup(
     srcs = [
         "bin/clang{bin_extension}",
         "bin/llvm-ar{bin_extension}",
+        "bin/llvm-dwarfdump{bin_extension}",
         "bin/llvm-nm{bin_extension}",
         "bin/llvm-objcopy{bin_extension}",
+        "bin/wasm-ctor-eval{bin_extension}",
         "bin/wasm-emscripten-finalize{bin_extension}",
         "bin/wasm-ld{bin_extension}",
-        "bin/wasm-opt{bin_extension}",
         "bin/wasm-metadce{bin_extension}",
+        "bin/wasm-opt{bin_extension}",
+        "bin/wasm-split{bin_extension}",
+        "bin/wasm2js{bin_extension}",
         ":emcc_common",
     ] + glob(
         include = [
