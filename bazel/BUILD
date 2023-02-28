@@ -66,3 +66,10 @@ alias(
         "//conditions:default": ":empty",
     }),
 )
+
+platform(
+    name = "platform_wasm",
+    constraint_values = [
+        "@platforms//cpu:wasm32",
+    ],
+)
