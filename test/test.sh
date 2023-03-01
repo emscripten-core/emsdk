@@ -15,8 +15,8 @@ emcc -v
 
 # Install an older version of the SDK that requires EM_CACHE to be
 # set in the environment, so that we can test it is later removed
-./emsdk install sdk-1.39.15
-./emsdk activate sdk-1.39.15
+./emsdk install sdk-fastcomp-3b8cff670e9233a6623563add831647e8689a86b
+./emsdk activate sdk-fastcomp-3b8cff670e9233a6623563add831647e8689a86b
 source ./emsdk_env.sh
 which emcc
 emcc -v

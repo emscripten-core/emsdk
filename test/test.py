@@ -10,13 +10,15 @@ import unittest
 WINDOWS = sys.platform.startswith('win')
 MACOS = sys.platform == 'darwin'
 
-emconfig = os.path.abspath('.emscripten')
-assert os.path.exists(emconfig)
+assert 'EM_CONFIG' in os.environ, "emsdk should be activated before running this script"
 
+emconfig = os.environ['EM_CONFIG']
 upstream_emcc = os.path.join('upstream', 'emscripten', 'emcc')
+fastcomp_emcc = os.path.join('fastcomp', 'emscripten', 'emcc')
 emsdk = './emsdk'
 if WINDOWS:
   upstream_emcc += '.bat'
+  fastcomp_emcc += '.bat'
   emsdk = 'emsdk.bat'
 else:
   emsdk = './emsdk'
@@ -162,11 +164,34 @@ int main() {
     print('test .emscripten contents')
     with open(emconfig) as f:
       config = f.read()
+    assert 'fastcomp' not in config
     assert 'upstream' in config
 
   def test_lib_building(self):
     print('building proper system libraries')
     do_lib_building(upstream_emcc)
+
+  def test_fastcomp(self):
+    print('test the last fastcomp release')
+    run_emsdk('install 1.40.1-fastcomp')
+    run_emsdk('activate 1.40.1-fastcomp')
+
+    do_lib_building(fastcomp_emcc)
+    with open(emconfig) as f:
+      config = f.read()
+    assert config.count('LLVM_ROOT') == 1
+    assert 'upstream' not in config
+    assert 'fastcomp' in config
+
+    print('verify latest fastcomp version is fixed at 1.40.1')
+    checked_call_with_output(fastcomp_emcc + ' -v', '1.40.1', stderr=subprocess.STDOUT)
+
+  def test_fastcomp_missing(self):
+    print('verify that attempting to use newer fastcomp gives an error')
+    fastcomp_error = 'the fastcomp backend is not getting new builds or releases. Please use the upstream llvm backend or use an older version than 2.0.0 (such as 1.40.1).'
+    failing_call_with_output(emsdk + ' install latest-fastcomp', fastcomp_error)
+    failing_call_with_output(emsdk + ' install tot-fastcomp', fastcomp_error)
+    failing_call_with_output(emsdk + ' install 2.0.0-fastcomp', fastcomp_error)
 
   def test_redownload(self):
     print('go back to using upstream')
@@ -196,12 +221,21 @@ int main() {
     # Specificlly test with `--closure` so we know that node_modules is working
     check_call(upstream_emcc + ' hello_world.c --closure=1')
 
+  def test_specific_old(self):
+    print('test specific release (old, using sdk-* notation)')
+    run_emsdk('install sdk-fastcomp-1.38.31-64bit')
+    run_emsdk('activate sdk-fastcomp-1.38.31-64bit')
+
   def test_specific_version(self):
     print('test specific release (new, short name)')
     run_emsdk('install 1.38.33')
     print('another install, but no need for re-download')
     checked_call_with_output(emsdk + ' install 1.38.33', expected='Skipped', unexpected='Downloading:')
     run_emsdk('activate 1.38.33')
+    with open(emconfig) as f:
+      config = f.read()
+    assert 'upstream' not in config
+    assert 'fastcomp' in config
 
   def test_specific_version_full(self):
     print('test specific release (new, full name)')
