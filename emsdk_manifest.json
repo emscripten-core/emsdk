@@ -204,6 +204,7 @@
     "arch": "x86",
     "windows_url": "node-v14.15.5-win-x86.zip",
     "activated_path": "%installation_dir%/bin",
+    "activated_path_skip": "node",
     "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
     "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
   },
@@ -214,6 +215,7 @@
     "bitness": 32,
     "linux_url": "node-v14.15.5-linux-armv7l.tar.xz",
     "activated_path": "%installation_dir%/bin",
+    "activated_path_skip": "node",
     "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
     "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
   },
@@ -226,6 +228,7 @@
     "windows_url": "node-v14.15.5-win-x64.zip",
     "linux_url": "node-v14.15.5-linux-x64.tar.xz",
     "activated_path": "%installation_dir%/bin",
+    "activated_path_skip": "node",
     "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
     "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
   },
@@ -237,6 +240,7 @@
     "macos_url": "node-v14.15.5-darwin-x64.tar.gz",
     "linux_url": "node-v14.15.5-linux-arm64.tar.xz",
     "activated_path": "%installation_dir%/bin",
+    "activated_path_skip": "node",
     "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
     "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
   },
