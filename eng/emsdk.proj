@@ -186,7 +186,8 @@
              Properties="PreReleaseVersionLabel=$(PreReleaseVersionLabel);PreReleaseVersionIteration=$(PreReleaseVersionIteration)" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Workload.Emscripten.Current.Manifest\Microsoft.NET.Workload.Emscripten.Current.Manifest.pkgproj" 
              Condition="'$(AssetManifestOS)' == '' or '$(AssetManifestOS)' == 'win' or '$(ForceBuildManifestOnly)' == 'true' or '$(ArcadeBuildFromSource)' == 'true'" 
-             Targets="Build" />
+             Targets="Build"
+             Properties="IsUnversionedManifest=true" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Workload.Emscripten.net6.Manifest\Microsoft.NET.Workload.Emscripten.net6.Manifest.pkgproj" 
              Condition="'$(AssetManifestOS)' == '' or '$(AssetManifestOS)' == 'win' or '$(ForceBuildManifestOnly)' == 'true' or '$(ArcadeBuildFromSource)' == 'true'"
              Targets="Build" 
