@@ -10,6 +10,11 @@
     <Description>Internal toolchain package not meant for direct consumption. Please do not reference directly.</Description>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(IsUnversionedManifest)' == 'true'">
+    <IsShipping>false</IsShipping>
+    <WorkloadVersionSuffix>_Transport</WorkloadVersionSuffix>
+  </PropertyGroup>
+
   <Target Name="_PrepareForPack" BeforeTargets="GetPackageFiles" Returns="@(PackageFile)">
     <!-- Override the id to include the sdk band as per the workload installer spec -->
     <PropertyGroup>
