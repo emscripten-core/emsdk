@@ -49,7 +49,7 @@ jobs:
             test/test.py
   test-mac:
     macos:
-      xcode: "12.5.1"
+      xcode: "12.2.0"
     environment:
       EMSDK_NOTTY: "1"
       # Without this, any `brew installl` command will result in self-update of
@@ -140,7 +140,8 @@ jobs:
       - run:
           name: install docker
           command: apt-get update -q && apt-get install -q -y docker.io
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 19.03.13
       # Build and test the tip-of-tree build of EMSDK
       - run:
           name: build
@@ -156,7 +157,8 @@ jobs:
       - run:
           name: install docker
           command: apt-get update -q && apt-get install -q -y docker.io
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 19.03.13
       - run:
           name: build
           command: make -C ./docker version=${CIRCLE_TAG} build
@@ -191,7 +193,7 @@ jobs:
 
   test-bazel-mac:
     macos:
-      xcode: "12.5.1"
+      xcode: "12.2.0"
     environment:
       EMSDK_NOTTY: "1"
       HOMEBREW_NO_AUTO_UPDATE: "1"
@@ -211,7 +213,6 @@ jobs:
     environment:
       PYTHONUNBUFFERED: "1"
       EMSDK_NOTTY: "1"
-      USE_BAZEL_VERSION: "5.4.0"
     steps:
       - checkout
       - run:
