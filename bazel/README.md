@@ -17,9 +17,6 @@ emsdk_deps()
 
 load("@emsdk//:emscripten_deps.bzl", emsdk_emscripten_deps = "emscripten_deps")
 emsdk_emscripten_deps(emscripten_version = "2.0.31")
-
-load("@emsdk//:toolchains.bzl", "register_emscripten_toolchains")
-register_emscripten_toolchains()
 ```
 The SHA1 hash in the above `strip_prefix` and `url` parameters correspond to the git revision of
 [emsdk 2.0.31](https://github.com/emscripten-core/emsdk/releases/tag/2.0.31). To get access to
@@ -29,13 +26,8 @@ parameter of `emsdk_emscripten_deps()`. Supported versions are listed in `revisi
 
 ## Building
 
-Put the following line into your `.bazelrc`:
-
-```
-build --incompatible_enable_cc_toolchain_resolution
-```
-
-Then write a new rule wrapping your `cc_binary`.
+### Using wasm_cc_binary (preferred)
+First, write a new rule wrapping your `cc_binary`.
 
 ```
 load("@rules_cc//cc:defs.bzl", "cc_binary")
@@ -62,3 +54,17 @@ and all of its dependencies, and does not require amending `.bazelrc`. This
 is the preferred way, since it also unpacks the resulting tarball.
 
 See `test_external/` for an example using [embind](https://emscripten.org/docs/porting/connecting_cpp_and_javascript/embind.html).
+
+### Using --config=wasm
+
+Put the following lines into your `.bazelrc`:
+```
+build:wasm --crosstool_top=@emsdk//emscripten_toolchain:everything
+build:wasm --cpu=wasm
+build:wasm --host_crosstool_top=@bazel_tools//tools/cpp:toolchain
+```
+
+Simply pass `--config=wasm` when building a normal `cc_binary`. The result of
+this build will be a tar archive containing any files produced by emscripten.
+See the [Bazel documentation](https://docs.bazel.build/versions/main/tutorial/cc-toolchain-config.html)
+for more details

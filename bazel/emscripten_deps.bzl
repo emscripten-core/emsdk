@@ -14,36 +14,16 @@ filegroup(
         "emscripten/cache/sysroot/include/c++/v1/**",
         "emscripten/cache/sysroot/include/compat/**",
         "emscripten/cache/sysroot/include/**",
-        "lib/clang/16/include/**",
+        "lib/clang/15.0.0/include/**",
     ]),
-)
-
-filegroup(
-    name = "emcc_common",
-    srcs = [
-        "emscripten/emcc.py",
-        "emscripten/emscripten.py",
-        "emscripten/emscripten-version.txt",
-        "emscripten/cache/sysroot_install.stamp",
-        "emscripten/src/settings.js",
-        "emscripten/src/settings_internal.js",
-    ] + glob(
-        include = [
-            "emscripten/third_party/**",
-            "emscripten/tools/**",
-        ],
-        exclude = [
-            "**/__pycache__/**",
-        ],
-    ),
 )
 
 filegroup(
     name = "compiler_files",
     srcs = [
+        "emscripten/emcc.py",
         "bin/clang{bin_extension}",
         "bin/clang++{bin_extension}",
-        ":emcc_common",
         ":includes",
     ],
 )
@@ -51,40 +31,24 @@ filegroup(
 filegroup(
     name = "linker_files",
     srcs = [
+        "emscripten/emcc.py",
         "bin/clang{bin_extension}",
+        "bin/llc{bin_extension}",
         "bin/llvm-ar{bin_extension}",
         "bin/llvm-nm{bin_extension}",
         "bin/llvm-objcopy{bin_extension}",
         "bin/wasm-emscripten-finalize{bin_extension}",
         "bin/wasm-ld{bin_extension}",
         "bin/wasm-opt{bin_extension}",
-        "bin/wasm-metadce{bin_extension}",
-        ":emcc_common",
-    ] + glob(
-        include = [
-            "emscripten/cache/sysroot/lib/**",
-            "emscripten/node_modules/**",
-            "emscripten/src/**",
-        ],
-    ),
+   ] + glob(["emscripten/node_modules/**"]),
 )
 
 filegroup(
     name = "ar_files",
     srcs = [
-        "bin/llvm-ar{bin_extension}",
         "emscripten/emar.py",
-        "emscripten/emscripten-version.txt",
-        "emscripten/src/settings.js",
-        "emscripten/src/settings_internal.js",
-    ] + glob(
-        include = [
-            "emscripten/tools/**",
-        ],
-        exclude = [
-            "**/__pycache__/**",
-        ],
-    ),
+        "bin/llvm-ar{bin_extension}",
+   ],
 )
 """
 

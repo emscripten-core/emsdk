@@ -123,12 +123,14 @@ finally {
 
     # Recover pre activation env variables
     [Environment]::SetEnvironmentVariable("EMSDK", $null, "User")
+    [Environment]::SetEnvironmentVariable("EM_CONFIG", $null, "User")
     [Environment]::SetEnvironmentVariable("EMSDK_NODE", $null, "User")
     [Environment]::SetEnvironmentVariable("EMSDK_PYTHON", $null, "User")
     [Environment]::SetEnvironmentVariable("JAVA_HOME", $null, "User")
 
     try {
         [Environment]::SetEnvironmentVariable("EMSDK", $null, "Machine")
+        [Environment]::SetEnvironmentVariable("EM_CONFIG", $null, "Machine")
         [Environment]::SetEnvironmentVariable("EMSDK_NODE", $null, "Machine")
         [Environment]::SetEnvironmentVariable("EMSDK_PYTHON", $null, "Machine")
         [Environment]::SetEnvironmentVariable("JAVA_HOME", $null, "Machine")
@@ -136,6 +138,7 @@ finally {
 
 
     [Environment]::SetEnvironmentVariable("EMSDK", $null, "Process")
+    [Environment]::SetEnvironmentVariable("EM_CONFIG", $null, "Process")
     [Environment]::SetEnvironmentVariable("EMSDK_NODE", $null, "Process")
     [Environment]::SetEnvironmentVariable("EMSDK_PYTHON", $null, "Process")
     [Environment]::SetEnvironmentVariable("JAVA_HOME", $null, "Process")

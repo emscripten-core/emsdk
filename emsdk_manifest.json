@@ -9,9 +9,9 @@
     "url": "https://github.com/llvm/llvm-project.git",
     "custom_install_script": "build_llvm",
     "only_supports_wasm": true,
-    "activated_path": "%installation_dir%/%llvm_build_bin_dir%",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%/%llvm_build_bin_dir%'",
-    "activated_env": "LLVM_ROOT=%installation_dir%/%llvm_build_bin_dir%;EMCC_WASM_BACKEND=1",
+    "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%;EMCC_WASM_BACKEND=1",
     "cmake_build_type": "Release"
   },
   {
@@ -23,9 +23,68 @@
     "url": "https://github.com/llvm/llvm-project.git",
     "custom_install_script": "build_llvm",
     "only_supports_wasm": true,
-    "activated_path": "%installation_dir%/%llvm_build_bin_dir%",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%/%llvm_build_bin_dir%'",
-    "activated_env": "LLVM_ROOT=%installation_dir%/%llvm_build_bin_dir%;EMCC_WASM_BACKEND=1",
+    "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%;EMCC_WASM_BACKEND=1",
+    "cmake_build_type": "Release"
+  },
+
+  {
+    "id": "clang",
+    "version": "tag-e%tag%",
+    "bitness": 32,
+    "append_bitness": false,
+    "windows_url": "https://github.com/emscripten-core/emscripten-fastcomp/archive/%tag%.zip",
+    "unix_url": "https://github.com/emscripten-core/emscripten-fastcomp/archive/%tag%.tar.gz",
+    "windows_clang_url": "https://github.com/emscripten-core/emscripten-fastcomp-clang/archive/%tag%.zip",
+    "unix_clang_url": "https://github.com/emscripten-core/emscripten-fastcomp-clang/archive/%tag%.tar.gz",
+    "custom_install_script": "build_fastcomp",
+    "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%;EMCC_WASM_BACKEND=0",
+    "cmake_build_type": "Release"
+  },
+  {
+    "id": "fastcomp-clang",
+    "version": "tag-e%tag%",
+    "bitness": 64,
+    "append_bitness": false,
+    "windows_url": "https://github.com/emscripten-core/emscripten-fastcomp/archive/%tag%.zip",
+    "unix_url": "https://github.com/emscripten-core/emscripten-fastcomp/archive/%tag%.tar.gz",
+    "windows_clang_url": "https://github.com/emscripten-core/emscripten-fastcomp-clang/archive/%tag%.zip",
+    "unix_clang_url": "https://github.com/emscripten-core/emscripten-fastcomp-clang/archive/%tag%.tar.gz",
+    "custom_install_script": "build_fastcomp",
+    "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%;EMCC_WASM_BACKEND=0",
+    "cmake_build_type": "Release"
+  },
+  {
+    "id": "fastcomp-clang",
+    "version": "master",
+    "bitness": 32,
+    "install_path": "clang/fastcomp",
+    "url": "https://github.com/emscripten-core/emscripten-fastcomp.git",
+    "clang_url": "https://github.com/emscripten-core/emscripten-fastcomp-clang.git",
+    "git_branch": "master",
+    "custom_install_script": "build_fastcomp",
+    "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%;EMCC_WASM_BACKEND=0",
+    "cmake_build_type": "Release"
+  },
+  {
+    "id": "fastcomp-clang",
+    "version": "master",
+    "bitness": 64,
+    "install_path": "clang/fastcomp",
+    "git_branch": "master",
+    "url": "https://github.com/emscripten-core/emscripten-fastcomp.git",
+    "clang_url": "https://github.com/emscripten-core/emscripten-fastcomp-clang.git",
+    "custom_install_script": "build_fastcomp",
+    "activated_path": "%installation_dir%/%fastcomp_build_bin_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/%fastcomp_build_bin_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%fastcomp_build_bin_dir%;EMCC_WASM_BACKEND=0",
     "cmake_build_type": "Release"
   },
 
@@ -56,7 +115,57 @@
     "activated_cfg": "LLVM_ROOT='%installation_dir%/bin';BINARYEN_ROOT='%installation_dir%';EMSCRIPTEN_ROOT='%installation_dir%/emscripten'",
     "emscripten_releases_hash": "%releases-tag%"
   },
+  {
+    "id": "releases",
+    "version": "fastcomp-%releases-tag%",
+    "bitness": 64,
+    "arch": "x86_64",
+    "linux_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/linux/%releases-tag%/wasm-binaries.tbz2",
+    "macos_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/mac/%releases-tag%/wasm-binaries.tbz2",
+    "windows_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/win/%releases-tag%/wasm-binaries.zip",
+    "zipfile_prefix": "%releases-tag%-",
+    "install_path": "fastcomp",
+    "activated_path": "%installation_dir%/emscripten",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/fastcomp/bin';BINARYEN_ROOT='%installation_dir%';EMSCRIPTEN_ROOT='%installation_dir%/emscripten';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/bin/optimizer%.exe%'",
+    "emscripten_releases_hash": "%releases-tag%"
+  },
+  {
+    "id": "releases",
+    "version": "fastcomp-%releases-tag%",
+    "bitness": 64,
+    "arch": "aarch64",
+    "macos_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/mac/%releases-tag%/wasm-binaries.tbz2",
+    "zipfile_prefix": "%releases-tag%-",
+    "install_path": "fastcomp",
+    "activated_path": "%installation_dir%/emscripten",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/bin';BINARYEN_ROOT='%installation_dir%';EMSCRIPTEN_ROOT='%installation_dir%/emscripten'",
+    "emscripten_releases_hash": "%releases-tag%"
+  },
 
+  {
+    "id": "clang",
+    "version": "e%precompiled_tag32%",
+    "bitness": 32,
+    "arch": "x86",
+    "windows_url": "llvm/tag/win_64bit/emscripten-llvm-e%precompiled_tag32%.zip",
+    "macos_url": "llvm/tag/osx_64bit/emscripten-llvm-e%precompiled_tag32%.tar.gz",
+    "linux_url": "llvm/tag/linux_64bit/emscripten-llvm-e%precompiled_tag32%.tar.gz",
+    "activated_path": "%installation_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/optimizer%.exe%';BINARYEN_ROOT='%installation_dir%/binaryen'",
+    "activated_env": "LLVM_ROOT=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%/optimizer%.exe%;BINARYEN_ROOT=%installation_dir%/binaryen;EMCC_WASM_BACKEND=0"
+  },
+  {
+    "id": "fastcomp-clang",
+    "version": "e%precompiled_tag64%",
+    "bitness": 64,
+    "arch": "x86_64",
+    "windows_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/old/win/emscripten-llvm-e%precompiled_tag64%.zip",
+    "macos_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/old/mac/emscripten-llvm-e%precompiled_tag64%.tar.gz",
+    "linux_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/old/linux/emscripten-llvm-e%precompiled_tag64%.tar.gz",
+    "activated_path": "%installation_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%/optimizer%.exe%';BINARYEN_ROOT='%installation_dir%/binaryen'",
+    "activated_env": "LLVM_ROOT=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%/optimizer%.exe%;BINARYEN_ROOT=%installation_dir%/binaryen;EMCC_WASM_BACKEND=0"
+  },
   {
     "id": "node",
     "version": "8.9.1",
@@ -567,6 +676,42 @@
     "os": "linux"
   },
   {
+    "version": "fastcomp-tag-%tag%",
+    "bitness": 32,
+    "uses": ["fastcomp-clang-tag-e%tag%-32bit", "node-8.9.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-tag-%tag%-32bit", "binaryen-tag-%tag%-32bit"],
+    "os": "win",
+    "version_filter": [
+      ["%tag%", ">", "1.37.22"]
+    ]
+  },
+  {
+    "version": "fastcomp-tag-%tag%",
+    "bitness": 64,
+    "uses": ["fastcomp-clang-tag-e%tag%-64bit", "node-8.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-tag-%tag%-64bit", "binaryen-tag-%tag%-64bit"],
+    "os": "win",
+    "version_filter": [
+      ["%tag%", ">", "1.37.22"]
+    ]
+  },
+  {
+    "version": "fastcomp-tag-%tag%",
+    "bitness": 32,
+    "uses": ["fastcomp-clang-tag-e%tag%-32bit", "node-8.9.1-32bit", "emscripten-tag-%tag%-32bit", "binaryen-tag-%tag%-32bit"],
+    "os": "linux",
+    "version_filter": [
+      ["%tag%", ">", "1.37.22"]
+    ]
+  },
+  {
+    "version": "fastcomp-tag-%tag%",
+    "bitness": 64,
+    "uses": ["fastcomp-clang-tag-e%tag%-64bit", "node-8.9.1-64bit", "emscripten-tag-%tag%-64bit", "binaryen-tag-%tag%-64bit"],
+    "os": "unix",
+    "version_filter": [
+      ["%tag%", ">", "1.37.22"]
+    ]
+  },
+  {
     "version": "releases-upstream-%releases-tag%",
     "bitness": 64,
     "uses": ["node-14.18.2-64bit", "releases-upstream-%releases-tag%-64bit"],
@@ -595,6 +740,92 @@
     "uses": ["node-14.18.2-64bit", "python-3.9.2-nuget-64bit", "java-8.152-64bit", "releases-upstream-%releases-tag%-64bit"],
     "os": "win",
     "custom_install_script": "emscripten_npm_install"
+  },
+  {
+    "version": "releases-fastcomp-%releases-tag%",
+    "bitness": 64,
+    "uses": ["node-14.18.2-64bit", "releases-fastcomp-%releases-tag%-64bit"],
+    "os": "linux",
+    "custom_install_script": "emscripten_npm_install"
+  },
+  {
+    "version": "releases-fastcomp-%releases-tag%",
+    "bitness": 64,
+    "uses": ["node-14.18.2-64bit", "python-3.7.4-2-64bit", "releases-fastcomp-%releases-tag%-64bit"],
+    "os": "macos",
+    "arch": "x86_64",
+    "custom_install_script": "emscripten_npm_install"
+  },
+  {
+    "version": "releases-fastcomp-%releases-tag%",
+    "bitness": 64,
+    "uses": ["node-14.18.2-64bit", "python-3.9.2-64bit", "releases-fastcomp-%releases-tag%-64bit"],
+    "os": "macos",
+    "arch": "aarch64",
+    "custom_install_script": "emscripten_npm_install"
+  },
+  {
+    "version": "releases-fastcomp-%releases-tag%",
+    "bitness": 64,
+    "uses": ["node-14.18.2-64bit", "python-3.7.4-pywin32-64bit", "java-8.152-64bit", "releases-fastcomp-%releases-tag%-64bit"],
+    "os": "win",
+    "custom_install_script": "emscripten_npm_install"
+  },
+  {
+    "version": "fastcomp-%precompiled_tag32%",
+    "bitness": 32,
+    "uses": ["fastcomp-clang-e%precompiled_tag32%-32bit", "node-8.9.1-32bit", "python-2.7.13.1-32bit", "java-8.152-32bit", "emscripten-%precompiled_tag32%"],
+    "os": "win",
+    "version_filter": [
+      ["%precompiled_tag32%", ">", "1.37.22"]
+    ]
+  },
+  {
+    "version": "fastcomp-%precompiled_tag64%",
+    "bitness": 64,
+    "uses": ["fastcomp-clang-e%precompiled_tag64%-64bit", "node-8.9.1-64bit", "python-2.7.13.1-64bit", "java-8.152-64bit", "emscripten-%precompiled_tag64%"],
+    "os": "win",
+    "version_filter": [
+      ["%precompiled_tag64%", ">", "1.37.22"]
+    ]
+  },
+  {
+    "version": "fastcomp-%precompiled_tag32%",
+    "bitness": 32,
+    "uses": ["fastcomp-clang-e%precompiled_tag32%-32bit", "node-8.9.1-32bit", "emscripten-%precompiled_tag32%"],
+    "os": "linux",
+    "version_filter": [
+      ["%precompiled_tag32%", ">", "1.37.22"]
+    ]
+  },
+  {
+    "version": "fastcomp-%precompiled_tag64%",
+    "bitness": 64,
+    "uses": ["fastcomp-clang-e%precompiled_tag64%-64bit", "node-8.9.1-64bit", "emscripten-%precompiled_tag64%"],
+    "os": "linux",
+    "version_filter": [
+      ["%precompiled_tag64%", ">", "1.37.22"]
+    ]
+  },
+  {
+    "version": "fastcomp-%precompiled_tag32%",
+    "bitness": 32,
+    "uses": ["fastcomp-clang-e%precompiled_tag32%-32bit", "node-8.9.1-32bit", "python-3.7.4-2-64bit", "emscripten-%precompiled_tag32%"],
+    "os": "macos",
+    "arch": "x86_64",
+    "version_filter": [
+      ["%precompiled_tag32%", ">", "1.37.22"]
+    ]
+  },
+  {
+    "version": "fastcomp-%precompiled_tag64%",
+    "bitness": 64,
+    "uses": ["fastcomp-clang-e%precompiled_tag64%-64bit", "node-8.9.1-64bit", "python-3.7.4-2-64bit", "emscripten-%precompiled_tag64%"],
+    "os": "macos",
+    "arch": "x86_64",
+    "version_filter": [
+      ["%precompiled_tag64%", ">", "1.37.22"]
+    ]
   }
   ]
 }
