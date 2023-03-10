@@ -441,6 +441,9 @@ def _impl(ctx):
             name = "output_format_js",
             enabled = True,
         ),
+        feature(
+            name = "wasm_standalone",
+        ),
     ]
 
     crosstool_default_flag_sets = [
@@ -911,7 +914,7 @@ def _impl(ctx):
                 "-iwithsysroot" + "/include/compat",
                 "-iwithsysroot" + "/include",
                 "-isystem",
-                emscripten_dir + "/lib/clang/15.0.0/include",
+                emscripten_dir + "/lib/clang/16/include",
             ],
         ),
         # Inputs and outputs
@@ -1015,6 +1018,11 @@ def _impl(ctx):
             flags = ["-Werror"],
             features = ["wasm_warnings_as_errors"],
         ),
+        flag_set(
+            actions = all_link_actions,
+            flags = ["-sSTANDALONE_WASM"],
+            features = ["wasm_standalone"],
+        ),
     ]
 
     crosstool_default_env_sets = [
@@ -1073,7 +1081,7 @@ def _impl(ctx):
         emscripten_dir + "/emscripten/cache/sysroot/include/c++/v1",
         emscripten_dir + "/emscripten/cache/sysroot/include/compat",
         emscripten_dir + "/emscripten/cache/sysroot/include",
-        emscripten_dir + "/lib/clang/15.0.0/include",
+        emscripten_dir + "/lib/clang/16/include",
     ]
 
     artifact_name_patterns = []
@@ -1105,7 +1113,7 @@ emscripten_cc_toolchain_config_rule = rule(
     attrs = {
         "cpu": attr.string(mandatory = True, values = ["asmjs", "wasm"]),
         "em_config": attr.label(mandatory = True, allow_single_file = True),
-        "emscripten_binaries": attr.label(mandatory = True),
+        "emscripten_binaries": attr.label(mandatory = True, cfg = "exec"),
         "script_extension": attr.string(mandatory = True, values = ["sh", "bat"]),
     },
     provides = [CcToolchainConfigInfo],

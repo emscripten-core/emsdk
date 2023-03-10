@@ -69,5 +69,5 @@ if [ ! -f "$DIR/emsdk.py" ]; then
 fi
 
 # Force emsdk to use bash syntax so that this works in windows + bash too
-eval `EMSDK_BASH=1 $DIR/emsdk construct_env`
+eval `EMSDK_BASH=1 "$DIR/emsdk" construct_env`
 unset DIR
