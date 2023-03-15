@@ -22,14 +22,6 @@
           Command="$(EmSdkFileName) activate $(EmscriptenVersion)" />
 
     <PropertyGroup>
-      <EmBuilder Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))">./embuilder.bat</EmBuilder>
-      <EmBuilder Condition="!$([MSBuild]::IsOSPlatform('WINDOWS'))">./embuilder</EmBuilder>
-    </PropertyGroup>
-
-    <Exec WorkingDirectory="$(RepoRoot)/upstream/emscripten"
-      Command="$(EmBuilder) build MINIMAL" />
-
-    <PropertyGroup>
       <NodeDirectory>$([System.IO.Directory]::GetDirectories("$(RepoRoot)\node", "*"))</NodeDirectory>
       <PythonDirectory Condition="'$(UsesPythonFromEmsdk)' == 'true'">$([System.IO.Directory]::GetDirectories("$(RepoRoot)\python", "*"))</PythonDirectory>
       <UpstreamDirectory>$(RepoRoot)\upstream</UpstreamDirectory>
@@ -68,6 +60,14 @@
     <Delete Files="$(UpstreamEmscriptenDirectory)\node_modules\.bin\prettyjson" />
     <Delete Files="$(UpstreamEmscriptenDirectory)\node_modules\.bin\tabtab" />
     <Delete Files="$(UpstreamEmscriptenDirectory)\node_modules\.bin\wscat" />
+
+    <PropertyGroup>
+      <EmBuilder Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))">./embuilder.bat</EmBuilder>
+      <EmBuilder Condition="!$([MSBuild]::IsOSPlatform('WINDOWS'))">./embuilder</EmBuilder>
+    </PropertyGroup>
+
+    <Exec WorkingDirectory="$(RepoRoot)/upstream/emscripten"
+      Command="$(EmBuilder) build MINIMAL" />
 
     <Message Importance="High" Text="Copy files to artifacts directory..." />
     <ItemGroup>
