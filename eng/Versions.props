@@ -5,7 +5,7 @@
     <MinorVersion>0</MinorVersion>
     <VersionPrefix>8.0.0</VersionPrefix>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
-    <PreReleaseVersionIteration>3</PreReleaseVersionIteration>
+    <PreReleaseVersionIteration>4</PreReleaseVersionIteration>
     <EmscriptenVersion>3.1.30</EmscriptenVersion>
     <EmscriptenVersionNet6>2.0.23</EmscriptenVersionNet6>
     <EmscriptenVersionNet7>3.1.12</EmscriptenVersionNet7>
