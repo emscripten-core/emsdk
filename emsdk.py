@@ -142,9 +142,6 @@ elif machine.endswith('86'):
   ARCH = 'x86'
 elif machine.startswith('aarch64') or machine.lower().startswith('arm64'):
   ARCH = 'aarch64'
-  if WINDOWS:
-      errlog('No support for Windows on Arm, fallback to x64')
-      ARCH = 'x86_64'
 elif machine.startswith('arm'):
   ARCH = 'arm'
 else:
@@ -256,14 +253,11 @@ def vswhere(version):
     if not program_files:
       program_files = os.environ['ProgramFiles']
     vswhere_path = os.path.join(program_files, 'Microsoft Visual Studio', 'Installer', 'vswhere.exe')
-    output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-version', '[%s.0,%s.0)' % (version, version + 1), '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', '-property', 'installationPath', '-format', 'json']))
-    # Visual Studio 2017 Express is not included in the above search, and it
-    # does not have the VC.Tools.x86.x64 tool, so do a catch-all attempt as a
-    # fallback, to detect Express version.
-    if not output:
-      output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-version', '[%s.0,%s.0)' % (version, version + 1), '-products', '*', '-property', 'installationPath', '-format', 'json']))
-      if not output:
-        return ''
+    # Source: https://learn.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-build-tools?view=vs-2022
+    tools_arch = 'ARM64' if ARCH == 'aarch64' else 'x86.x64'
+    # The "-products *" allows detection of Build Tools, the "-prerelease" allows detection of Preview version
+    # of Visual Studio and Build Tools.
+    output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-products', '*', '-prerelease', '-version', '[%s.0,%s.0)' % (version, version + 1), '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.' + tools_arch, '-property', 'installationPath', '-format', 'json']))
     return str(output[0]['installationPath'])
   except Exception:
     return ''
@@ -284,36 +278,30 @@ if WINDOWS:
   # Detect which CMake generator to use when building on Windows
   if '--mingw' in sys.argv:
     CMAKE_GENERATOR = 'MinGW Makefiles'
-  elif '--vs2017' in sys.argv:
-    CMAKE_GENERATOR = 'Visual Studio 15'
+  elif '--vs2022' in sys.argv:
+    CMAKE_GENERATOR = 'Visual Studio 17'
   elif '--vs2019' in sys.argv:
     CMAKE_GENERATOR = 'Visual Studio 16'
+  elif len(vswhere(17)) > 0:
+    CMAKE_GENERATOR = 'Visual Studio 17'
+  elif len(vswhere(16)) > 0:
+    CMAKE_GENERATOR = 'Visual Studio 16'
+  elif which('mingw32-make') is not None and which('g++') is not None:
+    CMAKE_GENERATOR = 'MinGW Makefiles'
   else:
-    vs2019_exists = len(vswhere(16)) > 0
-    vs2017_exists = len(vswhere(15)) > 0
-    mingw_exists = which('mingw32-make') is not None and which('g++') is not None
-    if vs2019_exists:
-      CMAKE_GENERATOR = 'Visual Studio 16'
-    elif vs2017_exists:
-      # VS2017 has an LLVM build issue, see
-      # https://github.com/kripken/emscripten-fastcomp/issues/185
-      CMAKE_GENERATOR = 'Visual Studio 15'
-    elif mingw_exists:
-      CMAKE_GENERATOR = 'MinGW Makefiles'
-    else:
-      # No detected generator
-      CMAKE_GENERATOR = ''
+    # No detected generator
+    CMAKE_GENERATOR = ''
 
 
-sys.argv = [a for a in sys.argv if a not in ('--mingw', '--vs2017', '--vs2019')]
+sys.argv = [a for a in sys.argv if a not in ('--mingw', '--vs2019', '--vs2022')]
 
 
 # Computes a suitable path prefix to use when building with a given generator.
 def cmake_generator_prefix():
+  if CMAKE_GENERATOR == 'Visual Studio 17':
+    return '_vs2022'
   if CMAKE_GENERATOR == 'Visual Studio 16':
     return '_vs2019'
-  if CMAKE_GENERATOR == 'Visual Studio 15':
-    return '_vs2017'
   elif CMAKE_GENERATOR == 'MinGW Makefiles':
     return '_mingw'
   # Unix Makefiles do not specify a path prefix for backwards path compatibility
@@ -861,14 +849,7 @@ def decide_cmake_build_type(tool):
 
 # The root directory of the build.
 def llvm_build_dir(tool):
-  generator_suffix = ''
-  if CMAKE_GENERATOR == 'Visual Studio 15':
-    generator_suffix = '_vs2017'
-  elif CMAKE_GENERATOR == 'Visual Studio 16':
-    generator_suffix = '_vs2019'
-  elif CMAKE_GENERATOR == 'MinGW Makefiles':
-    generator_suffix = '_mingw'
-
+  generator_suffix = cmake_generator_prefix()
   bitness_suffix = '_32' if tool.bitness == 32 else '_64'
 
   if hasattr(tool, 'git_branch'):
@@ -886,7 +867,7 @@ def exe_suffix(filename):
 
 # The directory where the binaries are produced. (relative to the installation
 # root directory of the tool)
-def fastcomp_build_bin_dir(tool):
+def llvm_build_bin_dir(tool):
   build_dir = llvm_build_dir(tool)
   if WINDOWS and 'Visual Studio' in CMAKE_GENERATOR:
     old_llvm_bin_dir = os.path.join(build_dir, 'bin', decide_cmake_build_type(tool))
@@ -916,112 +897,38 @@ def build_env(generator):
   # See https://groups.google.com/forum/#!topic/emscripten-discuss/5Or6QIzkqf0
   if MACOS:
     build_env['CXXFLAGS'] = ((build_env['CXXFLAGS'] + ' ') if hasattr(build_env, 'CXXFLAGS') else '') + '-stdlib=libc++'
-  elif 'Visual Studio 15' in generator or 'Visual Studio 16' in generator:
-    if 'Visual Studio 16' in generator:
-      path = vswhere(16)
-    else:
-      path = vswhere(15)
-
-    # Configuring CMake for Visual Studio needs and env. var VCTargetsPath to be present.
-    # How this is supposed to work is unfortunately very undocumented. See
-    # https://discourse.cmake.org/t/cmake-failed-to-get-the-value-of-vctargetspath-with-vs2019-16-7/1839/16
-    # for some conversation. Try a couple of common paths if one of them would work.
-    # In the future as new versions of VS come out, we likely need to add new paths into this list.
-    if 'VCTargetsPath' not in build_env:
-      vctargets_paths = [
-        os.path.join(path, 'MSBuild\\Microsoft\\VC\\v160\\'),
-        os.path.join(path, 'Common7\\IDE\\VC\\VCTargets')
-      ]
-      for p in vctargets_paths:
-        if os.path.isfile(os.path.join(p, 'Microsoft.Cpp.Default.props')):
-          debug_print('Set env. var VCTargetsPath=' + p + ' for CMake.')
-          build_env['VCTargetsPath'] = p
-          break
-        else:
-          debug_print('Searched path ' + p + ' as candidate for VCTargetsPath, not working.')
-
-      if 'VCTargetsPath' not in build_env:
-        errlog('Unable to locate Visual Studio compiler installation for generator "' + generator + '"!')
-        errlog('Either rerun installation in Visual Studio Command Prompt, or locate directory to Microsoft.Cpp.Default.props manually')
-        sys.exit(1)
-
-    # CMake and VS2017 cl.exe needs to have mspdb140.dll et al. in its PATH.
-    vc_bin_paths = [vs_filewhere(path, 'amd64', 'cl.exe'),
-                    vs_filewhere(path, 'x86', 'cl.exe')]
-    for path in vc_bin_paths:
-      if os.path.isdir(path):
-          build_env['PATH'] = build_env['PATH'] + ';' + path
-
+  if WINDOWS:
+    # MSBuild.exe has an internal mechanism to avoid N^2 oversubscription of threads in its two-tier build model, see
+    # https://devblogs.microsoft.com/cppblog/improved-parallelism-in-msbuild/
+    build_env['UseMultiToolTask'] = 'true'
+    build_env['EnforceProcessCountAcrossBuilds'] = 'true'
   return build_env
 
 
-def get_generator_for_sln_file(sln_file):
-  contents = open(sln_file, 'r').read()
-  if '# Visual Studio 16' in contents or '# Visual Studio Version 16' in contents:  # VS2019
-    return 'Visual Studio 16'
-  if '# Visual Studio 15' in contents:  # VS2017
-    return 'Visual Studio 15'
-  raise Exception('Unknown generator used to build solution file ' + sln_file)
-
-
-def find_msbuild(sln_file):
-  # The following logic attempts to find a Visual Studio version specific
-  # MSBuild.exe from a list of known locations.
-  generator = get_generator_for_sln_file(sln_file)
-  debug_print('find_msbuild looking for generator ' + str(generator))
-  if generator == 'Visual Studio 16':  # VS2019
-    path = vswhere(16)
-    search_paths = [os.path.join(path, 'MSBuild/Current/Bin'),
-                    os.path.join(path, 'MSBuild/15.0/Bin/amd64'),
-                    os.path.join(path, 'MSBuild/15.0/Bin')]
-  elif generator == 'Visual Studio 15':  # VS2017
-    path = vswhere(15)
-    search_paths = [os.path.join(path, 'MSBuild/15.0/Bin/amd64'),
-                    os.path.join(path, 'MSBuild/15.0/Bin')]
-  else:
-    raise Exception('Unknown generator!')
-
-  for path in search_paths:
-    p = os.path.join(path, 'MSBuild.exe')
-    debug_print('Searching for MSBuild.exe: ' + p)
-    if os.path.isfile(p):
-      return p
-  debug_print('MSBuild.exe in PATH? ' + str(which('MSBuild.exe')))
-  # Last fallback, try any MSBuild from PATH (might not be compatible, but best effort)
-  return which('MSBuild.exe')
-
-
-def make_build(build_root, build_type, build_target_platform='x64'):
-  debug_print('make_build(build_root=' + build_root + ', build_type=' + build_type + ', build_target_platform=' + build_target_platform + ')')
+def make_build(build_root, build_type):
+  debug_print('make_build(build_root=' + build_root + ', build_type=' + build_type + ')')
   if CPU_CORES > 1:
     print('Performing a parallel build with ' + str(CPU_CORES) + ' cores.')
   else:
     print('Performing a singlethreaded build.')
 
-  generator_to_use = CMAKE_GENERATOR
-
-  if WINDOWS:
-    if 'Visual Studio' in CMAKE_GENERATOR:
-      solution_name = str(subprocess.check_output(['dir', '/b', '*.sln'], shell=True, cwd=build_root).decode('utf-8').strip())
-      generator_to_use = get_generator_for_sln_file(os.path.join(build_root, solution_name))
-      # Disabled for now: Don't pass /maxcpucount argument to msbuild, since it
-      # looks like when building, msbuild already automatically spawns the full
-      # amount of logical cores the system has, and passing the number of
-      # logical cores here has been observed to give a quadratic N*N explosion
-      # on the number of spawned processes (e.g. on a Core i7 5960X with 16
-      # logical cores, it would spawn 16*16=256 cl.exe processes, which would
-      # start crashing when running out of system memory)
-      #      make = [find_msbuild(os.path.join(build_root, solution_name)), '/maxcpucount:' + str(CPU_CORES), '/t:Build', '/p:Configuration=' + build_type, '/nologo', '/verbosity:minimal', solution_name]
-      make = [find_msbuild(os.path.join(build_root, solution_name)), '/t:Build', '/p:Configuration=' + build_type, '/p:Platform=' + build_target_platform, '/nologo', '/verbosity:minimal', solution_name]
-    else:
-      make = ['mingw32-make', '-j' + str(CPU_CORES)]
+  make = ['cmake', '--build', '.', '--config', build_type]
+  if 'Visual Studio' in CMAKE_GENERATOR:
+    # Visual Studio historically has had a two-tier problem in its build system design. A single MSBuild.exe instance only governs
+    # the build of a single project (.exe/.lib/.dll) in a solution. Passing the -j parameter above will only enable multiple MSBuild.exe
+    # instances to be spawned to build multiple projects in parallel, but each MSBuild.exe is still singlethreaded.
+    # To enable each MSBuild.exe instance to also compile several .cpp files in parallel inside a single project, pass the extra
+    # MSBuild.exe specific "Multi-ToolTask" (MTT) setting /p:CL_MPCount. This enables each MSBuild.exe to parallelize builds wide.
+    # This requires CMake 3.12 or newer.
+    make += ['-j', str(CPU_CORES), '--', '/p:CL_MPCount=' + str(CPU_CORES)]
   else:
-    make = ['cmake', '--build', '.', '--', '-j' + str(CPU_CORES)]
+    # Pass -j to native make, CMake might not support -j option.
+    make += ['--', '-j', str(CPU_CORES)]
 
   # Build
   try:
     print('Running build: ' + str(make))
-    ret = subprocess.check_call(make, cwd=build_root, env=build_env(generator_to_use))
+    ret = subprocess.check_call(make, cwd=build_root, env=build_env(CMAKE_GENERATOR))
     if ret != 0:
       errlog('Build failed with exit code ' + ret + '!')
       errlog('Working directory: ' + build_root)
@@ -1108,92 +1015,47 @@ def xcode_sdk_version():
     return subprocess.checkplatform.mac_ver()[0].split('.')
 
 
-def build_fastcomp(tool):
-  debug_print('build_fastcomp(' + str(tool) + ')')
-  fastcomp_root = tool.installation_path()
-  fastcomp_src_root = os.path.join(fastcomp_root, 'src')
-  # Does this tool want to be git cloned from github?
-  if hasattr(tool, 'git_branch'):
-    success = git_clone_checkout_and_pull(tool.download_url(), fastcomp_src_root, tool.git_branch)
-    if not success:
-      return False
-    if hasattr(tool, 'clang_url'):
-      clang_root = os.path.join(fastcomp_src_root, 'tools/clang')
-      success = git_clone_checkout_and_pull(tool.clang_url, clang_root, tool.git_branch)
-      if not success:
-        return False
-    if hasattr(tool, 'lld_url'):
-      lld_root = os.path.join(fastcomp_src_root, 'tools/lld')
-      success = git_clone_checkout_and_pull(tool.lld_url, lld_root, tool.git_branch)
-      if not success:
-        return False
+def cmake_target_platform(tool):
+  # Source: https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2017%202022.html#platform-selection
+  if hasattr(tool, 'arch'):
+    if tool.arch == 'aarch64':
+      return 'ARM64'
+    elif tool.arch == 'x86_64':
+      return 'x64'
+    elif tool.arch == 'x86':
+      return 'Win32'
+  if ARCH == 'aarch64':
+    return 'ARM64'
   else:
-    # Not a git cloned tool, so instead download from git tagged releases
-    success = download_and_unzip(tool.download_url(), fastcomp_src_root, filename_prefix='llvm-e')
-    if not success:
-      return False
-    success = download_and_unzip(tool.windows_clang_url if WINDOWS else tool.unix_clang_url, os.path.join(fastcomp_src_root, 'tools/clang'), filename_prefix='clang-e')
-    if not success:
-      return False
+    return 'x64' if tool.bitness == 64 else 'Win32'
 
+
+def cmake_host_platform():
+  # Source: https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2017%202022.html#toolset-selection
+  arch_to_cmake_host_platform = {
+    'aarch64': 'ARM64',
+    'arm': 'ARM',
+    'x86_64': 'x64',
+    'x86': 'x86'
+  }
+  return arch_to_cmake_host_platform[ARCH]
+
+
+def get_generator_and_config_args(tool):
   args = []
-
   cmake_generator = CMAKE_GENERATOR
-  if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
+  if 'Visual Studio 16' in CMAKE_GENERATOR or 'Visual Studio 17' in CMAKE_GENERATOR:  # VS2019 or VS2022
     # With Visual Studio 16 2019, CMake changed the way they specify target arch.
     # Instead of appending it into the CMake generator line, it is specified
     # with a -A arch parameter.
-    args += ['-A', 'x64' if tool.bitness == 64 else 'x86']
+    args += ['-A', cmake_target_platform(tool)]
+    args += ['-Thost=' + cmake_host_platform()]
   elif 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
     cmake_generator += ' Win64'
-
-  build_dir = llvm_build_dir(tool)
-  build_root = os.path.join(fastcomp_root, build_dir)
-
-  build_type = decide_cmake_build_type(tool)
-
-  # Configure
-  tests_arg = 'ON' if BUILD_FOR_TESTING else 'OFF'
-
-  enable_assertions = ENABLE_LLVM_ASSERTIONS.lower() == 'on' or (ENABLE_LLVM_ASSERTIONS == 'auto' and build_type.lower() != 'release' and build_type.lower() != 'minsizerel')
-
-  only_supports_wasm = hasattr(tool, 'only_supports_wasm')
-  if ARCH == 'x86' or ARCH == 'x86_64':
-    targets_to_build = 'X86'
-  elif ARCH == 'arm':
-    targets_to_build = 'ARM'
-  elif ARCH == 'aarch64':
-    targets_to_build = 'AArch64'
-  else:
-    # May have problems with emconfigure
-    targets_to_build = ''
-  if not only_supports_wasm:
-    if targets_to_build != '':
-      targets_to_build += ';'
-    targets_to_build += 'JSBackend'
-  args += ['-DLLVM_TARGETS_TO_BUILD=' + targets_to_build, '-DLLVM_INCLUDE_EXAMPLES=OFF', '-DCLANG_INCLUDE_EXAMPLES=OFF', '-DLLVM_INCLUDE_TESTS=' + tests_arg, '-DCLANG_INCLUDE_TESTS=' + tests_arg, '-DLLVM_ENABLE_ASSERTIONS=' + ('ON' if enable_assertions else 'OFF')]
-  if os.getenv('LLVM_CMAKE_ARGS'):
-    extra_args = os.environ['LLVM_CMAKE_ARGS'].split(',')
-    print('Passing the following extra arguments to LLVM CMake configuration: ' + str(extra_args))
-    args += extra_args
-
-  # MacOS < 10.13 workaround for LLVM build bug https://github.com/kripken/emscripten/issues/5418:
-  # specify HAVE_FUTIMENS=0 in the build if building with target SDK that is older than 10.13.
-  if MACOS and ('HAVE_FUTIMENS' not in os.getenv('LLVM_CMAKE_ARGS', '')) and xcode_sdk_version() < ['10', '13']:
-    print('Passing -DHAVE_FUTIMENS=0 to LLVM CMake configure to workaround https://github.com/kripken/emscripten/issues/5418. Please update to macOS 10.13 or newer')
-    args += ['-DHAVE_FUTIMENS=0']
-
-  success = cmake_configure(cmake_generator, build_root, fastcomp_src_root, build_type, args)
-  if not success:
-    return False
-
-  # Make
-  success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'Win32')
-  return success
+    args += ['-Thost=x64']
+  return (cmake_generator, args)
 
 
-# LLVM git source tree migrated to a single repository instead of multiple
-# ones, build_llvm() builds via that repository structure
 def build_llvm(tool):
   debug_print('build_llvm(' + str(tool) + ')')
   llvm_root = tool.installation_path()
@@ -1220,15 +1082,16 @@ def build_llvm(tool):
     targets_to_build = 'WebAssembly;AArch64'
   else:
     targets_to_build = 'WebAssembly'
-  args = ['-DLLVM_TARGETS_TO_BUILD=' + targets_to_build,
-          '-DLLVM_INCLUDE_EXAMPLES=OFF',
-          '-DLLVM_INCLUDE_TESTS=' + tests_arg,
-          '-DCLANG_INCLUDE_TESTS=' + tests_arg,
-          '-DLLVM_ENABLE_ASSERTIONS=' + ('ON' if enable_assertions else 'OFF'),
-          # Disable optional LLVM dependencies, these can cause unwanted .so dependencies
-          # that prevent distributing the generated compiler for end users.
-          '-DLLVM_ENABLE_LIBXML2=OFF', '-DLLVM_ENABLE_TERMINFO=OFF', '-DLLDB_ENABLE_LIBEDIT=OFF',
-          '-DLLVM_ENABLE_LIBEDIT=OFF', '-DLLVM_ENABLE_LIBPFM=OFF']
+  cmake_generator, args = get_generator_and_config_args(tool)
+  args += ['-DLLVM_TARGETS_TO_BUILD=' + targets_to_build,
+           '-DLLVM_INCLUDE_EXAMPLES=OFF',
+           '-DLLVM_INCLUDE_TESTS=' + tests_arg,
+           '-DCLANG_INCLUDE_TESTS=' + tests_arg,
+           '-DLLVM_ENABLE_ASSERTIONS=' + ('ON' if enable_assertions else 'OFF'),
+           # Disable optional LLVM dependencies, these can cause unwanted .so dependencies
+           # that prevent distributing the generated compiler for end users.
+           '-DLLVM_ENABLE_LIBXML2=OFF', '-DLLVM_ENABLE_TERMINFO=OFF', '-DLLDB_ENABLE_LIBEDIT=OFF',
+           '-DLLVM_ENABLE_LIBEDIT=OFF', '-DLLVM_ENABLE_LIBPFM=OFF']
   # LLVM build system bug: compiler-rt does not build on Windows. It insists on performing a CMake install step that writes to C:\Program Files. Attempting
   # to reroute that to build_root directory then fails on an error
   #  file INSTALL cannot find
@@ -1236,16 +1099,6 @@ def build_llvm(tool):
   # (there instead of $(Configuration), one would need ${CMAKE_BUILD_TYPE} ?)
   # It looks like compiler-rt is not compatible to build on Windows?
   args += ['-DLLVM_ENABLE_PROJECTS=clang;lld']
-  cmake_generator = CMAKE_GENERATOR
-  if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
-    # With Visual Studio 16 2019, CMake changed the way they specify target arch.
-    # Instead of appending it into the CMake generator line, it is specified
-    # with a -A arch parameter.
-    args += ['-A', 'x64' if tool.bitness == 64 else 'x86']
-    args += ['-Thost=x64']
-  elif 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
-    cmake_generator += ' Win64'
-    args += ['-Thost=x64']
 
   if os.getenv('LLVM_CMAKE_ARGS'):
     extra_args = os.environ['LLVM_CMAKE_ARGS'].split(',')
@@ -1258,7 +1111,7 @@ def build_llvm(tool):
     return False
 
   # Make
-  success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'Win32')
+  success = make_build(build_root, build_type)
   return success
 
 
@@ -1276,17 +1129,7 @@ def build_ninja(tool):
   build_type = decide_cmake_build_type(tool)
 
   # Configure
-  cmake_generator = CMAKE_GENERATOR
-  args = []
-  if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
-    # With Visual Studio 16 2019, CMake changed the way they specify target arch.
-    # Instead of appending it into the CMake generator line, it is specified
-    # with a -A arch parameter.
-    args += ['-A', 'x64' if tool.bitness == 64 else 'x86']
-    args += ['-Thost=x64']
-  elif 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
-    cmake_generator += ' Win64'
-    args += ['-Thost=x64']
+  cmake_generator, args = get_generator_and_config_args(tool)
 
   cmakelists_dir = os.path.join(src_root)
   success = cmake_configure(cmake_generator, build_root, cmakelists_dir, build_type, args)
@@ -1294,7 +1137,7 @@ def build_ninja(tool):
     return False
 
   # Make
-  success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'Win32')
+  success = make_build(build_root, build_type)
 
   if success:
     bin_dir = os.path.join(root, 'bin')
@@ -1325,17 +1168,8 @@ def build_ccache(tool):
   build_type = decide_cmake_build_type(tool)
 
   # Configure
-  cmake_generator = CMAKE_GENERATOR
-  args = ['-DZSTD_FROM_INTERNET=ON']
-  if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
-    # With Visual Studio 16 2019, CMake changed the way they specify target arch.
-    # Instead of appending it into the CMake generator line, it is specified
-    # with a -A arch parameter.
-    args += ['-A', 'x64' if tool.bitness == 64 else 'x86']
-    args += ['-Thost=x64']
-  elif 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
-    cmake_generator += ' Win64'
-    args += ['-Thost=x64']
+  cmake_generator, args = get_generator_and_config_args(tool)
+  args += ['-DZSTD_FROM_INTERNET=ON']
 
   cmakelists_dir = os.path.join(src_root)
   success = cmake_configure(cmake_generator, build_root, cmakelists_dir, build_type, args)
@@ -1343,7 +1177,7 @@ def build_ccache(tool):
     return False
 
   # Make
-  success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'Win32')
+  success = make_build(build_root, build_type)
 
   if success:
     bin_dir = os.path.join(root, 'bin')
@@ -1495,24 +1329,15 @@ def emscripten_post_install(tool):
   build_root = optimizer_build_root(tool)
   build_type = decide_cmake_build_type(tool)
 
-  args = []
-
   # Configure
-  cmake_generator = CMAKE_GENERATOR
-  if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
-    # With Visual Studio 16 2019, CMake changed the way they specify target arch.
-    # Instead of appending it into the CMake generator line, it is specified
-    # with a -A arch parameter.
-    args += ['-A', 'x64' if tool.bitness == 64 else 'x86']
-  elif 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
-    cmake_generator += ' Win64'
+  cmake_generator, args = get_generator_and_config_args(tool)
 
   success = cmake_configure(cmake_generator, build_root, src_root, build_type, args)
   if not success:
     return False
 
   # Make
-  success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'Win32')
+  success = make_build(build_root, build_type)
   if not success:
     return False
 
@@ -1550,16 +1375,8 @@ def build_binaryen_tool(tool):
   build_type = decide_cmake_build_type(tool)
 
   # Configure
-  args = ['-DENABLE_WERROR=0']  # -Werror is not useful for end users
-
-  cmake_generator = CMAKE_GENERATOR
-  if 'Visual Studio 16' in CMAKE_GENERATOR:  # VS2019
-    # With Visual Studio 16 2019, CMake changed the way they specify target arch.
-    # Instead of appending it into the CMake generator line, it is specified
-    # with a -A arch parameter.
-    args += ['-A', 'x64' if tool.bitness == 64 else 'x86']
-  elif 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
-    cmake_generator += ' Win64'
+  cmake_generator, args = get_generator_and_config_args(tool)
+  args += ['-DENABLE_WERROR=0']  # -Werror is not useful for end users
 
   if 'Visual Studio' in CMAKE_GENERATOR:
     if BUILD_FOR_TESTING:
@@ -1570,7 +1387,7 @@ def build_binaryen_tool(tool):
     return False
 
   # Make
-  success = make_build(build_root, build_type, 'x64' if tool.bitness == 64 else 'Win32')
+  success = make_build(build_root, build_type)
 
   # Deploy scripts needed from source repository to build directory
   remove_tree(os.path.join(build_root, 'scripts'))
@@ -1616,6 +1433,8 @@ def get_required_path(active_tools):
   path_add = [to_native_path(EMSDK_PATH)]
   for tool in active_tools:
     if hasattr(tool, 'activated_path'):
+      if hasattr(tool, 'activated_path_skip') and which(tool.activated_path_skip):
+        continue
       path = to_native_path(tool.expand_vars(tool.activated_path))
       path_add.append(path)
   return path_add
@@ -1758,10 +1577,9 @@ class Tool(object):
     if '%generator_prefix%' in str:
       str = str.replace('%generator_prefix%', cmake_generator_prefix())
     str = str.replace('%.exe%', '.exe' if WINDOWS else '')
-    if '%fastcomp_build_dir%' in str:
-      str = str.replace('%fastcomp_build_dir%', llvm_build_dir(self))
-    if '%fastcomp_build_bin_dir%' in str:
-      str = str.replace('%fastcomp_build_bin_dir%', fastcomp_build_bin_dir(self))
+    if '%llvm_build_bin_dir%' in str:
+      str = str.replace('%llvm_build_bin_dir%', llvm_build_bin_dir(self))
+
     return str
 
   # Return true if this tool requires building from source, and false if this is a precompiled tool.
@@ -2007,7 +1825,7 @@ class Tool(object):
 
     if getattr(self, 'custom_install_script', None) == 'emscripten_npm_install':
       # upstream tools have hardcoded paths that are not stored in emsdk_manifest.json registry
-      install_path = 'upstream' if 'releases-upstream' in self.version else 'fastcomp'
+      install_path = 'upstream'
       emscripten_dir = os.path.join(EMSDK_PATH, install_path, 'emscripten')
       # Older versions of the sdk did not include the node_modules directory
       # and require `npm ci` to be run post-install
@@ -2033,9 +1851,7 @@ class Tool(object):
     print("Installing tool '" + str(self) + "'..")
     url = self.download_url()
 
-    if hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_fastcomp':
-      success = build_fastcomp(self)
-    elif hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_llvm':
+    if hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_llvm':
       success = build_llvm(self)
     elif hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_ninja':
       success = build_ninja(self)
@@ -2044,6 +1860,10 @@ class Tool(object):
     elif hasattr(self, 'git_branch'):
       success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch)
     elif url.endswith(ARCHIVE_SUFFIXES):
+      global ARCH
+      if WINDOWS and ARCH == 'aarch64':
+        errlog('No support for Windows on Arm, fallback to x64')
+        ARCH = 'x86_64'
       success = download_and_unzip(url, self.installation_path(), filename_prefix=getattr(self, 'zipfile_prefix', ''))
     else:
       assert False, 'unhandled url type: ' + url
@@ -2056,8 +1876,8 @@ class Tool(object):
         success = emscripten_post_install(self)
       elif self.custom_install_script == 'emscripten_npm_install':
         success = emscripten_npm_install(self, self.installation_path())
-      elif self.custom_install_script in ('build_fastcomp', 'build_llvm', 'build_ninja', 'build_ccache'):
-        # 'build_fastcomp' is a special one that does the download on its
+      elif self.custom_install_script in ('build_llvm', 'build_ninja', 'build_ccache'):
+        # 'build_llvm' is a special one that does the download on its
         # own, others do the download manually.
         pass
       elif self.custom_install_script == 'build_binaryen':
@@ -2200,15 +2020,15 @@ def resolve_sdk_aliases(name, verbose=False):
   return name
 
 
-def find_latest_sdk(which):
-  return 'sdk-releases-%s-%s-64bit' % (which, find_latest_hash())
+def find_latest_sdk():
+  return 'sdk-releases-%s-64bit' % (find_latest_hash())
 
 
 def find_tot_sdk():
   debug_print('Fetching emscripten-releases repository...')
   global extra_release_tag
   extra_release_tag = get_emscripten_releases_tot()
-  return 'sdk-releases-upstream-%s-64bit' % (extra_release_tag)
+  return 'sdk-releases-%s-64bit' % (extra_release_tag)
 
 
 def parse_emscripten_version(emscripten_root):
@@ -2338,31 +2158,28 @@ def get_installed_sdk_version():
     return None
   with open(version_file) as f:
     version = f.read()
-  return version.split('-')[2]
+  return version.split('-')[1]
 
 
 # Get a list of tags for emscripten-releases.
 def load_releases_tags():
   tags = []
-  tags_fastcomp = []
   info = load_releases_info()
 
   for version, sha in sorted(info['releases'].items(), key=lambda x: version_key(x[0])):
     tags.append(sha)
-    # Only include versions older than 1.39.0 in fastcomp releases
-    if version_key(version) < (2, 0, 0):
-      tags_fastcomp.append(sha)
 
   if extra_release_tag:
     tags.append(extra_release_tag)
 
   # Explicitly add the currently installed SDK version.  This could be a custom
-  # version (installed explicitly) so it might not be part of the main list loaded above.
+  # version (installed explicitly) so it might not be part of the main list
+  # loaded above.
   installed = get_installed_sdk_version()
   if installed and installed not in tags:
     tags.append(installed)
 
-  return tags, tags_fastcomp
+  return tags
 
 
 def load_releases_versions():
@@ -2390,7 +2207,7 @@ def load_sdk_manifest():
   llvm_precompiled_tags_64bit = load_file_index_list('llvm-tags-64bit.txt')
   llvm_precompiled_tags = llvm_precompiled_tags_32bit + llvm_precompiled_tags_64bit
   binaryen_tags = load_legacy_binaryen_tags()
-  releases_tags, releases_tags_fastcomp = load_releases_tags()
+  releases_tags = load_releases_tags()
 
   def dependencies_exist(sdk):
     for tool_name in sdk.uses:
@@ -2474,8 +2291,6 @@ def load_sdk_manifest():
         expand_category_param('%precompiled_tag64%', llvm_precompiled_tags_64bit, t, is_sdk=False)
       elif '%binaryen_tag%' in t.version:
         expand_category_param('%binaryen_tag%', binaryen_tags, t, is_sdk=False)
-      elif '%releases-tag%' in t.version and 'fastcomp' in t.version:
-        expand_category_param('%releases-tag%', releases_tags_fastcomp, t, is_sdk=False)
       elif '%releases-tag%' in t.version:
         expand_category_param('%releases-tag%', releases_tags, t, is_sdk=False)
       else:
@@ -2496,8 +2311,6 @@ def load_sdk_manifest():
         expand_category_param('%precompiled_tag32%', llvm_precompiled_tags_32bit, sdk, is_sdk=True)
       elif '%precompiled_tag64%' in sdk.version:
         expand_category_param('%precompiled_tag64%', llvm_precompiled_tags_64bit, sdk, is_sdk=True)
-      elif '%releases-tag%' in sdk.version and 'fastcomp' in sdk.version:
-        expand_category_param('%releases-tag%', releases_tags_fastcomp, sdk, is_sdk=True)
       elif '%releases-tag%' in sdk.version:
         expand_category_param('%releases-tag%', releases_tags, sdk, is_sdk=True)
       else:
@@ -2780,16 +2593,12 @@ def error_on_missing_tool(name):
     exit_with_error("tool or SDK not found: '%s'" % name)
 
 
-def exit_with_fastcomp_error():
-    exit_with_error('the fastcomp backend is not getting new builds or releases. Please use the upstream llvm backend or use an older version than 2.0.0 (such as 1.40.1).')
-
-
 def expand_sdk_name(name, activating):
   if 'upstream-master' in name:
-    errlog('upstream-master SDK has been renamed upstream-main')
-    name = name.replace('upstream-master', 'upstream-main')
-  if name in ('latest-fastcomp', 'latest-releases-fastcomp', 'tot-fastcomp', 'sdk-nightly-latest'):
-    exit_with_fastcomp_error()
+    errlog('upstream-master SDK has been renamed main')
+    name = name.replace('upstream-master', 'main')
+  if 'fastcomp' in name:
+    exit_with_error('the fastcomp backend is no longer supported.  Please use an older version of emsdk (for example 3.1.29) if you want to install the old fastcomp-based SDK')
   if name in ('tot', 'sdk-tot', 'tot-upstream'):
     if activating:
       # When we are activating a tot release, assume that the currently
@@ -2799,47 +2608,34 @@ def expand_sdk_name(name, activating):
       installed = get_installed_sdk_version()
       if installed:
         debug_print('activating currently installed SDK; not updating tot version')
-        return 'sdk-releases-upstream-%s-64bit' % installed
-    return str(find_tot_sdk())
+        return 'sdk-releases-%s-64bit' % installed
+    return find_tot_sdk()
+
+  if '-upstream' in name:
+    name = name.replace('-upstream', '')
 
   name = resolve_sdk_aliases(name, verbose=True)
 
   # check if it's a release handled by an emscripten-releases version,
   # and if so use that by using the right hash. we support a few notations,
-  #   x.y.z[-(upstream|fastcomp_])
-  #   sdk-x.y.z[-(upstream|fastcomp_])-64bit
+  #   x.y.z
+  #   sdk-x.y.z-64bit
   # TODO: support short notation for old builds too?
-  backend = None
   fullname = name
-  if '-upstream' in fullname:
-    fullname = name.replace('-upstream', '')
-    backend = 'upstream'
-  elif '-fastcomp' in fullname:
-    fullname = fullname.replace('-fastcomp', '')
-    backend = 'fastcomp'
   version = fullname.replace('sdk-', '').replace('releases-', '').replace('-64bit', '').replace('tag-', '')
   sdk = 'sdk-' if not name.startswith('releases-') else ''
   releases_info = load_releases_info()['releases']
   release_hash = get_release_hash(version, releases_info)
   if release_hash:
     # Known release hash
-    if backend == 'fastcomp' and version_key(version) >= (2, 0, 0):
-      exit_with_fastcomp_error()
-    if backend is None:
-      if version_key(version) >= (1, 39, 0):
-        backend = 'upstream'
-      else:
-        backend = 'fastcomp'
-    full_name = '%sreleases-%s-%s-64bit' % (sdk, backend, release_hash)
+    full_name = '%sreleases-%s-64bit' % (sdk, release_hash)
     print("Resolving SDK version '%s' to '%s'" % (version, full_name))
     return full_name
 
   if len(version) == 40:
-    if backend is None:
-      backend = 'upstream'
     global extra_release_tag
     extra_release_tag = version
-    return '%sreleases-%s-%s-64bit' % (sdk, backend, version)
+    return '%sreleases-%s-64bit' % (sdk, version)
 
   return name
 
@@ -2907,7 +2703,7 @@ def main(args):
                                   purposes. Default: Enabled
             --disable-assertions: Forces assertions off during the build.
 
-               --vs2017/--vs2019: If building from source, overrides to build
+               --vs2019/--vs2022: If building from source, overrides to build
                                   using the specified compiler. When installing
                                   precompiled packages, this has no effect.
                                   Note: The same compiler specifier must be
@@ -2930,7 +2726,7 @@ def main(args):
 
     if WINDOWS:
       print('''
-   emsdk activate [--permanent] [--system] [--build=type] [--vs2017/--vs2019] <tool/sdk>
+   emsdk activate [--permanent] [--system] [--build=type] [--vs2019/--vs2022] <tool/sdk>
 
                                 - Activates the given tool or SDK in the
                                   environment of the current shell.
@@ -2944,8 +2740,8 @@ def main(args):
                                   (uses Machine environment variables).
 
                                 - If a custom compiler version was used to override
-                                  the compiler to use, pass the same --vs2017/--vs2019 parameter
-                                  here to choose which version to activate.
+                                  the compiler to use, pass the same --vs2019/--vs2022
+                                  parameter here to choose which version to activate.
 
    emcmdprompt.bat              - Spawns a new command prompt window with the
                                   Emscripten environment active.''')
@@ -3070,13 +2866,11 @@ def main(args):
     if (LINUX or MACOS or WINDOWS) and (ARCH == 'x86' or ARCH == 'x86_64'):
       print('The *recommended* precompiled SDK download is %s (%s).' % (find_latest_version(), find_latest_hash()))
       print()
-      print('To install/activate it, use one of:')
-      print('         latest                  [default (llvm) backend]')
-      print('         latest-fastcomp         [legacy (fastcomp) backend]')
+      print('To install/activate it use:')
+      print('         latest')
       print('')
-      print('Those are equivalent to installing/activating the following:')
-      print('         %s             %s' % (find_latest_version(), installed_sdk_text(find_latest_sdk('upstream'))))
-      print('         %s-fastcomp    %s' % (find_latest_version(), installed_sdk_text(find_latest_sdk('fastcomp'))))
+      print('This is equivalent to installing/activating:')
+      print('         %s             %s' % (find_latest_version(), installed_sdk_text(find_latest_sdk())))
       print('')
     else:
       print('Warning: your platform does not have precompiled SDKs available.')
@@ -3084,14 +2878,10 @@ def main(args):
       print('')
 
     print('All recent (non-legacy) installable versions are:')
-    releases_versions = sorted(
-      load_releases_versions(),
-      key=lambda x: [int(v) if v.isdigit() else -1 for v in x.split('.')],
-      reverse=True,
-    )
+    releases_versions = sorted(load_releases_versions(), key=version_key, reverse=True)
     releases_info = load_releases_info()['releases']
     for ver in releases_versions:
-      print('         %s    %s' % (ver, installed_sdk_text('sdk-releases-upstream-%s-64bit' % get_release_hash(ver, releases_info))))
+      print('         %s    %s' % (ver, installed_sdk_text('sdk-releases-%s-64bit' % get_release_hash(ver, releases_info))))
     print()
 
     # Use array to work around the lack of being able to mutate from enclosing
