@@ -36,16 +36,14 @@ important concepts to help understanding the internals of the SDK:
 * **SDK**: A set of tools. For example, 'sdk-1.5.6-32bit' is an SDK consisting
   of the tools `clang-3.2-32bit`, `node-0.10.17-32bit`, `python-2.7.5.1-32bit`
   and `emscripten-1.5.6`.
-* **Active Tool/SDK**: Emscripten stores compiler configuration in a
-  user-specific file **~/.emscripten**. This file points to paths for
-  Emscripten, Python, Clang and so on. If the file ~/.emscripten is configured
-  to point to a Tool in a specific directory, then that tool is denoted as being
-  **active**. The Emscripten Command Prompt always gives access to the currently
-  active Tools. This mechanism allows switching between different installed SDK
-  versions easily.
+* **Active Tool/SDK**: Emscripten SDK stores compiler configuration in a file
+  called `.emscripten` within the emsdk directory. This file points to paths
+  for Emscripten, Python, Clang and so on. If the configuration file points to a
+  Tool in a specific directory, then that tool is denoted as being
+  **active**. This mechanism allows switching between different installed
+  tools and SDKs.
 * **emsdk**: This is the name of the manager script that Emscripten SDK is
-  accessed through. Most operations are of the form `emsdk command`. To access
-  the emsdk script, launch the Emscripten Command Prompt.
+  accessed through. Most operations are of the form `emsdk <command>`.
 
 ## System Requirements
 
@@ -136,11 +134,11 @@ using git, and compile the package on demand.
 When you run `emsdk list`, it will group the Tools and SDKs under these two
 categories.
 
-To obtain and build latest upstream wasm SDK from source, run
+To obtain and build latest wasm SDK from source, run
 
 ```
-emsdk install sdk-upstream-main-64bit
-emsdk activate sdk-upstream-main-64bit
+emsdk install sdk-main-64bit
+emsdk activate sdk-main-64bit
 ```
 
 You can use this target for example to bootstrap developing patches to LLVM,
@@ -156,7 +154,7 @@ https://emscripten.org/docs/contributing/developers_guide.html?highlight=develop
 ### When working on git branches compiled from source, how do I update to a newer compiler version?
 
 Unlike tags and precompiled versions, a few of the SDK packages are based on
-"moving" git branches and compiled from source (e.g. sdk-upstream-main,
+"moving" git branches and compiled from source (e.g. sdk-main,
 sdk-main, emscripten-main, binaryen-main). Because of that, the
 compiled versions will eventually go out of date as new commits are introduced
 to the development branches. To update an old compiled installation of one of
@@ -179,18 +177,6 @@ activate <tool/sdk name>`. Activating a tool will set up `~/.emscripten` to
 point to that particular tool. On Windows, you can pass the option `--permanent` to
 the `activate` command to register the environment permanently for the current user. Use `--system` to do this for all users.
 
-### How do I build multiple projects with different SDK versions in parallel?
-
-By default, Emscripten locates all configuration files in the home directory of
-the user. This may be a problem if you need to simultaneously build with
-multiple Emscripten compiler versions, since the user home directory can only be
-configured to point to one compiler at a time. This can be overcome by
-specifying the '--embedded' option as a parameter to 'emsdk activate', which
-will signal emsdk to generate the compiler configuration files inside the emsdk
-root directory instead of the user home directory. Use this option also when it
-is desirable to run emsdk in a fully portable mode that does not touch any files
-outside the emsdk directory.
-
 ### How do I track the latest Emscripten development with the SDK?
 
 A common and supported use case of the Emscripten SDK is to enable the workflow
@@ -198,11 +184,11 @@ where you directly interact with the github repositories. This allows you to
 obtain new features and latest fixes immediately as they are pushed to the
 github repository, without having to wait for release to be tagged. You do not
 need a github account or a fork of Emscripten to do this. To switch to using the
-latest upstream git development branch `main`, run the following:
+latest git development branch `main`, run the following:
 
     emsdk install git-1.9.4 # Install git. Skip if the system already has it.
-    emsdk install sdk-upstream-main-64bit # Clone+pull the latest emscripten-core/emscripten/main.
-    emsdk activate sdk-upstream-main-64bit # Set the main SDK as the currently active one.
+    emsdk install sdk-main-64bit # Clone+pull the latest emscripten-core/emscripten/main.
+    emsdk activate sdk-main-64bit # Set the main SDK as the currently active one.
 
 ### How do I use my own Emscripten github fork with the SDK?
 
