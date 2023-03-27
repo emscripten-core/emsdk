@@ -205,8 +205,8 @@ int main() {
 
   def test_specific_version_full(self):
     print('test specific release (new, full name)')
-    run_emsdk('install sdk-1.38.33-upstream-64bit')
-    run_emsdk('activate sdk-1.38.33-upstream-64bit')
+    run_emsdk('install sdk-1.38.33-64bit')
+    run_emsdk('activate sdk-1.38.33-64bit')
     print('test specific release (new, tag name)')
     run_emsdk('install sdk-tag-1.38.33-64bit')
     run_emsdk('activate sdk-tag-1.38.33-64bit')
@@ -250,11 +250,11 @@ int main() {
 
   def test_install_tool(self):
     # Test that its possible to install emscripten as tool instead of SDK
-    checked_call_with_output(emsdk + ' install releases-upstream-77b065ace39e6ab21446e13f92897f956c80476a', unexpected='Installing SDK')
+    checked_call_with_output(emsdk + ' install releases-77b065ace39e6ab21446e13f92897f956c80476a', unexpected='Installing SDK')
 
   def test_activate_missing(self):
     run_emsdk('install latest')
-    failing_call_with_output(emsdk + ' activate 2.0.1', expected="error: tool is not installed and therefore cannot be activated: 'releases-upstream-13e29bd55185e3c12802bc090b4507901856b2ba-64bit'")
+    failing_call_with_output(emsdk + ' activate 2.0.1', expected="error: tool is not installed and therefore cannot be activated: 'releases-13e29bd55185e3c12802bc090b4507901856b2ba-64bit'")
 
   def test_keep_downloads(self):
     env = os.environ.copy()
