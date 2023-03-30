@@ -9,7 +9,7 @@ FROZEN_CACHE = True
 
 system = platform.system()
 
-machine = "arm64" if platform.machine() == "arm64" else "amd64"
+machine = "arm64" if platform.machine() in ('arm64', 'aarch64') else "amd64"
 nodejs_binary = "bin/nodejs/node.exe" if(system =="Windows") else "bin/node"
 NODE_JS = ROOT_DIR + "/external/nodejs_{}_{}/{}".format(system.lower(), machine, nodejs_binary)
 
