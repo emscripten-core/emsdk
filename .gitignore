@@ -15,9 +15,7 @@ __pycache__
 # File that get download/extracted by emsdk itself
 /ccache
 /gnu
-/upstream
-/fastcomp
-/fastcomp-clang/
+/prebuilt
 /llvm
 /ninja
 /releases

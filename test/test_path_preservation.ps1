@@ -42,7 +42,7 @@ try {
     $EMSDK_NODE_Path = $path_arr | Where-Object { $_ -like "$repo_root\node*" }
     $EMSDK_PYTHON_Path = $path_arr | Where-Object { $_ -like "$repo_root\python*" }
     $EMSDK_JAVA_Path = $path_arr | Where-Object { $_ -like "$repo_root\java*" }
-    $EMSDK_UPSTREAM_Path = $path_arr | Where-Object { $_ -like "$repo_root\upstream\emscripten*" }
+    $EMSDK_UPSTREAM_Path = $path_arr | Where-Object { $_ -like "$repo_root\prebuilt\emscripten*" }
 
     $number_of_items = $path_arr.count
     [System.Collections.ArrayList]$rest_of_path = @()
@@ -52,7 +52,7 @@ try {
             ($item -like "$repo_root\node*") -or
             ($item -like "$repo_root\python*") -or
             ($item -like "$repo_root\java*") -or
-            ($item -like "$repo_root\upstream\emscripten*")
+            ($item -like "$repo_root\prebuilt\emscripten*")
         ) {
             echo "$item is on the PATH"
         }

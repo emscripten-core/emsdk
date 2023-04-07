@@ -58,9 +58,9 @@ try {
         throw "$repo_root\\node is not added to path."
     }
 
-    $EMSDK_UPSTREAM_Path = $path_split | Where-Object { $_ -like "$repo_root\upstream\emscripten*" }
+    $EMSDK_UPSTREAM_Path = $path_split | Where-Object { $_ -like "$repo_root\prebuilt\emscripten*" }
     if (!$EMSDK_UPSTREAM_Path) {
-        throw "$repo_root\\upstream\emscripten is not added to path."
+        throw "$repo_root\\prebuilt\emscripten is not added to path."
     }
 
 
