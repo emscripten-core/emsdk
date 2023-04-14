@@ -3,6 +3,7 @@
   <PropertyGroup>
     <GitHubRepositoryName>emsdk</GitHubRepositoryName>
     <SourceBuildManagedOnly>true</SourceBuildManagedOnly>
+    <NoTargetFrameworkFiltering>true</NoTargetFrameworkFiltering>
   </PropertyGroup>
 
 </Project>
