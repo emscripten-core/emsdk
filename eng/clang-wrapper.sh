@@ -2,12 +2,12 @@
 
 # 
 # This abomination of a script is meant to replace the symlinks
-# pointing to the clang-16 binary and set the appropriate flags
-# to avoid duplicating the 90MB clang-16 binary inside the nuget
+# pointing to the clang-17 binary and set the appropriate flags
+# to avoid duplicating the 90MB clang-17 binary inside the nuget
 # package.
 #
 CLANG_NAME=$(basename "$0")
-CLANG_CC=$(dirname $0)/clang-16
+CLANG_CC=$(dirname $0)/clang-17
 
 EXTRA_ARGS=""
 case $CLANG_NAME in
