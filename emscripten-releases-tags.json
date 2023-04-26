@@ -1,6 +1,6 @@
 {
   "aliases": {
-    "latest": "3.1.36",
+    "latest": "3.1.37",
     "latest-sdk": "latest",
     "latest-arm64-linux": "3.1.33",
     "latest-64bit": "latest",
@@ -10,6 +10,8 @@
     "latest-releases-upstream": "latest"
   },
   "releases": {
+    "3.1.37": "7c905cfc1ca6699f6ccb288ae174902cfbdcf0a2",
+    "3.1.37-asserts": "323607efbcdf84886dab55a18d758fe4c7d71d1e",
     "3.1.36": "adedc0750c4a89b65bee866edab24298cb8d6677",
     "3.1.36-asserts": "fdd2824226a8b001df5697146b88be98920fc215",
     "3.1.35": "671550b5bdceee7bdb21493714f9a815aa5149a9",
