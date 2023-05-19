@@ -220,7 +220,7 @@ int main() {
   def test_no_32bit(self):
     print('test 32-bit error')
     emsdk_hacked = hack_emsdk('not is_os_64bit()', 'True')
-    failing_call_with_output('python %s install latest' % emsdk_hacked, 'this tool is only provided for 64-bit OSes')
+    failing_call_with_output('%s %s install latest' % (sys.executable, emsdk_hacked), 'this tool is only provided for 64-bit OSes')
     os.remove(emsdk_hacked)
 
   def test_update_no_git(self):

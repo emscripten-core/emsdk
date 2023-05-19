@@ -4,28 +4,29 @@ orbs:
   win: circleci/windows@1.0.0
 
 executors:
-  bionic:
+  ubuntu:
     docker:
-      - image: buildpack-deps:bionic
+      - image: buildpack-deps:focal
 
 jobs:
   flake8:
-    executor: bionic
+    executor: ubuntu
     steps:
       - checkout
       - run:
           name: install pip
           command: |
             apt-get update -q
-            apt-get install -q -y python-pip python3-pip
-      - run: python2 -m pip install --upgrade pip
+            apt-get install -q -y python3-pip
+            curl -fsSL https://bootstrap.pypa.io/pip/2.7/get-pip.py | python2
       - run: python3 -m pip install --upgrade pip
-      - run: python2 -m pip install flake8==3.7.8
       - run: python3 -m pip install flake8==3.7.8
-      - run: python2 -m flake8 --show-source --statistics
       - run: python3 -m flake8 --show-source --statistics
+      - run: python2 -m pip install --upgrade pip
+      - run: python2 -m pip install flake8==3.7.8
+      - run: python2 -m flake8 --show-source --statistics
   test-linux:
-    executor: bionic
+    executor: ubuntu
     environment:
       EMSDK_NOTTY: "1"
       # This is needed because the old gcc-7 that is installed on debian/bionic
@@ -134,12 +135,19 @@ jobs:
             test/test_path_preservation.ps1
 
   build-docker-image:
-    executor: bionic
+    executor: ubuntu
     steps:
       - checkout
       - run:
           name: install docker
-          command: apt-get update -q && apt-get install -q -y docker.io
+          command: |
+            apt-get update -q 
+            apt-get install -q -y ca-certificates curl gnupg lsb-release
+            mkdir -p /etc/apt/keyrings
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+            apt-get update -q
+            apt-get install -q -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
       - setup_remote_docker
       # Build and test the tip-of-tree build of EMSDK
       - run:
@@ -150,12 +158,19 @@ jobs:
           command: make -C ./docker version=tot test
 
   publish-docker-image:
-    executor: bionic
+    executor: ubuntu
     steps:
       - checkout
       - run:
           name: install docker
-          command: apt-get update -q && apt-get install -q -y docker.io
+          command: |
+            apt-get update -q 
+            apt-get install -q -y ca-certificates curl gnupg lsb-release
+            mkdir -p /etc/apt/keyrings
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+            apt-get update -q
+            apt-get install -q -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
       - setup_remote_docker
       - run:
           name: build
@@ -170,7 +185,7 @@ jobs:
             make -C ./docker version=${CIRCLE_TAG} alias=latest push
 
   test-bazel-linux:
-    executor: bionic
+    executor: ubuntu
     steps:
       - checkout
       - run: apt-get install -q -y curl gnupg
