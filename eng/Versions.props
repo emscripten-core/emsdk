@@ -9,7 +9,7 @@
     <EmscriptenVersion>3.1.34</EmscriptenVersion>
     <EmscriptenVersionNet6>2.0.23</EmscriptenVersionNet6>
     <EmscriptenVersionNet7>3.1.12</EmscriptenVersionNet7>
-    <PackageVersionNet7>7.0.6</PackageVersionNet7>
+    <PackageVersionNet7>7.0.5</PackageVersionNet7>
     <PackageVersionNet6>6.0.$([MSBuild]::Add($([System.Version]::Parse('$(PackageVersionNet7)').Build),11))</PackageVersionNet6>
   </PropertyGroup>
   <PropertyGroup>
