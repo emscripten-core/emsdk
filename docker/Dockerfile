@@ -60,9 +60,7 @@ FROM ubuntu:jammy AS stage_deploy
 
 COPY --from=stage_build /emsdk /emsdk
 
-# Fallback in case Emscripten isn't activated.
-# This will let use tools offered by this image inside other Docker images
-# (sub-stages) or with custom / no entrypoint
+# Set up emsdk environment
 ENV EMSDK=/emsdk \
     EMSDK_NODE=/emsdk/node/15.14.0_64bit/bin/node \
     PATH="/emsdk:/emsdk/upstream/emscripten:/emsdk/upstream/bin:/emsdk/node/15.14.0_64bit/bin:${PATH}"
@@ -79,7 +77,6 @@ RUN echo "## Create emscripten user (1000:1000)" \
     && groupadd --gid 1000 emscripten \
     && useradd --uid 1000 --gid emscripten --shell /bin/bash --create-home emscripten \
     && echo "umask 0000" >> /etc/bash.bashrc \
-    && echo ". /emsdk/emsdk_env.sh" >> /etc/bash.bashrc \
     && echo "## Done"
 
 # ------------------------------------------------------------------------------
