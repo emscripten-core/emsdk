@@ -77,7 +77,6 @@ ENV EMSDK=/emsdk \
 RUN echo "## Create emscripten user (1000:1000)" \
     && groupadd --gid 1000 emscripten \
     && useradd --uid 1000 --gid emscripten --shell /bin/bash --create-home emscripten \
-    && echo "umask 0000" >> /etc/bash.bashrc \
     && echo "## Done"
 
 # ------------------------------------------------------------------------------
