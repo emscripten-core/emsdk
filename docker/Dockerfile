@@ -61,6 +61,7 @@ FROM ubuntu:jammy AS stage_deploy
 COPY --from=stage_build /emsdk /emsdk
 
 # Set up emsdk environment
+# This corresponds to the environment variables set during `source ./emsdk_env.sh`
 ENV EMSDK=/emsdk \
     EMSDK_NODE=/emsdk/node/15.14.0_64bit/bin/node \
     PATH="/emsdk:/emsdk/upstream/emscripten:/emsdk/upstream/bin:/emsdk/node/15.14.0_64bit/bin:${PATH}"
