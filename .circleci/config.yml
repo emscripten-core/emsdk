@@ -7,6 +7,15 @@ executors:
   bionic:
     docker:
       - image: buildpack-deps:bionic
+  mac:
+    environment:
+      EMSDK_NOTTY: "1"
+      # Without this, any `brew installl` command will result in self-update of
+      # brew itself which takes more than 4 minutes.
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+    macos:
+      xcode: "12.5.1"
+    resource_class: macos.x86.medium.gen2
 
 jobs:
   flake8:
@@ -48,13 +57,7 @@ jobs:
             source emsdk_env.sh
             test/test.py
   test-mac:
-    macos:
-      xcode: "12.5.1"
-    environment:
-      EMSDK_NOTTY: "1"
-      # Without this, any `brew installl` command will result in self-update of
-      # brew itself which takes more than 4 minutes.
-      HOMEBREW_NO_AUTO_UPDATE: "1"
+    executor: mac
     steps:
       - checkout
       - run:
@@ -190,11 +193,7 @@ jobs:
       - run: test/test_bazel.sh
 
   test-bazel-mac:
-    macos:
-      xcode: "12.5.1"
-    environment:
-      EMSDK_NOTTY: "1"
-      HOMEBREW_NO_AUTO_UPDATE: "1"
+    executor: mac
     steps:
       - checkout
       - run: brew install grep
