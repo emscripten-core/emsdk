@@ -46,8 +46,6 @@ RUN echo "## Aggressive optimization: Remove debug symbols" \
     && strip -s `which node` \
     # Tests consume ~80MB disc space
     && rm -fr ${EMSDK}/upstream/emscripten/tests \
-    # Fastcomp is not supported
-    && rm -fr ${EMSDK}/upstream/fastcomp \
     # strip out symbols from clang (~extra 50MB disc space)
     && find ${EMSDK}/upstream/bin -type f -exec strip -s {} + || true \
     && echo "## Done"
