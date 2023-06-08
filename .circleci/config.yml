@@ -172,6 +172,51 @@ jobs:
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
             make -C ./docker version=${CIRCLE_TAG} alias=latest push
 
+  publish-docker-image-arm64:
+    machine:
+      image: ubuntu-2004:current
+    resource_class: arm.medium
+    steps:
+      - checkout
+      - run:
+          name: check if emscripten-releases-tags.json has changed
+          command: |
+            CHANGED_FILES=$(git diff --name-only <<pipeline.git.base_revision>>..<<pipeline.git.revision>>)
+            if [[ ! $CHANGED_FILES =~ "emscripten-releases-tags.json" ]]; then
+              echo "emscripten-releases-tags.json has not changed, skipping build and publish"
+              exit 0
+            fi
+      - run:
+          name: extract latest emscripten arm64 linux version
+          command: |
+            export ARM64_VERSION=$(grep -oP '(?<="latest-arm64-linux": ")[^"]*' emscripten-releases-tags.json)
+            export ARM64_IMAGE_TAG=${ARM64_VERSION}-arm64
+            echo "ARM64_VERSION=$ARM64_VERSION"
+            echo "ARM64_IMAGE_TAG=$ARM64_IMAGE_TAG"
+      - run:
+          name: check if docker image already exists
+          command: |
+            DOCKER_IMAGE_EXISTS=$(curl -s -o /dev/null -w "%{http_code}" https://hub.docker.com/v2/repositories/emscripten/emsdk/tags/$ARM64_IMAGE_TAG)
+            if [ "$DOCKER_IMAGE_EXISTS" = "200" ]; then
+              echo "Docker image already exists, skipping build and publish"
+              exit 0
+            fi
+      - run:
+          name: install docker
+          command: apt-get update -q && apt-get install -q -y docker.io
+      - setup_remote_docker
+      - run:
+          name: build
+          command: make -C ./docker version=${ARM64_VERSION} build
+      - run:
+          name: test
+          command: make -C ./docker version=${ARM64_VERSION} test
+      - run:
+          name: push image
+          command: |
+            docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
+            make -C ./docker version=${ARM64_VERSION} alias=${ARM64_IMAGE_TAG} only_alias=true push
+
   test-bazel-linux:
     executor: bionic
     steps:
@@ -248,6 +293,10 @@ workflows:
               ignore: /.*/
             tags:
               only: /.*/
+      - publish-docker-image-arm64:
+          filters:
+            branches:
+              only: main
   test-bazel-linux:
     jobs:
       - test-bazel-linux
