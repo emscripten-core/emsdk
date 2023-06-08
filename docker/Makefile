@@ -4,6 +4,7 @@
 # i.e.:  1.39.18
 version =
 alias =
+only_alias =
 
 image_name ?= emscripten/emsdk
 
@@ -21,7 +22,9 @@ test: test_dockerimage.sh .TEST
 		bash $<
 
 push: .TEST
+ifndef only_alias
 	docker push ${image_name}:${version}
+endif
 ifdef alias
 	docker tag ${image_name}:${version} ${image_name}:${alias}
 	docker push ${image_name}:${alias}
