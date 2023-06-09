@@ -136,7 +136,7 @@ jobs:
             $env:SYSTEM_FLAG="--system"
             test/test_path_preservation.ps1
 
-  build-docker-image:
+  build-docker-image-x64:
     executor: bionic
     steps:
       - checkout
@@ -152,7 +152,7 @@ jobs:
           name: test
           command: make -C ./docker version=tot test
 
-  publish-docker-image:
+  publish-docker-image-x64:
     executor: bionic
     steps:
       - checkout
@@ -286,8 +286,8 @@ workflows:
       - test-windows
   build-docker-image:
     jobs:
-      - build-docker-image
-      - publish-docker-image:
+      - build-docker-image-x64
+      - publish-docker-image-x64:
           filters:
             branches:
               ignore: /.*/
