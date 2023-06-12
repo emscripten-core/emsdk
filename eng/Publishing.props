@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <_InstallersToPublish Include="$(ArtifactsDir)**\*.wixpack.zip" />
+    <_InstallersToPublish Include="$(ArtifactsDir)**\*.wixpack.zip" Condition="'$(PostBuildSign)' == 'true'" />
     <_InstallerManifestFilesToPublish Include="$(ArtifactsDir)VSSetup\$(Configuration)\Insertion\**\*.zip" />
   </ItemGroup>
 
