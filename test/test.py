@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
 import os
+import platform
 import shutil
 import subprocess
 import sys
@@ -9,6 +10,7 @@ import unittest
 
 WINDOWS = sys.platform.startswith('win')
 MACOS = sys.platform == 'darwin'
+MAC_ARM64 = MACOS and platform.machine() == "arm64"
 
 emconfig = os.path.abspath('.emscripten')
 assert os.path.exists(emconfig)
@@ -197,6 +199,8 @@ int main() {
     check_call(upstream_emcc + ' hello_world.c --closure=1')
 
   def test_specific_version(self):
+    if MACOS_ARM64:
+      self.skipTest("Old sdk versions do not have ARM64 binaries")
     print('test specific release (new, short name)')
     run_emsdk('install 1.38.33')
     print('another install, but no need for re-download')
@@ -204,6 +208,8 @@ int main() {
     run_emsdk('activate 1.38.33')
 
   def test_specific_version_full(self):
+    if MACOS_ARM64:
+      self.skipTest("Old sdk versions do not have ARM64 binaries")
     print('test specific release (new, full name)')
     run_emsdk('install sdk-1.38.33-64bit')
     run_emsdk('activate sdk-1.38.33-64bit')
@@ -220,7 +226,7 @@ int main() {
   def test_no_32bit(self):
     print('test 32-bit error')
     emsdk_hacked = hack_emsdk('not is_os_64bit()', 'True')
-    failing_call_with_output('python %s install latest' % emsdk_hacked, 'this tool is only provided for 64-bit OSes')
+    failing_call_with_output('python3 %s install latest' % emsdk_hacked, 'this tool is only provided for 64-bit OSes')
     os.remove(emsdk_hacked)
 
   def test_update_no_git(self):
