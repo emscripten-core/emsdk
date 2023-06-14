@@ -10,7 +10,7 @@ import unittest
 
 WINDOWS = sys.platform.startswith('win')
 MACOS = sys.platform == 'darwin'
-MAC_ARM64 = MACOS and platform.machine() == "arm64"
+MACOS_ARM64 = MACOS and platform.machine() == "arm64"
 
 emconfig = os.path.abspath('.emscripten')
 assert os.path.exists(emconfig)
