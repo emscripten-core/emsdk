@@ -258,6 +258,9 @@ workflows:
   test-mac:
     jobs:
       - test-mac
+  test-mac-arm64:
+    jobs:
+      - test-mac-arm64
   test-windows:
     jobs:
       - test-windows
