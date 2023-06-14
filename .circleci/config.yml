@@ -26,6 +26,24 @@ executors:
       xcode: "13.4.1"
     resource_class: macos.m1.medium.gen1
 
+commands:
+  setup-macos:
+    steps:
+      - checkout
+      - run:
+          name: Install CMake
+          command: brew install cmake
+  test-macos:
+    steps:
+      - run:
+          name: test.sh
+          command: test/test.sh
+      - run:
+          name: test.py
+          command: |
+            source emsdk_env.sh
+            test/test.py
+
 jobs:
   flake8:
     executor: bionic
@@ -68,29 +86,13 @@ jobs:
   test-mac:
     executor: mac
     steps:
-      - checkout
-      - run:
-          name: Install cmake
-          command: brew install cmake
-      - run: test/test.sh
-      - run:
-          name: test.py
-          command: |
-            source emsdk_env.sh
-            test/test.py
+      - setup-macos
+      - test-macos
   test-mac-arm64:
     executor: mac_arm64
     steps:
-      - checkout
-      - run:
-          name: Install cmake
-          command: brew install cmake
-      - run: test/test.sh
-      - run:
-          name: test.py
-          command: |
-            source emsdk_env.sh
-            test/test.py
+      - setup-macos
+      - test-macos
   test-windows:
     executor:
       name: win/vs2019
