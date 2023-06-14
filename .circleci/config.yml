@@ -10,20 +10,20 @@ executors:
   mac:
     environment:
       EMSDK_NOTTY: "1"
-      # Without this, any `brew installl` command will result in self-update of
+      # Without this, any `brew install` command will result in self-update of
       # brew itself which takes more than 4 minutes.
       HOMEBREW_NO_AUTO_UPDATE: "1"
     macos:
-      xcode: "12.5.1"
+      xcode: "13.4.1"
     resource_class: macos.x86.medium.gen2
   mac_arm64:
     environment:
       EMSDK_NOTTY: "1"
-      # Without this, any `brew installl` command will result in self-update of
+      # Without this, any `brew install` command will result in self-update of
       # brew itself which takes more than 4 minutes.
       HOMEBREW_NO_AUTO_UPDATE: "1"
     macos:
-      xcode: "12.6.3"
+      xcode: "13.4.1"
     resource_class: macos.m1.medium.gen1
 
 jobs:
