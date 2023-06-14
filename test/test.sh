@@ -13,14 +13,16 @@ source ./emsdk_env.sh
 which emcc
 emcc -v
 
-# Install an older version of the SDK that requires EM_CACHE to be
-# set in the environment, so that we can test it is later removed
-./emsdk install sdk-1.39.15
-./emsdk activate sdk-1.39.15
-source ./emsdk_env.sh
-which emcc
-emcc -v
-test -n "$EM_CACHE"
+if [[ $(uname -m) == "x86_64" ]]; then
+  # Install an older version of the SDK that requires EM_CACHE to be
+  # set in the environment, so that we can test it is later removed
+  ./emsdk install sdk-1.39.15
+  ./emsdk activate sdk-1.39.15
+  source ./emsdk_env.sh
+  which emcc
+  emcc -v
+  test -n "$EM_CACHE"
+fi
 
 # Install the latest version of the SDK which is the expected precondition
 # of test.py.
