@@ -243,10 +243,10 @@ int main() {
 
   def test_install_arbitrary(self):
     # Test that its possible to install arbrary emscripten-releases SDKs
-    run_emsdk('install 5c776e6a91c0cb8edafca16a652ee1ee48f4f6d2')
+    run_emsdk('install 1b7f7bc6002a3ca73647f41fc10e1fac7f06f804')
 
     # Check that its not re-downloaded
-    checked_call_with_output(emsdk + ' install 5c776e6a91c0cb8edafca16a652ee1ee48f4f6d2', expected='Skipped', unexpected='Downloading:')
+    checked_call_with_output(emsdk + ' install 1b7f7bc6002a3ca73647f41fc10e1fac7f06f804', expected='Skipped', unexpected='Downloading:')
 
   def test_install_tool(self):
     # Test that its possible to install emscripten as tool instead of SDK
