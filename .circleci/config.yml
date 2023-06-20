@@ -10,12 +10,39 @@ executors:
   mac:
     environment:
       EMSDK_NOTTY: "1"
-      # Without this, any `brew installl` command will result in self-update of
+      # Without this, any `brew install` command will result in self-update of
       # brew itself which takes more than 4 minutes.
       HOMEBREW_NO_AUTO_UPDATE: "1"
     macos:
       xcode: "12.5.1"
     resource_class: macos.x86.medium.gen2
+  mac_arm64:
+    environment:
+      EMSDK_NOTTY: "1"
+      # Without this, any `brew install` command will result in self-update of
+      # brew itself which takes more than 4 minutes.
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+    macos:
+      xcode: "13.4.1"
+    resource_class: macos.m1.medium.gen1
+
+commands:
+  setup-macos:
+    steps:
+      - checkout
+      - run:
+          name: Install CMake
+          command: brew install cmake
+  test-macos:
+    steps:
+      - run:
+          name: test.sh
+          command: test/test.sh
+      - run:
+          name: test.py
+          command: |
+            source emsdk_env.sh
+            test/test.py
 
 jobs:
   flake8:
@@ -59,16 +86,13 @@ jobs:
   test-mac:
     executor: mac
     steps:
-      - checkout
-      - run:
-          name: Install cmake
-          command: brew install cmake
-      - run: test/test.sh
-      - run:
-          name: test.py
-          command: |
-            source emsdk_env.sh
-            test/test.py
+      - setup-macos
+      - test-macos
+  test-mac-arm64:
+    executor: mac_arm64
+    steps:
+      - setup-macos
+      - test-macos
   test-windows:
     executor:
       name: win/vs2019
@@ -236,6 +260,9 @@ workflows:
   test-mac:
     jobs:
       - test-mac
+  test-mac-arm64:
+    jobs:
+      - test-mac-arm64
   test-windows:
     jobs:
       - test-windows

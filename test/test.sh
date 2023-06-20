@@ -7,20 +7,22 @@ set -e
 
 # Test that arbitrary (non-released) versions can be installed and
 # activated.
-./emsdk install sdk-upstream-5c776e6a91c0cb8edafca16a652ee1ee48f4f6d2
-./emsdk activate sdk-upstream-5c776e6a91c0cb8edafca16a652ee1ee48f4f6d2
+./emsdk install sdk-upstream-1b7f7bc6002a3ca73647f41fc10e1fac7f06f804
+./emsdk activate sdk-upstream-1b7f7bc6002a3ca73647f41fc10e1fac7f06f804
 source ./emsdk_env.sh
 which emcc
 emcc -v
 
-# Install an older version of the SDK that requires EM_CACHE to be
-# set in the environment, so that we can test it is later removed
-./emsdk install sdk-1.39.15
-./emsdk activate sdk-1.39.15
-source ./emsdk_env.sh
-which emcc
-emcc -v
-test -n "$EM_CACHE"
+if [[ $(uname -m) == "x86_64" ]]; then
+  # Install an older version of the SDK that requires EM_CACHE to be
+  # set in the environment, so that we can test it is later removed
+  ./emsdk install sdk-1.39.15
+  ./emsdk activate sdk-1.39.15
+  source ./emsdk_env.sh
+  which emcc
+  emcc -v
+  test -n "$EM_CACHE"
+fi
 
 # Install the latest version of the SDK which is the expected precondition
 # of test.py.
