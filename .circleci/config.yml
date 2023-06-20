@@ -14,7 +14,7 @@ executors:
       # brew itself which takes more than 4 minutes.
       HOMEBREW_NO_AUTO_UPDATE: "1"
     macos:
-      xcode: "13.4.1"
+      xcode: "12.5.1"
     resource_class: macos.x86.medium.gen2
   mac_arm64:
     environment:
