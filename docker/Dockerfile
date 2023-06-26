@@ -1,4 +1,4 @@
-FROM ubuntu:jammy AS stage_build
+FROM ubuntu:jammy@sha256:6120be6a2b7ce665d0cbddc3ce6eae60fe94637c6a66985312d1f02f63cc0bcd AS stage_build
 
 ARG EMSCRIPTEN_VERSION=tot
 ENV EMSDK /emsdk
@@ -54,7 +54,7 @@ RUN echo "## Aggressive optimization: Remove debug symbols" \
 # -------------------------------- STAGE DEPLOY --------------------------------
 # ------------------------------------------------------------------------------
 
-FROM ubuntu:jammy AS stage_deploy
+FROM ubuntu:jammy@sha256:6120be6a2b7ce665d0cbddc3ce6eae60fe94637c6a66985312d1f02f63cc0bcd AS stage_deploy
 
 COPY --from=stage_build /emsdk /emsdk
 
