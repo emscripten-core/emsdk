@@ -80,6 +80,7 @@ jobs:
       - run:
           name: Install debian packages
           command: apt-get update -q && apt-get install -q -y cmake build-essential openjdk-8-jre-headless ksh zsh
+      - run: test/test_node_path.sh
       - run: test/test.sh
       - run: test/test_source_env.sh
       - run:
