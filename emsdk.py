@@ -1438,9 +1438,18 @@ def get_required_path(active_tools):
   path_add = [to_native_path(EMSDK_PATH)]
   for tool in active_tools:
     if hasattr(tool, 'activated_path'):
-      if hasattr(tool, 'activated_path_skip') and which(tool.activated_path_skip):
-        continue
       path = to_native_path(tool.expand_vars(tool.activated_path))
+      # If the tool has an activated_path_skip attribute then we don't add
+      # the tools path to the users path if a program by that name is found
+      # in the existing PATH.  This allows us to, for example, add our version
+      # node to the users PATH if, and only if, they don't already have a
+      # another version of node in thier PATH.
+      if hasattr(tool, 'activated_path_skip'):
+        current_path = which(tool.activated_path_skip)
+        # We found an executable by this name in the current PATH, but we
+        # ignore our own version for this purpose.
+        if current_path and os.path.dirname(current_path) != path:
+          continue
       path_add.append(path)
   return path_add
 
