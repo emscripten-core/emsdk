@@ -25,6 +25,10 @@ executors:
     macos:
       xcode: "13.4.1"
     resource_class: macos.m1.medium.gen1
+  linux_arm64:
+    machine:
+      image: ubuntu-2004:202101-01
+    resource_class: arm.medium
 
 commands:
   setup-macos:
@@ -83,6 +87,14 @@ jobs:
           command: |
             source emsdk_env.sh
             test/test.py
+  test-linux-arm64:
+    executor: linux_arm64
+    steps:
+      - checkout
+      - run:
+          name: Install debian packages
+          command: sudo apt-get update -q && sudo apt-get install -q cmake build-essential openjdk-8-jre-headless
+      - run: test/test.sh
   test-mac:
     executor: mac
     steps:
@@ -257,6 +269,9 @@ workflows:
   test-linux:
     jobs:
       - test-linux
+  test-linux-arm64:
+    jobs:
+      - test-linux-arm64
   test-mac:
     jobs:
       - test-mac
