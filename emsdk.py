@@ -3056,7 +3056,7 @@ def main(args):
       return 1
 
     if LINUX and ARCH == 'arm64' and args != ['latest']:
-      errlog('WARNING: arm64-linux binaries are not availble for all releases.')
+      errlog('WARNING: arm64-linux binaries are not available for all releases.')
       errlog('See https://github.com/emscripten-core/emsdk/issues/547')
 
     for t in args:
