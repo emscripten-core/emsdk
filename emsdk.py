@@ -141,11 +141,16 @@ if machine.startswith('x64') or machine.startswith('amd64') or machine.startswit
 elif machine.endswith('86'):
   ARCH = 'x86'
 elif machine.startswith('aarch64') or machine.lower().startswith('arm64'):
-  ARCH = 'aarch64'
+  if WINDOWS:
+    errlog('No support for Windows on Arm, fallback to x64')
+    ARCH = 'x86_64'
+  else:
+    ARCH = 'arm64'
 elif machine.startswith('arm'):
   ARCH = 'arm'
 else:
   exit_with_error('unknown machine architecture: ' + machine)
+
 
 # Don't saturate all cores to not steal the whole system, but be aggressive.
 CPU_CORES = int(os.getenv('EMSDK_NUM_CORES', max(multiprocessing.cpu_count() - 1, 1)))
@@ -254,7 +259,7 @@ def vswhere(version):
       program_files = os.environ['ProgramFiles']
     vswhere_path = os.path.join(program_files, 'Microsoft Visual Studio', 'Installer', 'vswhere.exe')
     # Source: https://learn.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-build-tools?view=vs-2022
-    tools_arch = 'ARM64' if ARCH == 'aarch64' else 'x86.x64'
+    tools_arch = 'ARM64' if ARCH == 'arm64' else 'x86.x64'
     # The "-products *" allows detection of Build Tools, the "-prerelease" allows detection of Preview version
     # of Visual Studio and Build Tools.
     output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-products', '*', '-prerelease', '-version', '[%s.0,%s.0)' % (version, version + 1), '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.' + tools_arch, '-property', 'installationPath', '-format', 'json']))
@@ -1018,13 +1023,13 @@ def xcode_sdk_version():
 def cmake_target_platform(tool):
   # Source: https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2017%202022.html#platform-selection
   if hasattr(tool, 'arch'):
-    if tool.arch == 'aarch64':
+    if tool.arch == 'arm64':
       return 'ARM64'
     elif tool.arch == 'x86_64':
       return 'x64'
     elif tool.arch == 'x86':
       return 'Win32'
-  if ARCH == 'aarch64':
+  if ARCH == 'arm64':
     return 'ARM64'
   else:
     return 'x64' if tool.bitness == 64 else 'Win32'
@@ -1033,7 +1038,7 @@ def cmake_target_platform(tool):
 def cmake_host_platform():
   # Source: https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2017%202022.html#toolset-selection
   arch_to_cmake_host_platform = {
-    'aarch64': 'ARM64',
+    'arm64': 'ARM64',
     'arm': 'ARM',
     'x86_64': 'x64',
     'x86': 'x86'
@@ -1078,7 +1083,7 @@ def build_llvm(tool):
     targets_to_build = 'WebAssembly;X86'
   elif ARCH == 'arm':
     targets_to_build = 'WebAssembly;ARM'
-  elif ARCH == 'aarch64':
+  elif ARCH == 'arm64':
     targets_to_build = 'WebAssembly;AArch64'
   else:
     targets_to_build = 'WebAssembly'
@@ -1860,10 +1865,6 @@ class Tool(object):
     elif hasattr(self, 'git_branch'):
       success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch)
     elif url.endswith(ARCHIVE_SUFFIXES):
-      global ARCH
-      if WINDOWS and ARCH == 'aarch64':
-        errlog('No support for Windows on Arm, fallback to x64')
-        ARCH = 'x86_64'
       success = download_and_unzip(url, self.installation_path(), filename_prefix=getattr(self, 'zipfile_prefix', ''))
     else:
       assert False, 'unhandled url type: ' + url
@@ -2010,7 +2011,7 @@ def find_latest_hash():
 
 def resolve_sdk_aliases(name, verbose=False):
   releases_info = load_releases_info()
-  if name == 'latest' and LINUX and ARCH == 'aarch64':
+  if name == 'latest' and LINUX and ARCH == 'arm64':
     print("warning: 'latest' on arm64-linux may be slightly behind other architectures")
     name = 'latest-arm64-linux'
   while name in releases_info['aliases']:
@@ -2058,7 +2059,7 @@ def get_emscripten_releases_tot():
   # may not be a build for the most recent ones yet; find the last
   # that does.
   arch = ''
-  if ARCH == 'aarch64':
+  if ARCH == 'arm64':
     arch = '-arm64'
   for release in recent_releases:
     url = emscripten_releases_download_url_template % (

@@ -47,7 +47,7 @@
     "id": "releases",
     "version": "%releases-tag%",
     "bitness": 64,
-    "arch": "aarch64",
+    "arch": "arm64",
     "macos_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/mac/%releases-tag%/wasm-binaries-arm64.tbz2",
     "linux_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/linux/%releases-tag%/wasm-binaries-arm64.tbz2",
     "zipfile_prefix": "%releases-tag%-",
@@ -96,7 +96,7 @@
   {
     "id": "node",
     "version": "8.9.1",
-    "arch": "aarch64",
+    "arch": "arm64",
     "bitness": 64,
     "linux_url": "node-v8.9.1-linux-arm64.tar.xz",
     "activated_path": "%installation_dir%/bin",
@@ -142,7 +142,7 @@
   {
     "id": "node",
     "version": "12.18.1",
-    "arch": "aarch64",
+    "arch": "arm64",
     "bitness": 64,
     "linux_url": "node-v12.18.1-linux-arm64.tar.xz",
     "activated_path": "%installation_dir%/bin",
@@ -190,7 +190,7 @@
   {
     "id": "node",
     "version": "14.18.2",
-    "arch": "aarch64",
+    "arch": "arm64",
     "bitness": 64,
     "macos_url": "node-v14.18.2-darwin-x64.tar.gz",
     "linux_url": "node-v14.18.2-linux-arm64.tar.xz",
@@ -239,7 +239,7 @@
   {
     "id": "node",
     "version": "14.15.5",
-    "arch": "aarch64",
+    "arch": "arm64",
     "bitness": 64,
     "macos_url": "node-v14.15.5-darwin-x64.tar.gz",
     "linux_url": "node-v14.15.5-linux-arm64.tar.xz",
@@ -288,7 +288,7 @@
   {
     "id": "node",
     "version": "15.14.0",
-    "arch": "aarch64",
+    "arch": "arm64",
     "bitness": 64,
     "macos_url": "node-v15.14.0-darwin-x64.tar.gz",
     "linux_url": "node-v15.14.0-linux-arm64.tar.xz",
@@ -336,7 +336,7 @@
   {
     "id": "node",
     "version": "16.20.0",
-    "arch": "aarch64",
+    "arch": "arm64",
     "bitness": 64,
     "macos_url": "node-v16.20.0-darwin-arm64.tar.gz",
     "linux_url": "node-v16.20.0-linux-arm64.tar.xz",
@@ -448,7 +448,7 @@
     "id": "python",
     "version": "3.9.2",
     "bitness": 64,
-    "arch": "aarch64",
+    "arch": "arm64",
     "macos_url": "python-3.9.2-1-macos-arm64.tar.gz",
     "activated_cfg": "PYTHON='%installation_dir%/bin/python3'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.9/site-packages/certifi/cacert.pem"
@@ -691,7 +691,7 @@
     "bitness": 64,
     "uses": ["node-16.20.0-64bit", "python-3.9.2-64bit", "releases-%releases-tag%-64bit"],
     "os": "macos",
-    "arch": "aarch64",
+    "arch": "arm64",
     "custom_install_script": "emscripten_npm_install"
   },
   {
