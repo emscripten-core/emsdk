@@ -2018,7 +2018,7 @@ def find_latest_hash():
 def resolve_sdk_aliases(name, verbose=False):
   releases_info = load_releases_info()
   if name == 'latest' and LINUX and ARCH == 'arm64':
-    print("warning: 'latest' on arm64-linux may be slightly behind other architectures")
+    errlog("WARNING: 'latest' on arm64-linux may be slightly behind other architectures")
     name = 'latest-arm64-linux'
   while name in releases_info['aliases']:
     if verbose:
@@ -3056,6 +3056,10 @@ def main(args):
     if not args:
       errlog("Missing parameter. Type 'emsdk install <tool name>' to install a tool or an SDK. Type 'emsdk list' to obtain a list of available tools. Type 'emsdk install latest' to automatically install the newest version of the SDK.")
       return 1
+
+    if LINUX and ARCH == 'arm64' and args != ['latest']:
+      errlog('WARNING: arm64-linux binaries are not availble for all releases.')
+      errlog('See https://github.com/emscripten-core/emsdk/issues/547')
 
     for t in args:
       tool = find_tool(t)
