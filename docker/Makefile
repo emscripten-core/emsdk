@@ -17,8 +17,8 @@ build: Dockerfile .TEST
 
 test: test_dockerimage.sh .TEST
 	# test as non-root
-	docker run --rm -u `id -u`:`id -g` -w /emsdk/docker --net=host ${image_name}:${version} \
-		bash $<
+	# test fallback env variables by overriding the entrypoint
+	docker run --rm -u `id -u`:`id -g` -w /emsdk/docker --net=host --entrypoint /bin/bash ${image_name}:${version} $<
 
 push: .TEST
 	docker push ${image_name}:${version}
