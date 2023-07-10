@@ -269,7 +269,7 @@ int main() {
     # With EMSDK_KEEP_DOWNLOADS the downloading should happen on the first
     # install of 2.0.28, and again when we install 2.0.29, but not on the
     # second install of 2.0.28 because the zip should already be local.
-    shutil.rmtree('zips')
+    shutil.rmtree('downloads')
     checked_call_with_output(emsdk + ' install 2.0.28', expected='Downloading:', env=env)
     checked_call_with_output(emsdk + ' install 2.0.29', expected='Downloading:', env=env)
     checked_call_with_output(emsdk + ' install 2.0.28', expected='already downloaded, skipping', unexpected='Downloading:', env=env)

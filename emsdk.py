@@ -49,7 +49,7 @@ emscripten_releases_download_url_template = "https://storage.googleapis.com/weba
 # `main.zip` perhaps.
 emsdk_zip_download_url = 'https://github.com/emscripten-core/emsdk/archive/HEAD.zip'
 
-zips_subdir = 'zips/'
+download_dir = 'downloads/'
 
 extra_release_tag = None
 
@@ -1403,13 +1403,13 @@ def build_binaryen_tool(tool):
   return success
 
 
-def download_and_unzip(zipfile, dest_dir, filename_prefix='', clobber=True):
-  debug_print('download_and_unzip(zipfile=' + zipfile + ', dest_dir=' + dest_dir + ')')
+def download_and_extract(archive, dest_dir, filename_prefix='', clobber=True):
+  debug_print('download_and_extract(archive=' + archive + ', dest_dir=' + dest_dir + ')')
 
-  url = urljoin(emsdk_packages_url, zipfile)
-  download_target = get_download_target(url, zips_subdir, filename_prefix)
+  url = urljoin(emsdk_packages_url, archive)
+  download_target = get_download_target(url, download_dir, filename_prefix)
 
-  received_download_target = download_file(url, zips_subdir, not KEEP_DOWNLOADS, filename_prefix)
+  received_download_target = download_file(url, download_dir, not KEEP_DOWNLOADS, filename_prefix)
   if not received_download_target:
     return False
   assert received_download_target == download_target
@@ -1419,7 +1419,7 @@ def download_and_unzip(zipfile, dest_dir, filename_prefix='', clobber=True):
   # could remain.
   if clobber:
     remove_tree(dest_dir)
-  if zipfile.endswith('.zip'):
+  if archive.endswith('.zip'):
     return unzip(download_target, dest_dir)
   else:
     return untargz(download_target, dest_dir)
@@ -1874,7 +1874,8 @@ class Tool(object):
     elif hasattr(self, 'git_branch'):
       success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch)
     elif url.endswith(ARCHIVE_SUFFIXES):
-      success = download_and_unzip(url, self.installation_path(), filename_prefix=getattr(self, 'zipfile_prefix', ''))
+      success = download_and_extract(url, self.installation_path(),
+                                     filename_prefix=getattr(self, 'download_prefix', ''))
     else:
       assert False, 'unhandled url type: ' + url
 
@@ -1924,8 +1925,8 @@ class Tool(object):
       return
     url = self.download_url()
     if url.endswith(ARCHIVE_SUFFIXES):
-      download_target = get_download_target(url, zips_subdir, getattr(self, 'zipfile_prefix', ''))
-      debug_print("Deleting temporary zip file " + download_target)
+      download_target = get_download_target(url, download_dir, getattr(self, 'download_prefix', ''))
+      debug_print("Deleting temporary download: " + download_target)
       rmfile(download_target)
 
   def uninstall(self):
@@ -2110,7 +2111,7 @@ def update_emsdk():
   if is_emsdk_sourced_from_github():
     errlog('You seem to have bootstrapped Emscripten SDK by cloning from GitHub. In this case, use "git pull" instead of "emsdk update" to update emsdk. (Not doing that automatically in case you have local changes)')
     sys.exit(1)
-  if not download_and_unzip(emsdk_zip_download_url, EMSDK_PATH, clobber=False):
+  if not download_and_extract(emsdk_zip_download_url, EMSDK_PATH, clobber=False):
     sys.exit(1)
 
 
