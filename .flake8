@@ -19,5 +19,5 @@ exclude =
   ./node
   ./python
   ./temp
-  ./zips
+  ./downloads
   ./crunch
