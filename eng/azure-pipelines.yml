@@ -39,17 +39,27 @@ stages:
       ############ macOS BUILD ############
       - job: Build_macOS
         displayName: macOS
-        timeoutInMinutes: 30
+        timeoutInMinutes: 120
         pool:
           vmImage: macOS-11
+        strategy:
+          matrix:
+            x64:
+              assetManifestOS: osx
+              assetManifestPlatform: x64
+              archflag: --arch x64
+            arm64:
+              assetManifestOS: osx
+              assetManifestPlatform: arm64
+              archflag: --arch arm64
         steps:
         - bash: |
-            ./build.sh -ci -configuration $(_BuildConfig) /p:PackageRID=osx-x64 /p:AssetManifestOS=osx /p:PlatformName=x64 $(_InternalBuildArgs) $(_NonWindowsInternalPublishArg)
+            ./build.sh $(archflag) --restore --build --pack --ci --configuration $(_BuildConfig) /p:PackageRID=$(assetManifestOS)-$(assetManifestPlatform) /p:AssetManifestOS=$(assetManifestOS) /p:PlatformName=$(assetManifestPlatform) $(_InternalBuildArgs) $(_NonWindowsInternalPublishArg)
           displayName: Build
         - publish: artifacts/packages
-          artifact: Packages_macOS
+          artifact: Packages_macOS_$(assetManifestPlatform)
         - bash: |
-            rm -rf upstream node python
+            rm -rf binaryen node python llvm emscripten
           displayName: Remove temporary artifacts
         - powershell: $(CheckNuGetSizesScript)
           displayName: Check NuGet sizes
@@ -63,20 +73,28 @@ stages:
           pool:
             name: $(DncEngInternalBuildPool)
             demands: ImageOverride -equals windows.vs2022.amd64
+          strategy:
+            matrix:
+              x64:
+                assetManifestOS: osx
+                assetManifestPlatform: x64
+              arm64:
+                assetManifestOS: osx
+                assetManifestPlatform: arm64
           steps:
           - task: DownloadPipelineArtifact@2
             inputs:
-              artifact: Packages_macOS
+              artifact: Packages_macOS_$(assetManifestPlatform)
               path: 'artifacts/packages'
 
           - powershell: |
-              ./eng/common/build.ps1 -ci -configuration $(_BuildConfig) -restore -sign -publish /p:PackageRID=osx-x64 /p:AssetManifestOS=osx /p:PlatformName=x64 $(_InternalBuildArgs)
+              ./eng/common/build.ps1 -ci -configuration $(_BuildConfig) -restore -sign -publish /p:PackageRID=$(assetManifestOS)-$(assetManifestPlatform) /p:AssetManifestOS=$(assetManifestOS) /p:PlatformName=$(assetManifestPlatform) $(_InternalBuildArgs)
             displayName: Sign and Publish
 
       ############ Linux BUILD ############
       - job: Build_Linux
         displayName: Linux
-        timeoutInMinutes: 30
+        timeoutInMinutes: 120
         pool:
           ${{ if eq(variables['System.TeamProject'], 'public') }}:
             name: $(DncEngPublicBuildPool)
@@ -84,14 +102,24 @@ stages:
           ${{ if eq(variables['System.TeamProject'], 'internal') }}:
             name: $(DncEngInternalBuildPool)
             demands: ImageOverride -equals build.ubuntu.2204.amd64
+        strategy:
+          matrix:
+            x64:
+              assetManifestOS: linux
+              assetManifestPlatform: x64
+              archflag: --arch x64
+            arm64:
+              assetManifestOS: linux
+              assetManifestPlatform: arm64
+              archflag: --arch arm64
         steps:
         - bash: |
-            ./build.sh -ci -configuration $(_BuildConfig) /p:PackageRID=linux-x64 /p:AssetManifestOS=linux /p:PlatformName=x64 $(_InternalBuildArgs) $(_NonWindowsInternalPublishArg)
+            ./build.sh $(archflag) --restore --build --pack --ci --configuration $(_BuildConfig) /p:PackageRID=$(assetManifestOS)-$(assetManifestPlatform) /p:AssetManifestOS=$(assetManifestOS) /p:PlatformName=$(assetManifestPlatform) $(_InternalBuildArgs) $(_NonWindowsInternalPublishArg)
           displayName: Build
         - publish: artifacts/packages
-          artifact: Packages_Linux
+          artifact: Packages_Linux_$(assetManifestPlatform)
         - bash: |
-            rm -rf upstream node python
+            rm -rf binaryen node llvm emscripten
           displayName: Remove temporary artifacts
         - powershell: $(CheckNuGetSizesScript)
           displayName: Check NuGet sizes
@@ -105,20 +133,28 @@ stages:
           pool:
             name: $(DncEngInternalBuildPool)
             demands: ImageOverride -equals windows.vs2022.amd64
+          strategy:
+            matrix:
+              x64:
+                assetManifestOS: linux
+                assetManifestPlatform: x64
+              arm64:
+                assetManifestOS: linux
+                assetManifestPlatform: arm64
           steps:
           - task: DownloadPipelineArtifact@2
             inputs:
-              artifact: Packages_Linux
+              artifact: Packages_Linux_$(assetManifestPlatform)
               path: 'artifacts/packages'
 
           - powershell: |
-              ./eng/common/build.ps1 -ci -configuration $(_BuildConfig) -restore -sign -publish /p:PackageRID=linux-x64 /p:AssetManifestOS=linux /p:PlatformName=x64 $(_InternalBuildArgs)
+              ./eng/common/build.ps1 -ci -configuration $(_BuildConfig) -restore -sign -publish /p:PackageRID=$(assetManifestOS)-$(assetManifestPlatform) /p:AssetManifestOS=$(assetManifestOS) /p:PlatformName=$(assetManifestPlatform) $(_InternalBuildArgs)
             displayName: Sign and Publish
 
       ############ Windows BUILD ############
       - job: Build_Windows
         displayName: Windows
-        timeoutInMinutes: 60
+        timeoutInMinutes: 120
         pool:
           ${{ if eq(variables['System.TeamProject'], 'public') }}:
             name: $(DncEngPublicBuildPool)
@@ -126,42 +162,26 @@ stages:
           ${{ if eq(variables['System.TeamProject'], 'internal') }}:
             name: $(DncEngInternalBuildPool)
             demands: ImageOverride -equals windows.vs2022.amd64
+        strategy:
+          matrix:
+            x64:
+              assetManifestOS: win
+              assetManifestPlatform: x64
+              archflag: -arch x64
+              SkipPublishWorkloads: false
+            arm64:
+              assetManifestOS: win
+              assetManifestPlatform: arm64
+              archflag: -arch arm64
+              SkipPublishWorkloads: true
         steps:
-        - powershell: |
-            # update the machine cert store so that python can download the files as required by emscripten's install
-            $WebsiteURL="storage.googleapis.com"
-            Try {
-                $Conn = New-Object System.Net.Sockets.TcpClient($WebsiteURL, 443)
-
-                Try {
-                    $Stream = New-Object System.Net.Security.SslStream($Conn.GetStream())
-                    $Stream.AuthenticateAsClient($WebsiteURL)
-
-                    $Cert = $Stream.Get_RemoteCertificate()
-
-                    $ValidTo = [datetime]::Parse($Cert.GetExpirationDatestring())
-
-                    Write-Host "`nConnection Successfull" -ForegroundColor DarkGreen
-                    Write-Host "Website: $WebsiteURL"
-                }
-                Catch { Throw $_ }
-                Finally { $Conn.close() }
-                }
-                Catch {
-                        Write-Host "`nError occurred connecting to $($WebsiteURL)" -ForegroundColor Yellow
-                        Write-Host "Website: $WebsiteURL"
-                        Write-Host "Status:" $_.exception.innerexception.message -ForegroundColor Yellow
-                        Write-Host ""
-            }
-          displayName: Fetch storage.googleapis.com certificate
-          condition: eq(variables['System.TeamProject'], 'internal')
         - script: |
-            .\build.cmd -ci -configuration $(_BuildConfig) -sign -publish /p:PackageRID=win-x64 /p:AssetManifestOS=win /p:PlatformName=x64 /p:workloadPackagesPath=$(Build.SourcesDirectory)\artifacts\packages\$(_BuildConfig)\Shipping $(_InternalBuildArgs)
+            .\build.cmd $(archflag) -restore -build -pack -ci -configuration $(_BuildConfig) -sign -publish /p:PackageRID=$(assetManifestOS)-$(assetManifestPlatform) /p:AssetManifestOS=$(assetManifestOS) /p:PlatformName=$(assetManifestPlatform) /p:workloadPackagesPath=$(Build.SourcesDirectory)\artifacts\packages\$(_BuildConfig)\Shipping $(_InternalBuildArgs)
           displayName: Build and Publish
         - publish: artifacts/packages
-          artifact: Packages_Windows
+          artifact: Packages_Windows_$(assetManifestPlatform)
         - script: |
-            rmdir /s /q upstream node python
+            rmdir /s /q binaryen node python llvm emscripten
           displayName: Remove temporary artifacts
         # Upload packages wrapping msis
         - task: CopyFiles@2
@@ -186,7 +206,7 @@ stages:
             targetPath: $(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)/Insertion/
             artifactName: 'Workloads'
           continueOnError: true
-          condition: always()
+          condition: ne(variables['SkipPublishWorkloads'], 'true')
         - powershell: $(CheckNuGetSizesScript)
           displayName: Check NuGet sizes
 

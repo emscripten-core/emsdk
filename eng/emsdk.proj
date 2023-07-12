@@ -1,90 +1,280 @@
-<Project>
-  <Import Project="$(RepoRoot)\Directory.Build.props" />
-  <Target Name="Build" />
+<Project Sdk="Microsoft.Build.Traversal">
+  <PropertyGroup>
+    <PackageHostOS Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' == 'true'">linux</PackageHostOS>
+    <PackageHostOS Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' == 'true'">osx</PackageHostOS>
+    <PackageHostOS Condition="'$(OS)' == 'Windows_NT'">win</PackageHostOS>
+    <LLVMPkgVersion Condition="'$(PackageHostOS)' == 'linux'">$(runtimelinuxx64MicrosoftNETCoreRuntimeWasmLLVMTransportVersion)</LLVMPkgVersion>
+    <LLVMPkgVersion Condition="'$(PackageHostOS)' == 'win'">$(runtimewinx64MicrosoftNETCoreRuntimeWasmLLVMTransportVersion)</LLVMPkgVersion>
+    <LLVMPkgVersion Condition="'$(PackageHostOS)' == 'osx'">$(runtimeosxx64MicrosoftNETCoreRuntimeWasmLLVMTransportVersion)</LLVMPkgVersion>
+    <BinaryenPkgVersion Condition="'$(PackageHostOS)' == 'linux'">$(runtimelinuxx64MicrosoftNETCoreRuntimeWasmBinaryenTransportVersion)</BinaryenPkgVersion>
+    <BinaryenPkgVersion Condition="'$(PackageHostOS)' == 'win'">$(runtimewinx64MicrosoftNETCoreRuntimeWasmBinaryenTransportVersion)</BinaryenPkgVersion>
+    <BinaryenPkgVersion Condition="'$(PackageHostOS)' == 'osx'">$(runtimeosxx64MicrosoftNETCoreRuntimeWasmBinaryenTransportVersion)</BinaryenPkgVersion>
+    <PythonPkgVersion Condition="'$(PackageHostOS)' == 'win'">$(runtimewinx64MicrosoftNETCoreRuntimeWasmPythonTransportVersion)</PythonPkgVersion>
+    <PythonPkgVersion Condition="'$(PackageHostOS)' == 'osx'">$(runtimeosxx64MicrosoftNETCoreRuntimeWasmPythonTransportVersion)</PythonPkgVersion>
+    <NodePkgVersion Condition="'$(PackageHostOS)' == 'linux'">$(runtimelinuxx64MicrosoftNETCoreRuntimeWasmNodeTransportVersion)</NodePkgVersion>
+    <NodePkgVersion Condition="'$(PackageHostOS)' == 'win'">$(runtimewinx64MicrosoftNETCoreRuntimeWasmNodeTransportVersion)</NodePkgVersion>
+    <NodePkgVersion Condition="'$(PackageHostOS)' == 'osx'">$(runtimeosxx64MicrosoftNETCoreRuntimeWasmNodeTransportVersion)</NodePkgVersion>
+    <EmscriptenPkgVersion>$(MicrosoftNETCoreRuntimeWasmEmscriptenTransportVersion)</EmscriptenPkgVersion>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(ForceBuildManifestOnly)' != 'true' and '$(ArcadeBuildFromSource)' != 'true'">
+    <PackageReference Include="runtime.$(PackageHostOS)-$(TargetArchitecture).Microsoft.NETCore.Runtime.Wasm.LLVM.Transport"
+                      Version="$(LLVMPkgVersion)"
+                      PackageArch="$(TargetArchitecture)"
+                      Condition="'$(TargetArchitecture)' != ''" />
+    <PackageReference Include="runtime.$(PackageHostOS)-$(BuildArchitecture).Microsoft.NETCore.Runtime.Wasm.LLVM.Transport"
+                      Version="$(LLVMPkgVersion)"
+                      PackageArch="$(BuildArchitecture)"
+                      Condition="'$(BuildArchitecture)' != ''" />
+    <PackageReference Include="runtime.$(PackageHostOS)-$(TargetArchitecture).Microsoft.NETCore.Runtime.Wasm.Binaryen.Transport"
+                      Version="$(BinaryenPkgVersion)"
+                      PackageArch="$(TargetArchitecture)"
+                      Condition="'$(TargetArchitecture)' != ''" />
+    <PackageReference Include="runtime.$(PackageHostOS)-$(BuildArchitecture).Microsoft.NETCore.Runtime.Wasm.Binaryen.Transport"
+                      Version="$(BinaryenPkgVersion)"
+                      PackageArch="$(BuildArchitecture)"
+                      Condition="'$(BuildArchitecture)' != ''" />
+    <PackageReference Include="runtime.$(PackageHostOS)-$(TargetArchitecture).Microsoft.NETCore.Runtime.Wasm.Node.Transport"
+                      Version="$(NodePkgVersion)"
+                      PackageArch="$(TargetArchitecture)"
+                      Condition="'$(TargetArchitecture)' != ''" />
+    <PackageReference Include="runtime.$(PackageHostOS)-$(BuildArchitecture).Microsoft.NETCore.Runtime.Wasm.Node.Transport"
+                      Version="$(NodePkgVersion)"
+                      PackageArch="$(BuildArchitecture)"
+                      Condition="'$(BuildArchitecture)' != ''" />
+    <PackageReference Include="runtime.$(PackageHostOS)-$(TargetArchitecture).Microsoft.NETCore.Runtime.Wasm.Python.Transport"
+                      Version="$(PythonPkgVersion)"
+                      PackageArch="$(TargetArchitecture)"
+                      Condition="'$(TargetArchitecture)' != '' and '$(PackageHostOS)' != 'linux'" />
+    <PackageReference Include="runtime.$(PackageHostOS)-$(BuildArchitecture).Microsoft.NETCore.Runtime.Wasm.Python.Transport"
+                      Version="$(PythonPkgVersion)"
+                      PackageArch="$(BuildArchitecture)"
+                      Condition="'$(BuildArchitecture)' != '' and '$(PackageHostOS)' != 'linux'" />
+    <PackageReference Include="Microsoft.NETCore.Runtime.Wasm.Emscripten.Transport"
+                      PackageArch="$(BuildArchitecture)"
+                      Version="$(EmscriptenPkgVersion)" />
+    <_PackageReferenceDeduplicated Include="@(PackageReference->Distinct())" />
+    <PackageReference Remove="@(PackageReference)" />
+    <PackageReference Include="@(_PackageReferenceDeduplicated->Distinct())" />
+  </ItemGroup>
+
+  <Target Name="CopyBinaryen" Condition="'$(ForceBuildManifestOnly)' != 'true' and '$(ArcadeBuildFromSource)' != 'true'" BeforeTargets="ReallyBuild">
+    <Message Importance="High" Text="** Copying $(TargetArchitecture) Binaryen to $(BinaryenDir)" />
+    <Message Importance="High" Text="** Copying $(BuildArchitecture) Binaryen to $(HostBinaryenDir)" Condition="'$(BuildArchitecture)' != '$(TargetArchitecture)'" />
+    <ItemGroup>
+      <BinaryenPkgFiles Include="$(NuGetPackageRoot)\$([System.String]::Copy(%(PackageReference.Identity)).ToLowerInvariant())\%(PackageReference.Version)\tools\$(PackageHostOS)-$(TargetArchitecture)\**"
+                 FileArch="%(PackageReference.PackageArch)"
+                 Condition="$([System.String]::Copy(%(PackageReference.Identity)).Contains('Microsoft.NETCore.Runtime.Wasm.Binaryen.Transport')) == 'true'" />
+      <HostBinaryenPkgFiles Include="$(NuGetPackageRoot)\$([System.String]::Copy(%(PackageReference.Identity)).ToLowerInvariant())\%(PackageReference.Version)\tools\$(PackageHostOS)-$(BuildArchitecture)\**"
+                 FileArch="%(PackageReference.PackageArch)"
+                 Condition="$([System.String]::Copy(%(PackageReference.Identity)).Contains('Microsoft.NETCore.Runtime.Wasm.Binaryen.Transport')) == 'true'" />
+    </ItemGroup>
+    <Copy SourceFiles="@(BinaryenPkgFiles)" DestinationFolder="$(BinaryenDir)\%(RecursiveDir)">
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+    </Copy>
+    <Copy SourceFiles="@(HostBinaryenPkgFiles)" DestinationFolder="$(HostBinaryenDir)\%(RecursiveDir)" Condition="'$(BuildArchitecture)' != '$(TargetArchitecture)'">
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+    </Copy>
+  </Target>
+
+  <Target Name="CopyNode" Condition="'$(ForceBuildManifestOnly)' != 'true' and '$(ArcadeBuildFromSource)' != 'true'" BeforeTargets="ReallyBuild">
+    <Message Importance="High" Text="** Copying $(TargetArchitecture) Node to $(NodeDir)" />
+    <Message Importance="High" Text="** Copying $(BuildArchitecture) Node to $(HostNodeDir)" Condition="'$(BuildArchitecture)' != '$(TargetArchitecture)'" />
+    <ItemGroup>
+      <NodePkgFiles Include="$(NuGetPackageRoot)\$([System.String]::Copy(%(PackageReference.Identity)).ToLowerInvariant())\%(PackageReference.Version)\tools\$(PackageHostOS)-$(TargetArchitecture)\**"
+                 FileArch="%(PackageReference.PackageArch)"
+                 Condition="$([System.String]::Copy(%(PackageReference.Identity)).Contains('Microsoft.NETCore.Runtime.Wasm.Node.Transport')) == 'true'" />
+      <HostNodePkgFiles Include="$(NuGetPackageRoot)\$([System.String]::Copy(%(PackageReference.Identity)).ToLowerInvariant())\%(PackageReference.Version)\tools\$(PackageHostOS)-$(BuildArchitecture)\**"
+                 FileArch="%(PackageReference.PackageArch)"
+                 Condition="$([System.String]::Copy(%(PackageReference.Identity)).Contains('Microsoft.NETCore.Runtime.Wasm.Node.Transport')) == 'true'" />
+    </ItemGroup>
+    <Copy SourceFiles="@(NodePkgFiles)" DestinationFolder="$(NodeDir)\%(RecursiveDir)">
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+    </Copy>
+    <Copy SourceFiles="@(HostNodePkgFiles)" DestinationFolder="$(HostNodeDir)\%(RecursiveDir)" Condition="'$(BuildArchitecture)' != '$(TargetArchitecture)'">
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+    </Copy>
+  </Target>
+
+  <Target Name="CopyPython" BeforeTargets="ReallyBuild" Condition="'$(PackageHostOS)' != 'linux' and '$(ForceBuildManifestOnly)' != 'true' and '$(ArcadeBuildFromSource)' != 'true'">
+    <Message Importance="High" Text="** Copying $(TargetArchitecture) Python to $(PythonDir)" />
+    <Message Importance="High" Text="** Copying $(BuildArchitecture) Python to $(HostPythonDir)" Condition="'$(BuildArchitecture)' != '$(TargetArchitecture)'" />
+    <ItemGroup>
+      <PythonPkgFiles Include="$(NuGetPackageRoot)\$([System.String]::Copy(%(PackageReference.Identity)).ToLowerInvariant())\%(PackageReference.Version)\tools\$(PackageHostOS)-$(TargetArchitecture)\**"
+                 FileArch="%(PackageReference.PackageArch)"
+                 Condition="$([System.String]::Copy(%(PackageReference.Identity)).Contains('Microsoft.NETCore.Runtime.Wasm.Python.Transport')) == 'true'" />
+      <HostPythonPkgFiles Include="$(NuGetPackageRoot)\$([System.String]::Copy(%(PackageReference.Identity)).ToLowerInvariant())\%(PackageReference.Version)\tools\$(PackageHostOS)-$(BuildArchitecture)\**"
+                 FileArch="%(PackageReference.PackageArch)"
+                 Condition="$([System.String]::Copy(%(PackageReference.Identity)).Contains('Microsoft.NETCore.Runtime.Wasm.Python.Transport')) == 'true'" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PythonPkgFiles)" DestinationFolder="$(PythonDir)\%(RecursiveDir)">
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+    </Copy>
+    <Copy SourceFiles="@(HostPythonPkgFiles)" DestinationFolder="$(HostPythonDir)\%(RecursiveDir)" Condition="'$(BuildArchitecture)' != '$(TargetArchitecture)'">
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+    </Copy>
+  </Target>
+
+  <Target Name="CopyLLVM" Condition="'$(ForceBuildManifestOnly)' != 'true' and '$(ArcadeBuildFromSource)' != 'true'" BeforeTargets="ReallyBuild">
+    <Message Importance="High" Text="** Copying $(TargetArchitecture) LLVM to $(LLVMDir)" />
+    <Message Importance="High" Text="** Copying $(BuildArchitecture) LLVM to $(HostLLVMDir)" Condition="'$(BuildArchitecture)' != '$(TargetArchitecture)'" />
+    <ItemGroup>
+      <LLVMPkgFiles Include="$(NuGetPackageRoot)\$([System.String]::Copy(%(PackageReference.Identity)).ToLowerInvariant())\%(PackageReference.Version)\tools\$(PackageHostOS)-$(TargetArchitecture)\**"
+                 FileArch="%(PackageReference.PackageArch)"
+                 Condition="$([System.String]::Copy(%(PackageReference.Identity)).Contains('Microsoft.NETCore.Runtime.Wasm.LLVM.Transport')) == 'true'" />
+      <HostLLVMPkgFiles Include="$(NuGetPackageRoot)\$([System.String]::Copy(%(PackageReference.Identity)).ToLowerInvariant())\%(PackageReference.Version)\tools\$(PackageHostOS)-$(BuildArchitecture)\**"
+                 FileArch="%(PackageReference.PackageArch)"
+                 Condition="$([System.String]::Copy(%(PackageReference.Identity)).Contains('Microsoft.NETCore.Runtime.Wasm.LLVM.Transport')) == 'true'" />
+    </ItemGroup>
+    <Copy SourceFiles="@(LLVMPkgFiles)" DestinationFolder="$(LLVMDir)\%(RecursiveDir)">
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+    </Copy>
+    <Copy SourceFiles="@(HostLLVMPkgFiles)" DestinationFolder="$(HostLLVMDir)\%(RecursiveDir)" Condition="'$(BuildArchitecture)' != '$(TargetArchitecture)'">
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+    </Copy>
+  </Target>
+
+    <Target Name="CopyEmscripten" Condition="'$(ForceBuildManifestOnly)' != 'true' and '$(ArcadeBuildFromSource)' != 'true'" BeforeTargets="ReallyBuild">
+    <Message Importance="High" Text="** Copying Emscripten to $(EmscriptenDir)" />
+    <ItemGroup>
+      <EmscriptenPkgFiles Include="$(NuGetPackageRoot)\$([System.String]::Copy(%(PackageReference.Identity)).ToLowerInvariant())\%(PackageReference.Version)\tools\**"
+                 FileArch="%(PackageReference.PackageArch)"
+                 Condition="$([System.String]::Copy(%(PackageReference.Identity)).Contains('Microsoft.NETCore.Runtime.Wasm.Emscripten.Transport')) == 'true'" />
+    </ItemGroup>
+    <Copy SourceFiles="@(EmscriptenPkgFiles)" DestinationFolder="$(EmscriptenDir)\%(RecursiveDir)">
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+    </Copy>
+  </Target>
+
   <Target Name="ReallyBuild" Condition="'$(ForceBuildManifestOnly)' != 'true' and '$(ArcadeBuildFromSource)' != 'true'" BeforeTargets="Build">
     <Error Condition="'$(PackageRID)' == ''" Text="PackageRID needs to be specified, e.g. 'osx-x64'!" />
 
     <PropertyGroup>
       <EmSdkFileName Condition="!$([MSBuild]::IsOSPlatform(Windows))">./emsdk</EmSdkFileName>
       <EmSdkFileName Condition="$([MSBuild]::IsOSPlatform(Windows))">emsdk.bat</EmSdkFileName>
+      <NodeFileName Condition="!$([MSBuild]::IsOSPlatform(Windows))">node</NodeFileName>
+      <NodeFileName Condition="$([MSBuild]::IsOSPlatform(Windows))">node.exe</NodeFileName>
       <NpmFileName Condition="!$([MSBuild]::IsOSPlatform(Windows))">npm</NpmFileName>
       <NpmFileName Condition="$([MSBuild]::IsOSPlatform(Windows))">npm.cmd</NpmFileName>
       <PythonFileName Condition="!$([MSBuild]::IsOSPlatform(Windows))">python3</PythonFileName>
       <PythonFileName Condition="$([MSBuild]::IsOSPlatform(Windows))">python.exe</PythonFileName>
+      <PythonPath Condition="$([MSBuild]::IsOSPlatform(Windows))">$(HostPythonDir)\$(PythonFileName)</PythonPath>
+      <PythonPath Condition="$([MSBuild]::IsOSPlatform(OSX))">$(HostPythonDir)\bin\$(PythonFileName)</PythonPath>
+      <PythonPath Condition="$([MSBuild]::IsOSPlatform(Linux))">$(PythonFileName)</PythonPath>
       <StripCommand Condition="$([MSBuild]::IsOSPlatform(Linux))">strip -s</StripCommand>
       <StripCommand Condition="$([MSBuild]::IsOSPlatform(OSX))">strip</StripCommand>
       <UsesPythonFromEmsdk Condition="!$([MSBuild]::IsOSPlatform(Linux))">true</UsesPythonFromEmsdk>
+      <PythonEnvironment Condition="$([MSBuild]::IsOSPlatform(Linux))">EMSDK_PYTHON=/usr/bin/python3</PythonEnvironment>
     </PropertyGroup>
 
     <Exec WorkingDirectory="$(RepoRoot)"
-          Command="$(EmSdkFileName) install $(EmscriptenVersion)" />
-    <Exec WorkingDirectory="$(RepoRoot)"
-          Command="$(EmSdkFileName) activate $(EmscriptenVersion)" />
+          Command="$(EmSdkFileName) activate $(EmscriptenSourceVersion)"
+          EnvironmentVariables="$(PythonEnvironment)" />
 
+    <Message Importance="High" Text="Found node directory: $(NodeDir)" />
+    <Message Importance="High" Text="Found python directory: $(PythonDir)" Condition="'$(UsesPythonFromEmsdk)' == 'true'" />
+    <Message Importance="High" Text="Found binaryen directory: $(BinaryenDir)" />
+    <Message Importance="High" Text="Found LLVM directory: $(LLVMDir)" />
+    <Message Importance="High" Text="Found emscripten directory: $(EmscriptenDir)" />
+
+    <Message Importance="High" Text="Pruning node modules in: $(EmscriptenDir)" />
     <PropertyGroup>
-      <NodeDirectory>$([System.IO.Directory]::GetDirectories("$(RepoRoot)\node", "*"))</NodeDirectory>
-      <PythonDirectory Condition="'$(UsesPythonFromEmsdk)' == 'true'">$([System.IO.Directory]::GetDirectories("$(RepoRoot)\python", "*"))</PythonDirectory>
-      <UpstreamDirectory>$(RepoRoot)\upstream</UpstreamDirectory>
-      <UpstreamEmscriptenDirectory>$(UpstreamDirectory)\emscripten</UpstreamEmscriptenDirectory>
-    </PropertyGroup>
-
-    <Message Importance="High" Text="Found node directory: $(NodeDirectory)" />
-    <Message Importance="High" Text="Found python directory: $(PythonDirectory)" Condition="'$(UsesPythonFromEmsdk)' == 'true'" />
-    <Message Importance="High" Text="Found upstream directory: $(UpstreamDirectory)" />
-
-    <Message Importance="High" Text="Pruning node modules in: $(UpstreamEmscriptenDirectory)" />
-    <PropertyGroup>
-      <NpmPath>$(NodeDirectory)/bin:$(PATH)</NpmPath>
-      <NpmPath Condition="$([MSBuild]::IsOSPlatform(Windows))">$(NodeDirectory)\bin%3B$(PATH.Replace(';', '%3B'))</NpmPath>
+      <NpmPath>$(NodeDir)/bin:$(PATH)</NpmPath>
+      <NpmPath Condition="$([MSBuild]::IsOSPlatform(Windows))">$(NodeDir)\bin%3B$(PATH.Replace(';', '%3B'))</NpmPath>
     </PropertyGroup>
     <ItemGroup>
       <NpmEnvironmentVariables Include="PATH=$(NpmPath)" />
     </ItemGroup>
 
+    <!-- Fix npm symlinks, which are caused by NuGet not supporting them -->
+    <Exec WorkingDirectory="$(HostNodeDir)\bin"
+      Command="ln -sf ../lib/node_modules/npm/bin/npm-cli.js npm"
+      Condition="'$(PackageHostOS)' != 'win'"
+      IgnoreStandardErrorWarningFormat="true" />
+    <Exec WorkingDirectory="$(HostNodeDir)\bin"
+      Command="ln -sf ../lib/node_modules/npm/bin/npx-cli.js npx"
+      Condition="'$(PackageHostOS)' != 'win'"
+      IgnoreStandardErrorWarningFormat="true" />
+    <Exec WorkingDirectory="$(NodeDir)\bin"
+      Command="ln -sf ../lib/node_modules/npm/bin/npm-cli.js npm"
+      Condition="'$(PackageHostOS)' != 'win'"
+      IgnoreStandardErrorWarningFormat="true" />
+    <Exec WorkingDirectory="$(NodeDir)\bin"
+      Command="ln -sf ../lib/node_modules/npm/bin/npx-cli.js npx"
+      Condition="'$(PackageHostOS)' != 'win'"
+      IgnoreStandardErrorWarningFormat="true" />
+
     <Exec WorkingDirectory="$(RepoRoot)"
-      Command="$(PythonFileName) eng/sanitize.py $(RepoRoot)" />
-    <!-- clang-wrapper.sh hardcodes clang-17 at the moment so make sure it still exists -->
+      Command="$(PythonPath) eng/sanitize.py $(RepoRoot) $([System.IO.Directory]::GetParent($(HostNodeDir)))" />
+    <!-- clang-wrapper.sh hardcodes clang-16 at the moment so make sure it still exists -->
     <Error Text="Update clang-wrapper.sh to point at the correct clang-* version"
-      Condition="!Exists('$(UpstreamDirectory)\bin\clang-17') and !$([MSBuild]::IsOSPlatform(Windows))" />
-    <Delete Files="$(UpstreamDirectory)\bin\clang"
+      Condition="!Exists('$(LLVMDir)\bin\clang-16') and !$([MSBuild]::IsOSPlatform(Windows))" />
+    <Delete Files="$(LLVMDir)\bin\clang"
       Condition="!$([MSBuild]::IsOSPlatform(Windows))" />
-    <Delete Files="$(UpstreamDirectory)\bin\binaryen-unittests"
-      Condition="Exists('$(UpstreamDirectory)\bin\binaryen-unittests')" />
+    <Delete Files="$(BinaryenDir)\bin\binaryen-unittests"
+      Condition="Exists('$(BinaryenDir)\bin\binaryen-unittests')" />
     <Copy SourceFiles="$(RepoRoot)\eng\clang-wrapper.sh"
-      DestinationFiles="$(UpstreamDirectory)\bin\clang"
+      DestinationFiles="$(LLVMDir)\bin\clang"
+      Condition="!$([MSBuild]::IsOSPlatform(Windows))"/>
+    <Copy SourceFiles="$(RepoRoot)\eng\clang-wrapper.sh"
+      DestinationFiles="$(LLVMDir)\bin\clang++"
       Condition="!$([MSBuild]::IsOSPlatform(Windows))"/>
 
     <!-- These symlinks are broken after npm prune -->
-    <Delete Files="$(UpstreamEmscriptenDirectory)\node_modules\.bin\es-check" />
-    <Delete Files="$(UpstreamEmscriptenDirectory)\node_modules\.bin\mkdirp" />
-    <Delete Files="$(UpstreamEmscriptenDirectory)\node_modules\.bin\prettyjson" />
-    <Delete Files="$(UpstreamEmscriptenDirectory)\node_modules\.bin\tabtab" />
-    <Delete Files="$(UpstreamEmscriptenDirectory)\node_modules\.bin\wscat" />
+    <Delete Files="$(EmscriptenDir)\node_modules\.bin\es-check" />
+    <Delete Files="$(EmscriptenDir)\node_modules\.bin\google-closure-compiler" />
+    <Delete Files="$(EmscriptenDir)\node_modules\.bin\mkdirp" />
+    <Delete Files="$(EmscriptenDir)\node_modules\.bin\prettyjson" />
+    <Delete Files="$(EmscriptenDir)\node_modules\.bin\tabtab" />
+    <Delete Files="$(EmscriptenDir)\node_modules\.bin\wscat" />
 
     <PropertyGroup>
       <EmBuilder Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))">./embuilder.bat</EmBuilder>
       <EmBuilder Condition="!$([MSBuild]::IsOSPlatform('WINDOWS'))">./embuilder</EmBuilder>
     </PropertyGroup>
 
-    <Exec WorkingDirectory="$(RepoRoot)/upstream/emscripten"
-      Command="$(EmBuilder) build MINIMAL" />
+    <!-- Emscripten 3.1.34 doesn't support multiple embuilder tasks in the same run -->
+    <Exec WorkingDirectory="$(EmscriptenDir)"
+      Command="$(EmBuilder) build SYSTEM"
+      EnvironmentVariables="EM_LLVM_ROOT=$(HostLLVMDir)\bin;EM_BINARYEN_ROOT=$(HostBinaryenDir);EM_NODE_JS=$(HostNodeDir)\bin\node"/>
+    <Exec WorkingDirectory="$(EmscriptenDir)"
+      Command="$(EmBuilder) build MINIMAL"
+      EnvironmentVariables="EM_LLVM_ROOT=$(HostLLVMDir)\bin;EM_BINARYEN_ROOT=$(HostBinaryenDir);EM_NODE_JS=$(HostNodeDir)\bin\node"/>
+
+    <Delete Files="$(EmscriptenDir)\node_modules\.bin\google-closure-compiler" />
 
     <Message Importance="High" Text="Copy files to artifacts directory..." />
     <ItemGroup>
-      <NodeFiles Include="$(NodeDirectory)\**\*" />
-      <PythonFiles Include="$(PythonDirectory)\**\*" Condition="'$(UsesPythonFromEmsdk)' == 'true'" />
-      <UpstreamFiles Include="$(UpstreamDirectory)\**\*" />
+      <NodeFiles Include="$(NodeDir)\**\*" />
+      <PythonFiles Include="$(PythonDir)\**\*" Condition="'$(UsesPythonFromEmsdk)' == 'true'" />
+      <LLVMFiles Include="$(LLVMDir)\**\*" />
+      <BinaryenFiles Include="$(BinaryenDir)\**\*" />
+      <EmscriptenFiles Include="$(EmscriptenDir)\**\*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(NodeFiles)"
-          DestinationFiles="$(ArtifactsObjDir)node\%(RecursiveDir)%(Filename)%(Extension)" />
+          DestinationFolder="$(ArtifactsObjDir)node\%(RecursiveDir)" />
 
     <Copy SourceFiles="@(PythonFiles)"
-          DestinationFiles="$(ArtifactsObjDir)python\%(RecursiveDir)%(Filename)%(Extension)"
+          DestinationFolder="$(ArtifactsObjDir)python\%(RecursiveDir)"
           Condition="'$(UsesPythonFromEmsdk)' == 'true'" />
 
-    <Copy SourceFiles="@(UpstreamFiles)"
-          DestinationFiles="$(ArtifactsObjDir)upstream\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Copy SourceFiles="@(LLVMFiles)"
+          DestinationFolder="$(ArtifactsObjDir)upstream\%(RecursiveDir)" />
+
+    <Copy SourceFiles="@(BinaryenFiles)"
+          DestinationFolder="$(ArtifactsObjDir)upstream\%(RecursiveDir)" />
+
+    <Copy SourceFiles="@(EmscriptenFiles)"
+          DestinationFolder="$(ArtifactsObjDir)upstream\emscripten\%(RecursiveDir)" />
+
+    <ItemGroup>
+      <PyCaches Include="$(ArtifactsObjDir)\upstream\**\*.pyc" />
+      <PyCacheDirs Include="@(PyCaches->'%(RelativeDir)')" />
+      <PyCacheDirsDeduplicated Include="@(PyCacheDirs->Distinct())" />
+    </ItemGroup>
+    <RemoveDir Directories="@(PyCacheDirsDeduplicated)" />
+
 
     <!-- Fixup files that were symlinks originally (on Linux/Mac, Windows has an equivalent already) -->
     <ItemGroup>
@@ -118,6 +308,7 @@
     <Delete Files="$(ArtifactsObjDir)upstream\lib\libclang.dylib" /> <!-- only libclang-cpp.dylib is used -->
     <Delete Files="$(ArtifactsObjDir)node\bin\npm" />
     <Delete Files="$(ArtifactsObjDir)node\bin\npx" />
+    <Delete Files="$(ArtifactsObjDir)node\lib\node_modules\.bin\google-closure-compiler" /> <!-- resistent to deletion -->
 
     <!-- on Windows these are identical copies that should be symlinks, remove them for now -->
     <!--<Delete Files="$(ArtifactsObjDir)upstream\bin\clang++.exe" /> Used by .23 directly -->
@@ -174,40 +365,30 @@
       <DeleteCacheFiles Include="$(CacheSdkFilesDir)emscripten\cache\sysroot\lib\wasm32-emscripten\lib*-ww-*.a" />
     </ItemGroup>
     <Delete Files="@(DeleteCacheFiles)" />
-
-    <!-- Strip binaries -->
-    <ItemGroup>
-      <UpstreamBinFiles Include="$(ArtifactsObjDir)upstream\bin\*" />
-    </ItemGroup>
-    <Message Importance="High" Text="Stripping binaries..." />
-    <Exec Condition="'$(StripCommand)' != ''" Command="$(StripCommand) $(ArtifactsObjDir)node/bin/node" IgnoreStandardErrorWarningFormat="true" />
-    <Exec Condition="'$(StripCommand)' != ''" Command="$(StripCommand) %(UpstreamBinFiles.Identity) || true" IgnoreStandardErrorWarningFormat="true" />
   </Target>
-  <Target Name="Restore" />
-  <Target Name="Test" />
-  <Target Name="Pack" DependsOnTargets="Build">
+
+  <Target Name="ReallyPack" DependsOnTargets="Build" BeforeTargets="Pack">
     <Message Importance="High" Text="Creating nuget packages..." />
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.Node\Microsoft.NET.Runtime.Emscripten.Node.pkgproj" Targets="Build" Condition="'$(ForceBuildManifestOnly)' != 'true' and '$(ArcadeBuildFromSource)' != 'true'" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.Python\Microsoft.NET.Runtime.Emscripten.Python.pkgproj" Targets="Build" Condition="'$(ForceBuildManifestOnly)' != 'true' and '$(ArcadeBuildFromSource)' != 'true' and '$(UsesPythonFromEmsdk)' == 'true'" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.Sdk\Microsoft.NET.Runtime.Emscripten.Sdk.pkgproj" Targets="Build" Condition="'$(ForceBuildManifestOnly)' != 'true' and '$(ArcadeBuildFromSource)' != 'true'" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.Cache\Microsoft.NET.Runtime.Emscripten.Cache.pkgproj" Targets="Build" Condition="'$(ForceBuildManifestOnly)' != 'true' and '$(ArcadeBuildFromSource)' != 'true'" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Workload.Emscripten.Current.Manifest\Microsoft.NET.Workload.Emscripten.Current.Manifest.pkgproj" 
-             Condition="'$(AssetManifestOS)' == '' or '$(AssetManifestOS)' == 'win' or '$(ForceBuildManifestOnly)' == 'true' or '$(ArcadeBuildFromSource)' == 'true'" 
+             Condition="'$(AssetManifestOS)' == '' or ('$(AssetManifestOS)' == 'win' and '$(TargetArchitecture)' == 'x64') or '$(ForceBuildManifestOnly)' == 'true' or '$(ArcadeBuildFromSource)' == 'true'" 
              Targets="Build" 
              Properties="PreReleaseVersionLabel=$(PreReleaseVersionLabel);PreReleaseVersionIteration=$(PreReleaseVersionIteration)" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Workload.Emscripten.Current.Manifest\Microsoft.NET.Workload.Emscripten.Current.Manifest.pkgproj" 
-             Condition="'$(AssetManifestOS)' == '' or '$(AssetManifestOS)' == 'win' or '$(ForceBuildManifestOnly)' == 'true' or '$(ArcadeBuildFromSource)' == 'true'" 
+             Condition="'$(AssetManifestOS)' == '' or ('$(AssetManifestOS)' == 'win' and '$(TargetArchitecture)' == 'x64') or '$(ForceBuildManifestOnly)' == 'true' or '$(ArcadeBuildFromSource)' == 'true'" 
              Targets="Build"
              Properties="IsUnversionedManifest=true" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Workload.Emscripten.net6.Manifest\Microsoft.NET.Workload.Emscripten.net6.Manifest.pkgproj" 
-             Condition="'$(AssetManifestOS)' == '' or '$(AssetManifestOS)' == 'win' or '$(ForceBuildManifestOnly)' == 'true' or '$(ArcadeBuildFromSource)' == 'true'"
+             Condition="'$(AssetManifestOS)' == '' or ('$(AssetManifestOS)' == 'win' and '$(TargetArchitecture)' == 'x64') or '$(ForceBuildManifestOnly)' == 'true' or '$(ArcadeBuildFromSource)' == 'true'"
              Targets="Build" 
              Properties="PreReleaseVersionLabel=$(PreReleaseVersionLabel);PreReleaseVersionIteration=$(PreReleaseVersionIteration)" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Workload.Emscripten.net7.Manifest\Microsoft.NET.Workload.Emscripten.net7.Manifest.pkgproj" 
-             Condition="'$(AssetManifestOS)' == '' or '$(AssetManifestOS)' == 'win' or '$(ForceBuildManifestOnly)' == 'true' or '$(ArcadeBuildFromSource)' == 'true'"
+             Condition="'$(AssetManifestOS)' == '' or ('$(AssetManifestOS)' == 'win' and '$(TargetArchitecture)' == 'x64')or '$(ForceBuildManifestOnly)' == 'true' or '$(ArcadeBuildFromSource)' == 'true'"
              Targets="Build" 
              Properties="PreReleaseVersionLabel=$(PreReleaseVersionLabel);PreReleaseVersionIteration=$(PreReleaseVersionIteration)" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.Sdk.Internal\Microsoft.NET.Runtime.Emscripten.Sdk.Internal.pkgproj" Targets="Build" Condition="'$(OS)' == 'Windows_NT'" />
   </Target>
-  <Import Project="$(RepoRoot)\Directory.Build.targets" />
 </Project>

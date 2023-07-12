@@ -1,34 +1,16 @@
 {
   "tools": [
   {
-    "id": "llvm-git",
-    "version": "main",
-    "bitness": 32,
-    "install_path": "llvm/git",
-    "git_branch": "main",
-    "url": "https://github.com/llvm/llvm-project.git",
-    "custom_install_script": "build_llvm",
+    "id": "llvm",
+    "version": "8.0.0",
+    "url": "https://github.com/dotnet/llvm-project.git",
+    "custom_is_installed_script": "lie_and_say_yes",
     "only_supports_wasm": true,
-    "activated_path": "%installation_dir%/%llvm_build_bin_dir%",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%/%llvm_build_bin_dir%'",
-    "activated_env": "LLVM_ROOT=%installation_dir%/%llvm_build_bin_dir%;EMCC_WASM_BACKEND=1",
+    "activated_path": "%installation_dir%/bin",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/bin'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/bin;EMCC_WASM_BACKEND=1",
     "cmake_build_type": "Release"
   },
-  {
-    "id": "llvm-git",
-    "version": "main",
-    "bitness": 64,
-    "install_path": "llvm/git",
-    "git_branch": "main",
-    "url": "https://github.com/llvm/llvm-project.git",
-    "custom_install_script": "build_llvm",
-    "only_supports_wasm": true,
-    "activated_path": "%installation_dir%/%llvm_build_bin_dir%",
-    "activated_cfg": "LLVM_ROOT='%installation_dir%/%llvm_build_bin_dir%'",
-    "activated_env": "LLVM_ROOT=%installation_dir%/%llvm_build_bin_dir%;EMCC_WASM_BACKEND=1",
-    "cmake_build_type": "Release"
-  },
-
   {
     "id": "releases",
     "version": "%releases-tag%",
@@ -56,531 +38,82 @@
     "activated_cfg": "LLVM_ROOT='%installation_dir%/bin';BINARYEN_ROOT='%installation_dir%';EMSCRIPTEN_ROOT='%installation_dir%/emscripten'",
     "emscripten_releases_hash": "%releases-tag%"
   },
-
   {
     "id": "node",
-    "version": "8.9.1",
-    "bitness": 32,
-    "arch": "x86",
-    "windows_url": "node-v8.9.1-win-x86.zip",
-    "linux_url": "node-v8.9.1-linux-x86.tar.xz",
+    "version": "8.0.0",
     "activated_path": "%installation_dir%/bin",
     "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
     "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%",
-    "is_old": true
-  },
-  {
-    "id": "node",
-    "version": "8.9.1",
-    "arch": "arm",
-    "bitness": 32,
-    "linux_url": "https://nodejs.org/dist/v8.9.1/node-v8.9.1-linux-armv7l.tar.xz",
-    "activated_path": "%installation_dir%/bin",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
-    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%",
-    "is_old": true
-  },
-  {
-    "id": "node",
-    "version": "8.9.1",
-    "bitness": 64,
-    "arch": "x86_64",
-    "macos_url": "node-v8.9.1-darwin-x64.tar.gz",
-    "windows_url": "node-v8.9.1-win-x64.zip",
-    "linux_url": "node-v8.9.1-linux-x64.tar.xz",
-    "activated_path": "%installation_dir%/bin",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
-    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%",
-    "is_old": true
-  },
-  {
-    "id": "node",
-    "version": "8.9.1",
-    "arch": "aarch64",
-    "bitness": 64,
-    "linux_url": "node-v8.9.1-linux-arm64.tar.xz",
-    "activated_path": "%installation_dir%/bin",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
-    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%",
-    "is_old": true
-  },
-  {
-    "id": "node",
-    "version": "12.18.1",
-    "bitness": 32,
-    "arch": "x86",
-    "windows_url": "node-v12.18.1-win-x86.zip",
-    "activated_path": "%installation_dir%/bin",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
-    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%",
-    "is_old": true
-  },
-  {
-    "id": "node",
-    "version": "12.18.1",
-    "arch": "arm",
-    "bitness": 32,
-    "linux_url": "node-v12.18.1-linux-armv7l.tar.xz",
-    "activated_path": "%installation_dir%/bin",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
-    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%",
-    "is_old": true
-  },
-  {
-    "id": "node",
-    "version": "12.18.1",
-    "bitness": 64,
-    "arch": "x86_64",
-    "macos_url": "node-v12.18.1-darwin-x64.tar.gz",
-    "windows_url": "node-v12.18.1-win-x64.zip",
-    "linux_url": "node-v12.18.1-linux-x64.tar.xz",
-    "activated_path": "%installation_dir%/bin",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
-    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%",
-    "is_old": true
-  },
-  {
-    "id": "node",
-    "version": "12.18.1",
-    "arch": "aarch64",
-    "bitness": 64,
-    "linux_url": "node-v12.18.1-linux-arm64.tar.xz",
-    "activated_path": "%installation_dir%/bin",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
-    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%",
-    "is_old": true
-  },
-
-
-  {
-    "id": "node",
-    "version": "14.18.2",
-    "bitness": 32,
-    "arch": "x86",
-    "windows_url": "node-v14.18.2-win-x86.zip",
-    "activated_path": "%installation_dir%/bin",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
-    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
-  },
-  {
-    "id": "node",
-    "version": "14.18.2",
-    "arch": "arm",
-    "bitness": 32,
-    "linux_url": "node-v14.18.2-linux-armv7l.tar.xz",
-    "activated_path": "%installation_dir%/bin",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
-    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
-  },
-  {
-    "id": "node",
-    "version": "14.18.2",
-    "bitness": 64,
-    "arch": "x86_64",
-    "macos_url": "node-v14.18.2-darwin-x64.tar.gz",
-    "windows_url": "node-v14.18.2-win-x64.zip",
-    "linux_url": "node-v14.18.2-linux-x64.tar.xz",
-    "activated_path": "%installation_dir%/bin",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
-    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
-  },
-  {
-    "id": "node",
-    "version": "14.18.2",
-    "arch": "aarch64",
-    "bitness": 64,
-    "macos_url": "node-v14.18.2-darwin-x64.tar.gz",
-    "linux_url": "node-v14.18.2-linux-arm64.tar.xz",
-    "activated_path": "%installation_dir%/bin",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
-    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
-  },
-
-
-  {
-    "id": "node",
-    "version": "14.15.5",
-    "bitness": 32,
-    "arch": "x86",
-    "windows_url": "node-v14.15.5-win-x86.zip",
-    "activated_path": "%installation_dir%/bin",
-    "activated_path_skip": "node",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
-    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
-  },
-  {
-    "id": "node",
-    "version": "14.15.5",
-    "arch": "arm",
-    "bitness": 32,
-    "linux_url": "node-v14.15.5-linux-armv7l.tar.xz",
-    "activated_path": "%installation_dir%/bin",
-    "activated_path_skip": "node",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
-    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
-  },
-  {
-    "id": "node",
-    "version": "14.15.5",
-    "bitness": 64,
-    "arch": "x86_64",
-    "macos_url": "node-v14.15.5-darwin-x64.tar.gz",
-    "windows_url": "node-v14.15.5-win-x64.zip",
-    "linux_url": "node-v14.15.5-linux-x64.tar.xz",
-    "activated_path": "%installation_dir%/bin",
-    "activated_path_skip": "node",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
-    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
-  },
-  {
-    "id": "node",
-    "version": "14.15.5",
-    "arch": "aarch64",
-    "bitness": 64,
-    "macos_url": "node-v14.15.5-darwin-x64.tar.gz",
-    "linux_url": "node-v14.15.5-linux-arm64.tar.xz",
-    "activated_path": "%installation_dir%/bin",
-    "activated_path_skip": "node",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
-    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
-  },
-
-
-  {
-    "id": "python",
-    "version": "2.7.13.1",
-    "bitness": 32,
-    "arch": "x86",
-    "windows_url": "WinPython-32bit-2.7.13.1Zero.zip",
-    "activated_cfg": "PYTHON='%installation_dir%/python-2.7.13/python%.exe%'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/python-2.7.13/python%.exe%",
-    "is_old": true
+    "custom_is_installed_script": "lie_and_say_yes"
   },
   {
     "id": "python",
-    "version": "2.7.13.1",
-    "bitness": 64,
-    "arch": "x86_64",
-    "windows_url": "WinPython-64bit-2.7.13.1Zero.zip",
-    "activated_cfg": "PYTHON='%installation_dir%/python-2.7.13.amd64/python%.exe%'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/python-2.7.13.amd64/python%.exe%",
-    "is_old": true
-  },
-  {
-    "id": "python",
-    "version": "3.7.4",
-    "bitness": 32,
-    "arch": "x86",
-    "windows_url": "python-3.7.4-embed-win32-patched.zip",
-    "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe",
-    "is_old": true
-  },
-  {
-    "id": "python",
-    "version": "3.7.4",
-    "bitness": 64,
-    "arch": "x86_64",
-    "windows_url": "python-3.7.4-embed-amd64-patched.zip",
-    "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe",
-    "is_old": true
-  },
-  {
-    "id": "python",
-    "version": "3.7.4-pywin32",
-    "bitness": 32,
-    "arch": "x86",
-    "windows_url": "python-3.7.4-embed-win32+pywin32.zip",
-    "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe",
-    "is_old": true
-  },
-  {
-    "id": "python",
-    "version": "3.7.4-pywin32",
-    "bitness": 64,
-    "arch": "x86_64",
-    "windows_url": "python-3.7.4-embed-amd64+pywin32.zip",
-    "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe",
-    "is_old": true
-  },
-  {
-    "id": "python",
-    "version": "3.7.4-2",
-    "bitness": 64,
-    "arch": "x86_64",
-    "macos_url": "python-3.7.4-2-macos.tar.gz",
-    "activated_cfg": "PYTHON='%installation_dir%/bin/python3'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.7/site-packages/certifi/cacert.pem",
-    "is_old": true
-  },
-  {
-    "id": "python",
-    "version": "3.9.2-nuget",
-    "bitness": 64,
-    "arch": "x86_64",
-    "windows_url": "python-3.9.2-4-amd64+pywin32.zip",
-    "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
-  },
-  {
-    "id": "python",
-    "version": "3.9.2",
-    "bitness": 64,
-    "arch": "x86_64",
-    "windows_url": "python-3.9.2-1-embed-amd64+pywin32.zip",
-    "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
-  },
-  {
-    "id": "python",
-    "version": "3.9.2",
-    "bitness": 64,
-    "arch": "x86_64",
-    "macos_url": "python-3.9.2-3-macos-x86_64.tar.gz",
-    "activated_cfg": "PYTHON='%installation_dir%/bin/python3'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.9/site-packages/certifi/cacert.pem"
-  },
-  {
-    "id": "python",
-    "version": "3.9.2",
-    "bitness": 64,
-    "arch": "aarch64",
-    "macos_url": "python-3.9.2-1-macos-arm64.tar.gz",
-    "activated_cfg": "PYTHON='%installation_dir%/bin/python3'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.9/site-packages/certifi/cacert.pem"
-  },
-  {
-    "id": "java",
-    "version": "8.152",
-    "bitness": 32,
-    "arch": "x86",
-    "windows_url": "portable_jre_8_update_152_32bit.zip",
-    "activated_env": "JAVA_HOME=%installation_dir%",
-    "activated_cfg": "JAVA='%installation_dir%/bin/java%.exe%'"
-  },
-  {
-    "id": "java",
-    "version": "8.152",
-    "bitness": 64,
-    "arch": "x86_64",
-    "windows_url": "portable_jre_8_update_152_64bit.zip",
-    "activated_env": "JAVA_HOME=%installation_dir%",
-    "activated_cfg": "JAVA='%installation_dir%/bin/java%.exe%'"
+    "version": "8.0.0",
+    "activated_cfg": "PYTHON='%installation_dir%/bin/python3%.exe%'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.9/site-packages/certifi/cacert.pem",
+    "custom_is_installed_script": "lie_and_say_yes"
   },
   {
     "id": "emscripten",
-    "version": "tag-%tag%",
-    "bitness": 32,
+    "version": "8.0.0",
     "append_bitness": false,
-    "windows_url": "https://github.com/emscripten-core/emscripten/archive/%tag%.zip",
-    "unix_url": "https://github.com/emscripten-core/emscripten/archive/%tag%.tar.gz",
-    "zipfile_prefix": "emscripten-e",
-    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%%generator_prefix%_32bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%'",
-    "activated_path": "%installation_dir%",
-    "activated_env": "EMSCRIPTEN=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%%generator_prefix%_32bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%",
-    "cmake_build_type": "Release",
-    "custom_install_script": "emscripten_post_install",
-    "custom_is_installed_script": "is_optimizer_installed",
-    "custom_uninstall_script": "uninstall_optimizer"
-  },
-  {
-    "id": "emscripten",
-    "version": "tag-%tag%",
-    "bitness": 64,
-    "append_bitness": false,
-    "windows_url": "https://github.com/emscripten-core/emscripten/archive/%tag%.zip",
-    "unix_url": "https://github.com/emscripten-core/emscripten/archive/%tag%.tar.gz",
-    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%%generator_prefix%_64bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%'",
-    "activated_path": "%installation_dir%",
-    "activated_env": "EMSCRIPTEN=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%%generator_prefix%_64bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%",
-    "cmake_build_type": "Release",
-    "custom_install_script": "emscripten_post_install",
-    "custom_is_installed_script": "is_optimizer_installed",
-    "custom_uninstall_script": "uninstall_optimizer"
-  },
-  {
-    "id": "emscripten",
-    "version": "%precompiled_tag%",
-    "windows_url": "https://github.com/emscripten-core/emscripten/archive/%precompiled_tag%.zip",
-    "unix_url": "https://github.com/emscripten-core/emscripten/archive/%precompiled_tag%.tar.gz",
-    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
-    "activated_path": "%installation_dir%",
-    "activated_env": "EMSCRIPTEN=%installation_dir%"
-  },
-  {
-    "id": "binaryen",
-    "version": "tag-%binaryen_tag%",
-    "bitness": 32,
-    "append_bitness": false,
-    "windows_url": "https://github.com/WebAssembly/binaryen/archive/%binaryen_tag%.zip",
-    "unix_url": "https://github.com/WebAssembly/binaryen/archive/%binaryen_tag%.tar.gz",
-    "zipfile_prefix": "binaryen-e",
-    "activated_cfg": "BINARYEN_ROOT='%installation_dir%%generator_prefix%_64bit_binaryen'",
-    "activated_path": "%installation_dir%%generator_prefix%_64bit_binaryen/bin",
-    "activated_env": "BINARYEN_ROOT=%installation_dir%%generator_prefix%_64bit_binaryen",
-    "cmake_build_type": "Release",
-    "custom_install_script": "build_binaryen",
-    "custom_is_installed_script": "is_binaryen_installed",
-    "custom_uninstall_script": "uninstall_binaryen"
-  },
-  {
-    "id": "binaryen",
-    "version": "tag-%binaryen_tag%",
-    "bitness": 64,
-    "append_bitness": false,
-    "windows_url": "https://github.com/WebAssembly/binaryen/archive/%binaryen_tag%.zip",
-    "unix_url": "https://github.com/WebAssembly/binaryen/archive/%binaryen_tag%.tar.gz",
-    "zipfile_prefix": "binaryen-e",
-    "activated_cfg": "BINARYEN_ROOT='%installation_dir%%generator_prefix%_64bit_binaryen'",
-    "activated_path": "%installation_dir%%generator_prefix%_64bit_binaryen/bin",
-    "activated_env": "BINARYEN_ROOT=%installation_dir%%generator_prefix%_64bit_binaryen",
-    "cmake_build_type": "Release",
-    "custom_install_script": "build_binaryen",
-    "custom_is_installed_script": "is_binaryen_installed",
-    "custom_uninstall_script": "uninstall_binaryen"
-  },
-  {
-    "id": "emscripten",
-    "version": "main",
-    "bitness": 32,
-    "append_bitness": false,
-    "url": "https://github.com/emscripten-core/emscripten.git",
-    "git_branch": "main",
+    "url": "https://github.com/dotnet/emscripten.git",
+    "git_branch": "dotnet/main",
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%",
     "activated_env": "EMSCRIPTEN=%installation_dir%",
     "cmake_build_type": "Release",
-    "custom_install_script": "emscripten_npm_install"
-  },
-  {
-    "id": "emscripten",
-    "version": "main",
-    "bitness": 64,
-    "append_bitness": false,
-    "url": "https://github.com/emscripten-core/emscripten.git",
-    "git_branch": "main",
-    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
-    "activated_path": "%installation_dir%",
-    "activated_env": "EMSCRIPTEN=%installation_dir%",
-    "cmake_build_type": "Release",
-    "custom_install_script": "emscripten_npm_install"
+    "custom_is_installed_script": "lie_and_say_yes"
   },
   {
     "id": "binaryen",
-    "version": "main",
-    "bitness": 32,
-    "append_bitness": false,
-    "url": "https://github.com/WebAssembly/binaryen.git",
-    "git_branch": "main",
-    "activated_cfg": "BINARYEN_ROOT='%installation_dir%%generator_prefix%_32bit_binaryen'",
-    "activated_path": "%installation_dir%%generator_prefix%_32bit_binaryen/bin",
-    "activated_env": "BINARYEN_ROOT=%installation_dir%%generator_prefix%_32bit_binaryen",
-    "cmake_build_type": "Release",
-    "custom_install_script": "build_binaryen",
-    "custom_is_installed_script": "is_binaryen_installed",
-    "custom_uninstall_script": "uninstall_binaryen"
-  },
-  {
-    "id": "binaryen",
-    "version": "main",
-    "bitness": 64,
-    "append_bitness": false,
-    "url": "https://github.com/WebAssembly/binaryen.git",
-    "git_branch": "main",
-    "activated_cfg": "BINARYEN_ROOT='%installation_dir%%generator_prefix%_64bit_binaryen'",
-    "activated_path": "%installation_dir%%generator_prefix%_64bit_binaryen/bin",
-    "activated_env": "BINARYEN_ROOT=%installation_dir%%generator_prefix%_64bit_binaryen",
-    "cmake_build_type": "Release",
-    "custom_install_script": "build_binaryen",
-    "custom_is_installed_script": "is_binaryen_installed",
-    "custom_uninstall_script": "uninstall_binaryen"
-  },
-  {
-    "id": "gnu",
-    "version": "2.5.4",
-    "windows_url": "grep-2.5.4.zip",
-    "activated_path": "%installation_dir%/bin"
-  },
-  {
-    "id": "mingw",
-    "version": "4.6.2",
-    "bitness": 32,
-    "windows_url": "mingw_4.6.2_32bit.zip",
-    "activated_cfg": "MINGW_ROOT='%installation_dir%'",
-    "activated_path": "%installation_dir%",
-    "is_old": true
-  },
-  {
-    "id": "mingw",
-    "version": "7.1.0",
-    "bitness": 64,
-    "windows_url": "mingw_7.1.0_64bit.zip",
-    "activated_cfg": "MINGW_ROOT='%installation_dir%'",
-    "activated_path": "%installation_dir%/bin"
-  },
-  {
-    "id": "ninja",
-    "version": "git-release",
-    "bitness": 64,
-    "url": "https://github.com/ninja-build/ninja.git",
-    "git_branch": "release",
-    "activated_cfg": "NINJA=%installation_dir%/bin",
+    "version": "8.0.0",
+    "url": "https://github.com/dotnet/binaryen.git",
+    "git_branch": "dotnet/main",
+    "activated_cfg": "BINARYEN_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%/bin",
+    "activated_env": "BINARYEN_ROOT=%installation_dir%",
     "cmake_build_type": "Release",
-    "custom_install_script": "build_ninja"
-  },
-  {
-    "id": "ccache",
-    "version": "git-emscripten",
-    "bitness": 64,
-    "url": "https://github.com/juj/ccache.git",
-    "git_branch": "emscripten",
-    "activated_path": "%installation_dir%/bin",
-    "activated_env": "_EMCC_CCACHE=1;CCACHE_CONFIGPATH=%installation_dir%/emcc_ccache.conf",
-    "cmake_build_type": "Release",
-    "custom_install_script": "build_ccache"
+    "custom_is_installed_script": "lie_and_say_yes"
   }
   ],
 
   "sdks": [
   {
     "version": "main",
-    "bitness": 64,
-    "uses": ["python-3.9.2-nuget-64bit", "llvm-git-main-64bit", "node-14.18.2-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
+    "uses": ["python-8.0.0", "llvm-8.0.0", "node-8.0.0", "emscripten-8.0.0", "binaryen-8.0.0"],
     "os": "win"
   },
   {
     "version": "main",
-    "bitness": 64,
-    "uses": ["python-3.9.2-64bit", "llvm-git-main-64bit", "node-14.18.2-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
+    "uses": ["python-8.0.0", "llvm-8.0.0", "node-8.0.0", "emscripten-8.0.0", "binaryen-8.0.0"],
     "os": "macos"
   },
   {
     "version": "main",
-    "bitness": 64,
-    "uses": ["llvm-git-main-64bit", "node-14.18.2-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
-    "os": "linux"
-  },
-  {
-    "version": "main",
-    "bitness": 32,
-    "uses": ["llvm-git-main-32bit", "emscripten-main-32bit", "binaryen-main-32bit"],
+    "uses": ["llvm-8.0.0", "emscripten-8.0.0", "binaryen-8.0.0"],
     "os": "linux"
   },
   {
     "version": "releases-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-14.18.2-64bit", "releases-%releases-tag%-64bit"],
+    "uses": ["releases-%releases-tag%-64bit"],
     "os": "linux",
+    "arch": "x86_64",
     "custom_install_script": "emscripten_npm_install"
   },
   {
     "version": "releases-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-14.18.2-64bit", "python-3.9.2-64bit", "releases-%releases-tag%-64bit"],
+    "uses": ["releases-%releases-tag%-64bit"],
+    "os": "linux",
+    "arch": "aarch64",
+    "custom_install_script": "emscripten_npm_install"
+  },
+  {
+    "version": "releases-%releases-tag%",
+    "bitness": 64,
+    "uses": ["node-8.0.0", "python-8.0.0", "releases-%releases-tag%-64bit"],
     "os": "macos",
     "arch": "x86_64",
     "custom_install_script": "emscripten_npm_install"
@@ -588,7 +121,7 @@
   {
     "version": "releases-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-14.18.2-64bit", "python-3.9.2-64bit", "releases-%releases-tag%-64bit"],
+    "uses": ["node-8.0.0", "python-8.0.0", "releases-%releases-tag%-64bit"],
     "os": "macos",
     "arch": "aarch64",
     "custom_install_script": "emscripten_npm_install"
@@ -596,8 +129,17 @@
   {
     "version": "releases-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-14.18.2-64bit", "python-3.9.2-nuget-64bit", "java-8.152-64bit", "releases-%releases-tag%-64bit"],
+    "uses": ["node-8.0.0", "python-8.0.0", "releases-%releases-tag%-64bit"],
     "os": "win",
+    "arch": "x86_64",
+    "custom_install_script": "emscripten_npm_install"
+  },
+  {
+    "version": "releases-%releases-tag%",
+    "bitness": 64,
+    "uses": ["node-8.0.0", "python-8.0.0", "releases-%releases-tag%-64bit"],
+    "os": "win",
+    "arch": "aarch64",
     "custom_install_script": "emscripten_npm_install"
   }
   ]

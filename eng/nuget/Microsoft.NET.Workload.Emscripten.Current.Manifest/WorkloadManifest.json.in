@@ -10,7 +10,7 @@
         "Microsoft.NET.Runtime.Emscripten.Cache",
         "Microsoft.NET.Runtime.Emscripten.Sdk"
       ],
-      "platforms": [ "win-x64", "win-arm64", "linux-x64", "osx-x64", "osx-arm64" ]
+      "platforms": [ "win-x64", "win-arm64", "linux-x64", "linux-arm64", "osx-x64", "osx-arm64" ]
     }
   },
   "packs": {
@@ -19,10 +19,11 @@
       "version": "${PackageVersion}",
       "alias-to": {
         "win-x64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Node.win-x64",
-        "win-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Node.win-x64",
+        "win-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Node.win-arm64",
         "linux-x64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Node.linux-x64",
+        "linux-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Node.linux-arm64",
         "osx-x64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Node.osx-x64",
-        "osx-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Node.osx-x64"
+        "osx-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Node.osx-arm64"
       }
     },
     "Microsoft.NET.Runtime.Emscripten.Python" : {
@@ -30,9 +31,9 @@
       "version": "${PackageVersion}",
       "alias-to": {
         "win-x64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Python.win-x64",
-        "win-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Python.win-x64",
+        "win-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Python.win-arm64",
         "osx-x64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Python.osx-x64",
-        "osx-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Python.osx-x64"
+        "osx-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Python.osx-arm64"
       }
     },
     "Microsoft.NET.Runtime.Emscripten.Cache" : {
@@ -40,10 +41,11 @@
       "version": "${PackageVersion}",
       "alias-to": {
         "win-x64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Cache.win-x64",
-        "win-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Cache.win-x64",
+        "win-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Cache.win-arm64",
         "linux-x64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Cache.linux-x64",
+        "linux-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Cache.linux-arm64",
         "osx-x64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Cache.osx-x64",
-        "osx-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Cache.osx-x64"
+        "osx-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Cache.osx-arm64"
       }
     },
     "Microsoft.NET.Runtime.Emscripten.Sdk" : {
@@ -51,10 +53,11 @@
       "version": "${PackageVersion}",
       "alias-to": {
         "win-x64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Sdk.win-x64",
-        "win-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Sdk.win-x64",
+        "win-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Sdk.win-arm64",
         "linux-x64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Sdk.linux-x64",
+        "linux-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Sdk.linux-arm64",
         "osx-x64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Sdk.osx-x64",
-        "osx-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Sdk.osx-x64"
+        "osx-arm64": "Microsoft.NET.Runtime.Emscripten.${EmscriptenVersion}.Sdk.osx-arm64"
       }
     }
   }

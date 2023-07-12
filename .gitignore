@@ -40,5 +40,7 @@ __pycache__
 /spidermonkey
 /binaryen
 
+# MSFT ignores
 /artifacts
 /.dotnet
+/.packages
