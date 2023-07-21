@@ -2,6 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ProjectToBuild BuildInParallel="false" Condition="'$(SkipBuild)' != 'true'" Include="$(MSBuildThisFileDirectory)emsdk.proj" />
-    <ProjectToBuild BuildInParallel="false" Condition="'$(AssetManifestOS)' == 'win' and '$(TargetArchitecture)' == 'x64' and '$(SkipWorkloads)' != 'true'" Include="$(MSBuildThisFileDirectory)\workloads\workloads.csproj" />
+    <ProjectToBuild BuildInParallel="false" Condition="'$(AssetManifestOS)' == 'win' and '$(SkipWorkloads)' != 'true' and '$(TargetArchitecture)' == 'x64'" Include="$(MSBuildThisFileDirectory)\workloads\workloads.csproj" />
   </ItemGroup>
 </Project>
