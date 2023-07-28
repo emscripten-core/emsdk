@@ -84,3 +84,11 @@ platform(
         "@platforms//cpu:wasm32",
     ],
 )
+
+platform(
+    name = "platform_wasi",
+    constraint_values = [
+        "@platforms//cpu:wasm32",
+        "@platforms//os:wasi",
+    ],
+)
