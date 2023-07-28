@@ -25,7 +25,9 @@ def _wasm_transition_impl(settings, attr):
     if attr.simd:
         features.append("wasm_simd")
 
+    platform = "@emsdk//:platform_wasm"
     if attr.standalone:
+        platform = "@emsdk//:platform_wasi"
         features.append("wasm_standalone")
 
     return {
@@ -35,7 +37,7 @@ def _wasm_transition_impl(settings, attr):
         "//command_line_option:features": features,
         "//command_line_option:dynamic_mode": "off",
         "//command_line_option:linkopt": linkopts,
-        "//command_line_option:platforms": [attr.platform],
+        "//command_line_option:platforms": [platform],
         "//command_line_option:custom_malloc": "@emsdk//emscripten_toolchain:malloc",
     }
 
@@ -81,9 +83,6 @@ _WASM_BINARY_COMMON_ATTRS = {
     ),
     "exit_runtime": attr.bool(
         default = False,
-    ),
-    "platform": attr.label(
-        default = "@emsdk//:platform_wasm",
     ),
     "threads": attr.string(
         default = "_default",
