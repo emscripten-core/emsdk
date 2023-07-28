@@ -1019,6 +1019,11 @@ def _impl(ctx):
             features = ["wasm_warnings_as_errors"],
         ),
         flag_set(
+            actions = all_compile_actions,
+            flags = ["-DSTANDALONE_WASM"],
+            features = ["wasm_standalone"],
+        ),
+        flag_set(
             actions = all_link_actions,
             flags = ["-sSTANDALONE_WASM"],
             features = ["wasm_standalone"],
