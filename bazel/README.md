@@ -3,7 +3,7 @@
 ## Setup Instructions
 
 In `WORKSPACE` file, put:
-```
+```starlark
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 http_archive(
     name = "emsdk",
@@ -37,7 +37,7 @@ build --incompatible_enable_cc_toolchain_resolution
 
 Then write a new rule wrapping your `cc_binary`.
 
-```
+```starlark
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 load("@emsdk//emscripten_toolchain:wasm_rules.bzl", "wasm_cc_binary")
 
