@@ -2,7 +2,7 @@
   "tools": [
   {
     "id": "llvm",
-    "version": "8.0.0",
+    "version": "9.0.0",
     "url": "https://github.com/dotnet/llvm-project.git",
     "custom_is_installed_script": "lie_and_say_yes",
     "only_supports_wasm": true,
@@ -40,7 +40,7 @@
   },
   {
     "id": "node",
-    "version": "8.0.0",
+    "version": "9.0.0",
     "activated_path": "%installation_dir%/bin",
     "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
     "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%",
@@ -48,14 +48,14 @@
   },
   {
     "id": "python",
-    "version": "8.0.0",
+    "version": "9.0.0",
     "activated_cfg": "PYTHON='%installation_dir%/bin/python3%.exe%'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.9/site-packages/certifi/cacert.pem",
     "custom_is_installed_script": "lie_and_say_yes"
   },
   {
     "id": "emscripten",
-    "version": "8.0.0",
+    "version": "9.0.0",
     "append_bitness": false,
     "url": "https://github.com/dotnet/emscripten.git",
     "git_branch": "dotnet/main",
@@ -67,7 +67,7 @@
   },
   {
     "id": "binaryen",
-    "version": "8.0.0",
+    "version": "9.0.0",
     "url": "https://github.com/dotnet/binaryen.git",
     "git_branch": "dotnet/main",
     "activated_cfg": "BINARYEN_ROOT='%installation_dir%'",
@@ -81,17 +81,17 @@
   "sdks": [
   {
     "version": "main",
-    "uses": ["python-8.0.0", "llvm-8.0.0", "node-8.0.0", "emscripten-8.0.0", "binaryen-8.0.0"],
+    "uses": ["python-9.0.0", "llvm-9.0.0", "node-9.0.0", "emscripten-9.0.0", "binaryen-9.0.0"],
     "os": "win"
   },
   {
     "version": "main",
-    "uses": ["python-8.0.0", "llvm-8.0.0", "node-8.0.0", "emscripten-8.0.0", "binaryen-8.0.0"],
+    "uses": ["python-9.0.0", "llvm-9.0.0", "node-9.0.0", "emscripten-9.0.0", "binaryen-9.0.0"],
     "os": "macos"
   },
   {
     "version": "main",
-    "uses": ["llvm-8.0.0", "emscripten-8.0.0", "binaryen-8.0.0"],
+    "uses": ["llvm-9.0.0", "emscripten-9.0.0", "binaryen-9.0.0"],
     "os": "linux"
   },
   {
@@ -113,7 +113,7 @@
   {
     "version": "releases-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-8.0.0", "python-8.0.0", "releases-%releases-tag%-64bit"],
+    "uses": ["node-9.0.0", "python-9.0.0", "releases-%releases-tag%-64bit"],
     "os": "macos",
     "arch": "x86_64",
     "custom_install_script": "emscripten_npm_install"
@@ -121,7 +121,7 @@
   {
     "version": "releases-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-8.0.0", "python-8.0.0", "releases-%releases-tag%-64bit"],
+    "uses": ["node-9.0.0", "python-9.0.0", "releases-%releases-tag%-64bit"],
     "os": "macos",
     "arch": "aarch64",
     "custom_install_script": "emscripten_npm_install"
@@ -129,7 +129,7 @@
   {
     "version": "releases-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-8.0.0", "python-8.0.0", "releases-%releases-tag%-64bit"],
+    "uses": ["node-9.0.0", "python-9.0.0", "releases-%releases-tag%-64bit"],
     "os": "win",
     "arch": "x86_64",
     "custom_install_script": "emscripten_npm_install"
@@ -137,7 +137,7 @@
   {
     "version": "releases-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-8.0.0", "python-8.0.0", "releases-%releases-tag%-64bit"],
+    "uses": ["node-9.0.0", "python-9.0.0", "releases-%releases-tag%-64bit"],
     "os": "win",
     "arch": "aarch64",
     "custom_install_script": "emscripten_npm_install"
