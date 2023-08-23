@@ -23,6 +23,7 @@ def version_key(version_string):
 def main(args):
   if subprocess.check_output(['git', 'status', '--porcelain'], cwd=root_dir).strip():
     print('tree is not clean')
+    # This is a bogus change
     sys.exit(1)
 
   release_info = emsdk.load_releases_info()
