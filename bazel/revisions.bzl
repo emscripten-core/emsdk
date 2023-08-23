@@ -1,4 +1,4 @@
-# This file is automatically updated by emsdk/scripts/update_bazel_workspace.sh
+# This file is automatically updated by emsdk/scripts/update_bazel_workspace.py
 # DO NOT MODIFY
 
 EMSCRIPTEN_TAGS = {
