@@ -22,7 +22,7 @@ def version_key(version_string):
 
 def main(args):
   if subprocess.check_output(['git', 'status', '--porcelain'], cwd=root_dir).strip():
-    print('tree is not clean')
+    print(f'tree is not clean{asdf}')
     # This is a bogus change
     sys.exit(1)
 
