@@ -53,7 +53,9 @@ def main(args):
     f.write(json.dumps(release_info, indent=2))
     f.write('\n')
 
-  subprocess.check_call([os.path.join(script_dir, 'update_bazel_workspace.sh')], cwd=root_dir)
+  subprocess.check_call(
+    [sys.executable, os.path.join(script_dir, 'update_bazel_workspace.py')],
+    cwd=root_dir)
 
   branch_name = 'version_' + new_version
 
