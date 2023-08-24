@@ -7,18 +7,18 @@ ignore =
    E722  # bare excepts
    E741, # Variable names such as 'l', 'O', or 'I'
 exclude =
-  ./llvm
-  ./gnu
-  ./upstream
-  ./fastcomp
-  ./fastcomp-clang
-  ./releases
-  ./clang
-  ./emscripten
-  ./binaryen
-  ./git
-  ./node
-  ./python
-  ./temp
-  ./downloads
-  ./crunch
+  ./llvm,
+  ./gnu,
+  ./upstream,
+  ./fastcomp,
+  ./fastcomp-clang,
+  ./releases,
+  ./clang,
+  ./emscripten,
+  ./binaryen,
+  ./git,
+  ./node,
+  ./python,
+  ./temp,
+  ./downloads,
+  ./crunch,
