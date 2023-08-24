@@ -60,8 +60,8 @@ jobs:
             apt-get install -q -y python-pip python3-pip
       - run: python2 -m pip install --upgrade pip
       - run: python3 -m pip install --upgrade pip
-      - run: python2 -m pip install flake8==4.0
-      - run: python3 -m pip install flake8==4.0
+      - run: python2 -m pip install flake8==3.9.2
+      - run: python3 -m pip install flake8==3.9.2
       - run: python2 -m flake8 --show-source --statistics --extend-exclude=./scripts
       - run: python3 -m flake8 --show-source --statistics
   test-linux:
