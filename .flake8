@@ -21,3 +21,4 @@ exclude =
   ./temp
   ./downloads
   ./crunch
+  ./scripts
