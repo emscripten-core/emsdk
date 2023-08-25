@@ -125,7 +125,7 @@ stages:
             ./build.sh $(archflag) --restore --build --pack --ci --configuration $(_BuildConfig) /p:PackageRID=$(assetManifestOS)-$(assetManifestPlatform) /p:AssetManifestOS=$(assetManifestOS) /p:PlatformName=$(assetManifestPlatform) $(_InternalBuildArgs) $(_NonWindowsInternalPublishArg)
           displayName: Build
         - publish: artifacts/packages
-          artifact: Packages_Linux_$(assetManifestPlatform)
+          artifact: Packages_$(assetManifestOS)_$(assetManifestPlatform)
         - bash: |
             rm -rf binaryen node llvm emscripten
           displayName: Remove temporary artifacts
@@ -149,10 +149,16 @@ stages:
               arm64:
                 assetManifestOS: linux
                 assetManifestPlatform: arm64
+              x64_musl:
+                assetManifestOS: linux-musl
+                assetManifestPlatform: x64
+              arm64_musl:
+                assetManifestOS: linux-musl
+                assetManifestPlatform: arm64
           steps:
           - task: DownloadPipelineArtifact@2
             inputs:
-              artifact: Packages_Linux_$(assetManifestPlatform)
+              artifact: Packages_$(assetManifestOS)_$(assetManifestPlatform)
               path: 'artifacts/packages'
 
           - powershell: |
