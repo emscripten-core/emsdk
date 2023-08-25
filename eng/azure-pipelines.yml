@@ -112,6 +112,14 @@ stages:
               assetManifestOS: linux
               assetManifestPlatform: arm64
               archflag: --arch arm64
+            x64_musl:
+              assetManifestOS: linux-musl
+              assetManifestPlatform: x64
+              archflag: --arch x64
+            arm64_musl:
+              assetManifestOS: linux-musl
+              assetManifestPlatform: arm64
+              archflag: --arch arm64
         steps:
         - bash: |
             ./build.sh $(archflag) --restore --build --pack --ci --configuration $(_BuildConfig) /p:PackageRID=$(assetManifestOS)-$(assetManifestPlatform) /p:AssetManifestOS=$(assetManifestOS) /p:PlatformName=$(assetManifestPlatform) $(_InternalBuildArgs) $(_NonWindowsInternalPublishArg)
