@@ -1,8 +1,5 @@
 <Project Sdk="Microsoft.Build.Traversal">
   <PropertyGroup>
-    <PackageHostOS Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' == 'true'">linux</PackageHostOS>
-    <PackageHostOS Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' == 'true'">osx</PackageHostOS>
-    <PackageHostOS Condition="'$(OS)' == 'Windows_NT'">win</PackageHostOS>
     <LLVMPkgVersion Condition="'$(PackageHostOS)' == 'linux'">$(runtimelinuxx64MicrosoftNETCoreRuntimeWasmLLVMTransportVersion)</LLVMPkgVersion>
     <LLVMPkgVersion Condition="'$(PackageHostOS)' == 'win'">$(runtimewinx64MicrosoftNETCoreRuntimeWasmLLVMTransportVersion)</LLVMPkgVersion>
     <LLVMPkgVersion Condition="'$(PackageHostOS)' == 'osx'">$(runtimeosxx64MicrosoftNETCoreRuntimeWasmLLVMTransportVersion)</LLVMPkgVersion>
@@ -18,7 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(ForceBuildManifestOnly)' != 'true' and '$(ArcadeBuildFromSource)' != 'true'">
-    <PackageReference Include="runtime.$(PackageHostOS)-$(TargetArchitecture).Microsoft.NETCore.Runtime.Wasm.LLVM.Transport"
+    <PackageReference Include="runtime.$(PackageTargetOS)-$(TargetArchitecture).Microsoft.NETCore.Runtime.Wasm.LLVM.Transport"
                       Version="$(LLVMPkgVersion)"
                       PackageArch="$(TargetArchitecture)"
                       Condition="'$(TargetArchitecture)' != ''" />
@@ -26,7 +23,7 @@
                       Version="$(LLVMPkgVersion)"
                       PackageArch="$(BuildArchitecture)"
                       Condition="'$(BuildArchitecture)' != ''" />
-    <PackageReference Include="runtime.$(PackageHostOS)-$(TargetArchitecture).Microsoft.NETCore.Runtime.Wasm.Binaryen.Transport"
+    <PackageReference Include="runtime.$(PackageTargetOS)-$(TargetArchitecture).Microsoft.NETCore.Runtime.Wasm.Binaryen.Transport"
                       Version="$(BinaryenPkgVersion)"
                       PackageArch="$(TargetArchitecture)"
                       Condition="'$(TargetArchitecture)' != ''" />
@@ -34,7 +31,7 @@
                       Version="$(BinaryenPkgVersion)"
                       PackageArch="$(BuildArchitecture)"
                       Condition="'$(BuildArchitecture)' != ''" />
-    <PackageReference Include="runtime.$(PackageHostOS)-$(TargetArchitecture).Microsoft.NETCore.Runtime.Wasm.Node.Transport"
+    <PackageReference Include="runtime.$(PackageTargetOS)-$(TargetArchitecture).Microsoft.NETCore.Runtime.Wasm.Node.Transport"
                       Version="$(NodePkgVersion)"
                       PackageArch="$(TargetArchitecture)"
                       Condition="'$(TargetArchitecture)' != ''" />
@@ -42,7 +39,7 @@
                       Version="$(NodePkgVersion)"
                       PackageArch="$(BuildArchitecture)"
                       Condition="'$(BuildArchitecture)' != ''" />
-    <PackageReference Include="runtime.$(PackageHostOS)-$(TargetArchitecture).Microsoft.NETCore.Runtime.Wasm.Python.Transport"
+    <PackageReference Include="runtime.$(PackageTargetOS)-$(TargetArchitecture).Microsoft.NETCore.Runtime.Wasm.Python.Transport"
                       Version="$(PythonPkgVersion)"
                       PackageArch="$(TargetArchitecture)"
                       Condition="'$(TargetArchitecture)' != '' and '$(PackageHostOS)' != 'linux'" />
@@ -59,10 +56,10 @@
   </ItemGroup>
 
   <Target Name="CopyBinaryen" Condition="'$(ForceBuildManifestOnly)' != 'true' and '$(ArcadeBuildFromSource)' != 'true'" BeforeTargets="ReallyBuild">
-    <Message Importance="High" Text="** Copying $(TargetArchitecture) Binaryen to $(BinaryenDir)" />
-    <Message Importance="High" Text="** Copying $(BuildArchitecture) Binaryen to $(HostBinaryenDir)" Condition="'$(BuildArchitecture)' != '$(TargetArchitecture)'" />
+    <Message Importance="High" Text="** Copying $(PackageTargetOS)-$(TargetArchitecture) Binaryen to $(BinaryenDir)" />
+    <Message Importance="High" Text="** Copying $(PackageHostOS)-$(BuildArchitecture) Binaryen to $(HostBinaryenDir)" Condition="'$(BuildArchitecture)' != '$(TargetArchitecture)' or '$(PackageTargetOS)' != '$(PackageHostOS)'" />
     <ItemGroup>
-      <BinaryenPkgFiles Include="$(NuGetPackageRoot)\$([System.String]::Copy(%(PackageReference.Identity)).ToLowerInvariant())\%(PackageReference.Version)\tools\$(PackageHostOS)-$(TargetArchitecture)\**"
+      <BinaryenPkgFiles Include="$(NuGetPackageRoot)\$([System.String]::Copy(%(PackageReference.Identity)).ToLowerInvariant())\%(PackageReference.Version)\tools\$(PackageTargetOS)-$(TargetArchitecture)\**"
                  FileArch="%(PackageReference.PackageArch)"
                  Condition="$([System.String]::Copy(%(PackageReference.Identity)).Contains('Microsoft.NETCore.Runtime.Wasm.Binaryen.Transport')) == 'true'" />
       <HostBinaryenPkgFiles Include="$(NuGetPackageRoot)\$([System.String]::Copy(%(PackageReference.Identity)).ToLowerInvariant())\%(PackageReference.Version)\tools\$(PackageHostOS)-$(BuildArchitecture)\**"
@@ -72,16 +69,16 @@
     <Copy SourceFiles="@(BinaryenPkgFiles)" DestinationFolder="$(BinaryenDir)\%(RecursiveDir)">
       <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
     </Copy>
-    <Copy SourceFiles="@(HostBinaryenPkgFiles)" DestinationFolder="$(HostBinaryenDir)\%(RecursiveDir)" Condition="'$(BuildArchitecture)' != '$(TargetArchitecture)'">
+    <Copy SourceFiles="@(HostBinaryenPkgFiles)" DestinationFolder="$(HostBinaryenDir)\%(RecursiveDir)" Condition="'$(BuildArchitecture)' != '$(TargetArchitecture)' or '$(PackageTargetOS)' != '$(PackageHostOS)'">
       <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
     </Copy>
   </Target>
 
   <Target Name="CopyNode" Condition="'$(ForceBuildManifestOnly)' != 'true' and '$(ArcadeBuildFromSource)' != 'true'" BeforeTargets="ReallyBuild">
-    <Message Importance="High" Text="** Copying $(TargetArchitecture) Node to $(NodeDir)" />
-    <Message Importance="High" Text="** Copying $(BuildArchitecture) Node to $(HostNodeDir)" Condition="'$(BuildArchitecture)' != '$(TargetArchitecture)'" />
+    <Message Importance="High" Text="** Copying $(PackageTargetOS)-$(TargetArchitecture) Node to $(NodeDir)" />
+    <Message Importance="High" Text="** Copying $(PackageHostOS)-$(BuildArchitecture) Node to $(HostNodeDir)" Condition="'$(BuildArchitecture)' != '$(TargetArchitecture)' or '$(PackageTargetOS)' != '$(PackageHostOS)'" />
     <ItemGroup>
-      <NodePkgFiles Include="$(NuGetPackageRoot)\$([System.String]::Copy(%(PackageReference.Identity)).ToLowerInvariant())\%(PackageReference.Version)\tools\$(PackageHostOS)-$(TargetArchitecture)\**"
+      <NodePkgFiles Include="$(NuGetPackageRoot)\$([System.String]::Copy(%(PackageReference.Identity)).ToLowerInvariant())\%(PackageReference.Version)\tools\$(PackageTargetOS)-$(TargetArchitecture)\**"
                  FileArch="%(PackageReference.PackageArch)"
                  Condition="$([System.String]::Copy(%(PackageReference.Identity)).Contains('Microsoft.NETCore.Runtime.Wasm.Node.Transport')) == 'true'" />
       <HostNodePkgFiles Include="$(NuGetPackageRoot)\$([System.String]::Copy(%(PackageReference.Identity)).ToLowerInvariant())\%(PackageReference.Version)\tools\$(PackageHostOS)-$(BuildArchitecture)\**"
@@ -91,16 +88,16 @@
     <Copy SourceFiles="@(NodePkgFiles)" DestinationFolder="$(NodeDir)\%(RecursiveDir)">
       <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
     </Copy>
-    <Copy SourceFiles="@(HostNodePkgFiles)" DestinationFolder="$(HostNodeDir)\%(RecursiveDir)" Condition="'$(BuildArchitecture)' != '$(TargetArchitecture)'">
+    <Copy SourceFiles="@(HostNodePkgFiles)" DestinationFolder="$(HostNodeDir)\%(RecursiveDir)" Condition="'$(BuildArchitecture)' != '$(TargetArchitecture)' or '$(PackageTargetOS)' != '$(PackageHostOS)'">
       <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
     </Copy>
   </Target>
 
   <Target Name="CopyPython" BeforeTargets="ReallyBuild" Condition="'$(PackageHostOS)' != 'linux' and '$(ForceBuildManifestOnly)' != 'true' and '$(ArcadeBuildFromSource)' != 'true'">
-    <Message Importance="High" Text="** Copying $(TargetArchitecture) Python to $(PythonDir)" />
-    <Message Importance="High" Text="** Copying $(BuildArchitecture) Python to $(HostPythonDir)" Condition="'$(BuildArchitecture)' != '$(TargetArchitecture)'" />
+    <Message Importance="High" Text="** Copying $(PackageTargetOS)-$(TargetArchitecture) Python to $(PythonDir)" />
+    <Message Importance="High" Text="** Copying $(PackageHostOS)-$(BuildArchitecture) Python to $(HostPythonDir)" Condition="'$(BuildArchitecture)' != '$(TargetArchitecture)' or '$(PackageTargetOS)' != '$(PackageHostOS)'" />
     <ItemGroup>
-      <PythonPkgFiles Include="$(NuGetPackageRoot)\$([System.String]::Copy(%(PackageReference.Identity)).ToLowerInvariant())\%(PackageReference.Version)\tools\$(PackageHostOS)-$(TargetArchitecture)\**"
+      <PythonPkgFiles Include="$(NuGetPackageRoot)\$([System.String]::Copy(%(PackageReference.Identity)).ToLowerInvariant())\%(PackageReference.Version)\tools\$(PackageTargetOS)-$(TargetArchitecture)\**"
                  FileArch="%(PackageReference.PackageArch)"
                  Condition="$([System.String]::Copy(%(PackageReference.Identity)).Contains('Microsoft.NETCore.Runtime.Wasm.Python.Transport')) == 'true'" />
       <HostPythonPkgFiles Include="$(NuGetPackageRoot)\$([System.String]::Copy(%(PackageReference.Identity)).ToLowerInvariant())\%(PackageReference.Version)\tools\$(PackageHostOS)-$(BuildArchitecture)\**"
@@ -110,16 +107,16 @@
     <Copy SourceFiles="@(PythonPkgFiles)" DestinationFolder="$(PythonDir)\%(RecursiveDir)">
       <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
     </Copy>
-    <Copy SourceFiles="@(HostPythonPkgFiles)" DestinationFolder="$(HostPythonDir)\%(RecursiveDir)" Condition="'$(BuildArchitecture)' != '$(TargetArchitecture)'">
+    <Copy SourceFiles="@(HostPythonPkgFiles)" DestinationFolder="$(HostPythonDir)\%(RecursiveDir)" Condition="'$(BuildArchitecture)' != '$(TargetArchitecture)' or '$(PackageTargetOS)' != '$(PackageHostOS)'">
       <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
     </Copy>
   </Target>
 
   <Target Name="CopyLLVM" Condition="'$(ForceBuildManifestOnly)' != 'true' and '$(ArcadeBuildFromSource)' != 'true'" BeforeTargets="ReallyBuild">
-    <Message Importance="High" Text="** Copying $(TargetArchitecture) LLVM to $(LLVMDir)" />
-    <Message Importance="High" Text="** Copying $(BuildArchitecture) LLVM to $(HostLLVMDir)" Condition="'$(BuildArchitecture)' != '$(TargetArchitecture)'" />
+    <Message Importance="High" Text="** Copying $(PackageTargetOS)-$(TargetArchitecture) LLVM to $(LLVMDir)" />
+    <Message Importance="High" Text="** Copying $(PackageHostOS)-$(BuildArchitecture) LLVM to $(HostLLVMDir)" Condition="'$(BuildArchitecture)' != '$(TargetArchitecture)' or '$(PackageTargetOS)' != '$(PackageHostOS)'" />
     <ItemGroup>
-      <LLVMPkgFiles Include="$(NuGetPackageRoot)\$([System.String]::Copy(%(PackageReference.Identity)).ToLowerInvariant())\%(PackageReference.Version)\tools\$(PackageHostOS)-$(TargetArchitecture)\**"
+      <LLVMPkgFiles Include="$(NuGetPackageRoot)\$([System.String]::Copy(%(PackageReference.Identity)).ToLowerInvariant())\%(PackageReference.Version)\tools\$(PackageTargetOS)-$(TargetArchitecture)\**"
                  FileArch="%(PackageReference.PackageArch)"
                  Condition="$([System.String]::Copy(%(PackageReference.Identity)).Contains('Microsoft.NETCore.Runtime.Wasm.LLVM.Transport')) == 'true'" />
       <HostLLVMPkgFiles Include="$(NuGetPackageRoot)\$([System.String]::Copy(%(PackageReference.Identity)).ToLowerInvariant())\%(PackageReference.Version)\tools\$(PackageHostOS)-$(BuildArchitecture)\**"
@@ -129,7 +126,7 @@
     <Copy SourceFiles="@(LLVMPkgFiles)" DestinationFolder="$(LLVMDir)\%(RecursiveDir)">
       <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
     </Copy>
-    <Copy SourceFiles="@(HostLLVMPkgFiles)" DestinationFolder="$(HostLLVMDir)\%(RecursiveDir)" Condition="'$(BuildArchitecture)' != '$(TargetArchitecture)'">
+    <Copy SourceFiles="@(HostLLVMPkgFiles)" DestinationFolder="$(HostLLVMDir)\%(RecursiveDir)" Condition="'$(BuildArchitecture)' != '$(TargetArchitecture)' or '$(PackageTargetOS)' != '$(PackageHostOS)'">
       <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
     </Copy>
   </Target>

@@ -50,7 +50,7 @@
     "id": "python",
     "version": "9.0.0",
     "activated_cfg": "PYTHON='%installation_dir%/bin/python3%.exe%'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.9/site-packages/certifi/cacert.pem",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.11/site-packages/certifi/cacert.pem",
     "custom_is_installed_script": "lie_and_say_yes"
   },
   {
