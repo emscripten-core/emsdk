@@ -6,6 +6,7 @@
   <ItemGroup>
     <File Include="$(ArtifactsDirToPackage)**" TargetPath="tools\%(RecursiveDir)" SkipPackageFileCheck="true" />
     <File Include="$(RepoRoot)eng\.emscripten" TargetPath="tools\emscripten" SkipPackageFileCheck="true" />
+    <File Include="$(RepoRoot)eng\emsdk_env.sh" TargetPath="tools" SkipPackageFileCheck="true" />
     <File Include="$(RepoRoot)eng\sdk_files\Emscripten.Sdk.props" TargetPath="Sdk\Sdk.props" SkipPackageFileCheck="true" />
   </ItemGroup>
 </Project>
