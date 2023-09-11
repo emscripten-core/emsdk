@@ -13,6 +13,8 @@
   <PropertyGroup Condition="'$(IsUnversionedManifest)' == 'true'">
     <IsShipping>false</IsShipping>
     <WorkloadVersionSuffix>.Transport</WorkloadVersionSuffix>
+    <VersionSuffix>$(_PreReleaseLabel)$(_BuildNumberLabels)</VersionSuffix>
+    <StableVersion></StableVersion>
   </PropertyGroup>
 
   <Target Name="_PrepareForPack" BeforeTargets="GetPackageFiles" Returns="@(PackageFile)">
