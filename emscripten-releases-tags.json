@@ -2,7 +2,7 @@
   "aliases": {
     "latest": "3.1.46",
     "latest-sdk": "latest",
-    "latest-arm64-linux": "3.1.45",
+    "latest-arm64-linux": "3.1.46",
     "latest-64bit": "latest",
     "sdk-latest-64bit": "latest",
     "latest-upstream": "latest",
