@@ -62,6 +62,10 @@
                           Version="$(AssemblyVersion)"
                           Title=".NET WebAssembly Build Tools (Emscripten)"
                           Description="Build tools for WebAssembly ahead-of-time (AoT) compilation and native linking."/>
+      <ComponentResources Include="microsoft-net-sdk-emscripten-net8"
+                          Version="$(AssemblyVersion)"
+                          Title=".NET WebAssembly Build Tools for .NET8 (Emscripten)"
+                          Description="Build tools for WebAssembly ahead-of-time (AoT) compilation and native linking on .NET8."/>
       <ComponentResources Include="microsoft-net-sdk-emscripten-net7"
                           Version="$(AssemblyVersion)"
                           Title=".NET WebAssembly Build Tools for .NET7 (Emscripten)"

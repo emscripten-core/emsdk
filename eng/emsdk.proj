@@ -386,6 +386,10 @@
              Condition="'$(AssetManifestOS)' == '' or ('$(AssetManifestOS)' == 'win' and '$(TargetArchitecture)' == 'x64')or '$(ForceBuildManifestOnly)' == 'true' or '$(ArcadeBuildFromSource)' == 'true'"
              Targets="Build" 
              Properties="PreReleaseVersionLabel=$(PreReleaseVersionLabel);PreReleaseVersionIteration=$(PreReleaseVersionIteration)" />
+    <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Workload.Emscripten.net8.Manifest\Microsoft.NET.Workload.Emscripten.net8.Manifest.pkgproj"
+             Condition="'$(AssetManifestOS)' == '' or ('$(AssetManifestOS)' == 'win' and '$(TargetArchitecture)' == 'x64')or '$(ForceBuildManifestOnly)' == 'true' or '$(ArcadeBuildFromSource)' == 'true'"
+             Targets="Build"
+             Properties="PreReleaseVersionLabel=$(PreReleaseVersionLabel);PreReleaseVersionIteration=$(PreReleaseVersionIteration)" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)nuget\Microsoft.NET.Runtime.Emscripten.Sdk.Internal\Microsoft.NET.Runtime.Emscripten.Sdk.Internal.pkgproj" Targets="Build" 
              Condition="'$(OS)' == 'Windows_NT' and '$(TargetArchitecture)' == 'x64'" />
   </Target>
