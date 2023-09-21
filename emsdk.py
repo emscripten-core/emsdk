@@ -672,7 +672,8 @@ def get_download_target(url, dstpath, filename_prefix=''):
 
 # On success, returns the filename on the disk pointing to the destination file that was produced
 # On failure, returns None.
-def download_file(url, dstpath, download_even_if_exists=False, filename_prefix=''):
+def download_file(url, dstpath, download_even_if_exists=False,
+                  filename_prefix='', silent=False):
   debug_print('download_file(url=' + url + ', dstpath=' + dstpath + ')')
   file_name = get_download_target(url, dstpath, filename_prefix)
 
@@ -717,9 +718,10 @@ def download_file(url, dstpath, download_even_if_exists=False, filename_prefix='
         print(']')
         sys.stdout.flush()
   except Exception as e:
-    errlog("Error: Downloading URL '" + url + "': " + str(e))
-    if "SSL: CERTIFICATE_VERIFY_FAILED" in str(e) or "urlopen error unknown url type: https" in str(e):
-      errlog("Warning: Possibly SSL/TLS issue. Update or install Python SSL root certificates (2048-bit or greater) supplied in Python folder or https://pypi.org/project/certifi/ and try again.")
+    if not silent:
+      errlog("Error: Downloading URL '" + url + "': " + str(e))
+      if "SSL: CERTIFICATE_VERIFY_FAILED" in str(e) or "urlopen error unknown url type: https" in str(e):
+        errlog("Warning: Possibly SSL/TLS issue. Update or install Python SSL root certificates (2048-bit or greater) supplied in Python folder or https://pypi.org/project/certifi/ and try again.")
     rmfile(file_name)
     return None
   except KeyboardInterrupt:
@@ -1407,18 +1409,36 @@ def download_and_extract(archive, dest_dir, filename_prefix='', clobber=True):
   debug_print('download_and_extract(archive=' + archive + ', dest_dir=' + dest_dir + ')')
 
   url = urljoin(emsdk_packages_url, archive)
-  download_target = get_download_target(url, download_dir, filename_prefix)
 
-  received_download_target = download_file(url, download_dir, not KEEP_DOWNLOADS, filename_prefix)
-  if not received_download_target:
+  def try_download(url, silent=False):
+    return download_file(url, download_dir, not KEEP_DOWNLOADS,
+                         filename_prefix, silent=silent)
+
+  # Special hack for the wasm-binaries we transitioned from `.bzip2` to
+  # `.xz`, but we can't tell from the version/url which one to use, so
+  # try one and then fall back to the other.
+  success = False
+  if 'wasm-binaries' in archive and os.path.splitext(archive)[1] == '.xz':
+    success = try_download(url, silent=True)
+    if not success:
+      alt_url = url.replace('.tar.xz', '.tbz2')
+      success = try_download(alt_url, silent=True)
+      if success:
+        url = alt_url
+
+  if not success:
+    success = try_download(url)
+
+  if not success:
     return False
-  assert received_download_target == download_target
 
   # Remove the old directory, since we have some SDKs that install into the
   # same directory.  If we didn't do this contents of the previous install
   # could remain.
   if clobber:
     remove_tree(dest_dir)
+
+  download_target = get_download_target(url, download_dir, filename_prefix)
   if archive.endswith('.zip'):
     return unzip(download_target, dest_dir)
   else:
@@ -2071,17 +2091,29 @@ def get_emscripten_releases_tot():
   arch = ''
   if ARCH == 'arm64':
     arch = '-arm64'
-  for release in recent_releases:
-    url = emscripten_releases_download_url_template % (
+
+  def make_url(ext):
+   return emscripten_releases_download_url_template % (
       os_name(),
       release,
       arch,
-      'tbz2' if not WINDOWS else 'zip'
+      ext,
     )
+
+  for release in recent_releases:
+    make_url('tbz2' if not WINDOWS else 'zip')
     try:
-      urlopen(url)
+      urlopen(make_url('tar.xz' if not WINDOWS else 'zip'))
     except:
-      continue
+      if not WINDOWS:
+        # Try the old `.tbz2` name
+        # TODO:remove this once tot builds are all using xz
+        try:
+          urlopen(make_url('tbz2'))
+        except:
+          continue
+      else:
+        continue
     return release
   exit_with_error('failed to find build of any recent emsdk revision')
 
