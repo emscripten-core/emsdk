@@ -20,4 +20,10 @@ wget $URL -O arm64.tbz2
 gsutil cp -n arm64.tbz2 gs://webassembly/emscripten-releases-builds/linux/${SHA}/wasm-binaries-arm64.tbz2
 sed -i "s/\"latest-arm64-linux\": \".*\"/\"latest-arm64-linux\": \"$VERSION\"/" emscripten-releases-tags.json
 
+# Create a new commit based on these changes
+git checkout -b arm64_linux_$VERSION origin/main
+git add emscripten-releases-tags.json
+git commit -m "Add $VERSION linux/arm64 release"
+git push origin arm64_linux_$VERSION origin
+
 echo "done"
