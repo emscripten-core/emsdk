@@ -18,7 +18,9 @@
     <WasmNativeWorkload>false</WasmNativeWorkload>
   </PropertyGroup>
 
-  <ImportGroup Condition="'$(RuntimeIdentifier)' == 'browser-wasm' and '$(UsingBrowserRuntimeWorkload)' == 'true' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '9.0'))">
+  <CurrentEmsdkTarget Condition="'$(ForceNet8Current)' == 'true'">8.0</CurrentEmsdkTarget>
+  <CurrentEmsdkTarget Condition="'$(ForceNet8Current)' != 'true'">9.0</CurrentEmsdkTarget>
+  <ImportGroup Condition="'$(RuntimeIdentifier)' == 'browser-wasm' and '$(UsingBrowserRuntimeWorkload)' == 'true' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '$(CurrentEmsdkTarget)'))">
     <Import Project="Sdk.props" Sdk="Microsoft.NET.Runtime.Emscripten.Python" Condition="!$([MSBuild]::IsOsPlatform('Linux'))" />
     <Import Project="Sdk.props" Sdk="Microsoft.NET.Runtime.Emscripten.Node" />
     <Import Project="Sdk.props" Sdk="Microsoft.NET.Runtime.Emscripten.Sdk" />

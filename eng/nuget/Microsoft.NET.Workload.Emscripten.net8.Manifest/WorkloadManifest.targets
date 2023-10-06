@@ -1,5 +1,5 @@
 <Project>
-  <ImportGroup Condition="'$(RuntimeIdentifier)' == 'browser-wasm' and '$(UsingBrowserRuntimeWorkload)' == 'true' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionEquals('$(TargetFrameworkVersion)', '8.0'))">
+  <ImportGroup Condition="'$(RuntimeIdentifier)' == 'browser-wasm' and '$(UsingBrowserRuntimeWorkload)' == 'true' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionEquals('$(TargetFrameworkVersion)', '8.0')) and $([MSBuild]::VersionLessThan('$(TargetFrameworkVersion)', '$(CurrentEmsdkTarget)'))">
     <Import Project="Sdk.props" Sdk="Microsoft.NET.Runtime.Emscripten.Python.net8" Condition="!$([MSBuild]::IsOsPlatform('Linux'))" />
     <Import Project="Sdk.props" Sdk="Microsoft.NET.Runtime.Emscripten.Node.net8" />
     <Import Project="Sdk.props" Sdk="Microsoft.NET.Runtime.Emscripten.Sdk.net8" />
