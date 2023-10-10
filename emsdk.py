@@ -2101,7 +2101,7 @@ def get_emscripten_releases_tot():
     )
 
   for release in recent_releases:
-    make_url('tbz2' if not WINDOWS else 'zip')
+    make_url('tar.xz' if not WINDOWS else 'zip')
     try:
       urlopen(make_url('tar.xz' if not WINDOWS else 'zip'))
     except:
