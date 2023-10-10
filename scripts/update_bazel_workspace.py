@@ -39,9 +39,9 @@ def revisions_item(version, latest_hash):
     return f'''\
     "{version}": struct(
         hash = "{latest_hash}",
-        sha_linux = "{get_sha('linux', 'tbz2', latest_hash)}",
-        sha_mac = "{get_sha('mac', 'tbz2', latest_hash)}",
-        sha_mac_arm64 = "{get_sha('mac', 'tbz2', latest_hash, '-arm64')}",
+        sha_linux = "{get_sha('linux', 'tar.xz', latest_hash)}",
+        sha_mac = "{get_sha('mac', 'tar.xz', latest_hash)}",
+        sha_mac_arm64 = "{get_sha('mac', 'tar.xz', latest_hash, '-arm64')}",
         sha_win = "{get_sha('win', 'zip', latest_hash)}",
     ),
 '''
