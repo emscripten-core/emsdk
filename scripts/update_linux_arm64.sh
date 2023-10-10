@@ -17,7 +17,9 @@ SHA=$(jq -r ".releases.\"${VERSION}\"" emscripten-releases-tags.json)
 URL=$(jq -r '.Records[0] | "https://\(.s3.bucket.name).s3.\(.awsRegion).amazonaws.com/\(.s3.object.key)"')
 
 wget $URL -O arm64.tbz2
-gsutil cp -n arm64.tbz2 gs://webassembly/emscripten-releases-builds/linux/${SHA}/wasm-binaries-arm64.tbz2
+tar xf arm64.tbz2
+tar --use-compress-program "xz -T0" -cf arm64.tar.xz install/
+gsutil cp -n arm64.tar.xz gs://webassembly/emscripten-releases-builds/linux/${SHA}/wasm-binaries-arm64.tar.xz
 sed -i "s/\"latest-arm64-linux\": \".*\"/\"latest-arm64-linux\": \"$VERSION\"/" emscripten-releases-tags.json
 
 echo "done"
