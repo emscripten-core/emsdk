@@ -201,7 +201,7 @@ environment and tools. To set up your own fork as the currently active
 Emscripten toolchain, first install the `sdk-main` SDK like shown in the
 previous section, and then run the following commands in the emsdk directory:
 
-    cd emscripten/main
+    cd upstream/emscripten
     # Add a git remote link to your own repository.
     git remote add myremote https://github.com/mygituseraccount/emscripten.git
     # Obtain the changes in your link.
