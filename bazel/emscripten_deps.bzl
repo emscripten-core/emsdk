@@ -9,6 +9,11 @@ BUILD_FILE_CONTENT_TEMPLATE = """
 package(default_visibility = ['//visibility:public'])
 
 filegroup(
+    name = "all",
+    srcs = glob(["**"]),
+)
+
+filegroup(
     name = "includes",
     srcs = glob([
         "emscripten/cache/sysroot/include/c++/v1/**",
