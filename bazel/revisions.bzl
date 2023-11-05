@@ -1,7 +1,49 @@
-# This file is automatically updated by emsdk/scripts/update_bazel_workspace.sh
+# This file is automatically updated by emsdk/scripts/update_bazel_workspace.py
 # DO NOT MODIFY
 
 EMSCRIPTEN_TAGS = {
+    "3.1.47": struct(
+        hash = "39ade279e75e6d17dd6b7eb9fba2006e61fe966b",
+        sha_linux = "bdc50abe5c7d4b4f14acea4ec36b270e86770cea2da4b0c393b80a692dc7eb7a",
+        sha_mac = "6a3a116707037d75a967a7d971894d8ace74a2a230aa50ba55e88e7cd7b94953",
+        sha_mac_arm64 = "b13d228e6a1c89c13a1500fff07dcf093fb01fa621d458496d4a6d7f05cfd600",
+        sha_win = "66a6c4f0cda4ace14a86d3e59d20685d35211854d21670632b0566ac73638245",
+    ),
+    "3.1.46": struct(
+        hash = "21644188d5c473e92f1d7df2f9f60c758a78a486",
+        sha_linux = "75cbf14629b06e417b597d3f897ad7d881c53762380aca2f0dd85f1b15891511",
+        sha_mac = "06f45608381203d501141be632cab960aa105626c3a0f7a48657b79728103880",
+        sha_mac_arm64 = "c2a85b509a91663b390f77d51fba775421d42456211466fd3757f9dede7af9e4",
+        sha_win = "1ed3a3f36dee5d373ebea213fc723b3eeb7d6ba4c43da6a951ea0d76f265f234",
+    ),
+    "3.1.45": struct(
+        hash = "2b7c5fb8ffeac3315deb1f82ab7bf8da544f84a1",
+        sha_linux = "1c0576765f8b34603eead6f2bd4bc77bf68ea2f0a39ed4c144514103e85bc7d9",
+        sha_mac = "87f63ebb2f9807435016b238bbf46ccb94c919ec0786b46463cd788634391b0c",
+        sha_mac_arm64 = "29e698772c0e00c21ce120dd1db1586f5c65507168babff148c2e628add6e72a",
+        sha_win = "891d49f8828f715ef621d55fe202de4929bbdc89b69101fd33963571458a7f47",
+    ),
+    "3.1.44": struct(
+        hash = "b90507fcf011da61bacfca613569d882f7749552",
+        sha_linux = "5ffa2bab560a9cda6db6ee041a635d10e1ef26c8fc63675d682917b8d3d53263",
+        sha_mac = "291b2653f7576f8354f0267047e47a5ddef11223c89d5be399d04618f13b3832",
+        sha_mac_arm64 = "ad1625821b49ccbbe733596223fdf99fd786470d679f2c9dfabd4a1a7b929282",
+        sha_win = "8b61f60ef169b1c20207361067c40192c83b96cdbdb2f4cff21dfb20b9ee528d",
+    ),
+    "3.1.43": struct(
+        hash = "bf3c159888633d232c0507f4c76cc156a43c32dc",
+        sha_linux = "147a67a3454783b8c351780ec0111329d1e6fbb1d2fcdfe1c035e1c0997e0701",
+        sha_mac = "d84896c6d1ba0fbd9a5e5c5830b3ac4a02da5e683e9d8c7172f4c3ffdfaa0392",
+        sha_mac_arm64 = "d684f0bfc655f61e76cec29fdaad1668f3d21a229fdd908267f400691468328d",
+        sha_win = "a335f5f5b070cf354f1ca8e0afb23c06ae5f9ffb2c501124da7fcaea09a7db6d",
+    ),
+    "3.1.42": struct(
+        hash = "9d73bf4bd5b5c9ce6e51be0ed5ce6599fcb28e9e",
+        sha_linux = "aaa076e64dd511b0d874c348f8dab80a2f9ade0887ba74845fd02c40bbf9e68f",
+        sha_mac = "4715002394c5d444243c77ca231883eb999cf3313c4869cf0ae288d911f80f89",
+        sha_mac_arm64 = "84dede714edd81362ed2a2f79b91b1bd9cd544f219f937582e616d73bf0ea7f9",
+        sha_win = "4c704f4a4927aa537c2815a72915b7591c163ae8f0dbaedc167e810dd2a4a83d",
+    ),
     "3.1.41": struct(
         hash = "eb71265ef0ab905620015adbfedacf88c5dbf021",
         sha_linux = "493ec8bd3f3ea3d6d616de01d6dac9c2af696978c6c44d453757ab2f8a666656",

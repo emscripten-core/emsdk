@@ -10,12 +10,43 @@ executors:
   mac:
     environment:
       EMSDK_NOTTY: "1"
-      # Without this, any `brew installl` command will result in self-update of
+      # Without this, any `brew install` command will result in self-update of
       # brew itself which takes more than 4 minutes.
       HOMEBREW_NO_AUTO_UPDATE: "1"
     macos:
       xcode: "12.5.1"
     resource_class: macos.x86.medium.gen2
+  mac_arm64:
+    environment:
+      EMSDK_NOTTY: "1"
+      # Without this, any `brew install` command will result in self-update of
+      # brew itself which takes more than 4 minutes.
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+    macos:
+      xcode: "13.4.1"
+    resource_class: macos.m1.medium.gen1
+  linux_arm64:
+    machine:
+      image: ubuntu-2004:202101-01
+    resource_class: arm.medium
+
+commands:
+  setup-macos:
+    steps:
+      - checkout
+      - run:
+          name: Install CMake
+          command: brew install cmake
+  test-macos:
+    steps:
+      - run:
+          name: test.sh
+          command: test/test.sh
+      - run:
+          name: test.py
+          command: |
+            source emsdk_env.sh
+            test/test.py
 
 jobs:
   flake8:
@@ -29,9 +60,9 @@ jobs:
             apt-get install -q -y python-pip python3-pip
       - run: python2 -m pip install --upgrade pip
       - run: python3 -m pip install --upgrade pip
-      - run: python2 -m pip install flake8==3.7.8
-      - run: python3 -m pip install flake8==3.7.8
-      - run: python2 -m flake8 --show-source --statistics
+      - run: python2 -m pip install flake8==3.9.2
+      - run: python3 -m pip install flake8==3.9.2
+      - run: python2 -m flake8 --show-source --statistics --extend-exclude=./scripts
       - run: python3 -m flake8 --show-source --statistics
   test-linux:
     executor: bionic
@@ -49,6 +80,7 @@ jobs:
       - run:
           name: Install debian packages
           command: apt-get update -q && apt-get install -q -y cmake build-essential openjdk-8-jre-headless ksh zsh
+      - run: test/test_node_path.sh
       - run: test/test.sh
       - run: test/test_source_env.sh
       - run:
@@ -56,19 +88,24 @@ jobs:
           command: |
             source emsdk_env.sh
             test/test.py
-  test-mac:
-    executor: mac
+  test-linux-arm64:
+    executor: linux_arm64
     steps:
       - checkout
       - run:
-          name: Install cmake
-          command: brew install cmake
+          name: Install debian packages
+          command: sudo apt-get update -q && sudo apt-get install -q cmake build-essential openjdk-8-jre-headless
       - run: test/test.sh
-      - run:
-          name: test.py
-          command: |
-            source emsdk_env.sh
-            test/test.py
+  test-mac:
+    executor: mac
+    steps:
+      - setup-macos
+      - test-macos
+  test-mac-arm64:
+    executor: mac_arm64
+    steps:
+      - setup-macos
+      - test-macos
   test-windows:
     executor:
       name: win/vs2019
@@ -278,9 +315,15 @@ workflows:
   test-linux:
     jobs:
       - test-linux
+  test-linux-arm64:
+    jobs:
+      - test-linux-arm64
   test-mac:
     jobs:
       - test-mac
+  test-mac-arm64:
+    jobs:
+      - test-mac-arm64
   test-windows:
     jobs:
       - test-windows

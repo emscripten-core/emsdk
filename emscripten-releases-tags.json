@@ -1,8 +1,8 @@
 {
   "aliases": {
-    "latest": "3.1.41",
+    "latest": "3.1.47",
     "latest-sdk": "latest",
-    "latest-arm64-linux": "3.1.33",
+    "latest-arm64-linux": "3.1.47",
     "latest-64bit": "latest",
     "sdk-latest-64bit": "latest",
     "latest-upstream": "latest",
@@ -10,6 +10,18 @@
     "latest-releases-upstream": "latest"
   },
   "releases": {
+    "3.1.47": "39ade279e75e6d17dd6b7eb9fba2006e61fe966b",
+    "3.1.47-asserts": "dc49d84ed226a5a30a5117cefc07c781f6c0d16e",
+    "3.1.46": "21644188d5c473e92f1d7df2f9f60c758a78a486",
+    "3.1.46-asserts": "3e09b252d0d5a8e045d2ca92c606bfb9874bddf8",
+    "3.1.45": "2b7c5fb8ffeac3315deb1f82ab7bf8da544f84a1",
+    "3.1.45-asserts": "2aec03dfd8ce68c95316116dafbe30e273f32a81",
+    "3.1.44": "b90507fcf011da61bacfca613569d882f7749552",
+    "3.1.44-asserts": "06d00b0c62e435b743aa37c67b4ab76bc8568c79",
+    "3.1.43": "bf3c159888633d232c0507f4c76cc156a43c32dc",
+    "3.1.43-asserts": "3ec53a819a5958665d6bb0ac895c99546921b6ef",
+    "3.1.42": "9d73bf4bd5b5c9ce6e51be0ed5ce6599fcb28e9e",
+    "3.1.42-asserts": "7a622e0b66ee095aea9766375a2774b68c8bd8ef",
     "3.1.41": "eb71265ef0ab905620015adbfedacf88c5dbf021",
     "3.1.41-asserts": "064607aeccaffd93175bb40c072271c0393d71a5",
     "3.1.40": "c3122846bb040798aab975f61008c37eb19476de",

@@ -49,7 +49,7 @@ emscripten_releases_download_url_template = "https://storage.googleapis.com/weba
 # `main.zip` perhaps.
 emsdk_zip_download_url = 'https://github.com/emscripten-core/emsdk/archive/HEAD.zip'
 
-zips_subdir = 'zips/'
+download_dir = 'downloads/'
 
 extra_release_tag = None
 
@@ -141,11 +141,16 @@ if machine.startswith('x64') or machine.startswith('amd64') or machine.startswit
 elif machine.endswith('86'):
   ARCH = 'x86'
 elif machine.startswith('aarch64') or machine.lower().startswith('arm64'):
-  ARCH = 'aarch64'
+  if WINDOWS:
+    errlog('No support for Windows on Arm, fallback to x64')
+    ARCH = 'x86_64'
+  else:
+    ARCH = 'arm64'
 elif machine.startswith('arm'):
   ARCH = 'arm'
 else:
   exit_with_error('unknown machine architecture: ' + machine)
+
 
 # Don't saturate all cores to not steal the whole system, but be aggressive.
 CPU_CORES = int(os.getenv('EMSDK_NUM_CORES', max(multiprocessing.cpu_count() - 1, 1)))
@@ -254,7 +259,7 @@ def vswhere(version):
       program_files = os.environ['ProgramFiles']
     vswhere_path = os.path.join(program_files, 'Microsoft Visual Studio', 'Installer', 'vswhere.exe')
     # Source: https://learn.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-build-tools?view=vs-2022
-    tools_arch = 'ARM64' if ARCH == 'aarch64' else 'x86.x64'
+    tools_arch = 'ARM64' if ARCH == 'arm64' else 'x86.x64'
     # The "-products *" allows detection of Build Tools, the "-prerelease" allows detection of Preview version
     # of Visual Studio and Build Tools.
     output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-products', '*', '-prerelease', '-version', '[%s.0,%s.0)' % (version, version + 1), '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.' + tools_arch, '-property', 'installationPath', '-format', 'json']))
@@ -667,7 +672,8 @@ def get_download_target(url, dstpath, filename_prefix=''):
 
 # On success, returns the filename on the disk pointing to the destination file that was produced
 # On failure, returns None.
-def download_file(url, dstpath, download_even_if_exists=False, filename_prefix=''):
+def download_file(url, dstpath, download_even_if_exists=False,
+                  filename_prefix='', silent=False):
   debug_print('download_file(url=' + url + ', dstpath=' + dstpath + ')')
   file_name = get_download_target(url, dstpath, filename_prefix)
 
@@ -712,9 +718,10 @@ def download_file(url, dstpath, download_even_if_exists=False, filename_prefix='
         print(']')
         sys.stdout.flush()
   except Exception as e:
-    errlog("Error: Downloading URL '" + url + "': " + str(e))
-    if "SSL: CERTIFICATE_VERIFY_FAILED" in str(e) or "urlopen error unknown url type: https" in str(e):
-      errlog("Warning: Possibly SSL/TLS issue. Update or install Python SSL root certificates (2048-bit or greater) supplied in Python folder or https://pypi.org/project/certifi/ and try again.")
+    if not silent:
+      errlog("Error: Downloading URL '" + url + "': " + str(e))
+      if "SSL: CERTIFICATE_VERIFY_FAILED" in str(e) or "urlopen error unknown url type: https" in str(e):
+        errlog("Warning: Possibly SSL/TLS issue. Update or install Python SSL root certificates (2048-bit or greater) supplied in Python folder or https://pypi.org/project/certifi/ and try again.")
     rmfile(file_name)
     return None
   except KeyboardInterrupt:
@@ -1018,13 +1025,13 @@ def xcode_sdk_version():
 def cmake_target_platform(tool):
   # Source: https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2017%202022.html#platform-selection
   if hasattr(tool, 'arch'):
-    if tool.arch == 'aarch64':
+    if tool.arch == 'arm64':
       return 'ARM64'
     elif tool.arch == 'x86_64':
       return 'x64'
     elif tool.arch == 'x86':
       return 'Win32'
-  if ARCH == 'aarch64':
+  if ARCH == 'arm64':
     return 'ARM64'
   else:
     return 'x64' if tool.bitness == 64 else 'Win32'
@@ -1033,7 +1040,7 @@ def cmake_target_platform(tool):
 def cmake_host_platform():
   # Source: https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2017%202022.html#toolset-selection
   arch_to_cmake_host_platform = {
-    'aarch64': 'ARM64',
+    'arm64': 'ARM64',
     'arm': 'ARM',
     'x86_64': 'x64',
     'x86': 'x86'
@@ -1078,7 +1085,7 @@ def build_llvm(tool):
     targets_to_build = 'WebAssembly;X86'
   elif ARCH == 'arm':
     targets_to_build = 'WebAssembly;ARM'
-  elif ARCH == 'aarch64':
+  elif ARCH == 'arm64':
     targets_to_build = 'WebAssembly;AArch64'
   else:
     targets_to_build = 'WebAssembly'
@@ -1398,23 +1405,41 @@ def build_binaryen_tool(tool):
   return success
 
 
-def download_and_unzip(zipfile, dest_dir, filename_prefix='', clobber=True):
-  debug_print('download_and_unzip(zipfile=' + zipfile + ', dest_dir=' + dest_dir + ')')
+def download_and_extract(archive, dest_dir, filename_prefix='', clobber=True):
+  debug_print('download_and_extract(archive=' + archive + ', dest_dir=' + dest_dir + ')')
 
-  url = urljoin(emsdk_packages_url, zipfile)
-  download_target = get_download_target(url, zips_subdir, filename_prefix)
+  url = urljoin(emsdk_packages_url, archive)
 
-  received_download_target = download_file(url, zips_subdir, not KEEP_DOWNLOADS, filename_prefix)
-  if not received_download_target:
+  def try_download(url, silent=False):
+    return download_file(url, download_dir, not KEEP_DOWNLOADS,
+                         filename_prefix, silent=silent)
+
+  # Special hack for the wasm-binaries we transitioned from `.bzip2` to
+  # `.xz`, but we can't tell from the version/url which one to use, so
+  # try one and then fall back to the other.
+  success = False
+  if 'wasm-binaries' in archive and os.path.splitext(archive)[1] == '.xz':
+    success = try_download(url, silent=True)
+    if not success:
+      alt_url = url.replace('.tar.xz', '.tbz2')
+      success = try_download(alt_url, silent=True)
+      if success:
+        url = alt_url
+
+  if not success:
+    success = try_download(url)
+
+  if not success:
     return False
-  assert received_download_target == download_target
 
   # Remove the old directory, since we have some SDKs that install into the
   # same directory.  If we didn't do this contents of the previous install
   # could remain.
   if clobber:
     remove_tree(dest_dir)
-  if zipfile.endswith('.zip'):
+
+  download_target = get_download_target(url, download_dir, filename_prefix)
+  if archive.endswith('.zip'):
     return unzip(download_target, dest_dir)
   else:
     return untargz(download_target, dest_dir)
@@ -1433,9 +1458,18 @@ def get_required_path(active_tools):
   path_add = [to_native_path(EMSDK_PATH)]
   for tool in active_tools:
     if hasattr(tool, 'activated_path'):
-      if hasattr(tool, 'activated_path_skip') and which(tool.activated_path_skip):
-        continue
       path = to_native_path(tool.expand_vars(tool.activated_path))
+      # If the tool has an activated_path_skip attribute then we don't add
+      # the tools path to the users path if a program by that name is found
+      # in the existing PATH.  This allows us to, for example, add our version
+      # node to the users PATH if, and only if, they don't already have a
+      # another version of node in thier PATH.
+      if hasattr(tool, 'activated_path_skip'):
+        current_path = which(tool.activated_path_skip)
+        # We found an executable by this name in the current PATH, but we
+        # ignore our own version for this purpose.
+        if current_path and os.path.dirname(current_path) != path:
+          continue
       path_add.append(path)
   return path_add
 
@@ -1860,11 +1894,8 @@ class Tool(object):
     elif hasattr(self, 'git_branch'):
       success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch)
     elif url.endswith(ARCHIVE_SUFFIXES):
-      global ARCH
-      if WINDOWS and ARCH == 'aarch64':
-        errlog('No support for Windows on Arm, fallback to x64')
-        ARCH = 'x86_64'
-      success = download_and_unzip(url, self.installation_path(), filename_prefix=getattr(self, 'zipfile_prefix', ''))
+      success = download_and_extract(url, self.installation_path(),
+                                     filename_prefix=getattr(self, 'download_prefix', ''))
     else:
       assert False, 'unhandled url type: ' + url
 
@@ -1914,8 +1945,8 @@ class Tool(object):
       return
     url = self.download_url()
     if url.endswith(ARCHIVE_SUFFIXES):
-      download_target = get_download_target(url, zips_subdir, getattr(self, 'zipfile_prefix', ''))
-      debug_print("Deleting temporary zip file " + download_target)
+      download_target = get_download_target(url, download_dir, getattr(self, 'download_prefix', ''))
+      debug_print("Deleting temporary download: " + download_target)
       rmfile(download_target)
 
   def uninstall(self):
@@ -2010,8 +2041,8 @@ def find_latest_hash():
 
 def resolve_sdk_aliases(name, verbose=False):
   releases_info = load_releases_info()
-  if name == 'latest' and LINUX and ARCH == 'aarch64':
-    print("warning: 'latest' on arm64-linux may be slightly behind other architectures")
+  if name == 'latest' and LINUX and ARCH == 'arm64':
+    errlog("WARNING: 'latest' on arm64-linux may be slightly behind other architectures")
     name = 'latest-arm64-linux'
   while name in releases_info['aliases']:
     if verbose:
@@ -2058,19 +2089,31 @@ def get_emscripten_releases_tot():
   # may not be a build for the most recent ones yet; find the last
   # that does.
   arch = ''
-  if ARCH == 'aarch64':
+  if ARCH == 'arm64':
     arch = '-arm64'
-  for release in recent_releases:
-    url = emscripten_releases_download_url_template % (
+
+  def make_url(ext):
+   return emscripten_releases_download_url_template % (
       os_name(),
       release,
       arch,
-      'tbz2' if not WINDOWS else 'zip'
+      ext,
     )
+
+  for release in recent_releases:
+    make_url('tar.xz' if not WINDOWS else 'zip')
     try:
-      urlopen(url)
+      urlopen(make_url('tar.xz' if not WINDOWS else 'zip'))
     except:
-      continue
+      if not WINDOWS:
+        # Try the old `.tbz2` name
+        # TODO:remove this once tot builds are all using xz
+        try:
+          urlopen(make_url('tbz2'))
+        except:
+          continue
+      else:
+        continue
     return release
   exit_with_error('failed to find build of any recent emsdk revision')
 
@@ -2100,7 +2143,7 @@ def update_emsdk():
   if is_emsdk_sourced_from_github():
     errlog('You seem to have bootstrapped Emscripten SDK by cloning from GitHub. In this case, use "git pull" instead of "emsdk update" to update emsdk. (Not doing that automatically in case you have local changes)')
     sys.exit(1)
-  if not download_and_unzip(emsdk_zip_download_url, EMSDK_PATH, clobber=False):
+  if not download_and_extract(emsdk_zip_download_url, EMSDK_PATH, clobber=False):
     sys.exit(1)
 
 
@@ -3044,6 +3087,10 @@ def main(args):
     if not args:
       errlog("Missing parameter. Type 'emsdk install <tool name>' to install a tool or an SDK. Type 'emsdk list' to obtain a list of available tools. Type 'emsdk install latest' to automatically install the newest version of the SDK.")
       return 1
+
+    if LINUX and ARCH == 'arm64' and args != ['latest']:
+      errlog('WARNING: arm64-linux binaries are not available for all releases.')
+      errlog('See https://github.com/emscripten-core/emsdk/issues/547')
 
     for t in args:
       tool = find_tool(t)
