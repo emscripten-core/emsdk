@@ -227,7 +227,7 @@ jobs:
           name: extract latest emscripten arm64 linux version
           command: |
             export ARM64_VERSION=$(grep -oP '(?<="latest-arm64-linux": ")[^"]*' emscripten-releases-tags.json)
-            export ARM64_IMAGE_TAG=${ARM64_VERSION}-arm64v8
+            export ARM64_IMAGE_TAG=${ARM64_VERSION}-arm64
             echo "ARM64_VERSION=$ARM64_VERSION"
             echo "ARM64_IMAGE_TAG=$ARM64_IMAGE_TAG"
       - run:
