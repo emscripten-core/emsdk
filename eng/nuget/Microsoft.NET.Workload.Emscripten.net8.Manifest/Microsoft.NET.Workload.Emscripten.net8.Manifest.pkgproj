@@ -41,8 +41,8 @@
 
     <ItemGroup>
       <_WorkloadManifestValues Include="WorkloadVersion" Value="$(PackageVersion)" />
-      <_WorkloadManifestValues Include="PackageVersion" Value="$(PackageVersion)" />
-      <_WorkloadManifestValues Include="EmscriptenVersion" Value="$(EmscriptenVersion)" />
+      <_WorkloadManifestValues Include="PackageVersion" Value="$(PackageVersionNet8)" />
+      <_WorkloadManifestValues Include="EmscriptenVersion" Value="$(EmscriptenVersionNet8)" />
     </ItemGroup>
 
     <GenerateFileFromTemplate
