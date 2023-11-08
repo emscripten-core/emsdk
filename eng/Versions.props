@@ -13,7 +13,7 @@
     <EmscriptenVersionNet7>3.1.12</EmscriptenVersionNet7>
     <EmscriptenVersionNet6>2.0.23</EmscriptenVersionNet6>
     <PackageVersionNet8>8.0.0</PackageVersionNet8>
-    <PackageVersionNet7>7.0.$([MSBuild]::Add($([System.Version]::Parse('$(PackageVersionNet8)').Build),13))</PackageVersionNet7>
+    <PackageVersionNet7>7.0.$([MSBuild]::Add($([System.Version]::Parse('$(PackageVersionNet8)').Build),14))</PackageVersionNet7>
     <PackageVersionNet6>6.0.$([MSBuild]::Add($([System.Version]::Parse('$(PackageVersionNet7)').Build),11))</PackageVersionNet6>
     <runtimelinuxarm64MicrosoftNETCoreRuntimeWasmBinaryenTransportVersion>9.0.0-alpha.1.23530.1</runtimelinuxarm64MicrosoftNETCoreRuntimeWasmBinaryenTransportVersion>
     <runtimelinuxmuslarm64MicrosoftNETCoreRuntimeWasmBinaryenTransportVersion>9.0.0-alpha.1.23530.1</runtimelinuxmuslarm64MicrosoftNETCoreRuntimeWasmBinaryenTransportVersion>
