@@ -22,4 +22,4 @@ case $CLANG_NAME in
         ;;
 esac
 
-$CLANG_CC $EXTRA_ARGS $@
+$CLANG_CC $EXTRA_ARGS "$@"
