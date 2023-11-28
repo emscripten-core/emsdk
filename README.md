@@ -48,7 +48,7 @@ important concepts to help understanding the internals of the SDK:
 ## System Requirements
 
 Using the emsdk pre-compiled packages requires only the minimal set of
-dependenencies lists below.  When building from source a wider set of tools
+dependencies lists below.  When building from source a wider set of tools
 include git, cmake, and a host compiler are required. See:
 https://emscripten.org/docs/building_from_source/toolchain_what_is_needed.html.
 
@@ -67,8 +67,8 @@ https://emscripten.org/docs/building_from_source/toolchain_what_is_needed.html.
 - `python`: Version 2.7.0 or above.
 - `java`: For running closure compiler (optional)
 
-The emsdk pre-compiled binaries are built aginst Ubuntu/Xenial 16.04 LTS and
-therefore depend on system libraries compatiable with versions of `glibc` and
+The emsdk pre-compiled binaries are built against Ubuntu/Xenial 16.04 LTS and
+therefore depend on system libraries compatible with versions of `glibc` and
 `libstdc++` present in that release.  If your linux distribution is very old
 you may not be able to use the pre-compiled binaries packages.
 
