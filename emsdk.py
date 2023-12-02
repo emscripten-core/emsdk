@@ -1508,7 +1508,7 @@ def load_em_config():
       pass
 
 
-def generate_em_config(active_tools):
+def generate_em_config(active_tools, permanently_activate, system):
   cfg = 'import os\n'
   cfg += "emsdk_path = os.path.dirname(os.getenv('EM_CONFIG')).replace('\\\\', '/')\n"
 
@@ -1546,7 +1546,14 @@ JS_ENGINES = [NODE_JS]
   rmfile(os.path.join(EMSDK_PATH, ".emscripten_sanity"))
 
   path_add = get_required_path(active_tools)
-  if not WINDOWS:
+
+  # Give some recommended next step, depending on the platform
+  if WINDOWS:
+    if not permanently_activate and not system:
+      print('Next steps:')
+      print('- Consider running `emsdk activate` with --permanent or --system')
+      print('  to have emsdk settings available on startup.')
+  else:
     emsdk_env = sdk_path('emsdk_env.sh')
     print('Next steps:')
     print('- To conveniently access emsdk tools from the command line,')
@@ -2413,7 +2420,7 @@ def set_active_tools(tools_to_activate, permanently_activate, system):
     print('Setting the following tools as active:\n   ' + '\n   '.join(map(lambda x: str(x), tools)))
     print('')
 
-  generate_em_config(tools_to_activate)
+  generate_em_config(tools_to_activate, permanently_activate, system)
 
   # Construct a .bat or .ps1 script that will be invoked to set env. vars and PATH
   # We only do this on cmd or powershell since emsdk.bat/ps1 is able to modify the
