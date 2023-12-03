@@ -210,9 +210,7 @@ jobs:
             make -C ./docker version=${CIRCLE_TAG} alias=latest push
 
   publish-docker-image-arm64:
-    machine:
-      image: ubuntu-2004:current
-    resource_class: arm.medium
+    executor: linux_arm64
     steps:
       - checkout
       - run:
@@ -221,27 +219,31 @@ jobs:
             CHANGED_FILES=$(git diff --name-only <<pipeline.git.base_revision>>..<<pipeline.git.revision>>)
             if [[ ! $CHANGED_FILES =~ "emscripten-releases-tags.json" ]]; then
               echo "emscripten-releases-tags.json has not changed, skipping build and publish"
-              exit 0
+              circleci-agent step halt
             fi
       - run:
           name: extract latest emscripten arm64 linux version
           command: |
-            export ARM64_VERSION=$(grep -oP '(?<="latest-arm64-linux": ")[^"]*' emscripten-releases-tags.json)
-            export ARM64_IMAGE_TAG=${ARM64_VERSION}-arm64
+            ARM64_VERSION=$(grep -oP '(?<="latest-arm64-linux": ")[^"]*' emscripten-releases-tags.json)
+            ARM64_IMAGE_TAG=${ARM64_VERSION}-arm64
+            echo "export ARM64_VERSION=$ARM64_VERSION" >> $BASH_ENV
+            echo "export ARM64_IMAGE_TAG=$ARM64_IMAGE_TAG" >> $BASH_ENV
             echo "ARM64_VERSION=$ARM64_VERSION"
             echo "ARM64_IMAGE_TAG=$ARM64_IMAGE_TAG"
       - run:
           name: check if docker image already exists
           command: |
-            DOCKER_IMAGE_EXISTS=$(curl -s -o /dev/null -w "%{http_code}" https://hub.docker.com/v2/repositories/emscripten/emsdk/tags/$ARM64_IMAGE_TAG)
-            if [ "$DOCKER_IMAGE_EXISTS" = "200" ]; then
-              echo "Docker image already exists, skipping build and publish"
+            if [ -z "$ARM64_VERSION" ]; then
+              echo "ARM64_VERSION is empty, skipping publish"
+              circleci-agent step halt
               exit 0
             fi
-      - run:
-          name: install docker
-          command: apt-get update -q && apt-get install -q -y docker.io
-      - setup_remote_docker
+            DOCKER_IMAGE_EXISTS=$(curl -s -o /dev/null -w "%{http_code}" https://hub.docker.com/v2/repositories/emscripten/emsdk/tags/$ARM64_IMAGE_TAG)
+            if [ "$DOCKER_IMAGE_EXISTS" = "200" ]; then
+              echo "Docker image: $ARM64_VERSION"
+              echo "Docker image already exists, skipping build and publish"
+              circleci-agent step halt
+            fi
       - run:
           name: build
           command: make -C ./docker version=${ARM64_VERSION} build
