@@ -27,7 +27,7 @@ executors:
     resource_class: macos.m1.medium.gen1
   linux_arm64:
     machine:
-      image: ubuntu-2004:202101-01
+      image: ubuntu-2004:2023.07.1
     resource_class: arm.medium
 
 commands:
