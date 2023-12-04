@@ -15,8 +15,7 @@ try {
 
     & "$repo_root/emsdk.ps1" install latest
 
-    $esc = '--%'
-    & "$repo_root/emsdk.ps1" activate latest $esc $env:PERMANENT_FLAG $env:SYSTEM_FLAG
+    & "$repo_root/emsdk.ps1" activate latest $env:PERMANENT_FLAG $env:SYSTEM_FLAG
 
     if ($env:SYSTEM_FLAG) {
         $env_type = "Machine"

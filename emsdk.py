@@ -3047,13 +3047,12 @@ def main(args):
       print('')
 
     tools_to_activate = currently_active_tools()
-    args = [x for x in args if not x.startswith('--')]
     for arg in args:
       tool = find_tool(arg)
       if tool is None:
         tool = find_sdk(arg)
-      if tool is None:
-        error_on_missing_tool(arg)
+        if tool is None:
+          error_on_missing_tool(arg)
       tools_to_activate += [tool]
     if not tools_to_activate:
       errlog('No tools/SDKs specified to activate! Usage:\n   emsdk activate tool/sdk1 [tool/sdk2] [...]')
