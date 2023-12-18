@@ -481,7 +481,8 @@
     "download_prefix": "emscripten-e",
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%",
-    "activated_env": "EMSCRIPTEN=%installation_dir%"
+    "activated_env": "EMSCRIPTEN=%installation_dir%",
+    "custom_install_script": "emscripten_npm_install"
   },
   {
     "id": "emscripten",
@@ -492,7 +493,8 @@
     "unix_url": "https://github.com/emscripten-core/emscripten/archive/%tag%.tar.gz",
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%",
-    "activated_env": "EMSCRIPTEN=%installation_dir%"
+    "activated_env": "EMSCRIPTEN=%installation_dir%",
+    "custom_install_script": "emscripten_npm_install"
   },
   {
     "id": "emscripten",
