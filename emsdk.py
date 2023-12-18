@@ -1208,28 +1208,6 @@ cache_dir = %s
   return success
 
 
-# Emscripten asm.js optimizer build scripts:
-def optimizer_build_root(tool):
-  build_root = tool.installation_path().strip()
-  if build_root.endswith('/') or build_root.endswith('\\'):
-    build_root = build_root[:-1]
-  generator_prefix = cmake_generator_prefix()
-  build_root = build_root + generator_prefix + '_' + str(tool.bitness) + 'bit_optimizer'
-  return build_root
-
-
-def uninstall_optimizer(tool):
-  debug_print('uninstall_optimizer(' + str(tool) + ')')
-  build_root = optimizer_build_root(tool)
-  print("Deleting path '" + build_root + "'")
-  remove_tree(build_root)
-
-
-def is_optimizer_installed(tool):
-  build_root = optimizer_build_root(tool)
-  return os.path.exists(build_root)
-
-
 # Finds the newest installed version of a given tool
 def find_latest_installed_tool(name):
   for t in reversed(tools):
@@ -1327,29 +1305,6 @@ def emscripten_npm_install(tool, directory):
       return False
 
   print('Done running: npm ci')
-  return True
-
-
-def emscripten_post_install(tool):
-  debug_print('emscripten_post_install(' + str(tool) + ')')
-  src_root = os.path.join(tool.installation_path(), 'tools', 'optimizer')
-  build_root = optimizer_build_root(tool)
-  build_type = decide_cmake_build_type(tool)
-
-  # Configure
-  cmake_generator, args = get_generator_and_config_args(tool)
-
-  success = cmake_configure(cmake_generator, build_root, src_root, build_type, args)
-  if not success:
-    return False
-
-  # Make
-  success = make_build(build_root, build_type)
-  if not success:
-    return False
-
-  success = emscripten_npm_install(tool, tool.installation_path())
-
   return True
 
 
@@ -1757,9 +1712,7 @@ class Tool(object):
       content_exists = False
 
     if hasattr(self, 'custom_is_installed_script'):
-      if self.custom_is_installed_script == 'is_optimizer_installed':
-        return is_optimizer_installed(self)
-      elif self.custom_is_installed_script == 'is_binaryen_installed':
+      if self.custom_is_installed_script == 'is_binaryen_installed':
         return is_binaryen_installed(self)
       else:
         raise Exception('Unknown custom_is_installed_script directive "' + self.custom_is_installed_script + '"!')
@@ -1910,9 +1863,7 @@ class Tool(object):
       exit_with_error("installation failed!")
 
     if hasattr(self, 'custom_install_script'):
-      if self.custom_install_script == 'emscripten_post_install':
-        success = emscripten_post_install(self)
-      elif self.custom_install_script == 'emscripten_npm_install':
+      if self.custom_install_script == 'emscripten_npm_install':
         success = emscripten_npm_install(self, self.installation_path())
       elif self.custom_install_script in ('build_llvm', 'build_ninja', 'build_ccache'):
         # 'build_llvm' is a special one that does the download on its
@@ -1962,9 +1913,7 @@ class Tool(object):
       return
     print("Uninstalling tool '" + str(self) + "'..")
     if hasattr(self, 'custom_uninstall_script'):
-      if self.custom_uninstall_script == 'uninstall_optimizer':
-        uninstall_optimizer(self)
-      elif self.custom_uninstall_script == 'uninstall_binaryen':
+      if self.custom_uninstall_script == 'uninstall_binaryen':
         uninstall_binaryen(self)
       else:
         raise Exception('Unknown custom_uninstall_script directive "' + self.custom_uninstall_script + '"!')

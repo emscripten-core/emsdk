@@ -479,13 +479,9 @@
     "windows_url": "https://github.com/emscripten-core/emscripten/archive/%tag%.zip",
     "unix_url": "https://github.com/emscripten-core/emscripten/archive/%tag%.tar.gz",
     "download_prefix": "emscripten-e",
-    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%%generator_prefix%_32bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%'",
+    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%",
-    "activated_env": "EMSCRIPTEN=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%%generator_prefix%_32bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%",
-    "cmake_build_type": "Release",
-    "custom_install_script": "emscripten_post_install",
-    "custom_is_installed_script": "is_optimizer_installed",
-    "custom_uninstall_script": "uninstall_optimizer"
+    "activated_env": "EMSCRIPTEN=%installation_dir%"
   },
   {
     "id": "emscripten",
@@ -494,13 +490,9 @@
     "append_bitness": false,
     "windows_url": "https://github.com/emscripten-core/emscripten/archive/%tag%.zip",
     "unix_url": "https://github.com/emscripten-core/emscripten/archive/%tag%.tar.gz",
-    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%';EMSCRIPTEN_NATIVE_OPTIMIZER='%installation_dir%%generator_prefix%_64bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%'",
+    "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%",
-    "activated_env": "EMSCRIPTEN=%installation_dir%;EMSCRIPTEN_NATIVE_OPTIMIZER=%installation_dir%%generator_prefix%_64bit_optimizer/%cmake_build_type_on_win%optimizer%.exe%",
-    "cmake_build_type": "Release",
-    "custom_install_script": "emscripten_post_install",
-    "custom_is_installed_script": "is_optimizer_installed",
-    "custom_uninstall_script": "uninstall_optimizer"
+    "activated_env": "EMSCRIPTEN=%installation_dir%"
   },
   {
     "id": "emscripten",
