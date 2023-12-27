@@ -61,7 +61,7 @@ if oformat is not None:
 
   # If the output name has no extension, give it the appropriate extension.
   if not base_name_split[1]:
-    os.rename(output_file, output_file + '.' + oformat)
+    os.replace(output_file, output_file + '.' + oformat)
 
   # If the output name does have an extension and it matches the output format,
   # change the base_name so it doesn't have an extension.
@@ -77,7 +77,7 @@ if oformat is not None:
   # Please don't do that.
   else:
     base_name = base_name_split[0]
-    os.rename(output_file, os.path.join(outdir, base_name + '.' + oformat))
+    os.replace(output_file, os.path.join(outdir, base_name + '.' + oformat))
 
 files = []
 extensions = [
@@ -161,6 +161,6 @@ if not len(files):
 # cc_binary must output exactly one file; put all the output files in a tarball.
 cmd = ['tar', 'cf', 'tmp.tar'] + files
 subprocess.check_call(cmd, cwd=outdir)
-os.rename(os.path.join(outdir, 'tmp.tar'), output_file)
+os.replace(os.path.join(outdir, 'tmp.tar'), output_file)
 
 sys.exit(0)
