@@ -962,13 +962,10 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
       generator = []
 
     cmdline = ['cmake'] + generator + ['-DCMAKE_BUILD_TYPE=' + build_type, '-DPYTHON_EXECUTABLE=' + sys.executable]
-    # Target macOS 10.14 at minimum, to support widest range of Mac devices from "Early 2008" and newer:
+    # Target macOS 10.14 at minimum, to support widest range of Mac devices
+    # from "Early 2008" and newer:
     # https://en.wikipedia.org/wiki/MacBook_(2006-2012)#Supported_operating_systems
     cmdline += ['-DCMAKE_OSX_DEPLOYMENT_TARGET=10.14']
-    # To enable widest possible chance of success for building, let the code
-    # compile through with older toolchains that are about to be deprecated by
-    # upstream LLVM.
-    cmdline += ['-DLLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN=ON']
     cmdline += extra_cmake_args + [src_root]
 
     print('Running CMake: ' + str(cmdline))
@@ -1106,6 +1103,10 @@ def build_llvm(tool):
   # (there instead of $(Configuration), one would need ${CMAKE_BUILD_TYPE} ?)
   # It looks like compiler-rt is not compatible to build on Windows?
   args += ['-DLLVM_ENABLE_PROJECTS=clang;lld']
+  # To enable widest possible chance of success for building, let the code
+  # compile through with older toolchains that are about to be deprecated by
+  # upstream LLVM.
+  args += ['-DLLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN=ON']
 
   if os.getenv('LLVM_CMAKE_ARGS'):
     extra_args = os.environ['LLVM_CMAKE_ARGS'].split(',')
