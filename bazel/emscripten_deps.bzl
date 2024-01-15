@@ -1,5 +1,6 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories", "npm_install")
+load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_toolchains")
 load(":revisions.bzl", "EMSCRIPTEN_TAGS")
 
 def _parse_version(v):
@@ -205,4 +206,12 @@ def emscripten_deps(emscripten_version = "latest"):
             name = "emscripten_npm_win",
             package_json = "@emscripten_bin_win//:emscripten/package.json",
             package_lock_json = "@emscripten_bin_win//:emscripten/package-lock.json",
+        )
+
+    if "python_toolchains" not in excludes:
+        py_repositories()
+        python_register_toolchains(
+            name = "python_3_11",
+            # Available versions are listed in @rules_python//python:versions.bzl.
+            python_version = "3.11",
         )
