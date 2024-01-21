@@ -64,9 +64,9 @@ emscripten_cc_toolchain_config_rule(
     cpu = "wasm",
     em_config = "emscripten_config",
     emscripten_binaries = "@emsdk//:compiler_files",
-    script_extension = select({
-        "@bazel_tools//src/conditions:host_windows": "bat",
-        "//conditions:default": "sh",
+    is_windows = select({
+        "@bazel_tools//src/conditions:host_windows": True,
+        "//conditions:default": False,
     }),
 )
 
