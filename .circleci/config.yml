@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  win: circleci/windows@1.0.0
+  win: circleci/windows@5.0
 
 executors:
   bionic:
@@ -108,7 +108,7 @@ jobs:
       - test-macos
   test-windows:
     executor:
-      name: win/vs2019
+      name: win/server-2019
       shell: bash.exe
     environment:
       # We need python installed before we can test anytyhing.
@@ -289,7 +289,7 @@ jobs:
 
   test-bazel-windows:
     executor:
-      name: win/vs2019
+      name: win/server-2019
       shell: powershell.exe -ExecutionPolicy Bypass
     environment:
       PYTHONUNBUFFERED: "1"
