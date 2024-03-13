@@ -1,6 +1,6 @@
 {
   "aliases": {
-    "latest": "3.1.56",
+    "latest": "3.1.56", 
     "latest-sdk": "latest",
     "latest-arm64-linux": "3.1.47",
     "latest-64bit": "latest",
