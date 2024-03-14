@@ -1464,6 +1464,21 @@ def load_em_config():
       pass
 
 
+def find_emscripten_root(active_tools):
+  """Find the currently active emscripten root.
+
+  If there is more than one tool that defines EMSCRIPTEN_ROOT (this
+  should not happen under normal circumstances), assume the last one takes
+  precedence.
+  """
+  root = None
+  for tool in active_tools:
+    config = tool.activated_config()
+    if 'EMSCRIPTEN_ROOT' in config:
+      root = config['EMSCRIPTEN_ROOT']
+  return root
+
+
 def generate_em_config(active_tools, permanently_activate, system):
   cfg = 'import os\n'
   cfg += "emsdk_path = os.path.dirname(os.getenv('EM_CONFIG')).replace('\\\\', '/')\n"
@@ -1484,10 +1499,17 @@ def generate_em_config(active_tools, permanently_activate, system):
   for name, value in activated_config.items():
     cfg += name + " = '" + value + "'\n"
 
-  cfg += '''\
-COMPILER_ENGINE = NODE_JS
-JS_ENGINES = [NODE_JS]
-'''
+  emroot = find_emscripten_root(active_tools)
+  if emroot:
+    version = parse_emscripten_version(emroot)
+    # Older emscripten versions of emscripten depend on certain config
+    # keys that are no longer used.
+    # See https://github.com/emscripten-core/emscripten/pull/9469
+    if version < [1, 38, 46]:
+      cfg += 'COMPILER_ENGINE = NODE_JS\n'
+    # See https://github.com/emscripten-core/emscripten/pull/9542
+    if version < [1, 38, 48]:
+      cfg += 'JS_ENGINES = [NODE_JS]\n'
 
   cfg = cfg.replace("'" + EMSDK_PATH, "emsdk_path + '")
 
@@ -2488,38 +2510,37 @@ def get_env_vars_to_add(tools_to_activate, system, user):
   env_vars_to_add += [('EMSDK', EMSDK_PATH)]
 
   for tool in tools_to_activate:
-    config = tool.activated_config()
-    if 'EMSCRIPTEN_ROOT' in config:
-      # For older emscripten versions that don't use an embedded cache by
-      # default we need to export EM_CACHE.
-      #
-      # Sadly, we can't put this in the config file since those older versions
-      # also didn't read the `CACHE` key from the config file:
-      #
-      # History:
-      # - 'CACHE' config started being honored in 1.39.16
-      #   https://github.com/emscripten-core/emscripten/pull/11091
-      # - Default to embedded cache also started in 1.39.16
-      #   https://github.com/emscripten-core/emscripten/pull/11126
-      # - Emscripten supports automatically locating the embedded
-      #   config in 1.39.13:
-      #   https://github.com/emscripten-core/emscripten/pull/10935
-      #
-      # Since setting EM_CACHE in the environment effects the entire machine
-      # we want to avoid this except when installing these older emscripten
-      # versions that really need it.
-      version = parse_emscripten_version(config['EMSCRIPTEN_ROOT'])
-      if version < [1, 39, 16]:
-        em_cache_dir = os.path.join(config['EMSCRIPTEN_ROOT'], 'cache')
-        env_vars_to_add += [('EM_CACHE', em_cache_dir)]
-      if version < [1, 39, 13]:
-        env_vars_to_add += [('EM_CONFIG', os.path.normpath(EM_CONFIG_PATH))]
-
-    envs = tool.activated_environment()
-    for env in envs:
+    for env in tool.activated_environment():
       key, value = parse_key_value(env)
       value = to_native_path(tool.expand_vars(value))
       env_vars_to_add += [(key, value)]
+
+  emroot = find_emscripten_root(tools_to_activate)
+  if emroot:
+    # For older emscripten versions that don't use an embedded cache by
+    # default we need to export EM_CACHE.
+    #
+    # Sadly, we can't put this in the config file since those older versions
+    # also didn't read the `CACHE` key from the config file:
+    #
+    # History:
+    # - 'CACHE' config started being honored in 1.39.16
+    #   https://github.com/emscripten-core/emscripten/pull/11091
+    # - Default to embedded cache also started in 1.39.16
+    #   https://github.com/emscripten-core/emscripten/pull/11126
+    # - Emscripten supports automatically locating the embedded
+    #   config in 1.39.13:
+    #   https://github.com/emscripten-core/emscripten/pull/10935
+    #
+    # Since setting EM_CACHE in the environment effects the entire machine
+    # we want to avoid this except when installing these older emscripten
+    # versions that really need it.
+    version = parse_emscripten_version(emroot)
+    if version < [1, 39, 16]:
+      em_cache_dir = os.path.join(emroot, 'cache')
+      env_vars_to_add += [('EM_CACHE', em_cache_dir)]
+    if version < [1, 39, 13]:
+      env_vars_to_add += [('EM_CONFIG', os.path.normpath(EM_CONFIG_PATH))]
 
   return env_vars_to_add
 
