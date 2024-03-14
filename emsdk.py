@@ -670,6 +670,54 @@ def get_download_target(url, dstpath, filename_prefix=''):
   return file_name
 
 
+def download_with_curl(url, file_name):
+  print("Downloading: %s from %s" % (file_name, url))
+  if not which('curl'):
+    exit_with_error('curl not found in PATH')
+  # -#: show progress bar
+  # -L: Follow HTTP 3XX redirections
+  # -f: Fail on HTTP errors
+  subprocess.check_call(['curl', '-#', '-f', '-L', '-o', file_name, url])
+
+
+def download_with_urllib(url, file_name):
+  u = urlopen(url)
+  with open(file_name, 'wb') as f:
+    file_size = get_content_length(u)
+    if file_size > 0:
+      print("Downloading: %s from %s, %s Bytes" % (file_name, url, file_size))
+    else:
+      print("Downloading: %s from %s" % (file_name, url))
+
+    file_size_dl = 0
+    # Draw a progress bar 80 chars wide (in non-TTY mode)
+    progress_max = 80 - 4
+    progress_shown = 0
+    block_sz = 256 * 1024
+    if not TTY_OUTPUT:
+        print(' [', end='')
+    while True:
+        buffer = u.read(block_sz)
+        if not buffer:
+            break
+
+        file_size_dl += len(buffer)
+        f.write(buffer)
+        if file_size:
+            percent = file_size_dl * 100.0 / file_size
+            if TTY_OUTPUT:
+                status = r" %10d  [%3.02f%%]" % (file_size_dl, percent)
+                print(status, end='\r')
+            else:
+                while progress_shown < progress_max * percent / 100:
+                    print('-', end='')
+                    sys.stdout.flush()
+                    progress_shown += 1
+    if not TTY_OUTPUT:
+      print(']')
+      sys.stdout.flush()
+
+
 # On success, returns the filename on the disk pointing to the destination file that was produced
 # On failure, returns None.
 def download_file(url, dstpath, download_even_if_exists=False,
@@ -680,53 +728,25 @@ def download_file(url, dstpath, download_even_if_exists=False,
   if os.path.exists(file_name) and not download_even_if_exists:
     print("File '" + file_name + "' already downloaded, skipping.")
     return file_name
+
+  mkdir_p(os.path.dirname(file_name))
+
   try:
-    u = urlopen(url)
-    mkdir_p(os.path.dirname(file_name))
-    with open(file_name, 'wb') as f:
-      file_size = get_content_length(u)
-      if file_size > 0:
-        print("Downloading: %s from %s, %s Bytes" % (file_name, url, file_size))
-      else:
-        print("Downloading: %s from %s" % (file_name, url))
-
-      file_size_dl = 0
-      # Draw a progress bar 80 chars wide (in non-TTY mode)
-      progress_max = 80 - 4
-      progress_shown = 0
-      block_sz = 256 * 1024
-      if not TTY_OUTPUT:
-          print(' [', end='')
-      while True:
-          buffer = u.read(block_sz)
-          if not buffer:
-              break
-
-          file_size_dl += len(buffer)
-          f.write(buffer)
-          if file_size:
-              percent = file_size_dl * 100.0 / file_size
-              if TTY_OUTPUT:
-                  status = r" %10d  [%3.02f%%]" % (file_size_dl, percent)
-                  print(status, end='\r')
-              else:
-                  while progress_shown < progress_max * percent / 100:
-                      print('-', end='')
-                      sys.stdout.flush()
-                      progress_shown += 1
-      if not TTY_OUTPUT:
-        print(']')
-        sys.stdout.flush()
+    # Use curl on macOS to avoid CERTIFICATE_VERIFY_FAILED issue with
+    # python's urllib:
+    # https://stackoverflow.com/questions/40684543/how-to-make-python-use-ca-certificates-from-mac-os-truststore
+    # Unlike on linux or windows, curl is always available on macOS systems.
+    if MACOS:
+      download_with_curl(url, file_name)
+    else:
+      download_with_urllib(url, file_name)
   except Exception as e:
-    if not silent:
-      errlog("Error: Downloading URL '" + url + "': " + str(e))
-      if "SSL: CERTIFICATE_VERIFY_FAILED" in str(e) or "urlopen error unknown url type: https" in str(e):
-        errlog("Warning: Possibly SSL/TLS issue. Update or install Python SSL root certificates (2048-bit or greater) supplied in Python folder or https://pypi.org/project/certifi/ and try again.")
-    rmfile(file_name)
+    errlog("Error: Downloading URL '" + url + "': " + str(e))
     return None
   except KeyboardInterrupt:
     rmfile(file_name)
-    exit_with_error("aborted by user, exiting")
+    raise
+
   return file_name
 
 
@@ -3093,4 +3113,8 @@ def main(args):
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv[1:]))
+  try:
+    sys.exit(main(sys.argv[1:]))
+  except KeyboardInterrupt:
+    exit_with_error('aborted by user, exiting')
+    sys.exit(1)
