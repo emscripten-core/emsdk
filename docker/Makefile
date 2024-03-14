@@ -14,7 +14,7 @@ ifndef version
 endif
 
 build: Dockerfile .TEST
-	cd .. && docker build --network host --build-arg=EMSCRIPTEN_VERSION=${version} -t ${image_name}:${version} -f docker/$< .
+	cd .. && docker build --progress=plain --network host --build-arg=EMSCRIPTEN_VERSION=${version} -t ${image_name}:${version} -f docker/$< .
 
 test: test_dockerimage.sh .TEST
 	# test as non-root

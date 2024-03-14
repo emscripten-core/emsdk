@@ -181,13 +181,13 @@ jobs:
           name: install docker
           command: apt-get update -q && apt-get install -q -y docker.io
       - setup_remote_docker
-      # Build and test the tip-of-tree build of EMSDK
+      # Build the `latest` version of EMSDK as docker image
       - run:
           name: build
-          command: make -C ./docker version=tot build
+          command: make -C ./docker version=latest build
       - run:
           name: test
-          command: make -C ./docker version=tot test
+          command: make -C ./docker version=latest test
 
   publish-docker-image-x64:
     executor: bionic
