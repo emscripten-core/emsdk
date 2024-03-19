@@ -180,17 +180,17 @@ the `activate` command to register the environment permanently for the current u
 ### How do I track the latest Emscripten development with the SDK?
 
 A common and supported use case of the Emscripten SDK is to enable the workflow
-where you directly interact with the github repositories. This allows you to
+where you directly interact with the GitHub repositories. This allows you to
 obtain new features and latest fixes immediately as they are pushed to the
-github repository, without having to wait for release to be tagged. You do not
-need a github account or a fork of Emscripten to do this. To switch to using the
+GitHub repository, without having to wait for release to be tagged. You do not
+need a GitHub account or a fork of Emscripten to do this. To switch to using the
 latest git development branch `main`, run the following:
 
     emsdk install git-1.9.4 # Install git. Skip if the system already has it.
     emsdk install sdk-main-64bit # Clone+pull the latest emscripten-core/emscripten/main.
     emsdk activate sdk-main-64bit # Set the main SDK as the currently active one.
 
-### How do I use my own Emscripten github fork with the SDK?
+### How do I use my own Emscripten GitHub fork with the SDK?
 
 It is also possible to use your own fork of the Emscripten repository via the
 SDK. This is achieved with standard git machinery, so there if you are already
