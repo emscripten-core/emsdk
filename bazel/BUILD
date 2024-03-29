@@ -82,6 +82,7 @@ platform(
     name = "platform_wasm",
     constraint_values = [
         "@platforms//cpu:wasm32",
+        "@platforms//os:emscripten",
     ],
 )
 
