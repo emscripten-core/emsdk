@@ -26,6 +26,11 @@ The SHA1 hash in the above `strip_prefix` and `url` parameters correspond to the
 newer versions, you'll need to update those. To make use of older versions, change the
 parameter of `emsdk_emscripten_deps()`. Supported versions are listed in `revisions.bzl`
 
+Bazel 7+ additionally requires `platforms` dependencies in the `MODULE.bazel` file.
+```starlark
+bazel_dep(name = "platforms", version = "0.0.9")
+```
+
 
 ## Building
 
