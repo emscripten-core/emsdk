@@ -2040,9 +2040,6 @@ def find_latest_hash():
 
 def resolve_sdk_aliases(name, verbose=False):
   releases_info = load_releases_info()
-  if name == 'latest' and LINUX and ARCH == 'arm64':
-    errlog("WARNING: 'latest' on arm64-linux may be slightly behind other architectures")
-    name = 'latest-arm64-linux'
   while name in releases_info['aliases']:
     if verbose:
       print("Resolving SDK alias '%s' to '%s'" % (name, releases_info['aliases'][name]))
