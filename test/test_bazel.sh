@@ -26,6 +26,7 @@ bazel build //hello-world:hello-world-wasm-simd
 
 cd test_external
 bazel build //:hello-world-wasm
+bazel build //long_command_line:long_command_line_wasm
 bazel build //:hello-embind-wasm --compilation_mode dbg # debug
 
 # Test use of the closure compiler
