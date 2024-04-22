@@ -346,6 +346,16 @@ def _impl(ctx):
             provides = ["variant:crosstool_build_mode"],
         ),
 
+        # Feature to prevent 'command line too long' issues
+        feature(
+            name = "archive_param_file",
+            enabled = True,
+        ),
+        feature(
+            name = "compiler_param_file",
+            enabled = True,
+        ),
+
         #### User-settable features
 
         # Set if enabling exceptions.
