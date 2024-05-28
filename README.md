@@ -67,7 +67,7 @@ https://emscripten.org/docs/building_from_source/toolchain_what_is_needed.html.
 - `python`: Version 2.7.0 or above.
 - `java`: For running closure compiler (optional)
 
-The emsdk pre-compiled binaries are built against Ubuntu/Xenial 16.04 LTS and
+The emsdk pre-compiled binaries are built against Ubuntu/Focal 20.04 LTS and
 therefore depend on system libraries compatible with versions of `glibc` and
 `libstdc++` present in that release.  If your linux distribution is very old
 you may not be able to use the pre-compiled binaries packages.
