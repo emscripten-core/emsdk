@@ -46,8 +46,6 @@ RUN echo "## Aggressive optimization: Remove debug symbols" \
     && strip -s `which node` \
     # Tests consume ~80MB disc space
     && rm -fr ${EMSDK}/upstream/emscripten/tests \
-    # Fastcomp is not supported
-    && rm -fr ${EMSDK}/upstream/fastcomp \
     # strip out symbols from clang (~extra 50MB disc space)
     && find ${EMSDK}/upstream/bin -type f -exec strip -s {} + || true \
     && echo "## Done"
@@ -60,12 +58,12 @@ FROM ubuntu:jammy AS stage_deploy
 
 COPY --from=stage_build /emsdk /emsdk
 
-# Fallback in case Emscripten isn't activated.
-# This will let use tools offered by this image inside other Docker images
-# (sub-stages) or with custom / no entrypoint
+# These fallback environment variables are intended for situations where the
+# entrypoint is not utilized (as in a derived image) or overridden (e.g. when
+# using `--entrypoint /bin/bash` in CLI).
+# This corresponds to the env variables set during: `source ./emsdk_env.sh`
 ENV EMSDK=/emsdk \
-    EMSDK_NODE=/emsdk/node/14.18.2_64bit/bin/node \
-    PATH="/emsdk:/emsdk/upstream/emscripten:/emsdk/upstream/bin:/emsdk/node/14.18.2_64bit/bin:${PATH}"
+    PATH="/emsdk:/emsdk/upstream/emscripten:/emsdk/node/16.20.0_64bit/bin:${PATH}"
 
 # ------------------------------------------------------------------------------
 # Create a 'standard` 1000:1000 user
@@ -78,8 +76,6 @@ ENV EMSDK=/emsdk \
 RUN echo "## Create emscripten user (1000:1000)" \
     && groupadd --gid 1000 emscripten \
     && useradd --uid 1000 --gid emscripten --shell /bin/bash --create-home emscripten \
-    && echo "umask 0000" >> /etc/bash.bashrc \
-    && echo ". /emsdk/emsdk_env.sh" >> /etc/bash.bashrc \
     && echo "## Done"
 
 # ------------------------------------------------------------------------------
@@ -122,6 +118,8 @@ RUN echo "## Update and install packages" \
 # ------------------------------------------------------------------------------
 # Use commonly used /src as working directory
 WORKDIR /src
+
+ENTRYPOINT ["/emsdk/docker/entrypoint.sh"]
 
 LABEL maintainer="kontakt@trzeci.eu" \
       org.label-schema.name="emscripten" \

@@ -1,12 +1,52 @@
 version: 2.1
 
 orbs:
-  win: circleci/windows@1.0.0
+  win: circleci/windows@5.0
 
 executors:
   ubuntu:
     docker:
       - image: buildpack-deps:focal
+  mac:
+    environment:
+      EMSDK_NOTTY: "1"
+      # Without this, any `brew install` command will result in self-update of
+      # brew itself which takes more than 4 minutes.
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+    macos:
+      xcode: "12.5.1"
+    resource_class: macos.x86.medium.gen2
+  mac_arm64:
+    environment:
+      EMSDK_NOTTY: "1"
+      # Without this, any `brew install` command will result in self-update of
+      # brew itself which takes more than 4 minutes.
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+    macos:
+      xcode: "13.4.1"
+    resource_class: macos.m1.medium.gen1
+  linux_arm64:
+    machine:
+      image: ubuntu-2004:2023.07.1
+    resource_class: arm.medium
+
+commands:
+  setup-macos:
+    steps:
+      - checkout
+      - run:
+          name: Install CMake
+          command: brew install cmake
+  test-macos:
+    steps:
+      - run:
+          name: test.sh
+          command: test/test.sh
+      - run:
+          name: test.py
+          command: |
+            source emsdk_env.sh
+            test/test.py
 
 jobs:
   flake8:
@@ -14,17 +54,20 @@ jobs:
     steps:
       - checkout
       - run:
-          name: install pip
+          name: install pip3
           command: |
             apt-get update -q
             apt-get install -q -y python3-pip
-            curl -fsSL https://bootstrap.pypa.io/pip/2.7/get-pip.py | python2
       - run: python3 -m pip install --upgrade pip
-      - run: python3 -m pip install flake8==3.7.8
-      - run: python3 -m flake8 --show-source --statistics
+      - run: python3 -m pip install flake8==3.9.2
+      - run: python3 -m flake8 --show-source --statistics --extend-exclude=./scripts
+      - run: 
+          name: install pip2
+          command: apt-get install -q -y python-pip
       - run: python2 -m pip install --upgrade pip
-      - run: python2 -m pip install flake8==3.7.8
-      - run: python2 -m flake8 --show-source --statistics
+      - run: python2 -m pip install flake8==3.9.2
+      - run: python2 -m flake8 --show-source --statistics --extend-exclude=./scripts
+
   test-linux:
     executor: ubuntu
     environment:
@@ -41,6 +84,7 @@ jobs:
       - run:
           name: Install debian packages
           command: apt-get update -q && apt-get install -q -y cmake build-essential openjdk-8-jre-headless ksh zsh
+      - run: test/test_node_path.sh
       - run: test/test.sh
       - run: test/test_source_env.sh
       - run:
@@ -48,28 +92,27 @@ jobs:
           command: |
             source emsdk_env.sh
             test/test.py
-  test-mac:
-    macos:
-      xcode: "12.5.1"
-    environment:
-      EMSDK_NOTTY: "1"
-      # Without this, any `brew installl` command will result in self-update of
-      # brew itself which takes more than 4 minutes.
-      HOMEBREW_NO_AUTO_UPDATE: "1"
+  test-linux-arm64:
+    executor: linux_arm64
     steps:
       - checkout
       - run:
-          name: Install cmake
-          command: brew install cmake
+          name: Install debian packages
+          command: sudo apt-get update -q && sudo apt-get install -q cmake build-essential openjdk-8-jre-headless
       - run: test/test.sh
-      - run:
-          name: test.py
-          command: |
-            source emsdk_env.sh
-            test/test.py
+  test-mac:
+    executor: mac
+    steps:
+      - setup-macos
+      - test-macos
+  test-mac-arm64:
+    executor: mac_arm64
+    steps:
+      - setup-macos
+      - test-macos
   test-windows:
     executor:
-      name: win/vs2019
+      name: win/server-2019
       shell: bash.exe
     environment:
       # We need python installed before we can test anytyhing.
@@ -134,7 +177,7 @@ jobs:
             $env:SYSTEM_FLAG="--system"
             test/test_path_preservation.ps1
 
-  build-docker-image:
+build-docker-image-x64:
     executor: ubuntu
     steps:
       - checkout
@@ -149,15 +192,15 @@ jobs:
             apt-get update -q
             apt-get install -q -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
       - setup_remote_docker
-      # Build and test the tip-of-tree build of EMSDK
+      # Build the `latest` version of EMSDK as docker image
       - run:
           name: build
-          command: make -C ./docker version=tot build
+          command: make -C ./docker version=latest build
       - run:
           name: test
-          command: make -C ./docker version=tot test
+          command: make -C ./docker version=latest test
 
-  publish-docker-image:
+  publish-docker-image-x64:
     executor: ubuntu
     steps:
       - checkout
@@ -184,6 +227,22 @@ jobs:
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
             make -C ./docker version=${CIRCLE_TAG} alias=latest push
 
+  publish-docker-image-arm64:
+    executor: linux_arm64
+    steps:
+      - checkout
+      - run:
+          name: build
+          command: make -C ./docker version=${CIRCLE_TAG} build
+      - run:
+          name: test
+          command: make -C ./docker version=${CIRCLE_TAG} test
+      - run:
+          name: push image
+          command: |
+            docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
+            make -C ./docker version=${CIRCLE_TAG} alias=${CIRCLE_TAG}-arm64 only_alias=true push
+
   test-bazel-linux:
     executor: ubuntu
     steps:
@@ -205,11 +264,7 @@ jobs:
       - run: test/test_bazel.sh
 
   test-bazel-mac:
-    macos:
-      xcode: "12.5.1"
-    environment:
-      EMSDK_NOTTY: "1"
-      HOMEBREW_NO_AUTO_UPDATE: "1"
+    executor: mac
     steps:
       - checkout
       - run: brew install grep
@@ -221,7 +276,7 @@ jobs:
 
   test-bazel-windows:
     executor:
-      name: win/vs2019
+      name: win/server-2019
       shell: powershell.exe -ExecutionPolicy Bypass
     environment:
       PYTHONUNBUFFERED: "1"
@@ -249,16 +304,28 @@ workflows:
   test-linux:
     jobs:
       - test-linux
+  test-linux-arm64:
+    jobs:
+      - test-linux-arm64
   test-mac:
     jobs:
       - test-mac
+  test-mac-arm64:
+    jobs:
+      - test-mac-arm64
   test-windows:
     jobs:
       - test-windows
   build-docker-image:
     jobs:
-      - build-docker-image
-      - publish-docker-image:
+      - build-docker-image-x64
+      - publish-docker-image-x64:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /.*/
+      - publish-docker-image-arm64:
           filters:
             branches:
               ignore: /.*/

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
 import os
+import platform
 import shutil
 import subprocess
 import sys
@@ -9,6 +10,7 @@ import unittest
 
 WINDOWS = sys.platform.startswith('win')
 MACOS = sys.platform == 'darwin'
+MACOS_ARM64 = MACOS and platform.machine() == 'arm64'
 
 emconfig = os.path.abspath('.emscripten')
 assert os.path.exists(emconfig)
@@ -174,9 +176,9 @@ int main() {
 
     # Test the normal tools like node don't re-download on re-install
     print('another install must re-download')
-    checked_call_with_output(emsdk + ' uninstall node-14.18.2-64bit')
-    checked_call_with_output(emsdk + ' install node-14.18.2-64bit', expected='Downloading:', unexpected='already installed')
-    checked_call_with_output(emsdk + ' install node-14.18.2-64bit', unexpected='Downloading:', expected='already installed')
+    checked_call_with_output(emsdk + ' uninstall node-15.14.0-64bit')
+    checked_call_with_output(emsdk + ' install node-15.14.0-64bit', expected='Downloading:', unexpected='already installed')
+    checked_call_with_output(emsdk + ' install node-15.14.0-64bit', unexpected='Downloading:', expected='already installed')
 
   def test_tot_upstream(self):
     print('test update-tags')
@@ -197,6 +199,8 @@ int main() {
     check_call(upstream_emcc + ' hello_world.c --closure=1')
 
   def test_specific_version(self):
+    if MACOS_ARM64:
+      self.skipTest('Old sdk versions do not have ARM64 binaries')
     print('test specific release (new, short name)')
     run_emsdk('install 1.38.33')
     print('another install, but no need for re-download')
@@ -204,6 +208,8 @@ int main() {
     run_emsdk('activate 1.38.33')
 
   def test_specific_version_full(self):
+    if MACOS_ARM64:
+      self.skipTest('Old sdk versions do not have ARM64 binaries')
     print('test specific release (new, full name)')
     run_emsdk('install sdk-1.38.33-64bit')
     run_emsdk('activate sdk-1.38.33-64bit')
@@ -220,7 +226,8 @@ int main() {
   def test_no_32bit(self):
     print('test 32-bit error')
     emsdk_hacked = hack_emsdk('not is_os_64bit()', 'True')
-    failing_call_with_output('%s %s install latest' % (sys.executable, emsdk_hacked), 'this tool is only provided for 64-bit OSes')
+    failing_call_with_output('%s %s install latest' % (sys.executable, emsdk_hacked),
+                             'this tool is only provided for 64-bit OSes')
     os.remove(emsdk_hacked)
 
   def test_update_no_git(self):
@@ -243,10 +250,10 @@ int main() {
 
   def test_install_arbitrary(self):
     # Test that its possible to install arbrary emscripten-releases SDKs
-    run_emsdk('install 5c776e6a91c0cb8edafca16a652ee1ee48f4f6d2')
+    run_emsdk('install 1b7f7bc6002a3ca73647f41fc10e1fac7f06f804')
 
     # Check that its not re-downloaded
-    checked_call_with_output(emsdk + ' install 5c776e6a91c0cb8edafca16a652ee1ee48f4f6d2', expected='Skipped', unexpected='Downloading:')
+    checked_call_with_output(emsdk + ' install 1b7f7bc6002a3ca73647f41fc10e1fac7f06f804', expected='Skipped', unexpected='Downloading:')
 
   def test_install_tool(self):
     # Test that its possible to install emscripten as tool instead of SDK
@@ -262,10 +269,10 @@ int main() {
     # With EMSDK_KEEP_DOWNLOADS the downloading should happen on the first
     # install of 2.0.28, and again when we install 2.0.29, but not on the
     # second install of 2.0.28 because the zip should already be local.
-    shutil.rmtree('zips')
-    checked_call_with_output(emsdk + ' install 2.0.28', expected='Downloading:', env=env)
-    checked_call_with_output(emsdk + ' install 2.0.29', expected='Downloading:', env=env)
-    checked_call_with_output(emsdk + ' install 2.0.28', expected='already downloaded, skipping', unexpected='Downloading:', env=env)
+    shutil.rmtree('downloads')
+    checked_call_with_output(emsdk + ' install 3.1.54', expected='Downloading:', env=env)
+    checked_call_with_output(emsdk + ' install 3.1.55', expected='Downloading:', env=env)
+    checked_call_with_output(emsdk + ' install 3.1.54', expected='already downloaded, skipping', unexpected='Downloading:', env=env)
 
 
 if __name__ == '__main__':

@@ -5,19 +5,20 @@ ignore =
    E501, # Line too long
    E121, # Continuation line under-indented for hanging indent
    E722  # bare excepts
+   E741, # Variable names such as 'l', 'O', or 'I'
 exclude =
-  ./llvm
-  ./gnu
-  ./upstream
-  ./fastcomp
-  ./fastcomp-clang
-  ./releases
-  ./clang
-  ./emscripten
-  ./binaryen
-  ./git
-  ./node
-  ./python
-  ./temp
-  ./zips
-  ./crunch
+  ./llvm,
+  ./gnu,
+  ./upstream,
+  ./fastcomp,
+  ./fastcomp-clang,
+  ./releases,
+  ./clang,
+  ./emscripten,
+  ./binaryen,
+  ./git,
+  ./node,
+  ./python,
+  ./temp,
+  ./downloads,
+  ./crunch,

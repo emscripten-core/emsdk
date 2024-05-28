@@ -346,6 +346,16 @@ def _impl(ctx):
             provides = ["variant:crosstool_build_mode"],
         ),
 
+        # Feature to prevent 'command line too long' issues
+        feature(
+            name = "archive_param_file",
+            enabled = True,
+        ),
+        feature(
+            name = "compiler_param_file",
+            enabled = True,
+        ),
+
         #### User-settable features
 
         # Set if enabling exceptions.
@@ -914,7 +924,7 @@ def _impl(ctx):
                 "-iwithsysroot" + "/include/compat",
                 "-iwithsysroot" + "/include",
                 "-isystem",
-                emscripten_dir + "/lib/clang/17/include",
+                emscripten_dir + "/lib/clang/19/include",
             ],
         ),
         # Inputs and outputs
@@ -1081,7 +1091,7 @@ def _impl(ctx):
         emscripten_dir + "/emscripten/cache/sysroot/include/c++/v1",
         emscripten_dir + "/emscripten/cache/sysroot/include/compat",
         emscripten_dir + "/emscripten/cache/sysroot/include",
-        emscripten_dir + "/lib/clang/17/include",
+        emscripten_dir + "/lib/clang/19/include",
     ]
 
     artifact_name_patterns = []

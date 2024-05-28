@@ -16,13 +16,15 @@ import subprocess
 import os
 import shutil
 
-version = '14.18.2'
-base = 'https://nodejs.org/dist/latest-v14.x/'
+version = '16.20.0'
+base = 'https://nodejs.org/dist/latest-v16.x/'
 upload_base = 'gs://webassembly/emscripten-releases-builds/deps/'
 
 suffixes = [
+    '-win-x86.zip',
     '-win-x64.zip',
     '-darwin-x64.tar.gz',
+    '-darwin-arm64.tar.gz',
     '-linux-x64.tar.xz',
     '-linux-arm64.tar.xz',
     '-linux-armv7l.tar.xz',

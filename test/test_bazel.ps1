@@ -13,6 +13,9 @@ Set-Location test_external
 bazel build //:hello-world-wasm
 if (-not $?) { Exit $LastExitCode }
 
+bazel build //long_command_line:long_command_line_wasm
+if (-not $?) { Exit $LastExitCode }
+
 bazel build //:hello-embind-wasm --compilation_mode dbg # debug
 if (-not $?) { Exit $LastExitCode }
 

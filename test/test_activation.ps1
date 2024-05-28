@@ -15,8 +15,7 @@ try {
 
     & "$repo_root/emsdk.ps1" install latest
 
-    $esc = '--%'
-    & "$repo_root/emsdk.ps1" activate latest $esc $env:PERMANENT_FLAG $env:SYSTEM_FLAG
+    & "$repo_root/emsdk.ps1" activate latest $env:PERMANENT_FLAG $env:SYSTEM_FLAG
 
     if ($env:SYSTEM_FLAG) {
         $env_type = "Machine"
@@ -52,10 +51,6 @@ try {
     $EMSDK_Path = $path_split | Where-Object { $_ -like "$repo_root*" }
     if (!$EMSDK_Path) {
         throw "No path is added!"
-    }
-    $EMSDK_NODE_Path = $path_split | Where-Object { $_ -like "$repo_root\node*" }
-    if (!$EMSDK_NODE_Path) {
-        throw "$repo_root\\node is not added to path."
     }
 
     $EMSDK_UPSTREAM_Path = $path_split | Where-Object { $_ -like "$repo_root\upstream\emscripten*" }

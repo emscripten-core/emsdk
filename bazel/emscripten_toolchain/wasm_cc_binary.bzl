@@ -25,7 +25,9 @@ def _wasm_transition_impl(settings, attr):
     if attr.simd:
         features.append("wasm_simd")
 
+    platform = "@emsdk//:platform_wasm"
     if attr.standalone:
+        platform = "@emsdk//:platform_wasi"
         features.append("wasm_standalone")
 
     return {
@@ -35,7 +37,7 @@ def _wasm_transition_impl(settings, attr):
         "//command_line_option:features": features,
         "//command_line_option:dynamic_mode": "off",
         "//command_line_option:linkopt": linkopts,
-        "//command_line_option:platforms": ["@emsdk//:platform_wasm"],
+        "//command_line_option:platforms": [platform],
         "//command_line_option:custom_malloc": "@emsdk//emscripten_toolchain:malloc",
     }
 
@@ -126,12 +128,15 @@ def _wasm_cc_binary_impl(ctx):
         executable = ctx.executable._wasm_binary_extractor,
     )
 
-    return DefaultInfo(
-        files = depset(ctx.outputs.outputs),
-        # This is needed since rules like web_test usually have a data
-        # dependency on this target.
-        data_runfiles = ctx.runfiles(transitive_files = depset(ctx.outputs.outputs)),
-    )
+    return [
+        DefaultInfo(
+            files = depset(ctx.outputs.outputs),
+            # This is needed since rules like web_test usually have a data
+            # dependency on this target.
+            data_runfiles = ctx.runfiles(transitive_files = depset(ctx.outputs.outputs)),
+        ),
+        OutputGroupInfo(_wasm_tar = cc_target.files),
+    ]
 
 def _wasm_cc_binary_legacy_impl(ctx):
     cc_target = ctx.attr.cc_target[0]
@@ -160,13 +165,16 @@ def _wasm_cc_binary_legacy_impl(ctx):
         executable = ctx.executable._wasm_binary_extractor,
     )
 
-    return DefaultInfo(
-        executable = ctx.outputs.wasm,
-        files = depset(outputs),
-        # This is needed since rules like web_test usually have a data
-        # dependency on this target.
-        data_runfiles = ctx.runfiles(transitive_files = depset(outputs)),
-    )
+    return [
+        DefaultInfo(
+            executable = ctx.outputs.wasm,
+            files = depset(outputs),
+            # This is needed since rules like web_test usually have a data
+            # dependency on this target.
+            data_runfiles = ctx.runfiles(transitive_files = depset(outputs)),
+        ),
+        OutputGroupInfo(_wasm_tar = cc_target.files),
+    ]
 
 _wasm_cc_binary = rule(
     implementation = _wasm_cc_binary_impl,
