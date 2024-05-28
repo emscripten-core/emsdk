@@ -54,7 +54,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: install pip3
+          name: install pip
           command: |
             apt-get update -q
             apt-get install -q -y python3-pip
