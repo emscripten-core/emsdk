@@ -63,7 +63,7 @@ COPY --from=stage_build /emsdk /emsdk
 # using `--entrypoint /bin/bash` in CLI).
 # This corresponds to the env variables set during: `source ./emsdk_env.sh`
 ENV EMSDK=/emsdk \
-    PATH="/emsdk:/emsdk/upstream/emscripten:/emsdk/node/16.20.0_64bit/bin:${PATH}"
+    PATH="/emsdk:/emsdk/upstream/emscripten:/emsdk/node/18.20.3_64bit/bin:${PATH}"
 
 # ------------------------------------------------------------------------------
 # Create a 'standard` 1000:1000 user
