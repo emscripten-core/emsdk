@@ -177,7 +177,7 @@ jobs:
             $env:SYSTEM_FLAG="--system"
             test/test_path_preservation.ps1
 
-build-docker-image-x64:
+  build-docker-image-x64:
     executor: ubuntu
     steps:
       - checkout
