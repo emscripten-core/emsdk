@@ -434,6 +434,11 @@ def _impl(ctx):
             name = "wasm_simd",
             requires = [feature_set(features = ["llvm_backend"])],
         ),
+        # Adds relaxed-simd support, only available with the llvm backend.
+        feature(
+            name = "wasm_relaxed_simd",
+            requires = [feature_set(features = ["llvm_backend"])],
+        ),
         feature(
             name = "precise_long_double_printf",
             enabled = True,
@@ -559,6 +564,11 @@ def _impl(ctx):
             actions = all_compile_actions + all_link_actions,
             flags = ["-msimd128"],
             features = ["wasm_simd"],
+        ),
+        flag_set(
+            actions = all_compile_actions + all_link_actions,
+            flags = ["-msimd128", "-mrelaxed-simd"],
+            features = ["wasm_relaxed_simd"],
         ),
         flag_set(
             actions = all_link_actions,
