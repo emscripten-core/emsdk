@@ -90,7 +90,8 @@ extensions = [
     '.data',
     '.js.symbols',
     '.wasm.debug.wasm',
-    '.html'
+    '.html',
+    '.aw.js'
 ]
 
 for ext in extensions:
