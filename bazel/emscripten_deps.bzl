@@ -7,6 +7,7 @@ def _parse_version(v):
 
 BUILD_FILE_CONTENT_TEMPLATE = """
 package(default_visibility = ['//visibility:public'])
+load("@bazel_skylib//rules:write_file.bzl", "write_file")
 
 filegroup(
     name = "all",
@@ -26,6 +27,7 @@ filegroup(
 filegroup(
     name = "emcc_common",
     srcs = [
+        "emscripten/embuilder.py",
         "emscripten/emcc.py",
         "emscripten/emscripten-version.txt",
         "emscripten/cache/sysroot_install.stamp",
@@ -68,6 +70,7 @@ filegroup(
         "bin/wasm-split{bin_extension}",
         "bin/wasm2js{bin_extension}",
         ":emcc_common",
+        ":embuilder",
     ] + glob(
         include = [
             "emscripten/cache/sysroot/lib/**",
@@ -94,11 +97,65 @@ filegroup(
         ],
     ),
 )
+
+write_file(
+    name = "embuilder_config",
+    out = "emscripten_config",
+)
+
+genrule(
+    name = "embuilder",
+    tools = [
+        ":emscripten/embuilder.py",
+        ":compiler_files",
+        ":ar_files"
+    ],
+    srcs = [":embuilder_config"],
+    cmd = \"\"\"
+export EM_BINARYEN_ROOT=$$(realpath $$(dirname $$(dirname $(location :emscripten/embuilder.py))))
+export EM_LLVM_ROOT=$$EM_BINARYEN_ROOT/bin
+export EM_EMSCRIPTEN_ROOT=$$EM_BINARYEN_ROOT/emscripten
+export EM_CACHE=$(RULEDIR)/emscripten/cache
+$(location :emscripten/embuilder.py) \
+    --em-config $(location :embuilder_config) \
+    {embuilder_build_args}
+\"\"\",
+    outs = {embuilder_build_outs}
+)
 """
 
-def emscripten_deps(emscripten_version = "latest"):
-    version = emscripten_version
+def emscripten_deps(
+    emscripten_version = "latest",
+    embuilder_args = ["--pic"],
+    embuilder_libs = ["crtbegin", "libprintf_long_double-debug"]
+):
+    embuilder_mode = []
+    if "--lto=thin" in embuilder_args:
+        embuilder_mode.append("thinlto")
+    elif "--lto" in embuilder_args:
+        embuilder_mode.append("lto")
+    if "--pic" in embuilder_args:
+        embuilder_mode.append("pic")
+    if "--wasm64" in embuilder_args:
+        embuilder_output_path = "wasm64-emscripten/"
+    else:
+        embuilder_output_path = "wasm32-emscripten/"
+    if embuilder_mode:
+        embuilder_output_path += "{}/".format("-".join(embuilder_mode))
 
+    # build up the command line for embuilder
+    embuilder_build_args = " ".join(embuilder_args + ["build"] + embuilder_libs)
+
+    # TODO how to map libs to output names? Some end with .o and others with .a
+    embuilder_build_outs = [
+        "emscripten/cache/sysroot/lib/{}crtbegin.o".format(embuilder_output_path),
+        "emscripten/cache/sysroot/lib/{}libprintf_long_double-debug.a".format(embuilder_output_path),
+    ]
+
+    embuilder_build_outs = "[" + ", ".join(["\"{}\"".format(out) for out in embuilder_build_outs]) + "]"
+    print(embuilder_build_outs)
+
+    version = emscripten_version
     if version == "latest":
         version = reversed(sorted(EMSCRIPTEN_TAGS.keys(), key = _parse_version))[0]
 
@@ -127,7 +184,11 @@ def emscripten_deps(emscripten_version = "latest"):
             strip_prefix = "install",
             url = emscripten_url.format("linux", revision.hash, "", "tar.xz"),
             sha256 = revision.sha_linux,
-            build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(bin_extension = ""),
+            build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(
+                embuilder_build_args = embuilder_build_args,
+                embuilder_build_outs = embuilder_build_outs,
+                bin_extension = ""
+            ),
             type = "tar.xz",
         )
 
@@ -138,7 +199,11 @@ def emscripten_deps(emscripten_version = "latest"):
             url = emscripten_url.format("linux", revision.hash, "-arm64", "tar.xz"),
             # Not all versions have a linux/arm64 release: https://github.com/emscripten-core/emsdk/issues/547
             sha256 = getattr(revision, "sha_linux_arm64", None),
-            build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(bin_extension = ""),
+            build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(
+                embuilder_build_args = embuilder_build_args,
+                embuilder_build_outs = embuilder_build_outs,
+                bin_extension = ""
+            ),
             type = "tar.xz",
         )
 
@@ -148,7 +213,11 @@ def emscripten_deps(emscripten_version = "latest"):
             strip_prefix = "install",
             url = emscripten_url.format("mac", revision.hash, "", "tar.xz"),
             sha256 = revision.sha_mac,
-            build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(bin_extension = ""),
+            build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(
+                embuilder_build_args = embuilder_build_args,
+                embuilder_build_outs = embuilder_build_outs,
+                bin_extension = ""
+            ),
             type = "tar.xz",
         )
 
@@ -158,7 +227,11 @@ def emscripten_deps(emscripten_version = "latest"):
             strip_prefix = "install",
             url = emscripten_url.format("mac", revision.hash, "-arm64", "tar.xz"),
             sha256 = revision.sha_mac_arm64,
-            build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(bin_extension = ""),
+            build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(
+                embuilder_build_args = embuilder_build_args,
+                embuilder_build_outs = embuilder_build_outs,
+                bin_extension = ""
+            ),
             type = "tar.xz",
         )
 
@@ -168,7 +241,11 @@ def emscripten_deps(emscripten_version = "latest"):
             strip_prefix = "install",
             url = emscripten_url.format("win", revision.hash, "", "zip"),
             sha256 = revision.sha_win,
-            build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(bin_extension = ".exe"),
+            build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(
+                embuilder_build_args = embuilder_build_args,
+                embuilder_build_outs = embuilder_build_outs,
+                bin_extension = ".exe"
+            ),
             type = "zip",
         )
 
