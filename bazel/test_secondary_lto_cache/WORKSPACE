@@ -13,7 +13,7 @@ emscripten_deps()
 
 load("@emsdk//:emscripten_cache.bzl", "emscripten_cache")
 
-emscripten_cache(flags = "--lto")
+emscripten_cache(flags = ["--lto"])
 
 load("@emsdk//:toolchains.bzl", "register_emscripten_toolchains")
 
