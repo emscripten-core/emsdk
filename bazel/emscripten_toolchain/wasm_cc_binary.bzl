@@ -70,6 +70,7 @@ _ALLOW_OUTPUT_EXTNAMES = [
     ".js.symbols",
     ".wasm.debug.wasm",
     ".html",
+    ".aw.js",
 ]
 
 _WASM_BINARY_COMMON_ATTRS = {
@@ -151,6 +152,7 @@ def _wasm_cc_binary_legacy_impl(ctx):
         ctx.outputs.symbols,
         ctx.outputs.dwarf,
         ctx.outputs.html,
+        ctx.outputs.audio_worklet,
     ]
 
     args = ctx.actions.args()
@@ -201,6 +203,7 @@ def _wasm_binary_legacy_outputs(name, cc_target):
         "symbols": "{}/{}.js.symbols".format(name, basename),
         "dwarf": "{}/{}.wasm.debug.wasm".format(name, basename),
         "html": "{}/{}.html".format(name, basename),
+        "audio_worklet": "{}/{}.aw.js".format(name, basename)
     }
 
     return outputs
