@@ -3,6 +3,44 @@ package(default_visibility = ['//visibility:public'])
 exports_files(['emscripten_config'])
 """
 
+def get_binaryen_root(repository_ctx):
+    """
+    Retrieve the path to the Emscripten binary directory
+
+    This function determines the correct Emscripten binary directory path by
+    examining the operating system (OS) and architecture (arch) of the
+    environment. It supports Linux, macOS, and Windows operating systems with
+    specific architectures.
+
+    Args:
+      repository_ctx: The repository context object which provides information
+        about the OS and architecture, and methods to obtain paths and labels.
+
+    Returns:
+      str: The directory path to the Emscripten binaries for the detected OS
+      and architecture.
+
+    """
+    if repository_ctx.os.name.startswith('linux'):
+        if 'amd64' in repository_ctx.os.arch or 'x86_64' in repository_ctx.os.arch:
+            return repository_ctx.path(Label("@emscripten_bin_linux//:all")).dirname
+        elif 'aarch64' in repository_ctx.os.arch:
+            return repository_ctx.path(Label("@emscripten_bin_linux_arm64//:all")).dirname
+        else:
+            repository_ctx.fail('Unsupported architecture for Linux')
+    elif repository_ctx.os.name.startswith('mac'):
+        if 'amd64' in repository_ctx.os.arch or 'x86_64' in repository_ctx.os.arch:
+            return repository_ctx.path(Label("@emscripten_bin_mac//:all")).dirname
+        elif 'aarch64' in repository_ctx.os.arch:
+            return repository_ctx.path(Label("@emscripten_bin_mac_arm64//:all")).dirname
+        else:
+            repository_ctx.fail('Unsupported architecture for MacOS')
+    elif repository_ctx.os.name.startswith('windows'):
+        return repository_ctx.path(Label("@emscripten_bin_win//:all")).dirname
+    else:
+        repository_ctx.fail('Unsupported operating system')
+    return ''
+
 def _emscripten_cache_impl(repository_ctx):
     # Read the default emscripten configuration file
     default_config = repository_ctx.read(
@@ -11,11 +49,9 @@ def _emscripten_cache_impl(repository_ctx):
         )
     )
 
-    # TODO I need a cross platform way to get embuilder and bin/node
     if repository_ctx.attr.libraries or repository_ctx.attr.flags:
-        # Get paths to tools (toolchain is not yet setup, so we cannot use emscripten_config)
-        embuilder_path = repository_ctx.path(Label("@emscripten_bin_linux//:emscripten/embuilder.py"))
-        binaryen_root = embuilder_path.dirname.dirname
+        binaryen_root = get_binaryen_root(repository_ctx)
+        embuilder_path = binaryen_root.get_child('emscripten/embuilder')
         llvm_root = binaryen_root.get_child("bin")
         nodejs = repository_ctx.path(Label("@nodejs//:node_files")).dirname.get_child('bin/node')
         # Create configuration file
@@ -38,6 +74,7 @@ def _emscripten_cache_impl(repository_ctx):
         repository_ctx.execute(embuilder_args, quiet=False)
         # Override Emscripten's cache with the secondary cache
         default_config += "CACHE = '{}'\n".format(repository_ctx.path('cache'))
+
     # Create the configuration file for the toolchain and export
     repository_ctx.file('emscripten_config', default_config)
     repository_ctx.file('BUILD.bazel', BUILD_FILE_CONTENT_TEMPLATE)
