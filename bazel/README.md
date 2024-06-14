@@ -18,6 +18,9 @@ emsdk_deps()
 load("@emsdk//:emscripten_deps.bzl", emsdk_emscripten_deps = "emscripten_deps")
 emsdk_emscripten_deps(emscripten_version = "2.0.31")
 
+load("@emsdk//:emscripten_cache.bzl", emsdk_emscripten_cache = "emscripten_cache")
+emsdk_emscripten_cache()
+
 load("@emsdk//:toolchains.bzl", "register_emscripten_toolchains")
 register_emscripten_toolchains()
 ```
@@ -65,5 +68,15 @@ rules.
 `wasm_cc_binary` uses transition to use emscripten toolchain on `cc_target`
 and all of its dependencies, and does not require amending `.bazelrc`. This
 is the preferred way, since it also unpacks the resulting tarball.
+
+The Emscripten cache shipped by default does not include LTO, 64-bit or PIC
+builds of the system libraries and ports. If you wish to use these features you
+will need to create a secondary cache as follows. Note that the flags are the
+same flags that can be passed to embuilder.
+
+```starlark
+load("@emsdk//:emscripten_cache.bzl", emsdk_emscripten_cache = "emscripten_cache")
+emsdk_emscripten_cache(flags = "--lto")
+```
 
 See `test_external/` for an example using [embind](https://emscripten.org/docs/porting/connecting_cpp_and_javascript/embind.html).
