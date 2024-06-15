@@ -3,7 +3,10 @@ load("@emsdk//emscripten_toolchain:wasm_rules.bzl", "wasm_cc_binary")
 cc_binary(
     name = "hello-world",
     srcs = ["hello-world.cc"],
-    linkopts = ["-flto"],
+    linkopts = [
+        "-sAUTO_NATIVE_LIBRARIES=0",
+        "-flto",
+    ],
 )
 
 wasm_cc_binary(
