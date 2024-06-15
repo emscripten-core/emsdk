@@ -23,20 +23,20 @@ def get_binaryen_root(repository_ctx):
     """
     if repository_ctx.os.name.startswith('linux'):
         if 'amd64' in repository_ctx.os.arch or 'x86_64' in repository_ctx.os.arch:
-            return repository_ctx.path(Label("@emscripten_bin_linux//:emscripten_config")).dirname
+            return repository_ctx.path(Label("@emscripten_bin_linux//:BUILD.bazel")).dirname
         elif 'aarch64' in repository_ctx.os.arch:
-            return repository_ctx.path(Label("@emscripten_bin_linux_arm64//:emscripten_config")).dirname
+            return repository_ctx.path(Label("@emscripten_bin_linux_arm64//:BUILD.bazel")).dirname
         else:
             fail('Unsupported architecture for Linux')
     elif repository_ctx.os.name.startswith('mac'):
         if 'amd64' in repository_ctx.os.arch or 'x86_64' in repository_ctx.os.arch:
-            return repository_ctx.path(Label("@emscripten_bin_mac//:emscripten_config")).dirname
+            return repository_ctx.path(Label("@emscripten_bin_mac//:BUILD.bazel")).dirname
         elif 'aarch64' in repository_ctx.os.arch:
-            return repository_ctx.path(Label("@emscripten_bin_mac_arm64//:emscripten_config")).dirname
+            return repository_ctx.path(Label("@emscripten_bin_mac_arm64//:BUILD.bazel")).dirname
         else:
             fail('Unsupported architecture for MacOS')
     elif repository_ctx.os.name.startswith('windows'):
-        return repository_ctx.path(Label("@emscripten_bin_win//:emscripten_config")).dirname
+        return repository_ctx.path(Label("@emscripten_bin_win//:BUILD.bazel")).dirname
     else:
         fail('Unsupported operating system')
 
@@ -54,7 +54,7 @@ def _emscripten_cache_impl(repository_ctx):
         emscripten_root = binaryen_root.get_child("emscripten")
         embuilder_path = emscripten_root.get_child("embuilder")
         cache_path = repository_ctx.path('cache')
-        nodejs = repository_ctx.path(Label("@nodejs//:node_files")).dirname.get_child("bin/node")
+        nodejs = repository_ctx.path(Label("@nodejs//:BUILD.bazel")).dirname.get_child("bin").get_child("node")
         # Create configuration file
         embuilder_config_content  = "NODE_JS = '{}'\n".format(nodejs)
         embuilder_config_content += "LLVM_ROOT = '{}'\n".format(llvm_root)
