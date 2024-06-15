@@ -27,19 +27,18 @@ def get_binaryen_root(repository_ctx):
         elif 'aarch64' in repository_ctx.os.arch:
             return repository_ctx.path(Label("@emscripten_bin_linux_arm64//:all")).dirname
         else:
-            repository_ctx.fail('Unsupported architecture for Linux')
+            fail('Unsupported architecture for Linux')
     elif repository_ctx.os.name.startswith('mac'):
         if 'amd64' in repository_ctx.os.arch or 'x86_64' in repository_ctx.os.arch:
             return repository_ctx.path(Label("@emscripten_bin_mac//:all")).dirname
         elif 'aarch64' in repository_ctx.os.arch:
             return repository_ctx.path(Label("@emscripten_bin_mac_arm64//:all")).dirname
         else:
-            repository_ctx.fail('Unsupported architecture for MacOS')
+            fail('Unsupported architecture for MacOS')
     elif repository_ctx.os.name.startswith('windows'):
         return repository_ctx.path(Label("@emscripten_bin_win//:all")).dirname
     else:
-        repository_ctx.fail('Unsupported operating system')
-    return ''
+        fail('Unsupported operating system')
 
 def _emscripten_cache_impl(repository_ctx):
     # Read the default emscripten configuration file
@@ -71,7 +70,9 @@ def _emscripten_cache_impl(repository_ctx):
         embuilder_args = [embuilder_path] + flags + ["build"] + libraries
         # Run embuilder
         repository_ctx.report_progress("Building secondary cache")
-        repository_ctx.execute(embuilder_args, quiet=False)
+        result = repository_ctx.execute(embuilder_args, quiet=False)
+        if result != 0:
+            fail("Embuilder exited with a non-zero return code")
         # Override Emscripten's cache with the secondary cache
         default_config += "CACHE = '{}'\n".format(repository_ctx.path('cache'))
 
