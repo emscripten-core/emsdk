@@ -50,16 +50,19 @@ def _emscripten_cache_impl(repository_ctx):
 
     if repository_ctx.attr.libraries or repository_ctx.attr.flags:
         binaryen_root = get_binaryen_root(repository_ctx)
-        embuilder_path = binaryen_root.get_child('emscripten/embuilder')
         llvm_root = binaryen_root.get_child("bin")
-        nodejs = repository_ctx.path(Label("@nodejs//:node_files")).dirname.get_child('bin/node')
+        emscripten_root = binaryen_root.get_child("emscripten")
+        embuilder_path = emscripten_root.get_child("embuilder")
+        cache_path = repository_ctx.path('cache')
+        nodejs = repository_ctx.path(Label("@nodejs//:node_files")).dirname.get_child("bin/node")
         # Create configuration file
-        embuilder_config_content  = "LLVM_ROOT = '{}'\n".format(llvm_root)
-        embuilder_config_content += "NODE_JS = '{}'\n".format(nodejs)
+        embuilder_config_content  = "NODE_JS = '{}'\n".format(nodejs)
+        embuilder_config_content += "LLVM_ROOT = '{}'\n".format(llvm_root)
         embuilder_config_content += "BINARYEN_ROOT = '{}'\n".format(binaryen_root)
-        embuilder_config_content += "CACHE = 'cache'\n"
-        repository_ctx.file('embuilder_config', embuilder_config_content)
-        embuilder_config_path = repository_ctx.path('embuilder_config')
+        embuilder_config_content += "EMSCRIPTEN_ROOT = '{}'\n".format(emscripten_root)
+        embuilder_config_content += "CACHE = '{}'\n".format(cache_path)
+        repository_ctx.file("embuilder_config", embuilder_config_content)
+        embuilder_config_path = repository_ctx.path("embuilder_config")
         # Prepare the command line
         if repository_ctx.attr.libraries:
             libraries = repository_ctx.attr.libraries
@@ -70,11 +73,11 @@ def _emscripten_cache_impl(repository_ctx):
         embuilder_args = [embuilder_path] + flags + ["build"] + libraries
         # Run embuilder
         repository_ctx.report_progress("Building secondary cache")
-        result = repository_ctx.execute(embuilder_args, quiet=False)
-        if result != 0:
+        result = repository_ctx.execute(embuilder_args, quiet=True)
+        if result.return_code != 0:
             fail("Embuilder exited with a non-zero return code")
         # Override Emscripten's cache with the secondary cache
-        default_config += "CACHE = '{}'\n".format(repository_ctx.path('cache'))
+        default_config += "CACHE = '{}'\n".format(cache_path)
 
     # Create the configuration file for the toolchain and export
     repository_ctx.file('emscripten_config', default_config)
