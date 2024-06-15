@@ -8,9 +8,9 @@ def get_binaryen_root(repository_ctx):
     Retrieve the path to the Emscripten binary directory
 
     This function determines the correct Emscripten binary directory path by
-    examining the operating system (OS) and architecture (arch) of the
-    environment. It supports Linux, macOS, and Windows operating systems with
-    specific architectures.
+    examining the operating system and architecture of the environment. It 
+    supports Linux, macOS, and Windows operating systems with specific
+    architectures.
 
     Args:
       repository_ctx: The repository context object which provides information
@@ -23,20 +23,20 @@ def get_binaryen_root(repository_ctx):
     """
     if repository_ctx.os.name.startswith('linux'):
         if 'amd64' in repository_ctx.os.arch or 'x86_64' in repository_ctx.os.arch:
-            return repository_ctx.path(Label("@emscripten_bin_linux//:all")).dirname
+            return repository_ctx.path(Label("@emscripten_bin_linux//:emscripten_config")).dirname
         elif 'aarch64' in repository_ctx.os.arch:
-            return repository_ctx.path(Label("@emscripten_bin_linux_arm64//:all")).dirname
+            return repository_ctx.path(Label("@emscripten_bin_linux_arm64//:emscripten_config")).dirname
         else:
             fail('Unsupported architecture for Linux')
     elif repository_ctx.os.name.startswith('mac'):
         if 'amd64' in repository_ctx.os.arch or 'x86_64' in repository_ctx.os.arch:
-            return repository_ctx.path(Label("@emscripten_bin_mac//:all")).dirname
+            return repository_ctx.path(Label("@emscripten_bin_mac//:emscripten_config")).dirname
         elif 'aarch64' in repository_ctx.os.arch:
-            return repository_ctx.path(Label("@emscripten_bin_mac_arm64//:all")).dirname
+            return repository_ctx.path(Label("@emscripten_bin_mac_arm64//:emscripten_config")).dirname
         else:
             fail('Unsupported architecture for MacOS')
     elif repository_ctx.os.name.startswith('windows'):
-        return repository_ctx.path(Label("@emscripten_bin_win//:all")).dirname
+        return repository_ctx.path(Label("@emscripten_bin_win//:emscripten_config")).dirname
     else:
         fail('Unsupported operating system')
 
@@ -73,7 +73,7 @@ def _emscripten_cache_impl(repository_ctx):
         embuilder_args = [embuilder_path] + flags + ["build"] + libraries
         # Run embuilder
         repository_ctx.report_progress("Building secondary cache")
-        result = repository_ctx.execute(embuilder_args, quiet=True)
+        result = repository_ctx.execute(embuilder_args, quiet=False)
         if result.return_code != 0:
             fail("Embuilder exited with a non-zero return code")
         # Override Emscripten's cache with the secondary cache
