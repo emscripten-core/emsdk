@@ -3,7 +3,7 @@ package(default_visibility = ['//visibility:public'])
 exports_files(['emscripten_config'])
 """
 
-def get_binaryen_root(repository_ctx):
+def get_root_and_binext(repository_ctx):
     """
     Retrieve the path to the Emscripten binary directory
 
@@ -23,20 +23,20 @@ def get_binaryen_root(repository_ctx):
     """
     if repository_ctx.os.name.startswith('linux'):
         if 'amd64' in repository_ctx.os.arch or 'x86_64' in repository_ctx.os.arch:
-            return repository_ctx.path(Label("@emscripten_bin_linux//:BUILD.bazel")).dirname
+            return (repository_ctx.path(Label("@emscripten_bin_linux//:BUILD.bazel")).dirname, '')
         elif 'aarch64' in repository_ctx.os.arch:
-            return repository_ctx.path(Label("@emscripten_bin_linux_arm64//:BUILD.bazel")).dirname
+            return (repository_ctx.path(Label("@emscripten_bin_linux_arm64//:BUILD.bazel")).dirname, '')
         else:
             fail('Unsupported architecture for Linux')
     elif repository_ctx.os.name.startswith('mac'):
         if 'amd64' in repository_ctx.os.arch or 'x86_64' in repository_ctx.os.arch:
-            return repository_ctx.path(Label("@emscripten_bin_mac//:BUILD.bazel")).dirname
+            return (repository_ctx.path(Label("@emscripten_bin_mac//:BUILD.bazel")).dirname, '')
         elif 'aarch64' in repository_ctx.os.arch:
-            return repository_ctx.path(Label("@emscripten_bin_mac_arm64//:BUILD.bazel")).dirname
+            return (repository_ctx.path(Label("@emscripten_bin_mac_arm64//:BUILD.bazel")).dirname, '')
         else:
             fail('Unsupported architecture for MacOS')
     elif repository_ctx.os.name.startswith('windows'):
-        return repository_ctx.path(Label("@emscripten_bin_win//:BUILD.bazel")).dirname
+        return (repository_ctx.path(Label("@emscripten_bin_win//:BUILD.bazel")).dirname, '.exe')
     else:
         fail('Unsupported operating system')
 
@@ -49,16 +49,16 @@ def _emscripten_cache_impl(repository_ctx):
     )
 
     if repository_ctx.attr.libraries or repository_ctx.attr.flags:
-        binaryen_root = get_binaryen_root(repository_ctx)
-        llvm_root = binaryen_root.get_child("bin")
-        emscripten_root = binaryen_root.get_child("emscripten")
+        root, binext = get_root_and_binext(repository_ctx)
+        llvm_root = root.get_child("bin")
+        emscripten_root = root.get_child("emscripten")
         embuilder_path = emscripten_root.get_child("embuilder")
         cache_path = repository_ctx.path('cache')
         nodejs = repository_ctx.path(Label("@nodejs//:BUILD.bazel")).dirname.get_child("bin").get_child("node")
         # Create configuration file
-        embuilder_config_content  = "NODE_JS = '{}'\n".format(nodejs)
+        embuilder_config_content  = "NODE_JS = '{}{}'\n".format(nodejs, binext)
         embuilder_config_content += "LLVM_ROOT = '{}'\n".format(llvm_root)
-        embuilder_config_content += "BINARYEN_ROOT = '{}'\n".format(binaryen_root)
+        embuilder_config_content += "BINARYEN_ROOT = '{}'\n".format(root)
         embuilder_config_content += "EMSCRIPTEN_ROOT = '{}'\n".format(emscripten_root)
         embuilder_config_content += "CACHE = '{}'\n".format(cache_path)
         repository_ctx.file("embuilder_config", embuilder_config_content)
