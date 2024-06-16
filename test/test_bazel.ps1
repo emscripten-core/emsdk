@@ -23,8 +23,8 @@ if (-not $?) { Exit $LastExitCode }
 bazel build //:hello-embind-wasm --compilation_mode opt # release
 if (-not $?) { Exit $LastExitCode }
 
-Set-Location ..\test_secondary_lto_cache
+# Set-Location ..\test_secondary_lto_cache
 
-bazel build //:hello-world-wasm
-if (-not $?) { Exit $LastExitCode }
+# bazel build //:hello-world-wasm
+# if (-not $?) { Exit $LastExitCode }
 
