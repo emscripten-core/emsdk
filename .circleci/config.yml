@@ -247,7 +247,6 @@ jobs:
     executor: mac_arm64
     steps:
       - checkout
-      - run: brew install grep
       - run:
           name: install bazelisk
           command: |

@@ -6,14 +6,10 @@ set -x
 set -e
 
 # Get the latest version number from emscripten-releases-tag.json.
-VER1=$(ggrep -oP '(?<=latest\": \")([\d\.]+)(?=\")' \
-             emscripten-releases-tags.json)
-VER=$(echo $VER1
-      | sed "s/\./\\\./g")
+VER=$(scripts/get_release_info.py emscripten-releases-tags.json latest)
+
 # Based on the latest version number, get the commit hash for that version.
-HASH=$(grep "\"${VER}\"" emscripten-releases-tags.json \
-      | grep -v latest \
-      | cut -f4 -d\")
+HASH=$(scripts/get_release_info.py emscripten-releases-tags.json hash ${VER})
 
 FAILMSG="!!! scripts/update_bazel_workspace.py needs to be run !!!"
 
