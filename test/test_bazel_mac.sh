@@ -6,7 +6,7 @@ set -x
 set -e
 
 # Get the latest version number from emscripten-releases-tag.json.
-VER=$(ggrep -oP '(?<=latest\": \")([\d\.]+)(?=\")' \
+VER=$(grep -oP '(?<=latest\": \")([\d\.]+)(?=\")' \
         emscripten-releases-tags.json \
       | sed "s/\./\\\./g")
 # Based on the latest version number, get the commit hash for that version.
