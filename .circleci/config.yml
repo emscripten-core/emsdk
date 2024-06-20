@@ -7,15 +7,6 @@ executors:
   ubuntu:
     docker:
       - image: buildpack-deps:focal
-  mac:
-    environment:
-      EMSDK_NOTTY: "1"
-      # Without this, any `brew install` command will result in self-update of
-      # brew itself which takes more than 4 minutes.
-      HOMEBREW_NO_AUTO_UPDATE: "1"
-    macos:
-      xcode: "12.5.1"
-    resource_class: macos.x86.medium.gen2
   mac_arm64:
     environment:
       EMSDK_NOTTY: "1"
@@ -94,11 +85,6 @@ jobs:
           name: Install debian packages
           command: sudo apt-get update -q && sudo apt-get install -q cmake build-essential openjdk-8-jre-headless
       - run: test/test.sh
-  test-mac:
-    executor: mac
-    steps:
-      - setup-macos
-      - test-macos
   test-mac-arm64:
     executor: mac_arm64
     steps:
@@ -257,8 +243,8 @@ jobs:
             apt-get install -q -y bazel
       - run: test/test_bazel.sh
 
-  test-bazel-mac:
-    executor: mac
+  test-bazel-mac-arm64:
+    executor: mac_arm64
     steps:
       - checkout
       - run: brew install grep
@@ -301,9 +287,6 @@ workflows:
   test-linux-arm64:
     jobs:
       - test-linux-arm64
-  test-mac:
-    jobs:
-      - test-mac
   test-mac-arm64:
     jobs:
       - test-mac-arm64
@@ -328,9 +311,9 @@ workflows:
   test-bazel-linux:
     jobs:
       - test-bazel-linux
-  test-bazel-mac:
+  test-bazel-mac-arm64:
     jobs:
-      - test-bazel-mac
+      - test-bazel-mac-arm64
   test-bazel-windows:
     jobs:
       - test-bazel-windows
