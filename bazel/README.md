@@ -76,7 +76,7 @@ same flags that can be passed to embuilder.
 
 ```starlark
 load("@emsdk//:emscripten_cache.bzl", emsdk_emscripten_cache = "emscripten_cache")
-emsdk_emscripten_cache(flags = "--lto")
+emsdk_emscripten_cache(flags = ["--lto"])
 ```
 
 See `test_external/` for an example using [embind](https://emscripten.org/docs/porting/connecting_cpp_and_javascript/embind.html).
