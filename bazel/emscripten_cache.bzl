@@ -62,7 +62,7 @@ def _emscripten_cache_impl(repository_ctx):
         repository_ctx.report_progress("Building secondary cache")
         result = repository_ctx.execute(
             embuilder_args,
-            quiet=False,
+            quiet=True,
             environment = {
                 "EM_IGNORE_SANITY": "1",
                 "EM_NODE_JS": "empty",
