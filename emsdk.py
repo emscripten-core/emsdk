@@ -682,20 +682,21 @@ def download_with_curl(url, file_name):
 
 def download_with_urllib(url, file_name):
   u = urlopen(url)
-  with open(file_name, 'wb') as f:
-    file_size = get_content_length(u)
-    if file_size > 0:
-      print("Downloading: %s from %s, %s Bytes" % (file_name, url, file_size))
-    else:
-      print("Downloading: %s from %s" % (file_name, url))
+  file_size = get_content_length(u)
+  if file_size > 0:
+    print("Downloading: %s from %s, %s Bytes" % (file_name, url, file_size))
+  else:
+    print("Downloading: %s from %s" % (file_name, url))
 
-    file_size_dl = 0
-    # Draw a progress bar 80 chars wide (in non-TTY mode)
-    progress_max = 80 - 4
-    progress_shown = 0
-    block_sz = 256 * 1024
-    if not TTY_OUTPUT:
-        print(' [', end='')
+  file_size_dl = 0
+  # Draw a progress bar 80 chars wide (in non-TTY mode)
+  progress_max = 80 - 4
+  progress_shown = 0
+  block_sz = 256 * 1024
+  if not TTY_OUTPUT:
+      print(' [', end='')
+
+  with open(file_name, 'wb') as f:
     while True:
         buffer = u.read(block_sz)
         if not buffer:
@@ -713,9 +714,12 @@ def download_with_urllib(url, file_name):
                     print('-', end='')
                     sys.stdout.flush()
                     progress_shown += 1
-    if not TTY_OUTPUT:
-      print(']')
-      sys.stdout.flush()
+
+  if not TTY_OUTPUT:
+    print(']')
+    sys.stdout.flush()
+
+  debug_print('finished downloading (%d bytes)' % file_size_dl)
 
 
 # On success, returns the filename on the disk pointing to the destination file that was produced
