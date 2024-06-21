@@ -3,18 +3,10 @@ package(default_visibility = ['//visibility:public'])
 exports_files(['emscripten_config'])
 """
 
-EMBUILDER_FILE_CONTENT_TEMPLATE = """
+EMBUILDER_CONFIG_TEMPLATE = """
 CACHE = '{cache}'
-EMSCRIPTEN_ROOT = '{emscripten_root}'
 BINARYEN_ROOT = '{binaryen_root}'
 LLVM_ROOT = '{llvm_root}'
-
-import platform
-
-system = platform.system()
-machine = "arm64" if platform.machine() in ('arm64', 'aarch64') else "amd64"
-nodejs_binary = "bin/nodejs/node.exe" if(system =="Windows") else "bin/node"
-NODE_JS = '{external_root}/nodejs_{{}}_{{}}/{{}}'.format(system.lower(), machine, nodejs_binary)
 """
 
 def get_root_and_script_ext(repository_ctx):
@@ -33,8 +25,7 @@ def get_root_and_script_ext(repository_ctx):
         else:
             fail('Unsupported architecture for MacOS')
     elif repository_ctx.os.name.startswith('windows'):
-        fail('Using a secondary cache is not supported on Windows')
-        #return (repository_ctx.path(Label("@emscripten_bin_win//:BUILD.bazel")).dirname, '.bat')
+        return (repository_ctx.path(Label("@emscripten_bin_win//:BUILD.bazel")).dirname, '.bat')
     else:
         fail('Unsupported operating system')
 
@@ -49,21 +40,16 @@ def _emscripten_cache_impl(repository_ctx):
     if repository_ctx.attr.libraries or repository_ctx.attr.flags:
         root, script_ext = get_root_and_script_ext(repository_ctx)
         llvm_root = root.get_child("bin")
-        emscripten_root = root.get_child("emscripten")
         cache = repository_ctx.path("cache")
-        # Ugly hack to get the "external" directory (needed for Windows/Node.js)
-        external_root = repository_ctx.path(Label("@nodejs//:BUILD.bazel")).dirname.dirname
         # Create configuration file
-        embuilder_config_content = EMBUILDER_FILE_CONTENT_TEMPLATE.format(
+        embuilder_config_content = EMBUILDER_CONFIG_TEMPLATE.format(
             cache=cache,
-            emscripten_root=emscripten_root,
             binaryen_root=root,
             llvm_root=llvm_root,
-            external_root=external_root,
         )
         repository_ctx.file("embuilder_config", embuilder_config_content)
         embuilder_config_path = repository_ctx.path("embuilder_config")
-        embuilder_path = "{}{}".format(emscripten_root.get_child("embuilder"), script_ext)
+        embuilder_path = "{}{}".format(root.get_child("emscripten").get_child("embuilder"), script_ext)
         # Prepare the command line
         if repository_ctx.attr.libraries:
             libraries = repository_ctx.attr.libraries
@@ -74,10 +60,15 @@ def _emscripten_cache_impl(repository_ctx):
         embuilder_args = [embuilder_path] + flags + ["build"] + libraries
         # Run embuilder
         repository_ctx.report_progress("Building secondary cache")
-        result = repository_ctx.execute(embuilder_args, quiet=True)
+        result = repository_ctx.execute(
+            embuilder_args,
+            quiet=False,
+            environment = {
+                "EM_IGNORE_SANITY": "1",
+                "EM_NODE_JS": "empty",
+            }
+        )
         if result.return_code != 0:
-            # Windows fails here because external/nodejs_windows_amd64/bin/nodejs/node.exe
-            # does not exist at this point (while the equivalent on Linux and MacOS does)
             fail("Embuilder exited with a non-zero return code")
         # Override Emscripten's cache with the secondary cache
         default_config += "CACHE = '{}'\n".format(cache)
