@@ -2683,6 +2683,7 @@ def main(args):
     errlog("Missing command; Type 'emsdk help' to get a list of commands.")
     return 1
 
+  debug_print('esmdk.py running under `%s`' % sys.executable)
   cmd = args.pop(0)
 
   if cmd in ('help', '--help', '-h'):
