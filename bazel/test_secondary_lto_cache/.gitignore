@@ -1,4 +1,4 @@
 bazel-bin
 bazel-out
-bazel-test_external
+bazel-test_secondary_lto_cache
 bazel-testlogs
