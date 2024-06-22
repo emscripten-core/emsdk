@@ -11,11 +11,11 @@ load("@emsdk//:emscripten_deps.bzl", "emscripten_deps")
 
 emscripten_deps()
 
-load("@emsdk//:emscripten_cache.bzl", "emscripten_cache")
+load("@emsdk//:toolchains.bzl", "register_emscripten_toolchains")
 
-emscripten_cache(
-    flags = ["--lto"],
-    libraries = [
+register_emscripten_toolchains(cache = {
+    "configuration": ["--lto"],
+    "targets": [
         "crtbegin",
         "libprintf_long_double-debug",
         "libstubs-debug",
@@ -27,8 +27,4 @@ emscripten_cache(
         "libc++abi-debug-noexcept",
         "libsockets"
     ]
-)
-
-load("@emsdk//:toolchains.bzl", "register_emscripten_toolchains")
-
-register_emscripten_toolchains()
+})

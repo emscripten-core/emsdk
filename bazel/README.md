@@ -18,9 +18,6 @@ emsdk_deps()
 load("@emsdk//:emscripten_deps.bzl", emsdk_emscripten_deps = "emscripten_deps")
 emsdk_emscripten_deps(emscripten_version = "2.0.31")
 
-load("@emsdk//:emscripten_cache.bzl", emsdk_emscripten_cache = "emscripten_cache")
-emsdk_emscripten_cache()
-
 load("@emsdk//:toolchains.bzl", "register_emscripten_toolchains")
 register_emscripten_toolchains()
 ```
@@ -71,12 +68,28 @@ is the preferred way, since it also unpacks the resulting tarball.
 
 The Emscripten cache shipped by default does not include LTO, 64-bit or PIC
 builds of the system libraries and ports. If you wish to use these features you
-will need to create a secondary cache as follows. Note that the flags are the
-same flags that can be passed to embuilder.
+will need to declare the cache when you register the toolchain as follows. Note
+that the configuration consists of the same flags that can be passed to
+embuilder. If `targets` is not provided, all system libraries and ports will be
+built, i.e., the `ALL` option to embuilder.
 
 ```starlark
-load("@emsdk//:emscripten_cache.bzl", emsdk_emscripten_cache = "emscripten_cache")
-emsdk_emscripten_cache(flags = ["--lto"])
+load("@emsdk//:toolchains.bzl", "register_emscripten_toolchains")
+register_emscripten_toolchains(cache = {
+    "configuration": ["--lto"],
+    "targets": [
+        "crtbegin",
+        "libprintf_long_double-debug",
+        "libstubs-debug",
+        "libnoexit",
+        "libc-debug",
+        "libdlmalloc",
+        "libcompiler_rt",
+        "libc++-noexcept",
+        "libc++abi-debug-noexcept",
+        "libsockets"
+    ]
+})
 ```
 
 See `test_external/` for an example using [embind](https://emscripten.org/docs/porting/connecting_cpp_and_javascript/embind.html).

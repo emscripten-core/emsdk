@@ -8,10 +8,6 @@ load(":emscripten_deps.bzl", "emscripten_deps")
 
 emscripten_deps()
 
-load(":emscripten_cache.bzl", "emscripten_cache")
-
-emscripten_cache()
-
 load(":toolchains.bzl", "register_emscripten_toolchains")
 
 register_emscripten_toolchains()
