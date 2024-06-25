@@ -17,5 +17,3 @@ wasm_cc_binary(
         "hello-world.wasm",
     ],
 )
-
-
