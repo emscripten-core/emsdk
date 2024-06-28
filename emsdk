@@ -26,7 +26,7 @@ fi
 # If bundled python is not found, look for `python3` in PATH.  This is especially important on macOS (See:
 # https://github.com/emscripten-core/emsdk/pull/273)
 if [ -z "$EMSDK_PYTHON" ]; then
-  if PYTHON3="$(which python3 2>/dev/null)"; then
+  if PYTHON3="$(command -v python3 2>/dev/null)"; then
     EMSDK_PYTHON=$PYTHON3
   fi
 fi

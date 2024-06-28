@@ -13,7 +13,7 @@ cd $DIR/..
 ./emsdk install latest
 ./emsdk activate latest
 
-if which node; then
+if command -v node; then
   echo "Test should be run without node in the path"
   exit 1
 fi
@@ -21,7 +21,7 @@ fi
 # Run emsdk_env.sh and confirm that node was added to the PATH
 . emsdk_env.sh
 
-if ! which node; then
+if ! command -v node; then
   echo "node not found in path after emsdk_env.sh"
   exit 1
 fi
@@ -29,7 +29,7 @@ fi
 # Run emsdk_env.sh again and confirm that node is still in the PATH
 . emsdk_env.sh
 
-if ! which node; then
+if ! command -v node; then
   echo "node not found in path after emsdk_env.sh"
   exit 1
 fi

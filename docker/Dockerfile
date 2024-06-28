@@ -43,7 +43,7 @@ RUN cd ${EMSDK} \
 RUN echo "## Aggressive optimization: Remove debug symbols" \
     && cd ${EMSDK} && . ./emsdk_env.sh \
     # Remove debugging symbols from embedded node (extra 7MB)
-    && strip -s `which node` \
+    && strip -s `command -v node` \
     # Tests consume ~80MB disc space
     && rm -fr ${EMSDK}/upstream/emscripten/tests \
     # strip out symbols from clang (~extra 50MB disc space)
