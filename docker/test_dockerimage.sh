@@ -2,10 +2,10 @@
 set -ex
 
 if [ $EUID -eq 0 ]; then
-  sudo -u nobody `command -v emcc` --version
+  sudo -u nobody `which emcc` --version
 fi
 
-command -v emsdk
+which emsdk
 node --version
 npm --version
 python3 --version
