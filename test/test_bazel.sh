@@ -30,3 +30,7 @@ bazel build //:hello-embind-wasm --compilation_mode dbg # debug
 bazel build //:hello-embind-wasm --compilation_mode opt # release
 # This function should not be minified if the externs file is loaded correctly.
 grep "customJSFunctionToTestClosure" bazel-bin/hello-embind-wasm/hello-embind.js
+
+cd ../test_secondary_lto_cache
+bazel build //:hello-world-wasm
+
