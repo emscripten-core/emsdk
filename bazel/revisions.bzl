@@ -2,6 +2,13 @@
 # DO NOT MODIFY
 
 EMSCRIPTEN_TAGS = {
+    "3.1.64": struct(
+        hash = "fd61bacaf40131f74987e649a135f1dd559aff60",
+        sha_linux = "c39de24beca60fd580f6dff0eca0e275016042a30234588b19eda82397e299f3",
+        sha_mac = "2644772be398c8095621b3d0fe9ff2d122b18b7b0963c0eb702639d94dfb8e90",
+        sha_mac_arm64 = "47449057c345a09aa8750be1a357c364ffea9f8a066066cb341a7a2a14bac96a",
+        sha_win = "eb5b59afb420915daab4c383e5f73d456cc14776dce02fdc852c46522cda5531",
+    ),
     "3.1.63": struct(
         hash = "aeb36a44b29e8ca9f4c7efbb4735b69003ac2bb9",
         sha_linux = "2a38ac1ea2fe3b7169879f0f666ea278f344cbb5db6e34421b9554939559109c",
