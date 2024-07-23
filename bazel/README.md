@@ -4,12 +4,12 @@
 
 In `WORKSPACE` file, put:
 ```starlark
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-http_archive(
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+git_repository(
     name = "emsdk",
-    sha256 = "d55e3c73fc4f8d1fecb7aabe548de86bdb55080fe6b12ce593d63b8bade54567",
-    strip_prefix = "emsdk-3891e7b04bf8cbb3bc62758e9c575ae096a9a518/bazel",
-    url = "https://github.com/emscripten-core/emsdk/archive/3891e7b04bf8cbb3bc62758e9c575ae096a9a518.tar.gz",
+    remote = "https://github.com/emscripten-core/emsdk.git",
+    tag = "3.1.64",
+    strip_prefix = "bazel",
 )
 
 load("@emsdk//:deps.bzl", emsdk_deps = "deps")
