@@ -119,10 +119,12 @@ POWERSHELL = bool(os.getenv('EMSDK_POWERSHELL'))
 CSH = bool(os.getenv('EMSDK_CSH'))
 CMD = bool(os.getenv('EMSDK_CMD'))
 BASH = bool(os.getenv('EMSDK_BASH'))
+FISH = bool(os.getenv('EMSDK_FISH'))
+
 if WINDOWS and BASH:
   MSYS = True
 
-if not CSH and not POWERSHELL and not BASH and not CMD:
+if not CSH and not POWERSHELL and not BASH and not CMD and not FISH:
   # Fall back to default of `cmd` on windows and `bash` otherwise
   if WINDOWS and not MSYS:
     CMD = True
@@ -1503,6 +1505,22 @@ def find_emscripten_root(active_tools):
   return root
 
 
+# returns a tuple (string,string) of config files paths that need to used
+# to activate emsdk env depending on $SHELL, defaults to bash.
+def get_emsdk_shell_env_configs():
+  default_emsdk_env = sdk_path('emsdk_env.sh')
+  default_shell_config_file = '$HOME/.bash_profile'
+  shell = os.getenv('SHELL', '')
+  if 'zsh' in shell:
+    return (default_emsdk_env, '$HOME/.zprofile')
+  elif 'csh' in shell:
+    return (sdk_path('emsdk_env.csh'), '$HOME/.cshrc')
+  elif 'fish' in shell:
+    return (sdk_path('emsdk_env.fish'), '$HOME/.config/fish/config.fish')
+  else:
+    return (default_emsdk_env, default_shell_config_file)
+
+
 def generate_em_config(active_tools, permanently_activate, system):
   cfg = 'import os\n'
   cfg += "emsdk_path = os.path.dirname(os.getenv('EM_CONFIG')).replace('\\\\', '/')\n"
@@ -1556,22 +1574,16 @@ def generate_em_config(active_tools, permanently_activate, system):
       print('- Consider running `emsdk activate` with --permanent or --system')
       print('  to have emsdk settings available on startup.')
   else:
-    emsdk_env = sdk_path('emsdk_env.sh')
     print('Next steps:')
     print('- To conveniently access emsdk tools from the command line,')
     print('  consider adding the following directories to your PATH:')
     for p in path_add:
       print('    ' + p)
     print('- This can be done for the current shell by running:')
+    emsdk_env, shell_config_file = get_emsdk_shell_env_configs()
     print('    source "%s"' % emsdk_env)
     print('- Configure emsdk in your shell startup scripts by running:')
-    shell = os.getenv('SHELL', '')
-    if 'zsh' in shell:
-      print('    echo \'source "%s"\' >> $HOME/.zprofile' % emsdk_env)
-    elif 'csh' in shell:
-      print('    echo \'source "%s"\' >> $HOME/.cshrc' % emsdk_env)
-    else:
-      print('    echo \'source "%s"\' >> $HOME/.bash_profile' % emsdk_env)
+    print('    echo \'source "%s"\' >> %s' % (emsdk_env, shell_config_file))
 
 
 def find_msbuild_dir():
@@ -2578,6 +2590,8 @@ def unset_env(key):
     return 'set %s=\n' % key
   if CSH:
     return 'unsetenv %s;\n' % key
+  if FISH:
+    return 'set -e %s;\n' % key
   if BASH:
     return 'unset %s;\n' % key
   assert False
@@ -2599,6 +2613,8 @@ def construct_env_with_vars(env_vars_to_add):
         env_string += 'SET ' + key + '=' + value + '\n'
       elif CSH:
         env_string += 'setenv ' + key + ' "' + value + '";\n'
+      elif FISH:
+        env_string += 'set -gx ' + key + ' "' + value + '";\n'
       elif BASH:
         env_string += 'export ' + key + '="' + value + '";\n'
       else:
@@ -2616,7 +2632,7 @@ def construct_env_with_vars(env_vars_to_add):
   # of the SDK but we want to remove that from the current environment
   # if no such tool is active.
   # Ignore certain keys that are inputs to emsdk itself.
-  ignore_keys = set(['EMSDK_POWERSHELL', 'EMSDK_CSH', 'EMSDK_CMD', 'EMSDK_BASH',
+  ignore_keys = set(['EMSDK_POWERSHELL', 'EMSDK_CSH', 'EMSDK_CMD', 'EMSDK_BASH', 'EMSDK_FISH'
                      'EMSDK_NUM_CORES', 'EMSDK_NOTTY', 'EMSDK_KEEP_DOWNLOADS'])
   env_keys_to_add = set(pair[0] for pair in env_vars_to_add)
   for key in os.environ:
