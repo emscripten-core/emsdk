@@ -5,8 +5,10 @@
 
 set -l script (status -f)
 set -l dir (dirname $script)
+set -x -l EMSDK_FISH 1
 
 eval ($dir/emsdk construct_env)
 
 set -e -l script
 set -e -l dir
+set -e -l EMSDK_FISH

@@ -114,15 +114,16 @@ else:
 UNIX = (MACOS or LINUX)
 
 
-# Pick which shell of 4 shells to use
+# Pick which shell of 5 shells to use
 POWERSHELL = bool(os.getenv('EMSDK_POWERSHELL'))
 CSH = bool(os.getenv('EMSDK_CSH'))
 CMD = bool(os.getenv('EMSDK_CMD'))
 BASH = bool(os.getenv('EMSDK_BASH'))
+FISH = bool(os.getenv('EMSDK_FISH'))
 if WINDOWS and BASH:
   MSYS = True
 
-if not CSH and not POWERSHELL and not BASH and not CMD:
+if not CSH and not POWERSHELL and not BASH and not CMD and not FISH:
   # Fall back to default of `cmd` on windows and `bash` otherwise
   if WINDOWS and not MSYS:
     CMD = True
@@ -2580,6 +2581,8 @@ def unset_env(key):
     return 'unsetenv %s;\n' % key
   if BASH:
     return 'unset %s;\n' % key
+  if FISH:
+    return 'set -e %s;\n' % key
   assert False
 
 
@@ -2601,6 +2604,8 @@ def construct_env_with_vars(env_vars_to_add):
         env_string += 'setenv ' + key + ' "' + value + '";\n'
       elif BASH:
         env_string += 'export ' + key + '="' + value + '";\n'
+      elif FISH:
+        env_string += 'set -x ' + key + ' ' + value + '\n'
       else:
         assert False
 
