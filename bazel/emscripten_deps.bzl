@@ -1,5 +1,5 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("@aspect_rules_js//js:toolchains.bzl", "rules_js_register_toolchains")
+load("@rules_nodejs//nodejs:repositories.bzl", "nodejs_register_toolchains")
 load("@aspect_rules_js//npm:repositories.bzl", "npm_translate_lock")
 load(":revisions.bzl", "EMSCRIPTEN_TAGS")
 
@@ -119,7 +119,7 @@ def emscripten_deps(emscripten_version = "latest"):
     excludes = native.existing_rules().keys()
     if "nodejs_toolchains" not in excludes:
         # Node 16 is the first version that supports darwin_arm64
-        rules_js_register_toolchains(
+        nodejs_register_toolchains(
             node_version = "16.6.2",
         )
 
