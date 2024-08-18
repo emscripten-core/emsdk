@@ -15,6 +15,9 @@ git_repository(
 load("@emsdk//:deps.bzl", emsdk_deps = "deps")
 emsdk_deps()
 
+load("@aspect_rules_js//js:repositories.bzl", "rules_js_dependencies")
+rules_js_dependencies()
+
 load("@emsdk//:emscripten_deps.bzl", emsdk_emscripten_deps = "emscripten_deps")
 emsdk_emscripten_deps(emscripten_version = "2.0.31")
 

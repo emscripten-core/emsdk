@@ -1,5 +1,6 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories", "npm_install")
+load("@aspect_rules_js//js:toolchains.bzl", "rules_js_register_toolchains")
+load("@aspect_rules_js//npm:repositories.bzl", "npm_translate_lock")
 load(":revisions.bzl", "EMSCRIPTEN_TAGS")
 
 def _parse_version(v):
@@ -118,7 +119,7 @@ def emscripten_deps(emscripten_version = "latest"):
     excludes = native.existing_rules().keys()
     if "nodejs_toolchains" not in excludes:
         # Node 16 is the first version that supports darwin_arm64
-        node_repositories(
+        rules_js_register_toolchains(
             node_version = "16.6.2",
         )
 
@@ -174,36 +175,36 @@ def emscripten_deps(emscripten_version = "latest"):
         )
 
     if "emscripten_npm_linux" not in excludes:
-        npm_install(
+        npm_translate_lock(
             name = "emscripten_npm_linux",
-            package_json = "@emscripten_bin_linux//:emscripten/package.json",
-            package_lock_json = "@emscripten_bin_linux//:emscripten/package-lock.json",
+            data = ["@emscripten_bin_linux//:emscripten/package.json"],
+            npm_package_lock = "@emscripten_bin_linux//:emscripten/package-lock.json",
         )
 
     if "emscripten_npm_linux_arm64" not in excludes:
-        npm_install(
+        npm_translate_lock(
             name = "emscripten_npm_linux_arm64",
-            package_json = "@emscripten_bin_linux_arm64//:emscripten/package.json",
-            package_lock_json = "@emscripten_bin_linux_arm64//:emscripten/package-lock.json",
+            data = ["@emscripten_bin_linux_arm64//:emscripten/package.json"],
+            npm_package_lock = "@emscripten_bin_linux_arm64//:emscripten/package-lock.json",
         )
 
     if "emscripten_npm_mac" not in excludes:
-        npm_install(
+        npm_translate_lock(
             name = "emscripten_npm_mac",
-            package_json = "@emscripten_bin_mac//:emscripten/package.json",
-            package_lock_json = "@emscripten_bin_mac//:emscripten/package-lock.json",
+            data = ["@emscripten_bin_mac//:emscripten/package.json"],
+            npm_package_lock = "@emscripten_bin_mac//:emscripten/package-lock.json",
         )
 
     if "emscripten_npm_mac_arm64" not in excludes:
-        npm_install(
+        npm_translate_lock(
             name = "emscripten_npm_mac",
-            package_json = "@emscripten_bin_mac_arm64//:emscripten/package.json",
-            package_lock_json = "@emscripten_bin_mac_arm64//:emscripten/package-lock.json",
+            data = ["@emscripten_bin_mac_arm64//:emscripten/package.json"],
+            npm_package_lock = "@emscripten_bin_mac_arm64//:emscripten/package-lock.json",
         )
 
     if "emscripten_npm_win" not in excludes:
-        npm_install(
+        npm_translate_lock(
             name = "emscripten_npm_win",
-            package_json = "@emscripten_bin_win//:emscripten/package.json",
-            package_lock_json = "@emscripten_bin_win//:emscripten/package-lock.json",
+            data = ["@emscripten_bin_win//:emscripten/package.json"],
+            npm_package_lock = "@emscripten_bin_win//:emscripten/package-lock.json",
         )

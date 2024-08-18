@@ -4,6 +4,10 @@ load(":deps.bzl", "deps")
 
 deps()
 
+load("@aspect_rules_js//js:repositories.bzl", "rules_js_dependencies")
+
+rules_js_dependencies()
+
 load(":emscripten_deps.bzl", "emscripten_deps")
 
 emscripten_deps()
