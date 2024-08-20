@@ -16,15 +16,15 @@ load("@emsdk//:deps.bzl", emsdk_deps = "deps")
 emsdk_deps()
 
 load("@emsdk//:emscripten_deps.bzl", emsdk_emscripten_deps = "emscripten_deps")
-emsdk_emscripten_deps(emscripten_version = "2.0.31")
+emsdk_emscripten_deps(emscripten_version = "3.1.64")
 
 load("@emsdk//:toolchains.bzl", "register_emscripten_toolchains")
 register_emscripten_toolchains()
 ```
-The SHA1 hash in the above `strip_prefix` and `url` parameters correspond to the git revision of
-[emsdk 2.0.31](https://github.com/emscripten-core/emsdk/releases/tag/2.0.31). To get access to
+The `tag` and `emscripten_version` parameters correspond to the git revision of
+[emsdk 3.1.64](https://github.com/emscripten-core/emsdk/releases/tag/3.1.64). To get access to
 newer versions, you'll need to update those. To make use of older versions, change the
-parameter of `emsdk_emscripten_deps()`. Supported versions are listed in `revisions.bzl`
+parameter of `git_repository` and `emsdk_emscripten_deps()`. Supported versions are listed in `revisions.bzl`
 
 Bazel 7+ additionally requires `platforms` dependencies in the `MODULE.bazel` file.
 ```starlark
