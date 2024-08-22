@@ -1,0 +1,30 @@
+name: Create Release PR
+
+on:
+  workflow_dispatch:
+    inputs:
+      lto-sha:
+        required: true
+        type: string
+      nonlto-sha:
+        required: true
+        type: string
+
+
+jobs:
+  create-release-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Run create_release.py
+        run: python3 scripts/create_release.py ${{ inputs.lto-sha }} ${{ inputs.nonlto-sha }} --action
+      - name: Create PR
+        id: cpr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          title: Release ${{ env.RELEASE_VERSION }}
+          commit-message: Release ${{ env.RELEASE_VERSION }}
+          delete-branch: true
+
+
