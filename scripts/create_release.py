@@ -31,10 +31,13 @@ def main(args):
 
   new_version = '.'.join(str(part) for part in new_version)
   asserts_hash = None
+  is_github_runner = False
   if args:
     new_hash = args[0]
     if len(args) > 1:
       asserts_hash = args[1]
+    if len(args) > 2 and args[2] == '--action':
+      is_github_runner = True
   else:
     new_hash = emsdk.get_emscripten_releases_tot()
   print('Creating new release: %s -> %s' % (new_version, new_hash))
@@ -59,16 +62,21 @@ def main(args):
 
   branch_name = 'version_' + new_version
 
-  # Create a new git branch
-  subprocess.check_call(['git', 'checkout', '-b', branch_name, 'origin/main'], cwd=root_dir)
+  if is_github_runner: # For GitHub Actions workflows
+    with open(os.environ['GITHUB_ENV'], 'a') as f:
+      f.write(f'RELEASE_VERSION={new_version}')
+  else: # Local use
+    # Create a new git branch
+    subprocess.check_call(['git', 'checkout', '-b', branch_name, 'origin/main'], cwd=root_dir)
 
-  # Create auto-generated changes to the new git branch
-  subprocess.check_call(['git', 'add', '-u', '.'], cwd=root_dir)
-  subprocess.check_call(['git', 'commit', '-m', new_version], cwd=root_dir)
-  print('New release created in branch: `%s`' % branch_name)
+    # Create auto-generated changes to the new git branch
+    subprocess.check_call(['git', 'add', '-u', '.'], cwd=root_dir)
+    subprocess.check_call(['git', 'commit', '-m', new_version], cwd=root_dir)
+    print('New release created in branch: `%s`' % branch_name)
 
-  # Push new branch to origin
-  subprocess.check_call(['git', 'push', 'origin', branch_name], cwd=root_dir)
+    # Push new branch to origin
+    subprocess.check_call(['git', 'push', 'origin', branch_name], cwd=root_dir)
+
   return 0
 
 
