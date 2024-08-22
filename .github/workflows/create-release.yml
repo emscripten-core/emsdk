@@ -10,7 +10,6 @@ on:
         required: true
         type: string
 
-
 jobs:
   create-release-pr:
     runs-on: ubuntu-latest
@@ -26,5 +25,3 @@ jobs:
           title: Release ${{ env.RELEASE_VERSION }}
           commit-message: Release ${{ env.RELEASE_VERSION }}
           delete-branch: true
-
-
