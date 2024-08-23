@@ -32,5 +32,5 @@ jobs:
                   sha: context.sha
                 })
               } else {
-               console.log(`Commit message: ${message} did not match pattern`)
+                console.log(`Commit message: ${message} did not match pattern`)
               }
