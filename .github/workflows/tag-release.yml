@@ -12,14 +12,13 @@ jobs:
       # Only activate for commits created by the create-release.yml workflow.
       # The assumption is that when manual changes happen, we want to handle
       # tagging manually too.
-      if: github.event.head_commit.author.username == 'github-actions[bot]'
       runs-on: ubuntu-latest
       steps:
         - name: Match message and create tag
           uses: actions/github-script@v7
           with:
             script: |
-              const message = `${{ github.event.head_commit.message }}`
+              const message = 'Release 1.1.1' //`${{ github.event.head_commit.message }}`
               const regex = /Release ([0-9]+.[0-9]+.[0-9]+)/
               const match = message.match(regex)
               if (match) {
