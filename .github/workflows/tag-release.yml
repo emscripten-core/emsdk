@@ -43,6 +43,6 @@ jobs:
                 owner: context.repo.owner,
                 repo: 'emscripten',
                 workflow_id: 'tag-release.yml',
-                ref: main,
+                ref: 'main',
                 intpus: { 'release-sha': 'b7ca27c4313b8282e1023d90a31f323f1d16ac83' }
               })
