@@ -17,6 +17,7 @@ jobs:
         - name: Match message and create tag
           uses: actions/github-script@v7
           with:
+            github-token: ${{ secrets.TEST_TOKEN }}
             script: |
               const message = 'Release 1.1.2' //`${{ github.event.head_commit.message }}`
               const regex = /Release ([0-9]+.[0-9]+.[0-9]+)/
@@ -38,6 +39,7 @@ jobs:
         - name: Dispatch emscripten workflow
           uses: actions/github-script@v7
           with:
+            github-token: ${{ secrets.TEST_TOKEN }}
             script: |
               await github.rest.actions.createWorkflowDispatch({
                 owner: context.repo.owner,
