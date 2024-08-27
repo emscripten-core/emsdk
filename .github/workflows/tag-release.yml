@@ -37,7 +37,7 @@ jobs:
                 console.log(`Commit message: ${message} did not match pattern`)
               }
         - name: Dispatch emscripten workflow
-          uses: actions/github-script@v7
+          uses: actions/github-script@v7 # TODO: make conditional on regex match
           with:
             github-token: ${{ secrets.TEST_TOKEN }}
             script: |
