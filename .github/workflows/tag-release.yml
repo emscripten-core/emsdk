@@ -5,6 +5,7 @@ name: Create release tag
 on:
   push:
     paths: [ emscripten-releases-tags.json, .github/workflows/tag-release.yml ]
+    # TODO: restrict to main branch
   workflow_dispatch:
 
 jobs:
@@ -36,6 +37,8 @@ jobs:
               } else {
                 console.log(`Commit message: ${message} did not match pattern`)
               }
+        - name: Find emscripten revision
+          run: python3 scripts/get_emscripten_revision_info.py
         - name: Dispatch emscripten workflow
           uses: actions/github-script@v7 # TODO: make conditional on regex match
           with:
@@ -46,5 +49,5 @@ jobs:
                 repo: 'emscripten',
                 workflow_id: 'tag-release.yml',
                 ref: 'main',
-                inputs: { 'release-sha': 'b7ca27c4313b8282e1023d90a31f323f1d16ac83' }
+                inputs: { 'release-sha': '${{ env.EMSCRIPTEN_HASH }}' }
               })
