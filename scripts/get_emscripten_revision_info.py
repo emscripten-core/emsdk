@@ -19,7 +19,7 @@ def get_latest_emscripten(tagfile):
     if not os.path.isdir('emscripten-releases'):
         subprocess.run(['git', 'clone', EMSCRIPTEN_RELEASES_GIT, '--depth', '100'], check=True)
     info = subprocess.run(['emscripten-releases/src/release-info.py', 'emscripten-releases', latest, '-d'],
-                          capture_output=True, check=True, text=True).stdout
+                          stdout=subprocess.PIPE, check=True, text=True).stdout
     for line in info.split('\n'):
         tokens = line.split()
         if len(tokens) and tokens[0] == 'emscripten':
