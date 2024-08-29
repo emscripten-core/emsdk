@@ -25,7 +25,7 @@ jobs:
           title: Release ${{ env.RELEASE_VERSION }}
           commit-message: |
             Release ${{ env.RELEASE_VERSION }}
-
+          body: |
             With emscripten-releases revisions:
               ${{ inputs.lto-sha }} (LTO)
               ${{ inputs.nonlto-sha }} (asserts)
