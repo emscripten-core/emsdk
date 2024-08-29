@@ -34,8 +34,8 @@ if __name__ == '__main__':
     emscripten_hash = get_latest_emscripten(TAGFILE)
     print('Emscripten revision ' + emscripten_hash)
     if 'GITHUB_ENV' in os.environ:
-            with open(os.environ['GITHUB_ENV'], 'a') as f:
-                f.write(f'EMSCRIPTEN_HASH={emscripten_hash}')
-            sys.exit(0)
+        with open(os.environ['GITHUB_ENV'], 'a') as f:
+            f.write(f'EMSCRIPTEN_HASH={emscripten_hash}')
+        sys.exit(0)
     print('Not a GitHub Action')
     sys.exit(1)
