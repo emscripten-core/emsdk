@@ -45,7 +45,7 @@ jobs:
               });
               is_release = true;
             } else {
-              console.log(`Commit message: ${message} did not match pattern`);
+              console.log(`Commit message: '${message}' did not match pattern`);
             }
             return is_release;
 

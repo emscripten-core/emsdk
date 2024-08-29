@@ -23,5 +23,10 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           title: Release ${{ env.RELEASE_VERSION }}
-          commit-message: Release ${{ env.RELEASE_VERSION }}
+          commit-message: |
+            Release ${{ env.RELEASE_VERSION }}
+
+            With emscripten-releases revisions:
+              ${{ inputs.lto-sha }} (LTO)
+              ${{ inputs.nonlto-sha }} (asserts)
           delete-branch: true
