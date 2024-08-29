@@ -16,7 +16,7 @@ jobs:
     name: Check for release commit and create tag
     runs-on: ubuntu-latest
     outputs:
-      is_release: ${{ steps.create-tag.outputs.is_release }}
+      is_release: ${{ steps.create-tag.outputs.result }}
     steps:
       - name: Match message and create tag
         id: create-tag
@@ -27,6 +27,7 @@ jobs:
             const message = 'Release 1.1.2'; //`${{ github.event.head_commit.message }}`
             const regex = /Release ([0-9]+.[0-9]+.[0-9]+)/;
             const match = message.match(regex);
+            let is_release = false;
             if (match) {
               const release = match[1];
               console.log(`Matched release ${release}`);
@@ -37,12 +38,12 @@ jobs:
                 ref: `refs/tags/${release}`,
                 sha: context.sha
               });
-              core.setOutput('is_release=true');
+              is_release = true;
               } catch (e) { console.log(`createRef failed: ${e}`) }
             } else {
               console.log(`Commit message: ${message} did not match pattern`);
-              core.setOutput('is_release=false');
               }
+            return is_release;
 
   dispatch-emscripten-tag:
     name: Dispatch workflow to tag emscripten repo
