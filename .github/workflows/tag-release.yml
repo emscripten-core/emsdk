@@ -4,8 +4,11 @@ name: Create release tag
 
 on:
   push:
-    paths: [ emscripten-releases-tags.json, .github/workflows/tag-release.yml ]
-    # TODO: restrict to main branch
+    paths:
+      - emscripten-releases-tags.json
+      - .github/workflows/tag-release.yml
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -23,15 +26,17 @@ jobs:
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.TEST_TOKEN }}
+          # A commit with the message of the form 'Release X.Y.Z' is expected
+          # to have been created by create_release.py and update the latest
+          # release in emscripten-releases-tags.json
           script: |
-            const message = 'Release 1.1.2'; //`${{ github.event.head_commit.message }}`
+            const message = `${{ github.event.head_commit.message }}`
             const regex = /Release ([0-9]+.[0-9]+.[0-9]+)/;
             const match = message.match(regex);
             let is_release = false;
             if (match) {
               const release = match[1];
               console.log(`Matched release ${release}`);
-              try {
               await github.rest.git.createRef({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -39,10 +44,9 @@ jobs:
                 sha: context.sha
               });
               is_release = true;
-              } catch (e) { console.log(`createRef failed: ${e}`) }
             } else {
               console.log(`Commit message: ${message} did not match pattern`);
-              }
+            }
             return is_release;
 
   dispatch-emscripten-tag:
@@ -54,9 +58,12 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
       - name: Find emscripten revision
+        # get_emscripten_revision_info.py sets env.EMSCRIPTEN_HASH to the
+        # emscripten hash associated with the latest release in
+        # emscripten-releases-tags.json
         run: python3 scripts/get_emscripten_revision_info.py
       - name: Dispatch emscripten workflow
-        uses: actions/github-script@v7 # TODO: make conditional on regex match
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.TEST_TOKEN }}
           script: |
