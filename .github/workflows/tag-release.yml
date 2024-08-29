@@ -16,35 +16,39 @@ jobs:
     name: Check for release commit and create tag
     runs-on: ubuntu-latest
     outputs:
-      is_release:
+      is_release: ${{ steps.create-tag.outputs.is_release }}
     steps:
       - name: Match message and create tag
+        id: create-tag
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.TEST_TOKEN }}
           script: |
-            const message = 'Release 1.1.2' //`${{ github.event.head_commit.message }}`
-            const regex = /Release ([0-9]+.[0-9]+.[0-9]+)/
-            const match = message.match(regex)
+            const message = 'Release 1.1.2'; //`${{ github.event.head_commit.message }}`
+            const regex = /Release ([0-9]+.[0-9]+.[0-9]+)/;
+            const match = message.match(regex);
             if (match) {
-              const release = match[1]
-              console.log(`Matched release ${release}`)
+              const release = match[1];
+              console.log(`Matched release ${release}`);
               try {
               await github.rest.git.createRef({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 ref: `refs/tags/${release}`,
                 sha: context.sha
-              })
+              });
+              core.setOutput('is_release=true');
               } catch (e) { console.log(`createRef failed: ${e}`) }
             } else {
-              console.log(`Commit message: ${message} did not match pattern`)
+              console.log(`Commit message: ${message} did not match pattern`);
+              core.setOutput('is_release=false');
               }
 
   dispatch-emscripten-tag:
     name: Dispatch workflow to tag emscripten repo
     runs-on: ubuntu-latest
     needs: tag-release
+    if: ${{ needs.tag-release.outputs.is_release == 'true' }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -61,4 +65,4 @@ jobs:
               workflow_id: 'tag-release.yml',
               ref: 'main',
               inputs: { 'release-sha': '${{ env.EMSCRIPTEN_HASH }}' }
-            })
+            });
