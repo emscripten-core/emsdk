@@ -17,8 +17,13 @@ def get_latest_hash(tagfile):
 def get_latest_emscripten(tagfile):
     latest = get_latest_hash(tagfile)
     if not os.path.isdir('emscripten-releases'):
-        subprocess.run(['git', 'clone', EMSCRIPTEN_RELEASES_GIT, '--depth', '100'], check=True)
-    info = subprocess.run(['emscripten-releases/src/release-info.py', 'emscripten-releases', latest],
+        subprocess.run(['git', 'clone', EMSCRIPTEN_RELEASES_GIT, '--depth',
+                        '100'], check=True)
+    # This will fail if the 'latest' revision is not within the most recent
+    # 100 commits; but that shouldn't happen because this script is intended
+    # to be run right after a release is added.
+    info = subprocess.run(['emscripten-releases/src/release-info.py',
+                           'emscripten-releases', latest],
                           stdout=subprocess.PIPE, check=True, text=True).stdout
     for line in info.split('\n'):
         tokens = line.split()
