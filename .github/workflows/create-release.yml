@@ -23,5 +23,10 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           title: Release ${{ env.RELEASE_VERSION }}
-          commit-message: Release ${{ env.RELEASE_VERSION }}
+          commit-message: |
+            Release ${{ env.RELEASE_VERSION }}
+          body: |
+            With emscripten-releases revisions:
+              https://chromium.googlesource.com/emscripten-releases/+/${{ inputs.lto-sha }} (LTO)
+              https://chromium.googlesource.com/emscripten-releases/+/${{ inputs.nonlto-sha }} (asserts)
           delete-branch: true
