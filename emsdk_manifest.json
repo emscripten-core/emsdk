@@ -666,6 +666,16 @@
   },
   {
     "id": "ninja",
+    "version": "1.11.1",
+    "bitness": 64,
+    "windows_url": "ninja-1.11.1-win.zip",
+    "linux_url": "ninja-1.11.1-linux.zip",
+    "macos_url": "ninja-1.11.1-mac.zip",
+    "activated_cfg": "NINJA_ROOT='%installation_dir%'",
+    "activated_path": "%installation_dir%"
+  },
+  {
+    "id": "ninja",
     "version": "git-release",
     "bitness": 64,
     "url": "https://github.com/ninja-build/ninja.git",
