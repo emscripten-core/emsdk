@@ -1332,6 +1332,16 @@ def emscripten_npm_install(tool, directory):
       return False
 
   print('Done running: npm ci')
+
+  try:
+    subprocess.check_output([sys.executable, 'bootstrap.py'],
+                            cwd=directory, stderr=subprocess.STDOUT, env=env,
+                            universal_newlines=True)
+  except subprocess.CalledProcessError as e:
+    errlog('Error running %s:\n%s' % (e.cmd, e.output))
+    return False
+
+  print('Done running: Emscripten bootstrap')
   return True
 
 
