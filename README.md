@@ -193,7 +193,7 @@ latest git development branch `main`, run the following:
 ### How do I use my own Emscripten github fork with the SDK?
 
 It is also possible to use your own fork of the Emscripten repository via the
-SDK. This is achieved with standard git machinery, so there if you are already
+SDK. This is achieved with standard git machinery, so if you are already
 acquainted with working on multiple remotes in a git clone, these steps should
 be familiar to you. This is useful in the case when you want to make your own
 modifications to the Emscripten toolchain, but still keep using the SDK
