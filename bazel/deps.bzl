@@ -23,12 +23,12 @@ def deps():
     maybe(
         http_archive,
         name = "rules_nodejs",
-        sha256 = "08337d4fffc78f7fe648a93be12ea2fc4e8eb9795a4e6aa48595b66b34555626",
-        urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/5.8.0/rules_nodejs-core-5.8.0.tar.gz"],
+        sha256 = "3e8369256ad63197959d2253c473a9dcc57c2841d176190e59b91d25d4fe9e67",
+        urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/v6.1.1/rules_nodejs-v6.1.1.tar.gz"],
     )
     maybe(
         http_archive,
-        name = "build_bazel_rules_nodejs",
-        sha256 = "dcc55f810142b6cf46a44d0180a5a7fb923c04a5061e2e8d8eb05ccccc60864b",
-        urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/5.8.0/rules_nodejs-5.8.0.tar.gz"],
+        name = "aspect_rules_js",
+        sha256 = "7085e915cdba6f2dc0ce93bef59f5d040a539b510b840456b6ac7ccc2bee7886",
+        urls = ["https://github.com/aspect-build/rules_js/releases/download/v2.0.0-rc1/rules_js-v2.0.0-rc1.tar.gz"],
     )
