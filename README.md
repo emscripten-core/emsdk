@@ -20,6 +20,7 @@ That explains how to use the emsdk to get the latest binary builds (without
 compiling from source). Basically, that amounts to
 
 ```
+git pull
 ./emsdk install latest
 ./emsdk activate latest
 ```
