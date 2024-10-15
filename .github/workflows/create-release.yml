@@ -22,6 +22,7 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
+          github-token: ${{ secrets.EMSCRIPTEN_BOT_TOKEN }}
           title: Release ${{ env.RELEASE_VERSION }}
           commit-message: |
             Release ${{ env.RELEASE_VERSION }}
