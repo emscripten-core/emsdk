@@ -143,11 +143,7 @@ if machine.startswith('x64') or machine.startswith('amd64') or machine.startswit
 elif machine.endswith('86'):
   ARCH = 'x86'
 elif machine.startswith('aarch64') or machine.lower().startswith('arm64'):
-  if WINDOWS:
-    errlog('No support for Windows on Arm, fallback to x64')
-    ARCH = 'x86_64'
-  else:
-    ARCH = 'arm64'
+  ARCH = 'arm64'
 elif machine.startswith('arm'):
   ARCH = 'arm'
 else:
@@ -2714,7 +2710,7 @@ def main(args):
     errlog("Missing command; Type 'emsdk help' to get a list of commands.")
     return 1
 
-  debug_print('esmdk.py running under `%s`' % sys.executable)
+  debug_print('emsdk.py running under `%s`' % sys.executable)
   cmd = args.pop(0)
 
   if cmd in ('help', '--help', '-h'):

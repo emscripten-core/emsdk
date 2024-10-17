@@ -396,6 +396,19 @@
 
 
   {
+    "id": "node",
+    "version": "23.0.0",
+    "arch": "arm64",
+    "bitness": 64,
+    "windows_url": "node-v23.0.0-win-arm64.zip",
+    "activated_path": "%installation_dir%/bin",
+    "activated_path_skip": "node",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+  },
+
+
+  {
     "id": "python",
     "version": "3.9.2-nuget",
     "bitness": 64,
@@ -431,6 +444,17 @@
     "activated_cfg": "PYTHON='%installation_dir%/bin/python3'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.9/site-packages/certifi/cacert.pem"
   },
+
+  {
+    "id": "python",
+    "version": "3.13.0",
+    "bitness": 64,
+    "arch": "arm64",
+    "windows_url": "python-3.13.0-0-arm64.zip",
+    "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
+  },
+
   {
     "id": "java",
     "version": "8.152",
@@ -622,6 +646,14 @@
   {
     "version": "main",
     "bitness": 64,
+    "arch": "arm64",
+    "uses": ["python-3.13.0-64bit", "llvm-git-main-64bit", "node-23.0.0-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
+    "os": "win"
+  },
+  {
+    "version": "main",
+    "bitness": 64,
+    "arch": "amd64",
     "uses": ["python-3.9.2-nuget-64bit", "llvm-git-main-64bit", "node-18.20.3-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
     "os": "win"
   },
