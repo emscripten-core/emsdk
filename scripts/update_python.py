@@ -148,12 +148,16 @@ def build_python():
 
     install_dir = os.path.join(src_dir, 'install')
 
-    # Install requests module.  This is needed in particualr on macOS to ensure
+    # Install requests module.  This is needed in particular on macOS to ensure
     # SSL certificates are available (certifi in installed and used by requests).
     pybin = os.path.join(src_dir, 'install', 'usr', 'local', 'bin', 'python3')
     pip = os.path.join(src_dir, 'install', 'usr', 'local', 'bin', 'pip3')
     check_call([pybin, '-m', 'ensurepip', '--upgrade'])
     check_call([pybin, pip, 'install', 'requests'])
+
+    # Install psutil module. This is needed by emrun to track when browser
+    # process quits.
+    check_call([pybin, pip, 'install', 'psutil'])
 
     dirname = 'python-%s-%s' % (version, revision)
     if os.path.isdir(dirname):
