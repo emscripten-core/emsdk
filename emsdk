@@ -9,9 +9,6 @@
 # First look for python bundled in Emsdk
 if [ -z "$EMSDK_PYTHON" ]; then
   PYTHON3="$(dirname "$0")/python/3.9.2-1_64bit/bin/python3"
-  if [ ! -f "$PYTHON3" ]; then
-    PYTHON3="$(dirname "$0")/python/3.7.4-2_64bit/bin/python3"
-  fi
   if [ -f "$PYTHON3" ]; then
     EMSDK_PYTHON="$PYTHON3"
 

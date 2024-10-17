@@ -2,15 +2,7 @@ $ScriptDirectory = Split-Path -parent $PSCommandPath
 
 $PythonLocations = $(
     "python\3.9.2-1_64bit\python.exe",
-    "python\3.9.2-nuget_64bit\python.exe",
-    "python\3.7.4-pywin32_64bit\python.exe",
-    "python\3.7.4_64bit\python.exe",
-    "python\2.7.13.1_64bit\python-2.7.13.amd64\python.exe",
-    "python\2.7.13.1_32bit\python-2.7.13\python.exe",
-    "python\2.7.5.3_64bit\python.exe",
-    "python\2.7.5.3_32bit\python.exe",
-    "python\2.7.5_64bit\python.exe",
-    "python\2.7.5.1_32bit\python.exe"
+    "python\3.9.2-nuget_64bit\python.exe"
 )
 
 # Find python from an explicit location relative to the Emscripten SDK.
