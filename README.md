@@ -64,7 +64,7 @@ https://emscripten.org/docs/building_from_source/toolchain_what_is_needed.html.
 
 ### Linux
 
-- `python`: Version 2.7.0 or above.
+- `python`: Version 3.9.2 or above.
 - `java`: For running closure compiler (optional)
 
 The emsdk pre-compiled binaries are built against Ubuntu/Focal 20.04 LTS and
