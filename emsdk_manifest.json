@@ -283,21 +283,6 @@
     "custom_uninstall_script": "uninstall_binaryen"
   },
   {
-    "id": "gnu",
-    "version": "2.5.4",
-    "windows_url": "grep-2.5.4.zip",
-    "activated_path": "%installation_dir%/bin"
-  },
-  {
-    "id": "mingw",
-    "version": "4.6.2",
-    "bitness": 32,
-    "windows_url": "mingw_4.6.2_32bit.zip",
-    "activated_cfg": "MINGW_ROOT='%installation_dir%'",
-    "activated_path": "%installation_dir%",
-    "is_old": true
-  },
-  {
     "id": "mingw",
     "version": "7.1.0",
     "bitness": 64,
