@@ -15,6 +15,7 @@ import urllib.request
 import subprocess
 import os
 import shutil
+from zip import unzip_cmd, zip_cmd
 
 version = '18.20.3'
 base = 'https://nodejs.org/dist/latest-v18.x/'
@@ -37,13 +38,13 @@ for suffix in suffixes:
     urllib.request.urlretrieve(download_url, filename)
 
     if '-win-' in suffix:
-      subprocess.check_call(['unzip', '-q', filename])
+      subprocess.check_call(unzip_cmd() + [filename])
       dirname = os.path.splitext(os.path.basename(filename))[0]
       shutil.move(dirname, 'bin')
       os.mkdir(dirname)
       shutil.move('bin', dirname)
       os.remove(filename)
-      subprocess.check_call(['zip', '-rq', filename, dirname])
+      subprocess.check_call(zip_cmd() + [filename, dirname])
       shutil.rmtree(dirname)
 
     upload_url = upload_base + filename
