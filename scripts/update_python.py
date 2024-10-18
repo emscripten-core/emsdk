@@ -34,6 +34,8 @@ from subprocess import check_call
 version = '3.9.2'
 major_minor_version = '.'.join(version.split('.')[:2])  # e.g. '3.9.2' -> '3.9'
 download_url = 'https://www.nuget.org/api/v2/package/python/%s' % version
+# This is not part of official Python version, but a repackaging number appended by emsdk
+# when a version of Python needs to be redownloaded.
 revision = '4'
 
 pywin32_version = '227'
@@ -70,11 +72,12 @@ def make_python_patch():
         urllib.request.urlretrieve(url, pywin32_filename)
 
     if not os.path.exists(filename):
-        print('Downloading python: ' + download_url)
+        print(f'Downloading python: {download_url} to {filename}')
         urllib.request.urlretrieve(download_url, filename)
 
     os.mkdir('python-nuget')
     check_call(unzip_cmd() + [os.path.abspath(filename)], cwd='python-nuget')
+    os.remove(filename)
 
     os.mkdir('pywin32')
     rtn = subprocess.call(unzip_cmd() + [os.path.abspath(pywin32_filename)], cwd='pywin32')
@@ -84,12 +87,12 @@ def make_python_patch():
     shutil.move(os.path.join('pywin32', 'PLATLIB'), os.path.join('python-nuget', 'toolss', 'Lib', 'site-packages'))
 
     check_call(zip_cmd() + [os.path.join('..', '..', out_filename), '.'], cwd='python-nuget/tools')
+    print('Created: %s' % out_filename)
 
     # cleanup if everything went fine
     shutil.rmtree('python-nuget')
     shutil.rmtree('pywin32')
 
-    print('Created: %s' % out_filename)
     if '--upload' in sys.argv:
       upload_url = upload_base + out_filename
       print('Uploading: ' + upload_url)
@@ -153,6 +156,10 @@ def build_python():
     pybin = os.path.join(src_dir, 'install', 'usr', 'local', 'bin', 'python3')
     pip = os.path.join(src_dir, 'install', 'usr', 'local', 'bin', 'pip3')
     check_call([pybin, '-m', 'ensurepip', '--upgrade'])
+    # TODO: Potential bug: the following cmdline does not pin down a version
+    # of requests module, resulting in possibly different version of the module
+    # being installed on future runs. Switch to pip install requests==<version> to
+    # to download a pinned version.
     check_call([pybin, pip, 'install', 'requests'])
 
     # Install psutil module. This is needed by emrun to track when browser
