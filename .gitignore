@@ -33,3 +33,8 @@ __pycache__
 /mingw
 /spidermonkey
 /binaryen
+
+# Generated and downloaded packages
+*.zip
+*.tar.gz
+*.tar.xz
