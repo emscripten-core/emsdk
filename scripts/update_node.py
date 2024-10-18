@@ -18,13 +18,14 @@ import os
 import shutil
 from zip import unzip_cmd, zip_cmd
 
-version = '18.20.3'
-base = 'https://nodejs.org/dist/latest-v18.x/'
+version = '20.18.0'
+base = 'https://nodejs.org/dist/v20.18.0/'
 upload_base = 'gs://webassembly/emscripten-releases-builds/deps/'
 
 suffixes = [
     '-win-x86.zip',
     '-win-x64.zip',
+    '-win-arm64.zip',
     '-darwin-x64.tar.gz',
     '-darwin-arm64.tar.gz',
     '-linux-x64.tar.xz',
