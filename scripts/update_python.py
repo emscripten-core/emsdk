@@ -141,11 +141,7 @@ def build_python():
     pybin = os.path.join(src_dir, 'install', 'usr', 'local', 'bin', 'python3')
     pip = os.path.join(src_dir, 'install', 'usr', 'local', 'bin', 'pip3')
     check_call([pybin, '-m', 'ensurepip', '--upgrade'])
-    # TODO: Potential bug: the following cmdline does not pin down a version
-    # of requests module, resulting in possibly different version of the module
-    # being installed on future runs. Switch to pip install requests==<version> to
-    # to download a pinned version.
-    check_call([pybin, pip, 'install', 'requests'])
+    check_call([pybin, pip, 'install', 'requests==2.32.3'])
 
     # Install psutil module. This is needed by emrun to track when browser
     # process quits.
