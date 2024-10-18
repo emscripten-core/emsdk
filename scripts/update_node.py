@@ -13,6 +13,7 @@ direcotry.
 
 import urllib.request
 import subprocess
+import sys
 import os
 import shutil
 
@@ -46,9 +47,10 @@ for suffix in suffixes:
       subprocess.check_call(['zip', '-rq', filename, dirname])
       shutil.rmtree(dirname)
 
-    upload_url = upload_base + filename
-    print('Uploading: ' + upload_url)
-    cmd = ['gsutil', 'cp', '-n', filename, upload_url]
-    print(' '.join(cmd))
-    subprocess.check_call(cmd)
-    os.remove(filename)
+    if '--upload' in sys.argv:
+      upload_url = upload_base + filename
+      print('Uploading: ' + upload_url)
+      cmd = ['gsutil', 'cp', '-n', filename, upload_url]
+      print(' '.join(cmd))
+      subprocess.check_call(cmd)
+      os.remove(filename)
