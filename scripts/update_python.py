@@ -30,6 +30,7 @@ import shutil
 import subprocess
 import sys
 from subprocess import check_call
+from zip import unzip_cmd, zip_cmd
 
 version = '3.9.2'
 major_minor_version = '.'.join(version.split('.')[:2])  # e.g. '3.9.2' -> '3.9'
@@ -44,22 +45,6 @@ pywin32_base = 'https://github.com/mhammond/pywin32/releases/download/b%s/' % py
 upload_base = 'gs://webassembly/emscripten-releases-builds/deps/'
 
 
-def unzip_cmd():
-    # Use 7-Zip if available (https://www.7-zip.org/)
-    sevenzip = os.path.join(os.getenv('ProgramFiles', ''), '7-Zip', '7z.exe')
-    if os.path.isfile(sevenzip):
-        return [sevenzip, 'x']
-    # Fall back to 'unzip' tool
-    return ['unzip', '-q']
-
-
-def zip_cmd():
-    # Use 7-Zip if available (https://www.7-zip.org/)
-    sevenzip = os.path.join(os.getenv('ProgramFiles', ''), '7-Zip', '7z.exe')
-    if os.path.isfile(sevenzip):
-        return [sevenzip, 'a', '-mx9']
-    # Fall back to 'zip' tool
-    return ['zip', '-rq']
 
 
 def make_python_patch():
