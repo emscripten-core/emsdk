@@ -18,7 +18,7 @@ jobs:
     # tagging manually too.
     name: Check for release commit and create tag
     # The author is emscripten-bot when triggered from Chromium CI, and github-actions when manually triggered.
-    if: ${ github.event.head_commit.author.username == 'github-actions[bot]' || github.event.head_commit.author.username == 'emscripten-bot' }
+    if: ${{ github.event.head_commit.author.username == 'github-actions[bot]' || github.event.head_commit.author.username == 'emscripten-bot' }}
     runs-on: ubuntu-latest
     outputs:
       is_release: ${{ steps.create-tag.outputs.result }}
