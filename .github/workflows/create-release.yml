@@ -27,6 +27,7 @@ jobs:
           commit-message: |
             Release ${{ env.RELEASE_VERSION }}
           team-reviewers: release-reviewers
+          labels: release
           body: |
             With emscripten-releases revisions:
               https://chromium.googlesource.com/emscripten-releases/+/${{ inputs.lto-sha }} (LTO)
