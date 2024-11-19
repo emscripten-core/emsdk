@@ -33,3 +33,7 @@ jobs:
               https://chromium.googlesource.com/emscripten-releases/+/${{ inputs.lto-sha }} (LTO)
               https://chromium.googlesource.com/emscripten-releases/+/${{ inputs.nonlto-sha }} (asserts)
           delete-branch: true
+      - name: Enable auto-merge
+        run: gh pr merge --squash --auto "${{ steps.cpr.outputs.pull-request-number }}"
+        env:
+          GH_TOKEN: ${{ secrets.EMSCRIPTEN_BOT_TOKEN }}
