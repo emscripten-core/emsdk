@@ -54,6 +54,11 @@ CROSSTOOL_DEFAULT_WARNINGS = [
     "-Wall",
 ]
 
+def _os_path(ctx, path):
+    if ctx.attr.is_windows:
+        path = path.replace("/", "\\")
+    return path
+
 def _impl(ctx):
     target_cpu = ctx.attr.cpu
     toolchain_identifier = "emscripten-" + target_cpu
@@ -74,9 +79,10 @@ def _impl(ctx):
 
     builtin_sysroot = emscripten_dir + "/emscripten/cache/sysroot"
 
-    emcc_script = "emcc.%s" % ctx.attr.script_extension
-    emcc_link_script = "emcc_link.%s" % ctx.attr.script_extension
-    emar_script = "emar.%s" % ctx.attr.script_extension
+    script_extension = "bat" if ctx.attr.is_windows else "sh"
+    emcc_script = "emcc.%s" % script_extension
+    emcc_link_script = "emcc_link.%s" % script_extension
+    emar_script = "emar.%s" % script_extension
 
     ################################################################
     # Tools
@@ -1060,6 +1066,10 @@ def _impl(ctx):
                     key = "EM_CONFIG_PATH",
                     value = ctx.file.em_config.path,
                 ),
+                env_entry(
+                    key = "EMSDK_PYTHON",
+                    value = _os_path(ctx, ctx.file._python_interpreter.path),
+                ),
             ],
         ),
         # Use llvm backend.  Off by default, enabled via --features=llvm_backend
@@ -1134,7 +1144,8 @@ emscripten_cc_toolchain_config_rule = rule(
         "cpu": attr.string(mandatory = True, values = ["asmjs", "wasm"]),
         "em_config": attr.label(mandatory = True, allow_single_file = True),
         "emscripten_binaries": attr.label(mandatory = True, cfg = "exec"),
-        "script_extension": attr.string(mandatory = True, values = ["sh", "bat"]),
+        "is_windows": attr.bool(mandatory = True),
+        "_python_interpreter": attr.label(allow_single_file = True, cfg = "exec", default = Label("@python_3_11//:python3")),
     },
     provides = [CcToolchainConfigInfo],
 )

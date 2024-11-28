@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """wrapper around emcc link step.
 
 This wrapper currently serves the following purposes.
