@@ -22,13 +22,30 @@ def deps():
     )
     maybe(
         http_archive,
-        name = "rules_nodejs",
-        sha256 = "08337d4fffc78f7fe648a93be12ea2fc4e8eb9795a4e6aa48595b66b34555626",
-        urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/5.8.0/rules_nodejs-core-5.8.0.tar.gz"],
+        name = "aspect_rules_js",
+        strip_prefix = "rules_js-1.42.0",
+        sha256 = "5a00869efaeb308245f8132a671fe86524bdfc4f8bfd1976d26f862b316dc3c9",
+        urls = ["https://github.com/aspect-build/rules_js/releases/download/v1.42.0/rules_js-v1.42.0.tar.gz"],
+    )
+    # Transitive dependencies of aspect_rules_js. We explicitly pull them here instead of calling their
+    # provided function to avoid requiring a call to rules_js_dependencies in WORKSPACE.
+    maybe(
+        http_archive,
+        name = "aspect_bazel_lib",
+        sha256 = "714cf8ce95a198bab0a6a3adaffea99e929d2f01bf6d4a59a2e6d6af72b4818c",
+        strip_prefix = "bazel-lib-2.7.8",
+        url = "https://github.com/aspect-build/bazel-lib/releases/download/v2.7.8/bazel-lib-v2.7.8.tar.gz",
     )
     maybe(
         http_archive,
-        name = "build_bazel_rules_nodejs",
-        sha256 = "dcc55f810142b6cf46a44d0180a5a7fb923c04a5061e2e8d8eb05ccccc60864b",
-        urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/5.8.0/rules_nodejs-5.8.0.tar.gz"],
+        name = "rules_nodejs",
+        strip_prefix = "rules_nodejs-6.2.0",
+        sha256 = "87c6171c5be7b69538d4695d9ded29ae2626c5ed76a9adeedce37b63c73bef67",
+        urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/v6.2.0/rules_nodejs-v6.2.0.tar.gz"],
+    )
+    http_archive(
+        name = "bazel_features",
+        sha256 = "f3082bfcdca73dc77dcd68faace806135a2e08c230b02b1d9fbdbd7db9d9c450",
+        strip_prefix = "bazel_features-0.1.0",
+        url = "https://github.com/bazel-contrib/bazel_features/releases/download/v0.1.0/bazel_features-v0.1.0.tar.gz",
     )
