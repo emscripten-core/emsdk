@@ -54,7 +54,7 @@ filegroup(
 
 filegroup(name = "empty")
 
-# dlmalloc.bc is implictly added by the emscripten toolchain
+# dlmalloc.bc is implicitly added by the emscripten toolchain
 cc_library(name = "malloc")
 
 emscripten_cc_toolchain_config_rule(

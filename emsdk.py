@@ -1456,7 +1456,7 @@ def get_required_path(active_tools):
       # the tools path to the users path if a program by that name is found
       # in the existing PATH.  This allows us to, for example, add our version
       # node to the users PATH if, and only if, they don't already have a
-      # another version of node in thier PATH.
+      # another version of node in their PATH.
       if hasattr(tool, 'activated_path_skip'):
         current_path = which(tool.activated_path_skip)
         # We found an executable by this name in the current PATH, but we

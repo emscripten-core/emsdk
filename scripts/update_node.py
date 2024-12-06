@@ -8,7 +8,7 @@
 http://storage.google.com/webassembly.
 
 For the windows version we also alter the directory layout to add the 'bin'
-direcotry.
+directory.
 """
 
 import urllib.request

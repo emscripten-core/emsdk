@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# This script will update emsdk/bazel/revisons.bzl to the latest version of
+# This script will update emsdk/bazel/revisions.bzl to the latest version of
 # emscripten. It reads emsdk/emscripten-releases-tags.json to get the latest
 # version number. Then, it downloads the prebuilts for that version and computes
 # the sha256sum for the archive. It then puts all this information into the
