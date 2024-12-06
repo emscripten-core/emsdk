@@ -1,4 +1,4 @@
-:: equivilent of test.sh as windows bat file
+:: equivalent of test.sh as windows bat file
 set PATH=%PATH%;%PYTHON_BIN%
 CALL emsdk install latest
 CALL emsdk activate latest

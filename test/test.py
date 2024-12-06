@@ -195,7 +195,7 @@ int main() {
     check_call(upstream_emcc + ' hello_world.c')
 
   def test_closure(self):
-    # Specificlly test with `--closure` so we know that node_modules is working
+    # Specifically test with `--closure` so we know that node_modules is working
     check_call(upstream_emcc + ' hello_world.c --closure=1')
 
   def test_specific_version(self):
