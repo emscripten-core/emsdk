@@ -62,10 +62,10 @@ def main(args):
 
   branch_name = 'version_' + new_version
 
-  if is_github_runner: # For GitHub Actions workflows
+  if is_github_runner:  # For GitHub Actions workflows
     with open(os.environ['GITHUB_ENV'], 'a') as f:
       f.write(f'RELEASE_VERSION={new_version}')
-  else: # Local use
+  else:  # Local use
     # Create a new git branch
     subprocess.check_call(['git', 'checkout', '-b', branch_name, 'origin/main'], cwd=root_dir)
 

@@ -8,11 +8,13 @@ import sys
 EMSCRIPTEN_RELEASES_GIT = 'https://chromium.googlesource.com/emscripten-releases'
 TAGFILE = 'emscripten-releases-tags.json'
 
+
 def get_latest_hash(tagfile):
     with open(tagfile) as f:
         versions = json.load(f)
         latest = versions['aliases']['latest']
         return versions['releases'][latest]
+
 
 def get_latest_emscripten(tagfile):
     latest = get_latest_hash(tagfile)
@@ -29,6 +31,7 @@ def get_latest_emscripten(tagfile):
         tokens = line.split()
         if len(tokens) and tokens[0] == 'emscripten':
             return tokens[2]
+
 
 if __name__ == '__main__':
     emscripten_hash = get_latest_emscripten(TAGFILE)

@@ -45,8 +45,6 @@ pywin32_base = 'https://github.com/mhammond/pywin32/releases/download/b%s/' % py
 upload_base = 'gs://webassembly/emscripten-releases-builds/deps/'
 
 
-
-
 def make_python_patch():
     pywin32_filename = 'pywin32-%s.win-amd64-py%s.exe' % (pywin32_version, major_minor_version)
     filename = 'python-%s-amd64.zip' % (version)

@@ -1,5 +1,6 @@
 import os
 
+
 def unzip_cmd():
     # Use 7-Zip if available (https://www.7-zip.org/)
     sevenzip = os.path.join(os.getenv('ProgramFiles', ''), '7-Zip', '7z.exe')
