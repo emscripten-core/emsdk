@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 import json
-import os
 import sys
+
 
 def get_latest(tagfile):
     with open(tagfile) as f:

@@ -27,13 +27,13 @@ else:
 
 
 def listify(x):
-  if type(x) == list or type(x) == tuple:
+  if type(x) in {list, tuple}:
     return x
   return [x]
 
 
 def check_call(cmd, **args):
-  if type(cmd) != list:
+  if type(cmd) is not list:
     cmd = cmd.split()
   print('running: %s' % cmd)
   args['universal_newlines'] = True
@@ -115,7 +115,7 @@ def do_lib_building(emcc):
 
 
 def run_emsdk(cmd):
-  if type(cmd) != list:
+  if type(cmd) is not list:
     cmd = cmd.split()
   check_call([emsdk] + cmd)
 

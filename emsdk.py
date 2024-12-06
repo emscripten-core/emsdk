@@ -784,7 +784,7 @@ def GIT(must_succeed=True):
       if ret == 0:
         cached_git_executable = git
         return git
-    except:
+    except Exception:
       pass
   if must_succeed:
     if WINDOWS:
@@ -853,7 +853,7 @@ def git_pull(repo_path, branch_or_tag):
     if ret != 0:
       return False
     run([GIT(), 'submodule', 'update', '--init'], repo_path, quiet=True)
-  except:
+  except Exception:
     errlog('git operation failed!')
     return False
   print("Successfully updated and checked out branch/tag '" + branch_or_tag + "' on repository '" + repo_path + "'")
@@ -1041,7 +1041,7 @@ def xcode_sdk_version():
     if sys.version_info >= (3,):
       output = output.decode('utf8')
     return output.strip().split('.')
-  except:
+  except Exception:
     return subprocess.checkplatform.mac_ver()[0].split('.')
 
 
@@ -1490,14 +1490,14 @@ def load_em_config():
   lines = []
   try:
     lines = open(EM_CONFIG_PATH, "r").read().split('\n')
-  except:
+  except Exception:
     pass
   for line in lines:
     try:
       key, value = parse_key_value(line)
       if value != '':
         EM_CONFIG_DICT[key] = value
-    except:
+    except Exception:
       pass
 
 
@@ -2127,13 +2127,13 @@ def get_emscripten_releases_tot():
     make_url('tar.xz' if not WINDOWS else 'zip')
     try:
       urlopen(make_url('tar.xz' if not WINDOWS else 'zip'))
-    except:
+    except Exception:
       if not WINDOWS:
         # Try the old `.tbz2` name
         # TODO:remove this once tot builds are all using xz
         try:
           urlopen(make_url('tbz2'))
-        except:
+        except Exception:
           continue
       else:
         continue
@@ -2918,7 +2918,7 @@ def main(args):
           build_type_index = [x.lower() for x in build_types].index(build_type.lower())
           CMAKE_BUILD_TYPE_OVERRIDE = build_types[build_type_index]
           args[i] = ''
-        except:
+        except Exception:
           errlog('Unknown CMake build type "' + build_type + '" specified! Please specify one of ' + str(build_types))
           return 1
       else:
