@@ -1,6 +1,7 @@
 $ScriptDirectory = Split-Path -parent $PSCommandPath
 
 $PythonLocations = $(
+    "python\3.13.0-0_64bit\python.exe",
     "python\3.9.2-1_64bit\python.exe",
     "python\3.9.2-nuget_64bit\python.exe"
 )
