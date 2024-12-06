@@ -50,7 +50,7 @@ jobs:
             apt-get update -q
             apt-get install -q -y python3-pip
       - run: python3 -m pip install --upgrade pip
-      - run: python3 -m pip install flake8==3.9.2
+      - run: python3 -m pip install flake8==7.1.1
       - run: python3 -m flake8 --show-source --statistics --extend-exclude=./scripts
 
   test-linux:
