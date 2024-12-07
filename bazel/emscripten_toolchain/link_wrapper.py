@@ -14,7 +14,6 @@ This wrapper currently serves the following purposes.
    bazel path.
 """
 
-from __future__ import print_function
 
 import argparse
 import os
@@ -119,7 +118,7 @@ if os.path.exists(wasm_base + '.debug.wasm') and os.path.exists(wasm_base):
 
     # Next we need to convert length of the filename to LEB128.
     # Start by converting the length of the filename to a bit string.
-    bit_string = '{0:b}'.format(len(base_name + '.wasm.debug.wasm'))
+    bit_string = '{:b}'.format(len(f'{base_name}.wasm.debug.wasm'))
 
     # Pad the bit string with 0s so that its length is a multiple of 7.
     while len(bit_string) % 7 != 0:

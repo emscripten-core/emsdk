@@ -4,7 +4,6 @@
 # University of Illinois/NCSA Open Source License.  Both these licenses can be
 # found in the LICENSE file.
 
-from __future__ import print_function
 
 import copy
 from collections import OrderedDict
@@ -29,13 +28,9 @@ if os.name == 'nt':
     import _winreg as winreg
   import ctypes.wintypes
 
-if sys.version_info >= (3,):
-  from urllib.parse import urljoin
-  from urllib.request import urlopen
-  import functools
-else:
-  from urlparse import urljoin
-  from urllib2 import urlopen
+from urllib.parse import urljoin
+from urllib.request import urlopen
+import functools
 
 
 emsdk_packages_url = 'https://storage.googleapis.com/webassembly/emscripten-releases-builds/deps/'
@@ -1038,8 +1033,7 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
 def xcode_sdk_version():
   try:
     output = subprocess.check_output(['xcrun', '--show-sdk-version'])
-    if sys.version_info >= (3,):
-      output = output.decode('utf8')
+    output = output.decode('utf8')
     return output.strip().split('.')
   except Exception:
     return subprocess.checkplatform.mac_ver()[0].split('.')
@@ -1610,7 +1604,7 @@ def find_msbuild_dir():
   return ''
 
 
-class Tool(object):
+class Tool:
   def __init__(self, data):
     # Convert the dictionary representation of the tool in 'data' to members of
     # this class for convenience.
@@ -2152,10 +2146,7 @@ def version_key(ver):
 # A sort function that is compatible with both Python 2 and Python 3 using a
 # custom comparison function.
 def python_2_3_sorted(arr, cmp):
-  if sys.version_info >= (3,):
-    return sorted(arr, key=functools.cmp_to_key(cmp))
-  else:
-    return sorted(arr, cmp=cmp)
+  return sorted(arr, key=functools.cmp_to_key(cmp))
 
 
 def is_emsdk_sourced_from_github():
@@ -2254,12 +2245,6 @@ def load_releases_versions():
   return versions
 
 
-def is_string(s):
-  if sys.version_info[0] >= 3:
-    return isinstance(s, str)
-  return isinstance(s, basestring)  # noqa
-
-
 def load_sdk_manifest():
   try:
     manifest = json.loads(open(sdk_path("emsdk_manifest.json"), "r").read())
@@ -2313,7 +2298,7 @@ def load_sdk_manifest():
       t2 = copy.copy(t)
       found_param = False
       for p, v in vars(t2).items():
-        if is_string(v) and param in v:
+        if isinstance(v, str) and param in v:
           t2.__dict__[p] = v.replace(param, ver)
           found_param = True
       if not found_param:
@@ -2972,10 +2957,10 @@ def main(args):
         for sdk in s:
           installed = '\tINSTALLED' if sdk.is_installed() else ''
           active = '*' if sdk.is_active() else ' '
-          print('    ' + active + '    {0: <25}'.format(str(sdk)) + installed)
+          print(f'    {active}    {sdk!s: <25}{installed}')
           if arg_uses:
             for dep in sdk.uses:
-              print('          - {0: <25}'.format(dep))
+              print(f'          - {dep: <25}')
         print('')
       print('The additional following precompiled SDKs are also available for download:')
       print_sdks(find_sdks(False))
@@ -3011,7 +2996,7 @@ def main(args):
             has_partially_active_tools[0] = has_partially_active_tools[0] or True
           else:
             active = '   '
-          print('    ' + active + '    {0: <25}'.format(str(tool)) + installed)
+          print(f'    {active}    {tool!s: <25}{installed}')
         print('')
 
       print('The following precompiled tool packages are available for download:')
