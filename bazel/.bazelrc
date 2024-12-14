@@ -1,1 +1,2 @@
-build --incompatible_enable_cc_toolchain_resolution --check_direct_dependencies=off
+build --incompatible_enable_cc_toolchain_resolution
+common --check_direct_dependencies=off
