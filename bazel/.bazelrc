@@ -1,2 +1,2 @@
 build --incompatible_enable_cc_toolchain_resolution
-common --check_direct_dependencies=off
+common --enable_workspace
