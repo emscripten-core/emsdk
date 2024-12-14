@@ -17,20 +17,21 @@ FAILMSG="!!! scripts/update_bazel_workspace.py needs to be run !!!"
 grep ${VER} bazel/revisions.bzl || (echo ${FAILMSG} && false)
 grep ${HASH} bazel/revisions.bzl || (echo ${FAILMSG} && false)
 
+BAZEL_CMD=$(which bazel || which bazel-7.4.1)
+
 cd bazel
-bazel build //hello-world:hello-world-wasm
-bazel build //hello-world:hello-world-wasm-simd
+$BAZEL_CMD build //hello-world:hello-world-wasm
+$BAZEL_CMD build //hello-world:hello-world-wasm-simd
 
 cd test_external
-bazel build //:hello-world-wasm
-bazel build //long_command_line:long_command_line_wasm
-bazel build //:hello-embind-wasm --compilation_mode dbg # debug
+$BAZEL_CMD build //:hello-world-wasm
+$BAZEL_CMD build //long_command_line:long_command_line_wasm
+$BAZEL_CMD build //:hello-embind-wasm --compilation_mode dbg # debug
 
 # Test use of the closure compiler
-bazel build //:hello-embind-wasm --compilation_mode opt # release
+$BAZEL_CMD build //:hello-embind-wasm --compilation_mode opt # release
 # This function should not be minified if the externs file is loaded correctly.
 grep "customJSFunctionToTestClosure" bazel-bin/hello-embind-wasm/hello-embind.js
 
 cd ../test_secondary_lto_cache
-bazel build //:hello-world-wasm
-
+$BAZEL_CMD build //:hello-world-wasm
