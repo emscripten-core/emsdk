@@ -240,11 +240,13 @@ jobs:
       - run:
           name: install bazel
           command: |
-            apt-get install -q -y bazel
+            apt-get install -q -y bazel-7.4.1
       - run: test/test_bazel.sh
 
   test-bazel-mac-arm64:
     executor: mac_arm64
+    environment:
+      USE_BAZEL_VERSION: "7.4.1"
     steps:
       - checkout
       - run:
