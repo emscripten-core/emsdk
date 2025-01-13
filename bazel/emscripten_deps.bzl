@@ -120,7 +120,7 @@ def emscripten_deps(emscripten_version = "latest"):
     if "nodejs_toolchains" not in excludes:
         # Node 16 is the first version that supports darwin_arm64
         nodejs_register_toolchains(
-            node_version = "20.18.1",
+            node_version = "20.18.0",
         )
 
     if "emscripten_bin_linux" not in excludes:
