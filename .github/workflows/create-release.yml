@@ -17,7 +17,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
       - name: Run create_release.py
-        run: python3 scripts/create_release.py ${{ inputs.lto-sha }} ${{ inputs.nonlto-sha }} --action
+        run: python3 scripts/create_release.py -r ${{ inputs.lto-sha }} -a ${{ inputs.nonlto-sha }} --action
       - name: Create PR
         id: cpr
         uses: peter-evans/create-pull-request@v6
