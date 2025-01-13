@@ -1,6 +1,6 @@
+load("@aspect_rules_js//npm:repositories.bzl", "npm_translate_lock")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@rules_nodejs//nodejs:repositories.bzl", "nodejs_register_toolchains")
-load("@aspect_rules_js//npm:repositories.bzl", "npm_translate_lock")
 load(":revisions.bzl", "EMSCRIPTEN_TAGS")
 
 def _parse_version(v):
@@ -120,7 +120,7 @@ def emscripten_deps(emscripten_version = "latest"):
     if "nodejs_toolchains" not in excludes:
         # Node 16 is the first version that supports darwin_arm64
         nodejs_register_toolchains(
-            node_version = "16.6.2",
+            node_version = "20.18.0",
         )
 
     if "emscripten_bin_linux" not in excludes:

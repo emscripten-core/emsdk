@@ -27,6 +27,7 @@ def deps():
         sha256 = "5a00869efaeb308245f8132a671fe86524bdfc4f8bfd1976d26f862b316dc3c9",
         urls = ["https://github.com/aspect-build/rules_js/releases/download/v1.42.0/rules_js-v1.42.0.tar.gz"],
     )
+
     # Transitive dependencies of aspect_rules_js. We explicitly pull them here instead of calling their
     # provided function to avoid requiring a call to rules_js_dependencies in WORKSPACE.
     maybe(
@@ -39,9 +40,9 @@ def deps():
     maybe(
         http_archive,
         name = "rules_nodejs",
-        strip_prefix = "rules_nodejs-6.2.0",
-        sha256 = "87c6171c5be7b69538d4695d9ded29ae2626c5ed76a9adeedce37b63c73bef67",
-        urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/v6.2.0/rules_nodejs-v6.2.0.tar.gz"],
+        strip_prefix = "rules_nodejs-6.3.2",
+        sha256 = "158619723f1d8bd535dd6b93521f4e03cf24a5e107126d05685fbd9540ccad10",
+        urls = ["https://github.com/bazel-contrib/rules_nodejs/releases/download/v6.3.2/rules_nodejs-v6.3.2.tar.gz"],
     )
     http_archive(
         name = "bazel_features",
