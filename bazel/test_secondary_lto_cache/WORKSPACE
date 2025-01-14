@@ -25,6 +25,7 @@ register_emscripten_toolchains(cache = {
         "libcompiler_rt",
         "libc++-noexcept",
         "libc++abi-debug-noexcept",
-        "libsockets"
+        "libsockets",
+        "libdlmalloc-debug"
     ]
 })
