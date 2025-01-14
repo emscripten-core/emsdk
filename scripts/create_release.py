@@ -30,7 +30,7 @@ def main():
   parser.add_argument('-r', '--release-hash')
   parser.add_argument('-a', '--asserts-hash')
   parser.add_argument('-v', '--new-version')
-  parser.add_argument('--action', action='store_true')
+  parser.add_argument('--gh-action', action='store_true')
   options = parser.parse_args()
 
   release_info = emsdk.load_releases_info()
@@ -42,14 +42,11 @@ def main():
     new_version = '.'.join(str(part) for part in new_version)
 
   asserts_hash = None
-  is_github_runner = False
   if options.release_hash:
     new_hash = options.release_hash
     asserts_hash = options.asserts_hash
   else:
     new_hash = emsdk.get_emscripten_releases_tot()
-  if options.action:
-      is_github_runner = True
 
   print('Creating new release: %s -> %s' % (new_version, new_hash))
   release_info['releases'][new_version] = new_hash
@@ -73,7 +70,7 @@ def main():
 
   branch_name = 'version_' + new_version
 
-  if is_github_runner:  # For GitHub Actions workflows
+  if options.gh_action:  # For GitHub Actions workflows
     with open(os.environ['GITHUB_ENV'], 'a') as f:
       f.write(f'RELEASE_VERSION={new_version}')
   else:  # Local use
