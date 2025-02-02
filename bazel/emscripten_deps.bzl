@@ -1,10 +1,12 @@
-load("@aspect_rules_js//npm:repositories.bzl", "npm_translate_lock")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("@rules_nodejs//nodejs:repositories.bzl", "nodejs_register_toolchains")
 load(":revisions.bzl", "EMSCRIPTEN_TAGS")
 
 def _parse_version(v):
     return [int(u) for u in v.split(".")]
+
+empty_repository = repository_rule(
+    implementation = lambda: None,
+)
 
 BUILD_FILE_CONTENT_TEMPLATE = """
 package(default_visibility = ['//visibility:public'])
@@ -98,113 +100,85 @@ filegroup(
 )
 """
 
-def emscripten_deps(emscripten_version = "latest"):
-    version = emscripten_version
+def _emscripten_deps_impl(ctx):
+    version = None
+
+    for mod in ctx.modules:
+        for config in mod.tags.config:
+            if config.version and version != None:
+                fail("More than one emscripten version specified!")
+            version = config.version
+    if version == None:
+        version = "latest"
 
     if version == "latest":
         version = reversed(sorted(EMSCRIPTEN_TAGS.keys(), key = _parse_version))[0]
-
-    if version not in EMSCRIPTEN_TAGS.keys():
-        error_msg = "Emscripten version {} not found.".format(version)
-        error_msg += " Look at @emsdk//:revisions.bzl for the list "
-        error_msg += "of currently supported versions."
-        fail(error_msg)
 
     revision = EMSCRIPTEN_TAGS[version]
 
     emscripten_url = "https://storage.googleapis.com/webassembly/emscripten-releases-builds/{}/{}/wasm-binaries{}.{}"
 
-    # This could potentially backfire for projects with multiple emscripten
-    # dependencies that use different emscripten versions
-    excludes = native.existing_rules().keys()
-    if "nodejs_toolchains" not in excludes:
-        # Node 16 is the first version that supports darwin_arm64
-        nodejs_register_toolchains(
-            node_version = "20.18.0",
-        )
+    http_archive(
+        name = "emscripten_bin_linux",
+        strip_prefix = "install",
+        url = emscripten_url.format("linux", revision.hash, "", "tar.xz"),
+        sha256 = revision.sha_linux,
+        build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(bin_extension = ""),
+        type = "tar.xz",
+    )
 
-    if "emscripten_bin_linux" not in excludes:
-        http_archive(
-            name = "emscripten_bin_linux",
-            strip_prefix = "install",
-            url = emscripten_url.format("linux", revision.hash, "", "tar.xz"),
-            sha256 = revision.sha_linux,
-            build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(bin_extension = ""),
-            type = "tar.xz",
-        )
-
-    if "emscripten_bin_linux_arm64" not in excludes:
+    # Not all versions have a linux/arm64 release: https://github.com/emscripten-core/emsdk/issues/547
+    if hasattr(revision, "sha_linux_arm64"):
         http_archive(
             name = "emscripten_bin_linux_arm64",
             strip_prefix = "install",
             url = emscripten_url.format("linux", revision.hash, "-arm64", "tar.xz"),
-            # Not all versions have a linux/arm64 release: https://github.com/emscripten-core/emsdk/issues/547
-            sha256 = getattr(revision, "sha_linux_arm64", None),
+            sha256 = revision.sha_linux_arm64,
             build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(bin_extension = ""),
             type = "tar.xz",
         )
-
-    if "emscripten_bin_mac" not in excludes:
-        http_archive(
-            name = "emscripten_bin_mac",
-            strip_prefix = "install",
-            url = emscripten_url.format("mac", revision.hash, "", "tar.xz"),
-            sha256 = revision.sha_mac,
-            build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(bin_extension = ""),
-            type = "tar.xz",
+    else:
+        empty_repository(
+            name = "emscripten_bin_linux_arm64",
         )
 
-    if "emscripten_bin_mac_arm64" not in excludes:
-        http_archive(
-            name = "emscripten_bin_mac_arm64",
-            strip_prefix = "install",
-            url = emscripten_url.format("mac", revision.hash, "-arm64", "tar.xz"),
-            sha256 = revision.sha_mac_arm64,
-            build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(bin_extension = ""),
-            type = "tar.xz",
-        )
+    http_archive(
+        name = "emscripten_bin_mac",
+        strip_prefix = "install",
+        url = emscripten_url.format("mac", revision.hash, "", "tar.xz"),
+        sha256 = revision.sha_mac,
+        build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(bin_extension = ""),
+        type = "tar.xz",
+    )
 
-    if "emscripten_bin_win" not in excludes:
-        http_archive(
-            name = "emscripten_bin_win",
-            strip_prefix = "install",
-            url = emscripten_url.format("win", revision.hash, "", "zip"),
-            sha256 = revision.sha_win,
-            build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(bin_extension = ".exe"),
-            type = "zip",
-        )
+    http_archive(
+        name = "emscripten_bin_mac_arm64",
+        strip_prefix = "install",
+        url = emscripten_url.format("mac", revision.hash, "-arm64", "tar.xz"),
+        sha256 = revision.sha_mac_arm64,
+        build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(bin_extension = ""),
+        type = "tar.xz",
+    )
 
-    if "emscripten_npm_linux" not in excludes:
-        npm_translate_lock(
-            name = "emscripten_npm_linux",
-            data = ["@emscripten_bin_linux//:emscripten/package.json"],
-            npm_package_lock = "@emscripten_bin_linux//:emscripten/package-lock.json",
-        )
+    http_archive(
+        name = "emscripten_bin_win",
+        strip_prefix = "install",
+        url = emscripten_url.format("win", revision.hash, "", "zip"),
+        sha256 = revision.sha_win,
+        build_file_content = BUILD_FILE_CONTENT_TEMPLATE.format(bin_extension = ".exe"),
+        type = "zip",
+    )
 
-    if "emscripten_npm_linux_arm64" not in excludes:
-        npm_translate_lock(
-            name = "emscripten_npm_linux_arm64",
-            data = ["@emscripten_bin_linux_arm64//:emscripten/package.json"],
-            npm_package_lock = "@emscripten_bin_linux_arm64//:emscripten/package-lock.json",
-        )
-
-    if "emscripten_npm_mac" not in excludes:
-        npm_translate_lock(
-            name = "emscripten_npm_mac",
-            data = ["@emscripten_bin_mac//:emscripten/package.json"],
-            npm_package_lock = "@emscripten_bin_mac//:emscripten/package-lock.json",
-        )
-
-    if "emscripten_npm_mac_arm64" not in excludes:
-        npm_translate_lock(
-            name = "emscripten_npm_mac",
-            data = ["@emscripten_bin_mac_arm64//:emscripten/package.json"],
-            npm_package_lock = "@emscripten_bin_mac_arm64//:emscripten/package-lock.json",
-        )
-
-    if "emscripten_npm_win" not in excludes:
-        npm_translate_lock(
-            name = "emscripten_npm_win",
-            data = ["@emscripten_bin_win//:emscripten/package.json"],
-            npm_package_lock = "@emscripten_bin_win//:emscripten/package-lock.json",
-        )
+emscripten_deps = module_extension(
+    tag_classes = {
+        "config": tag_class(
+            attrs = {
+                "version": attr.string(
+                    doc = "Version to use. 'latest' to use latest.",
+                    values = ["latest"] + EMSCRIPTEN_TAGS.keys(),
+                ),
+            },
+        ),
+    },
+    implementation = _emscripten_deps_impl,
+)

@@ -8,6 +8,7 @@
 import hashlib
 import json
 import os
+import re
 import requests
 import sys
 
@@ -16,6 +17,7 @@ STORAGE_URL = 'https://storage.googleapis.com/webassembly/emscripten-releases-bu
 EMSDK_ROOT = os.path.dirname(os.path.dirname(__file__))
 RELEASES_TAGS_FILE = EMSDK_ROOT + '/emscripten-releases-tags.json'
 BAZEL_REVISIONS_FILE = EMSDK_ROOT + '/bazel/revisions.bzl'
+BAZEL_MODULE_FILE = EMSDK_ROOT + '/bazel/MODULE.bazel'
 
 
 def get_latest_info():
@@ -57,8 +59,22 @@ def insert_revision(item):
         f.write(''.join(lines))
 
 
+def update_module_version(version):
+    with open(BAZEL_MODULE_FILE, 'r') as f:
+        content = f.read()
+
+    content = re.sub(
+        r'module\(name = "emsdk", version = "\d+.\d+.\d+"\)',
+        f'module(name = "emsdk", version = "{version}")',
+        content)
+
+    with open(BAZEL_MODULE_FILE, 'w') as f:
+        f.write(content)
+
+
 def main(argv):
     version, latest_hash = get_latest_info()
+    update_module_version(version)
     item = revisions_item(version, latest_hash)
     print('inserting item:')
     print(item)

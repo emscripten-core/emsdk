@@ -16,6 +16,7 @@ FAILMSG="!!! scripts/update_bazel_workspace.py needs to be run !!!"
 # Ensure the WORKSPACE file is up to date with the latest version.
 grep ${VER} bazel/revisions.bzl || (echo ${FAILMSG} && false)
 grep ${HASH} bazel/revisions.bzl || (echo ${FAILMSG} && false)
+grep ${VER} bazel/MODULE.bazel || (echo ${FAILMSG} && false)
 
 BAZEL_CMD=$(which bazel || which bazel-7.4.1)
 
