@@ -14,6 +14,5 @@ system = platform.system()
 # are uploaded as the linked files, which means the cli.js cannot load its
 # dependencies from the expected locations.
 # See https://github.com/emscripten-core/emscripten/pull/16640 for more
-if system != "Windows":
-    CLOSURE_COMPILER = [NODE_JS, os.path.join(EMSCRIPTEN_ROOT, "node_modules",
-                                              "google-closure-compiler", "cli.js")]
+CLOSURE_COMPILER = [NODE_JS, os.path.join(EMSCRIPTEN_ROOT, "node_modules",
+                                          "google-closure-compiler", "cli.js")]
