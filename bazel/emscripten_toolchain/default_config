@@ -8,8 +8,6 @@ LLVM_ROOT = os.path.join(BINARYEN_ROOT, "bin")
 NODE_JS = os.path.join(ROOT_DIR, os.environ["NODE_JS_PATH"])
 FROZEN_CACHE = True
 
-system = platform.system()
-
 # This works around an issue with Bazel RBE where the symlinks in node_modules/.bin
 # are uploaded as the linked files, which means the cli.js cannot load its
 # dependencies from the expected locations.
