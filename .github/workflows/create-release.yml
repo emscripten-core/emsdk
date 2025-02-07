@@ -32,6 +32,7 @@ jobs:
             With emscripten-releases revisions:
               https://chromium.googlesource.com/emscripten-releases/+/${{ inputs.lto-sha }} (LTO)
               https://chromium.googlesource.com/emscripten-releases/+/${{ inputs.nonlto-sha }} (asserts)
+          branch: release_${{ env.RELEASE_VERSION }}
           delete-branch: true
       - name: Enable auto-merge
         run: gh pr merge --squash --auto "${{ steps.cpr.outputs.pull-request-number }}"
