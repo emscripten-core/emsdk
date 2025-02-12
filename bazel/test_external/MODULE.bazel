@@ -1,1 +1,5 @@
-bazel_dep(name = "platforms", version = "0.0.9")
+bazel_dep(name = "emsdk")
+local_path_override(
+    module_name = "emsdk",
+    path = "..",
+)
