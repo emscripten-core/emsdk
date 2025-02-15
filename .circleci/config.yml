@@ -240,19 +240,17 @@ jobs:
       - run:
           name: install bazel
           command: |
-            apt-get install -q -y bazel-7.4.1
+            apt-get install -q -y bazel
       - run: test/test_bazel.sh
 
   test-bazel-mac-arm64:
     executor: mac_arm64
-    environment:
-      USE_BAZEL_VERSION: "7.4.1"
     steps:
       - checkout
       - run:
-          name: install bazelisk
+          name: install bazel
           command: |
-            brew install bazelisk
+            brew install bazel
       - run: test/test_bazel_mac.sh
 
   test-bazel-windows:
@@ -262,7 +260,6 @@ jobs:
     environment:
       PYTHONUNBUFFERED: "1"
       EMSDK_NOTTY: "1"
-      USE_BAZEL_VERSION: "7.4.1"
     steps:
       - checkout
       - run:
