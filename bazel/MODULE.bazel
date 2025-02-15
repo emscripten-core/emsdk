@@ -4,6 +4,7 @@ bazel_dep(name = "platforms", version = "0.0.9")
 bazel_dep(name = "bazel_skylib", version = "1.1.1")
 bazel_dep(name = "aspect_rules_js", version = "1.42.0")
 bazel_dep(name = "rules_nodejs", version = "6.3.2")
+bazel_dep(name = "rules_cc", version = "0.1.1")
 
 node = use_extension("@rules_nodejs//nodejs:extensions.bzl", "node")
 node.toolchain(node_version = "20.18.0")
