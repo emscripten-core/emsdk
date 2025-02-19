@@ -14,7 +14,7 @@ WebAssembly binary into a larger web application.
 import argparse
 import os
 import tarfile
-
+import shutil
 
 def ensure(f):
   if not os.path.exists(f):
@@ -26,11 +26,20 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--archive', help='The archive to extract from.')
   parser.add_argument('--outputs', help='Comma separated list of files that should be extracted from the archive. Only the extname has to match a file in the archive.')
+  parser.add_argument('--dwp_file', help='Optional dwp input file, generated when fission flags set.')
   parser.add_argument('--allow_empty_outputs', help='If an output listed in --outputs does not exist, create it anyways.', action='store_true')
   args = parser.parse_args()
 
   args.archive = os.path.normpath(args.archive)
   args.outputs = args.outputs.split(",")
+  args.dwp_file = os.path.normpath(args.dwp_file) if args.dwp_file else None
+
+  if args.dwp_file:
+    for idx, output in enumerate(args.outputs):
+      if output.endswith(".dwp"): # also update extension 'binary.dwp' to 'binary.wasm.dwp'
+        shutil.copy2(args.dwp_file, output)
+        args.outputs.pop(idx)
+        break
 
   tar = tarfile.open(args.archive)
 
