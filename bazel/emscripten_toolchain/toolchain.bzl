@@ -72,7 +72,7 @@ def _impl(ctx):
 
     emscripten_dir = ctx.attr.emscripten_binaries.label.workspace_root
     nodejs_path = ctx.file.nodejs_bin.path
-    emscripten_name = ctx.attr.emscripten_binaries.label.repo_name
+    emscripten_name = ctx.attr.emscripten_binaries.label.workspace_name
 
     builtin_sysroot = emscripten_dir + "/emscripten/cache/sysroot"
 
