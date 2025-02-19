@@ -17,7 +17,7 @@ FAILMSG="!!! scripts/update_bazel_workspace.py needs to be run !!!"
 grep ${VER} bazel/revisions.bzl || (echo ${FAILMSG} && false)
 grep ${HASH} bazel/revisions.bzl || (echo ${FAILMSG} && false)
 
-BAZEL_CMD=$(which bazel || which bazel-7.4.1)
+BAZEL_CMD=$(which bazel || which bazel-7.5.0)
 
 cd bazel
 $BAZEL_CMD build //hello-world:hello-world-wasm
