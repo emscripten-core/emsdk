@@ -36,7 +36,7 @@ def main():
 
   if args.dwp_file:
     for idx, output in enumerate(args.outputs):
-      if output.endswith(".dwp"): # also update extension 'binary.dwp' to 'binary.wasm.dwp'
+      if output.endswith(".dwp"):  # also update extension 'binary.dwp' to 'binary.wasm.dwp'
         shutil.copy2(args.dwp_file, output)
         args.outputs.pop(idx)
         break
