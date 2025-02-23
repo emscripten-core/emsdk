@@ -83,7 +83,6 @@ _emscripten_cache = repository_rule(
         "configuration": attr.string_list(),
         "targets": attr.string_list(),
     },
-    local = True
 )
 
 def register_emscripten_toolchains(cache = {}):
