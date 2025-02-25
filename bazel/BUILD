@@ -44,38 +44,44 @@ filegroup(name = "empty")
 
 alias(
     name = "compiler_files",
-    actual = select({
-        ":linux": "@emscripten_bin_linux//:compiler_files",
-        ":linux_arm64": "@emscripten_bin_linux_arm64//:compiler_files",
-        ":macos": "@emscripten_bin_mac//:compiler_files",
-        ":macos_arm64": "@emscripten_bin_mac_arm64//:compiler_files",
-        ":windows": "@emscripten_bin_win//:compiler_files",
-        "//conditions:default": ":empty",
-    }),
+    actual = select(
+        {
+            ":linux": "@emscripten_bin_linux//:compiler_files",
+            ":linux_arm64": "@emscripten_bin_linux_arm64//:compiler_files",
+            ":macos": "@emscripten_bin_mac//:compiler_files",
+            ":macos_arm64": "@emscripten_bin_mac_arm64//:compiler_files",
+            ":windows": "@emscripten_bin_win//:compiler_files",
+        },
+        no_match_error = "Unsupported host platform.",
+    ),
 )
 
 alias(
     name = "linker_files",
-    actual = select({
-        ":linux": "@emscripten_bin_linux//:linker_files",
-        ":linux_arm64": "@emscripten_bin_linux_arm64//:linker_files",
-        ":macos": "@emscripten_bin_mac//:linker_files",
-        ":macos_arm64": "@emscripten_bin_mac_arm64//:linker_files",
-        ":windows": "@emscripten_bin_win//:linker_files",
-        "//conditions:default": ":empty",
-    }),
+    actual = select(
+        {
+            ":linux": "@emscripten_bin_linux//:linker_files",
+            ":linux_arm64": "@emscripten_bin_linux_arm64//:linker_files",
+            ":macos": "@emscripten_bin_mac//:linker_files",
+            ":macos_arm64": "@emscripten_bin_mac_arm64//:linker_files",
+            ":windows": "@emscripten_bin_win//:linker_files",
+        },
+        no_match_error = "Unsupported host platform.",
+    ),
 )
 
 alias(
     name = "ar_files",
-    actual = select({
-        ":linux": "@emscripten_bin_linux//:ar_files",
-        ":linux_arm64": "@emscripten_bin_linux_arm64//:ar_files",
-        ":macos": "@emscripten_bin_mac//:ar_files",
-        ":macos_arm64": "@emscripten_bin_mac_arm64//:ar_files",
-        ":windows": "@emscripten_bin_win//:ar_files",
-        "//conditions:default": ":empty",
-    }),
+    actual = select(
+        {
+            ":linux": "@emscripten_bin_linux//:ar_files",
+            ":linux_arm64": "@emscripten_bin_linux_arm64//:ar_files",
+            ":macos": "@emscripten_bin_mac//:ar_files",
+            ":macos_arm64": "@emscripten_bin_mac_arm64//:ar_files",
+            ":windows": "@emscripten_bin_win//:ar_files",
+        },
+        no_match_error = "Unsupported host platform.",
+    ),
 )
 
 platform(
