@@ -96,6 +96,13 @@ filegroup(
         ],
     ),
 )
+
+filegroup(
+    name = "dwp_files",
+    srcs = [
+        "bin/llvm-dwp{bin_extension}",
+    ],
+)
 """
 
 def emscripten_deps(emscripten_version = "latest"):
