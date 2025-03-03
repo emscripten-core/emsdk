@@ -12,6 +12,14 @@ filegroup(
     ],
 )
 
+py_binary(
+    name = "emcc_compile",
+    main = "emscripten/emcc.py",
+    srcs = [
+        "@emscripten_bin_linux//:emscripten/emcc.py",
+    ],
+)
+
 filegroup(
     name = "compiler_files",
     srcs = [
@@ -19,6 +27,7 @@ filegroup(
         "emcc.bat",
         "@emsdk//:compiler_files",
         ":common_files",
+        ":emcc_compile"
     ],
 )
 
@@ -67,6 +76,7 @@ emscripten_cc_toolchain_config_rule(
         "@bazel_tools//src/conditions:host_windows": "bat",
         "//conditions:default": "sh",
     }),
+    emcc = ":emcc_compile",
 )
 
 cc_toolchain(
