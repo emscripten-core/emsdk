@@ -1,4 +1,7 @@
-module(name = "emsdk", version = "4.0.3")
+module(
+    name = "emsdk",
+    version = "4.0.3",
+)
 
 bazel_dep(name = "platforms", version = "0.0.9")
 bazel_dep(name = "bazel_skylib", version = "1.1.1")
@@ -61,4 +64,10 @@ use_repo(
 emscripten_cache = use_extension("//:emscripten_cache.bzl", "emscripten_cache")
 use_repo(emscripten_cache, "emscripten_cache")
 
-register_toolchains("//emscripten_toolchain:cc-toolchain-wasm")
+register_toolchains(
+    "//emscripten_toolchain:cc-toolchain-wasm-emscripten_linux",
+    "//emscripten_toolchain:cc-toolchain-wasm-emscripten_linux_arm64",
+    "//emscripten_toolchain:cc-toolchain-wasm-emscripten_mac",
+    "//emscripten_toolchain:cc-toolchain-wasm-emscripten_mac_arm64",
+    "//emscripten_toolchain:cc-toolchain-wasm-emscripten_win",
+)
