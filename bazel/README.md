@@ -2,18 +2,17 @@
 
 ## Setup Instructions
 
-Check out this repository somewhere next to your code, e.g. inside a `third_party` folder.
-
 In your `MODULE.bazel` file, put:
 ```starlark
-bazel_dep(name = "emsdk", version = "4.0.2")
-local_path_override(
+emsdk_version = "4.0.2"
+bazel_dep(name = "emsdk", version = emsdk_version)
+git_override(
     module_name = "emsdk",
-    path = "third_party/emsdk/bazel",
+    remote = "https://github.com/emscripten-core/emsdk.git",
+    strip_prefix = "bazel",
+    tag = emsdk_version,
 )
 ```
-
-This assumes you checked out this repository as `third_party/emsdk`. Otherwise update the path.
 
 You can use a different version of this SDK by changing it in your `MODULE.bazel` file. The Emscripten version is by default the same as the SDK version, but you can use a different one as well by adding to your `MODULE.bazel`:
 
