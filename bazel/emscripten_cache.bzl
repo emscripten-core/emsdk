@@ -87,7 +87,6 @@ _emscripten_cache_repository = repository_rule(
         "configuration": attr.string_list(),
         "targets": attr.string_list(),
     },
-    local = True,
 )
 
 def _emscripten_cache_impl(ctx):
