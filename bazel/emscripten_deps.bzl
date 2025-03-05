@@ -1,4 +1,3 @@
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load(":remote_emscripten_repository.bzl", "remote_emscripten_repository")
 load(":revisions.bzl", "EMSCRIPTEN_TAGS")
 
@@ -78,7 +77,7 @@ def _emscripten_deps_impl(ctx):
 
     remote_emscripten_repository(
         name = emscripten_repo_name("win"),
-        bin_extension = "",
+        bin_extension = ".exe",
         sha256 = revision.sha_win,
         strip_prefix = "install",
         type = "zip",
