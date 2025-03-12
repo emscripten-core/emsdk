@@ -71,6 +71,7 @@ def _impl(ctx):
     cc_target_os = "emscripten"
 
     emscripten_dir = ctx.attr.emscripten_binaries.label.workspace_root
+
     nodejs_path = ctx.file.nodejs_bin.path
 
     builtin_sysroot = emscripten_dir + "/emscripten/cache/sysroot"
