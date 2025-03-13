@@ -44,11 +44,24 @@ filegroup(
 )
 
 filegroup(
+    name = "dwp_files",
+    srcs = [
+        "emdwp-emscripten_bin_linux_arm64.sh",
+        "emdwp-emscripten_bin_linux.sh",
+        "emdwp-emscripten_bin_mac_arm64.sh",
+        "emdwp-emscripten_bin_mac.sh",
+        "emdwp-emscripten_bin_win.bat",
+        "@emsdk//:dwp_files",
+    ],
+)
+
+filegroup(
     name = "all_files",
     srcs = [
         ":ar_files",
         ":compiler_files",
         ":linker_files",
+        ":dwp_files",
     ],
 )
 
@@ -75,7 +88,7 @@ cc_toolchain(
     ar_files = ":ar_files",
     as_files = ":empty",
     compiler_files = ":compiler_files",
-    dwp_files = ":empty",
+    dwp_files = ":dwp_files",
     linker_files = ":linker_files",
     objcopy_files = ":empty",
     strip_files = ":empty",
