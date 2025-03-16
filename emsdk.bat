@@ -1,46 +1,52 @@
+@echo off
+
 :: Find python from an explicit location relative to the Emscripten SDK.
-@IF EXIST "%~dp0python\2.7.13.1_64bit\python-2.7.13.amd64\python.exe" (
-  @SET EMSDK_PY="%~dp0python\2.7.13.1_64bit\python-2.7.13.amd64\python.exe"
-  @GOTO end
+
+setlocal
+
+:: When using our bundled python we never want the users
+:: PYTHONHOME or PYTHONPATH
+:: https://github.com/emscripten-core/emsdk/issues/598
+if exist "%~dp0python\3.9.2-1_64bit\python.exe" (
+  set EMSDK_PY="%~dp0python\3.9.2-1_64bit\python.exe"
+  set PYTHONHOME=
+  set PYTHONPATH=
+  goto end
 )
 
-@IF EXIST "%~dp0python\2.7.13.1_32bit\python-2.7.13\python.exe" (
-  @SET EMSDK_PY="%~dp0python\2.7.13.1_32bit\python-2.7.13\python.exe"
-  @GOTO end
+if exist "%~dp0python\3.7.4-pywin32_64bit\python.exe" (
+  set EMSDK_PY="%~dp0python\3.7.4-pywin32_64bit\python.exe"
+  set PYTHONHOME=
+  set PYTHONPATH=
+  goto end
 )
 
-@IF EXIST "%~dp0python\2.7.5.3_64bit\python.exe" (
-  @SET EMSDK_PY="%~dp0python\2.7.5.3_64bit\python.exe"
-  @GOTO end
+if exist "%~dp0python\3.7.4_64bit\python.exe" (
+  set EMSDK_PY="%~dp0python\3.7.4_64bit\python.exe"
+  set PYTHONHOME=
+  set PYTHONPATH=
+  goto end
 )
 
-@IF EXIST "%~dp0python\2.7.5.3_32bit\python.exe" (
-  @SET EMSDK_PY="%~dp0python\2.7.5.3_32bit\python.exe"
-  @GOTO end
-)
-
-@IF EXIST "%~dp0python\2.7.5_64bit\python.exe" (
-  @SET EMSDK_PY="%~dp0python\2.7.5_64bit\python.exe"
-  @GOTO end
-)
-
-@IF EXIST "%~dp0python\2.7.5.1_32bit\python.exe" (
-  @SET EMSDK_PY="%~dp0python\2.7.5.1_32bit\python.exe"
-  @GOTO end
+if exist "%~dp0python\2.7.13.1_64bit\python-2.7.13.amd64\python.exe" (
+  set EMSDK_PY="%~dp0python\2.7.13.1_64bit\python-2.7.13.amd64\python.exe"
+  set PYTHONHOME=
+  set PYTHONPATH=
+  goto end
 )
 
 :: As a last resort, access from PATH.
-@SET EMSDK_PY=python
+set EMSDK_PY=python
 
 :end
-@call %EMSDK_PY% "%~dp0\emsdk" %*
+call %EMSDK_PY% "%~dp0\emsdk.py" %*
 
-@set EMSDK_PY=
+endlocal
 
-:: python is not able to set environment variables to the parent calling process, so
-:: therefore have it craft a .bat file, which we invoke after finishing python execution,
-:: to set up the environment variables
-@IF EXIST emsdk_set_env.bat (
-  @CALL emsdk_set_env.bat > NUL
-  @DEL /F /Q emsdk_set_env.bat
+:: python is not able to set environment variables to the parent calling
+:: process, so therefore have it craft a .bat file, which we invoke after
+:: finishing python execution, to set up the environment variables
+if exist "%~dp0\emsdk_set_env.bat" (
+  call "%~dp0\emsdk_set_env.bat" > nul
+  del /F /Q "%~dp0\emsdk_set_env.bat"
 )

@@ -1,0 +1,10 @@
+local_repository(
+    name = "emsdk",
+    path = "..",
+)
+
+load("@emsdk//:deps.bzl", "deps")
+deps()
+
+load("@emsdk//:emscripten_deps.bzl", "emscripten_deps")
+emscripten_deps()
