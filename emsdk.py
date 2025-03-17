@@ -21,6 +21,8 @@ import subprocess
 import sys
 import sysconfig
 import zipfile
+import time
+
 if os.name == 'nt':
   try:
     import winreg
@@ -607,7 +609,14 @@ def unzip(source_filename, dest_dir):
             parent_dir = os.path.dirname(fix_potentially_long_windows_pathname(final_dst_filename))
             if parent_dir and not os.path.exists(parent_dir):
               os.makedirs(parent_dir)
-            move_with_overwrite(fix_potentially_long_windows_pathname(dst_filename), fix_potentially_long_windows_pathname(final_dst_filename))
+            for attempt in range(10):
+              try:
+                  move_with_overwrite(fix_potentially_long_windows_pathname(dst_filename), fix_potentially_long_windows_pathname(final_dst_filename))
+                  break
+              except PermissionError:
+                  print(f"Попытка {attempt + 1}/10: Файл {dst_filename} заблокирован, ждем {0.5*(attempt+1)} сек")
+                  time.sleep(0.5*(attempt+1))  
+            #move_with_overwrite(fix_potentially_long_windows_pathname(dst_filename), fix_potentially_long_windows_pathname(final_dst_filename))
 
       if common_subdir:
         remove_tree(unzip_to_dir)
