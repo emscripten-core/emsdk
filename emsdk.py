@@ -615,9 +615,8 @@ def unzip(source_filename, dest_dir):
                   break
               except PermissionError:
                   print(f"Попытка {attempt + 1}/10: Файл {dst_filename} заблокирован, ждем {0.5*(attempt+1)} сек")
-                  time.sleep(0.5*(attempt+1))  
-            #move_with_overwrite(fix_potentially_long_windows_pathname(dst_filename), fix_potentially_long_windows_pathname(final_dst_filename))
-
+                  time.sleep(0.5*(attempt+1))
+        
       if common_subdir:
         remove_tree(unzip_to_dir)
   except zipfile.BadZipfile as e:
