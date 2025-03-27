@@ -240,13 +240,11 @@ jobs:
       - run:
           name: install bazel
           command: |
-            apt-get install -q -y bazel-7.4.1
+            apt-get install -q -y bazel
       - run: test/test_bazel.sh
 
   test-bazel-mac-arm64:
     executor: mac_arm64
-    environment:
-      USE_BAZEL_VERSION: "7.4.1"
     steps:
       - checkout
       - run:
@@ -262,7 +260,6 @@ jobs:
     environment:
       PYTHONUNBUFFERED: "1"
       EMSDK_NOTTY: "1"
-      USE_BAZEL_VERSION: "5.4.0"
     steps:
       - checkout
       - run:
