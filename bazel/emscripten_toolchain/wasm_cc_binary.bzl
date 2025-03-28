@@ -69,6 +69,7 @@ _ALLOW_OUTPUT_EXTNAMES = [
     ".fetch.js",
     ".js.symbols",
     ".wasm.debug.wasm",
+    ".wasm.dwp",
     ".html",
     ".aw.js",
 ]
@@ -107,10 +108,11 @@ _WASM_BINARY_COMMON_ATTRS = {
 }
 
 def _wasm_cc_binary_impl(ctx):
-    args = ctx.actions.args()
     cc_target = ctx.attr.cc_target[0]
+    dwp_file = cc_target[DebugPackageInfo].dwp_file if DebugPackageInfo in cc_target else None
+    outputs = ctx.outputs.outputs
 
-    for output in ctx.outputs.outputs:
+    for output in outputs:
         valid_extname = False
         for allowed_extname in _ALLOW_OUTPUT_EXTNAMES:
             if output.path.endswith(allowed_extname):
@@ -119,28 +121,35 @@ def _wasm_cc_binary_impl(ctx):
         if not valid_extname:
             fail("Invalid output '{}'. Allowed extnames: {}".format(output.basename, ", ".join(_ALLOW_OUTPUT_EXTNAMES)))
 
+    inputs = ctx.files.cc_target
+    args = ctx.actions.args()
     args.add_all("--archive", ctx.files.cc_target)
-    args.add_joined("--outputs", ctx.outputs.outputs, join_with = ",")
+    args.add_joined("--outputs", outputs, join_with = ",")
+
+    if dwp_file:
+        args.add("--dwp_file", dwp_file)
+        inputs = inputs + [dwp_file]
 
     ctx.actions.run(
-        inputs = ctx.files.cc_target,
-        outputs = ctx.outputs.outputs,
+        inputs = inputs,
+        outputs = outputs,
         arguments = [args],
         executable = ctx.executable._wasm_binary_extractor,
     )
 
     return [
         DefaultInfo(
-            files = depset(ctx.outputs.outputs),
+            files = depset(outputs),
             # This is needed since rules like web_test usually have a data
             # dependency on this target.
-            data_runfiles = ctx.runfiles(transitive_files = depset(ctx.outputs.outputs)),
+            data_runfiles = ctx.runfiles(transitive_files = depset(outputs)),
         ),
         OutputGroupInfo(_wasm_tar = cc_target.files),
     ]
 
 def _wasm_cc_binary_legacy_impl(ctx):
     cc_target = ctx.attr.cc_target[0]
+    dwp_file = cc_target[DebugPackageInfo].dwp_file if DebugPackageInfo in cc_target else None
     outputs = [
         ctx.outputs.loader,
         ctx.outputs.wasm,
@@ -151,17 +160,23 @@ def _wasm_cc_binary_legacy_impl(ctx):
         ctx.outputs.data,
         ctx.outputs.symbols,
         ctx.outputs.dwarf,
+        ctx.outputs.dwp,
         ctx.outputs.html,
         ctx.outputs.audio_worklet,
     ]
 
+    inputs = ctx.files.cc_target
     args = ctx.actions.args()
     args.add("--allow_empty_outputs")
     args.add_all("--archive", ctx.files.cc_target)
     args.add_joined("--outputs", outputs, join_with = ",")
 
+    if dwp_file:
+        args.add("--dwp_file", dwp_file)
+        inputs = inputs + [dwp_file]
+
     ctx.actions.run(
-        inputs = ctx.files.cc_target,
+        inputs = inputs,
         outputs = outputs,
         arguments = [args],
         executable = ctx.executable._wasm_binary_extractor,
@@ -202,6 +217,7 @@ def _wasm_binary_legacy_outputs(name, cc_target):
         "data": "{}/{}.data".format(name, basename),
         "symbols": "{}/{}.js.symbols".format(name, basename),
         "dwarf": "{}/{}.wasm.debug.wasm".format(name, basename),
+        "dwp": "{}/{}.wasm.dwp".format(name, basename),
         "html": "{}/{}.html".format(name, basename),
         "audio_worklet": "{}/{}.aw.js".format(name, basename)
     }
