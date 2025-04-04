@@ -1,5 +1,5 @@
 @ECHO OFF
 
-call external\emsdk\emscripten_toolchain\env.bat
+call %~dp0\env.bat
 
-py -3 external\emsdk\emscripten_toolchain\link_wrapper.py %*
+py -3 %~dp0\link_wrapper.py %*

@@ -1,101 +1,40 @@
-load(":toolchain.bzl", "emscripten_cc_toolchain_config_rule")
+load("//:emscripten_deps.bzl", "emscripten_repo_name")
+load("//:remote_emscripten_repository.bzl", "create_toolchains", "emscripten_toolchain_name")
+load("@rules_python//python:py_binary.bzl", "py_binary")
 
 package(default_visibility = ["//visibility:public"])
-
-filegroup(
-    name = "common_files",
-    srcs = [
-        "@emscripten_cache//:emscripten_config",
-        "env.sh",
-        "env.bat",
-        "@nodejs//:node_files",
-    ],
-)
-
-filegroup(
-    name = "compiler_files",
-    srcs = [
-        "emcc.sh",
-        "emcc.bat",
-        "@emsdk//:compiler_files",
-        ":common_files",
-    ],
-)
-
-filegroup(
-    name = "linker_files",
-    srcs = [
-        "emcc_link.sh",
-        "emcc_link.bat",
-        "link_wrapper.py",
-        "@emsdk//:linker_files",
-        ":common_files",
-    ],
-)
-
-filegroup(
-    name = "ar_files",
-    srcs = [
-        "emar.sh",
-        "emar.bat",
-        "@emsdk//:ar_files",
-        ":common_files",
-    ],
-)
-
-filegroup(
-    name = "all_files",
-    srcs = [
-        ":ar_files",
-        ":compiler_files",
-        ":linker_files",
-    ],
-)
-
-filegroup(name = "empty")
 
 # dlmalloc.bc is implicitly added by the emscripten toolchain
 cc_library(name = "malloc")
 
-emscripten_cc_toolchain_config_rule(
-    name = "wasm",
-    cpu = "wasm",
-    em_config = "@emscripten_cache//:emscripten_config",
-    emscripten_binaries = "@emsdk//:compiler_files",
-    nodejs_bin = "@nodejs//:node",
-    script_extension = select({
-        "@bazel_tools//src/conditions:host_windows": "bat",
-        "//conditions:default": "sh",
-    }),
+create_toolchains(
+    name = emscripten_toolchain_name("linux"),
+    repo_name = emscripten_repo_name("linux"),
+    exec_compatible_with = [ "@platforms//os:linux", "@platforms//cpu:x86_64"],
 )
 
-cc_toolchain(
-    name = "cc-compiler-wasm",
-    all_files = ":all_files",
-    ar_files = ":ar_files",
-    as_files = ":empty",
-    compiler_files = ":compiler_files",
-    dwp_files = ":empty",
-    linker_files = ":linker_files",
-    objcopy_files = ":empty",
-    strip_files = ":empty",
-    toolchain_config = "wasm",
-    toolchain_identifier = "emscripten-wasm",
+create_toolchains(
+    name = emscripten_toolchain_name("linux_arm64"),
+    repo_name = emscripten_repo_name("linux_arm64"),
+    exec_compatible_with = ["@platforms//os:linux", "@platforms//cpu:arm64"],
 )
 
-cc_toolchain_suite(
-    name = "everything",
-    toolchains = {
-        "wasm": ":cc-compiler-wasm",
-        "wasm|emscripten": ":cc-compiler-wasm",
-    },
+create_toolchains(
+    name = emscripten_toolchain_name("mac"),
+    repo_name = emscripten_repo_name("mac"),
+    exec_compatible_with = ["@platforms//os:macos", "@platforms//cpu:x86_64"],
 )
 
-toolchain(
-    name = "cc-toolchain-wasm",
-    target_compatible_with = ["@platforms//cpu:wasm32"],
-    toolchain = ":cc-compiler-wasm",
-    toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
+create_toolchains(
+    name = emscripten_toolchain_name("mac_arm64"),
+    repo_name = emscripten_repo_name("mac_arm64"),
+    exec_compatible_with = ["@platforms//os:macos", "@platforms//cpu:arm64"],
+)
+
+create_toolchains(
+    name = emscripten_toolchain_name("win"),
+    repo_name = emscripten_repo_name("win"),
+    exec_compatible_with = ["@platforms//os:windows", "@platforms//cpu:x86_64"],
 )
 
 py_binary(
