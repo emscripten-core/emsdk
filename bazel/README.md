@@ -2,9 +2,11 @@
 
 ## Setup Instructions
 
+Support for depending on emsdk with a WORKSPACE file was removed and last available in [emsdk version 4.0.6](https://github.com/emscripten-core/emsdk/tree/24fc909c0da13ef641d5ae75e89b5a97f25e37aa). Now we only support inclusion as a bzlmod module.
+
 In your `MODULE.bazel` file, put:
 ```starlark
-emsdk_version = "4.0.2"
+emsdk_version = "4.0.6"
 bazel_dep(name = "emsdk", version = emsdk_version)
 git_override(
     module_name = "emsdk",
