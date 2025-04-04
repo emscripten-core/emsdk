@@ -82,7 +82,7 @@ def _impl(ctx):
     ################################################################
     # Tools
     ################################################################
-    clang_tool = tool(path = emcc_script)
+    clang_tool = tool(tool = ctx.executable.emcc)
     clif_match_tool = tool(path = "dummy_clif_matcher")
     link_tool = tool(path = emcc_link_script)
     archive_tool = tool(path = emar_script)
@@ -1141,6 +1141,7 @@ emscripten_cc_toolchain_config_rule = rule(
         "emscripten_binaries": attr.label(mandatory = True, cfg = "exec"),
         "nodejs_bin": attr.label(mandatory = True, allow_single_file = True),
         "script_extension": attr.string(mandatory = True, values = ["sh", "bat"]),
+        "emcc": attr.label(mandatory = True, executable = True, allow_files = True, cfg = "exec"),
     },
     provides = [CcToolchainConfigInfo],
 )
