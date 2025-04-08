@@ -37,7 +37,7 @@ def _wasm_transition_impl(settings, attr):
         "//command_line_option:dynamic_mode": "off",
         "//command_line_option:linkopt": linkopts,
         "//command_line_option:platforms": [platform],
-        # This is hardcoded to an empty cc_library because dlmalloc.bc
+        # This is hardcoded to an empty cc_library because the malloc library
         # is implicitly added by the emscripten toolchain
         "//command_line_option:custom_malloc": "@emsdk//emscripten_toolchain:malloc",
     }
