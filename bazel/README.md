@@ -2,35 +2,29 @@
 
 ## Setup Instructions
 
-In `WORKSPACE` file, put:
+Support for depending on emsdk with a WORKSPACE file was removed and last available in [emsdk version 4.0.6](https://github.com/emscripten-core/emsdk/tree/24fc909c0da13ef641d5ae75e89b5a97f25e37aa). Now we only support inclusion as a bzlmod module.
+
+In your `MODULE.bazel` file, put:
 ```starlark
-load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
-git_repository(
-    name = "emsdk",
+emsdk_version = "4.0.6"
+bazel_dep(name = "emsdk", version = emsdk_version)
+git_override(
+    module_name = "emsdk",
     remote = "https://github.com/emscripten-core/emsdk.git",
-    tag = "3.1.64",
     strip_prefix = "bazel",
+    tag = emsdk_version,
 )
-
-load("@emsdk//:deps.bzl", emsdk_deps = "deps")
-emsdk_deps()
-
-load("@emsdk//:emscripten_deps.bzl", emsdk_emscripten_deps = "emscripten_deps")
-emsdk_emscripten_deps(emscripten_version = "3.1.64")
-
-load("@emsdk//:toolchains.bzl", "register_emscripten_toolchains")
-register_emscripten_toolchains()
-```
-The `tag` and `emscripten_version` parameters correspond to the git revision of
-[emsdk 3.1.64](https://github.com/emscripten-core/emsdk/releases/tag/3.1.64). To get access to
-newer versions, you'll need to update those. To make use of older versions, change the
-parameter of `git_repository` and `emsdk_emscripten_deps()`. Supported versions are listed in `revisions.bzl`
-
-Bazel 7+ additionally requires `platforms` dependencies in the `MODULE.bazel` file.
-```starlark
-bazel_dep(name = "platforms", version = "0.0.9")
 ```
 
+You can use a different version of this SDK by changing it in your `MODULE.bazel` file. The Emscripten version is by default the same as the SDK version, but you can use a different one as well by adding to your `MODULE.bazel`:
+
+```
+emscripten_deps = use_extension(
+    "@emsdk//:emscripten_deps.bzl",
+    "emscripten_deps",
+)
+emscripten_deps.config(version = "4.0.1")
+```
 
 ## Building
 
@@ -68,28 +62,29 @@ is the preferred way, since it also unpacks the resulting tarball.
 
 The Emscripten cache shipped by default does not include LTO, 64-bit or PIC
 builds of the system libraries and ports. If you wish to use these features you
-will need to declare the cache when you register the toolchain as follows. Note
+will need to declare the cache in your `MODULE.bazel` as follows. Note
 that the configuration consists of the same flags that can be passed to
-embuilder. If `targets` is not provided, all system libraries and ports will be
+embuilder. If `targets` is not set, all system libraries and ports will be
 built, i.e., the `ALL` option to embuilder.
 
 ```starlark
-load("@emsdk//:toolchains.bzl", "register_emscripten_toolchains")
-register_emscripten_toolchains(cache = {
-    "configuration": ["--lto"],
-    "targets": [
-        "crtbegin",
-        "libprintf_long_double-debug",
-        "libstubs-debug",
-        "libnoexit",
-        "libc-debug",
-        "libdlmalloc",
-        "libcompiler_rt",
-        "libc++-noexcept",
-        "libc++abi-debug-noexcept",
-        "libsockets"
-    ]
-})
+emscripten_cache = use_extension(
+    "@emsdk//:emscripten_cache.bzl",
+    "emscripten_cache",
+)
+emscripten_cache.configuration(flags = ["--lto"])
+emscripten_cache.targets(targets = [
+    "crtbegin",
+    "libprintf_long_double-debug",
+    "libstubs-debug",
+    "libnoexit",
+    "libc-debug",
+    "libdlmalloc",
+    "libcompiler_rt",
+    "libc++-noexcept",
+    "libc++abi-debug-noexcept",
+    "libsockets"
+])
 ```
 
 See `test_external/` for an example using [embind](https://emscripten.org/docs/porting/connecting_cpp_and_javascript/embind.html).
