@@ -4,18 +4,9 @@ orbs:
   win: circleci/windows@5.0
 
 executors:
-  bionic:
+  ubuntu:
     docker:
-      - image: buildpack-deps:bionic
-  mac:
-    environment:
-      EMSDK_NOTTY: "1"
-      # Without this, any `brew install` command will result in self-update of
-      # brew itself which takes more than 4 minutes.
-      HOMEBREW_NO_AUTO_UPDATE: "1"
-    macos:
-      xcode: "12.5.1"
-    resource_class: macos.x86.medium.gen2
+      - image: buildpack-deps:focal
   mac_arm64:
     environment:
       EMSDK_NOTTY: "1"
@@ -47,25 +38,56 @@ commands:
           command: |
             source emsdk_env.sh
             test/test.py
+  test-bazel-linux:
+    steps:
+      - checkout
+      - run:
+          name: install bazelisk
+          command: |
+            wget https://github.com/bazelbuild/bazelisk/releases/download/v1.25.0/bazelisk-linux-amd64
+            chmod +x bazelisk-linux-amd64
+            mv bazelisk-linux-amd64 /usr/local/bin/bazel
+      - run: test/test_bazel.sh
+  test-bazel-mac:
+    steps:
+      - checkout
+      - run:
+          name: install bazelisk
+          command: |
+            brew install bazelisk
+      - run: test/test_bazel_mac.sh
+  test-bazel-windows:
+    steps:
+      - checkout
+      - run:
+          name: Download Bazelisk
+          shell: powershell.exe
+          command: |
+            $ProgressPreference = "SilentlyContinue"
+            Invoke-WebRequest -Uri https://github.com/bazelbuild/bazelisk/releases/download/v1.10.1/bazelisk-windows-amd64.exe -OutFile ( New-Item -Path "temp\bazel\bazel.exe" -Force )
+      - run:
+          name: Run Tests
+          shell: powershell.exe
+          command: |
+            $env:Path += ";C:\Python27amd64;$pwd\temp\bazel"
+            .\test\test_bazel.ps1
 
 jobs:
   flake8:
-    executor: bionic
+    executor: ubuntu
     steps:
       - checkout
       - run:
           name: install pip
           command: |
             apt-get update -q
-            apt-get install -q -y python-pip python3-pip
-      - run: python2 -m pip install --upgrade pip
+            apt-get install -q -y python3-pip
       - run: python3 -m pip install --upgrade pip
-      - run: python2 -m pip install flake8==3.9.2
-      - run: python3 -m pip install flake8==3.9.2
-      - run: python2 -m flake8 --show-source --statistics --extend-exclude=./scripts
-      - run: python3 -m flake8 --show-source --statistics
+      - run: python3 -m pip install flake8==7.1.1
+      - run: python3 -m flake8 --show-source --statistics --extend-exclude=./scripts
+
   test-linux:
-    executor: bionic
+    executor: ubuntu
     environment:
       EMSDK_NOTTY: "1"
       # This is needed because the old gcc-7 that is installed on debian/bionic
@@ -96,11 +118,6 @@ jobs:
           name: Install debian packages
           command: sudo apt-get update -q && sudo apt-get install -q cmake build-essential openjdk-8-jre-headless
       - run: test/test.sh
-  test-mac:
-    executor: mac
-    steps:
-      - setup-macos
-      - test-macos
   test-mac-arm64:
     executor: mac_arm64
     steps:
@@ -174,12 +191,19 @@ jobs:
             test/test_path_preservation.ps1
 
   build-docker-image-x64:
-    executor: bionic
+    executor: ubuntu
     steps:
       - checkout
       - run:
           name: install docker
-          command: apt-get update -q && apt-get install -q -y docker.io
+          command: |
+            apt-get update -q 
+            apt-get install -q -y ca-certificates curl gnupg lsb-release
+            mkdir -p /etc/apt/keyrings
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+            apt-get update -q
+            apt-get install -q -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
       - setup_remote_docker
       # Build the `latest` version of EMSDK as docker image
       - run:
@@ -190,12 +214,19 @@ jobs:
           command: make -C ./docker version=latest test
 
   publish-docker-image-x64:
-    executor: bionic
+    executor: ubuntu
     steps:
       - checkout
       - run:
           name: install docker
-          command: apt-get update -q && apt-get install -q -y docker.io
+          command: |
+            apt-get update -q 
+            apt-get install -q -y ca-certificates curl gnupg lsb-release
+            mkdir -p /etc/apt/keyrings
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+            apt-get update -q
+            apt-get install -q -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
       - setup_remote_docker
       - run:
           name: build
@@ -225,59 +256,52 @@ jobs:
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
             make -C ./docker version=${CIRCLE_TAG} alias=${CIRCLE_TAG}-arm64 only_alias=true push
 
-  test-bazel-linux:
-    executor: bionic
+  test-bazel7-linux:
+    executor: ubuntu
+    environment:
+      USE_BAZEL_VERSION: "7.x"
     steps:
-      - checkout
-      - run: apt-get install -q -y curl gnupg
-      - run: curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor > bazel.gpg
-      - run: mv bazel.gpg /etc/apt/trusted.gpg.d/
-      - run: echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
-      - run:
-          name: install pip
-          command: |
-            apt-get update -q
-            apt-get install -q -y python3-pip
-      - run: pip3 install absl-py
-      - run:
-          name: install bazel
-          command: |
-            apt-get install -q -y bazel
-      - run: test/test_bazel.sh
+      - test-bazel-linux
 
-  test-bazel-mac:
-    executor: mac
+  test-bazel-latest-linux:
+    executor: ubuntu
     steps:
-      - checkout
-      - run: brew install grep
-      - run:
-          name: install bazelisk
-          command: |
-            brew install bazelisk
-      - run: test/test_bazel_mac.sh
+      - test-bazel-linux
 
-  test-bazel-windows:
+  test-bazel7-mac-arm64:
+    executor: mac_arm64
+    environment:
+      USE_BAZEL_VERSION: "7.x"
+    steps:
+      - test-bazel-mac
+
+  test-bazel-latest-mac-arm64:
+    executor: mac_arm64
+    steps:
+      - test-bazel-mac
+
+  test-bazel7-windows:
     executor:
       name: win/server-2019
       shell: powershell.exe -ExecutionPolicy Bypass
     environment:
       PYTHONUNBUFFERED: "1"
       EMSDK_NOTTY: "1"
-      USE_BAZEL_VERSION: "5.4.0"
+      # For some reason version resolution with "7.x" does not work on Windows,
+      # so we have to specify a full version.
+      USE_BAZEL_VERSION: "7.6.1"
     steps:
-      - checkout
-      - run:
-          name: Download Bazelisk
-          shell: powershell.exe
-          command: |
-            $ProgressPreference = "SilentlyContinue"
-            Invoke-WebRequest -Uri https://github.com/bazelbuild/bazelisk/releases/download/v1.10.1/bazelisk-windows-amd64.exe -OutFile ( New-Item -Path "temp\bazel\bazel.exe" -Force )
-      - run:
-          name: Run Tests
-          shell: powershell.exe
-          command: |
-            $env:Path += ";C:\Python27amd64;$pwd\temp\bazel"
-            .\test\test_bazel.ps1
+      - test-bazel-windows
+
+  test-bazel-latest-windows:
+    executor:
+      name: win/server-2019
+      shell: powershell.exe -ExecutionPolicy Bypass
+    environment:
+      PYTHONUNBUFFERED: "1"
+      EMSDK_NOTTY: "1"
+    steps:
+      - test-bazel-windows
 
 workflows:
   flake8:
@@ -289,9 +313,6 @@ workflows:
   test-linux-arm64:
     jobs:
       - test-linux-arm64
-  test-mac:
-    jobs:
-      - test-mac
   test-mac-arm64:
     jobs:
       - test-mac-arm64
@@ -313,12 +334,21 @@ workflows:
               ignore: /.*/
             tags:
               only: /.*/
-  test-bazel-linux:
+  test-bazel7-linux:
     jobs:
-      - test-bazel-linux
-  test-bazel-mac:
+      - test-bazel7-linux
+  test-bazel-latest-linux:
     jobs:
-      - test-bazel-mac
-  test-bazel-windows:
+      - test-bazel-latest-linux
+  test-bazel7-mac-arm64:
     jobs:
-      - test-bazel-windows
+      - test-bazel7-mac-arm64
+  test-bazel-latest-mac-arm64:
+    jobs:
+      - test-bazel-latest-mac-arm64
+  test-bazel7-windows:
+    jobs:
+      - test-bazel7-windows
+  test-bazel-latest-windows:
+    jobs:
+      - test-bazel-latest-windows

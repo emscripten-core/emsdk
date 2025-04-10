@@ -20,6 +20,7 @@ That explains how to use the emsdk to get the latest binary builds (without
 compiling from source). Basically, that amounts to
 
 ```
+git pull
 ./emsdk install latest
 ./emsdk activate latest
 ```
@@ -64,10 +65,10 @@ https://emscripten.org/docs/building_from_source/toolchain_what_is_needed.html.
 
 ### Linux
 
-- `python`: Version 2.7.0 or above.
+- `python`: Version 3.9.2 or above.
 - `java`: For running closure compiler (optional)
 
-The emsdk pre-compiled binaries are built against Ubuntu/Xenial 16.04 LTS and
+The emsdk pre-compiled binaries are built against Ubuntu/Focal 20.04 LTS and
 therefore depend on system libraries compatible with versions of `glibc` and
 `libstdc++` present in that release.  If your linux distribution is very old
 you may not be able to use the pre-compiled binaries packages.
@@ -193,7 +194,7 @@ latest git development branch `main`, run the following:
 ### How do I use my own Emscripten github fork with the SDK?
 
 It is also possible to use your own fork of the Emscripten repository via the
-SDK. This is achieved with standard git machinery, so there if you are already
+SDK. This is achieved with standard git machinery, so if you are already
 acquainted with working on multiple remotes in a git clone, these steps should
 be familiar to you. This is useful in the case when you want to make your own
 modifications to the Emscripten toolchain, but still keep using the SDK

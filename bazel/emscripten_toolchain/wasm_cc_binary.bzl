@@ -32,12 +32,13 @@ def _wasm_transition_impl(settings, attr):
 
     return {
         "//command_line_option:compiler": "emscripten",
-        "//command_line_option:crosstool_top": "@emsdk//emscripten_toolchain:everything",
         "//command_line_option:cpu": "wasm",
         "//command_line_option:features": features,
         "//command_line_option:dynamic_mode": "off",
         "//command_line_option:linkopt": linkopts,
         "//command_line_option:platforms": [platform],
+        # This is hardcoded to an empty cc_library because the malloc library
+        # is implicitly added by the emscripten toolchain
         "//command_line_option:custom_malloc": "@emsdk//emscripten_toolchain:malloc",
     }
 
@@ -50,7 +51,6 @@ _wasm_transition = transition(
     outputs = [
         "//command_line_option:compiler",
         "//command_line_option:cpu",
-        "//command_line_option:crosstool_top",
         "//command_line_option:features",
         "//command_line_option:dynamic_mode",
         "//command_line_option:linkopt",
@@ -70,6 +70,7 @@ _ALLOW_OUTPUT_EXTNAMES = [
     ".js.symbols",
     ".wasm.debug.wasm",
     ".html",
+    ".aw.js",
 ]
 
 _WASM_BINARY_COMMON_ATTRS = {
@@ -128,12 +129,15 @@ def _wasm_cc_binary_impl(ctx):
         executable = ctx.executable._wasm_binary_extractor,
     )
 
-    return DefaultInfo(
-        files = depset(ctx.outputs.outputs),
-        # This is needed since rules like web_test usually have a data
-        # dependency on this target.
-        data_runfiles = ctx.runfiles(transitive_files = depset(ctx.outputs.outputs)),
-    )
+    return [
+        DefaultInfo(
+            files = depset(ctx.outputs.outputs),
+            # This is needed since rules like web_test usually have a data
+            # dependency on this target.
+            data_runfiles = ctx.runfiles(transitive_files = depset(ctx.outputs.outputs)),
+        ),
+        OutputGroupInfo(_wasm_tar = cc_target.files),
+    ]
 
 def _wasm_cc_binary_legacy_impl(ctx):
     cc_target = ctx.attr.cc_target[0]
@@ -148,6 +152,7 @@ def _wasm_cc_binary_legacy_impl(ctx):
         ctx.outputs.symbols,
         ctx.outputs.dwarf,
         ctx.outputs.html,
+        ctx.outputs.audio_worklet,
     ]
 
     args = ctx.actions.args()
@@ -162,13 +167,16 @@ def _wasm_cc_binary_legacy_impl(ctx):
         executable = ctx.executable._wasm_binary_extractor,
     )
 
-    return DefaultInfo(
-        executable = ctx.outputs.wasm,
-        files = depset(outputs),
-        # This is needed since rules like web_test usually have a data
-        # dependency on this target.
-        data_runfiles = ctx.runfiles(transitive_files = depset(outputs)),
-    )
+    return [
+        DefaultInfo(
+            executable = ctx.outputs.wasm,
+            files = depset(outputs),
+            # This is needed since rules like web_test usually have a data
+            # dependency on this target.
+            data_runfiles = ctx.runfiles(transitive_files = depset(outputs)),
+        ),
+        OutputGroupInfo(_wasm_tar = cc_target.files),
+    ]
 
 _wasm_cc_binary = rule(
     implementation = _wasm_cc_binary_impl,
@@ -195,6 +203,7 @@ def _wasm_binary_legacy_outputs(name, cc_target):
         "symbols": "{}/{}.js.symbols".format(name, basename),
         "dwarf": "{}/{}.wasm.debug.wasm".format(name, basename),
         "html": "{}/{}.html".format(name, basename),
+        "audio_worklet": "{}/{}.aw.js".format(name, basename)
     }
 
     return outputs

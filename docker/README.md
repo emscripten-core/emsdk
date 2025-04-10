@@ -23,7 +23,7 @@ EOF
 # compile with docker image
 docker run \
   --rm \
-  -v $(pwd):/src \
+  -v "$(pwd):$(pwd)" \
   -u $(id -u):$(id -g) \
   emscripten/emsdk \
   emcc helloworld.cpp -o helloworld.js
@@ -38,7 +38,7 @@ Teardown of compilation command:
 |---|---|
 |`docker run`| A standard command to run a command in a container|
 |`--rm`|remove a container after execution (optimization)|
-|`-v $(pwd):$(pwd)`|Mounting current folder from the host system into mirrored path on the container<br>TIP: This helps to investigate possible problem as we preserve exactly the same paths like in host. In such case modern editors (like Sublime, Atom, VS Code) let us to CTRL+Click on a problematic file |
+|`-v "$(pwd):$(pwd)"`|Mounting current folder from the host system into mirrored path on the container<br>TIP: This helps to investigate possible problem as we preserve exactly the same paths like in host. In such case modern editors (like Sublime, Atom, VS Code) let us to CTRL+Click on a problematic file |
 |`-u $(id -u):$(id -g)`| Run the container as a non-root user with the same UID and GID as local user. Hence all files produced by this are accessible to non-root users|
 |`emscripten/emsdk`|Get the latest tag of this container|
 |`emcc helloworld.cpp -o helloworld.js`|Execute `emcc` command with following arguments inside container, effectively compile our source code|

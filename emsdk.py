@@ -119,10 +119,12 @@ POWERSHELL = bool(os.getenv('EMSDK_POWERSHELL'))
 CSH = bool(os.getenv('EMSDK_CSH'))
 CMD = bool(os.getenv('EMSDK_CMD'))
 BASH = bool(os.getenv('EMSDK_BASH'))
+FISH = bool(os.getenv('EMSDK_FISH'))
+
 if WINDOWS and BASH:
   MSYS = True
 
-if not CSH and not POWERSHELL and not BASH and not CMD:
+if not CSH and not POWERSHELL and not BASH and not CMD and not FISH:
   # Fall back to default of `cmd` on windows and `bash` otherwise
   if WINDOWS and not MSYS:
     CMD = True
@@ -682,20 +684,21 @@ def download_with_curl(url, file_name):
 
 def download_with_urllib(url, file_name):
   u = urlopen(url)
-  with open(file_name, 'wb') as f:
-    file_size = get_content_length(u)
-    if file_size > 0:
-      print("Downloading: %s from %s, %s Bytes" % (file_name, url, file_size))
-    else:
-      print("Downloading: %s from %s" % (file_name, url))
+  file_size = get_content_length(u)
+  if file_size > 0:
+    print("Downloading: %s from %s, %s Bytes" % (file_name, url, file_size))
+  else:
+    print("Downloading: %s from %s" % (file_name, url))
 
-    file_size_dl = 0
-    # Draw a progress bar 80 chars wide (in non-TTY mode)
-    progress_max = 80 - 4
-    progress_shown = 0
-    block_sz = 256 * 1024
-    if not TTY_OUTPUT:
-        print(' [', end='')
+  file_size_dl = 0
+  # Draw a progress bar 80 chars wide (in non-TTY mode)
+  progress_max = 80 - 4
+  progress_shown = 0
+  block_sz = 256 * 1024
+  if not TTY_OUTPUT:
+      print(' [', end='')
+
+  with open(file_name, 'wb') as f:
     while True:
         buffer = u.read(block_sz)
         if not buffer:
@@ -713,9 +716,12 @@ def download_with_urllib(url, file_name):
                     print('-', end='')
                     sys.stdout.flush()
                     progress_shown += 1
-    if not TTY_OUTPUT:
-      print(']')
-      sys.stdout.flush()
+
+  if not TTY_OUTPUT:
+    print(']')
+    sys.stdout.flush()
+
+  debug_print('finished downloading (%d bytes)' % file_size_dl)
 
 
 # On success, returns the filename on the disk pointing to the destination file that was produced
@@ -778,7 +784,7 @@ def GIT(must_succeed=True):
       if ret == 0:
         cached_git_executable = git
         return git
-    except:
+    except Exception:
       pass
   if must_succeed:
     if WINDOWS:
@@ -847,7 +853,7 @@ def git_pull(repo_path, branch_or_tag):
     if ret != 0:
       return False
     run([GIT(), 'submodule', 'update', '--init'], repo_path, quiet=True)
-  except:
+  except Exception:
     errlog('git operation failed!')
     return False
   print("Successfully updated and checked out branch/tag '" + branch_or_tag + "' on repository '" + repo_path + "'")
@@ -1035,7 +1041,7 @@ def xcode_sdk_version():
     if sys.version_info >= (3,):
       output = output.decode('utf8')
     return output.strip().split('.')
-  except:
+  except Exception:
     return subprocess.checkplatform.mac_ver()[0].split('.')
 
 
@@ -1254,78 +1260,27 @@ def emscripten_npm_install(tool, directory):
   env = os.environ.copy()
   env["PATH"] = node_path + os.pathsep + env["PATH"]
   print('Running post-install step: npm ci ...')
-  # Do a --no-optional install to avoid bloating disk size:
-  # https://github.com/emscripten-core/emscripten/issues/12406
   try:
     subprocess.check_output(
-        [npm, 'ci', '--production', '--no-optional'],
+        [npm, 'ci', '--production'],
         cwd=directory, stderr=subprocess.STDOUT, env=env,
         universal_newlines=True)
   except subprocess.CalledProcessError as e:
     errlog('Error running %s:\n%s' % (e.cmd, e.output))
     return False
 
-  # Manually install the appropriate native Closure Compiler package
-  # This is currently needed because npm ci would install the packages
-  # for Closure for all platforms, adding 180MB to the download size
-  # There are two problems here:
-  #   1. npm ci does not consider the platform of optional dependencies
-  #      https://github.com/npm/cli/issues/558
-  #   2. A bug with the native compiler has bloated the packages from
-  #      30MB to almost 300MB
-  #      https://github.com/google/closure-compiler-npm/issues/186
-  # If either of these bugs are fixed then we can remove this exception
-  # See also https://github.com/google/closure-compiler/issues/3925
-  closure_compiler_native = ''
-  if LINUX and ARCH in ('x86', 'x86_64'):
-    closure_compiler_native = 'google-closure-compiler-linux'
-  if MACOS and ARCH in ('x86', 'x86_64'):
-    closure_compiler_native = 'google-closure-compiler-osx'
-  if WINDOWS and ARCH == 'x86_64':
-    closure_compiler_native = 'google-closure-compiler-windows'
+  print('Done running: npm ci')
 
-  if closure_compiler_native:
-    # Check which version of native Closure Compiler we want to install via npm.
-    # (npm install command has this requirement that we must explicitly tell the pinned version)
+  if os.path.isfile(os.path.join(directory, 'bootstrap.py')):
     try:
-      closure_version = json.load(open(os.path.join(directory, 'package.json')))['dependencies']['google-closure-compiler']
-    except KeyError as e:
-      # The target version of Emscripten does not (did not) have a package.json that would contain google-closure-compiler. (fastcomp)
-      # Skip manual native google-closure-compiler installation there.
-      print(str(e))
-      print('Emscripten version does not have a npm package.json with google-closure-compiler dependency, skipping native google-closure-compiler install step')
-      return True
-
-    closure_compiler_native += '@' + closure_version
-    print('Running post-install step: npm install', closure_compiler_native)
-    try:
-      subprocess.check_output(
-        [npm, 'install', '--production', '--no-optional', closure_compiler_native],
-        cwd=directory, stderr=subprocess.STDOUT, env=env,
-        universal_newlines=True)
-
-      # Installation of native Closure compiler was successful, so remove import of Java Closure Compiler module to avoid
-      # a Java dependency.
-      compiler_filename = os.path.join(directory, 'node_modules', 'google-closure-compiler', 'lib', 'node', 'closure-compiler.js')
-      if os.path.isfile(compiler_filename):
-        old_js = open(compiler_filename, 'r').read()
-        new_js = old_js.replace("require('google-closure-compiler-java')", "''/*require('google-closure-compiler-java') XXX Removed by Emsdk*/")
-        if old_js == new_js:
-          raise Exception('Failed to patch google-closure-compiler-java dependency away!')
-        open(compiler_filename, 'w').write(new_js)
-
-        # Now that we succeeded to install the native version and patch away the Java dependency, delete the Java version
-        # since that takes up ~12.5MB of installation space that is no longer needed.
-        # This process is currently a little bit hacky, see https://github.com/google/closure-compiler/issues/3926
-        remove_tree(os.path.join(directory, 'node_modules', 'google-closure-compiler-java'))
-        print('Removed google-closure-compiler-java dependency.')
-      else:
-        errlog('Failed to patch away google-closure-compiler Java dependency. ' + compiler_filename + ' does not exist.')
+      subprocess.check_output([sys.executable, os.path.join(directory, 'bootstrap.py')],
+                              cwd=directory, stderr=subprocess.STDOUT, env=env,
+                              universal_newlines=True)
     except subprocess.CalledProcessError as e:
       errlog('Error running %s:\n%s' % (e.cmd, e.output))
       return False
 
-  print('Done running: npm ci')
+    print('Done running: Emscripten bootstrap')
   return True
 
 
@@ -1439,7 +1394,7 @@ def get_required_path(active_tools):
       # the tools path to the users path if a program by that name is found
       # in the existing PATH.  This allows us to, for example, add our version
       # node to the users PATH if, and only if, they don't already have a
-      # another version of node in thier PATH.
+      # another version of node in their PATH.
       if hasattr(tool, 'activated_path_skip'):
         current_path = which(tool.activated_path_skip)
         # We found an executable by this name in the current PATH, but we
@@ -1473,14 +1428,14 @@ def load_em_config():
   lines = []
   try:
     lines = open(EM_CONFIG_PATH, "r").read().split('\n')
-  except:
+  except Exception:
     pass
   for line in lines:
     try:
       key, value = parse_key_value(line)
       if value != '':
         EM_CONFIG_DICT[key] = value
-    except:
+    except Exception:
       pass
 
 
@@ -1497,6 +1452,22 @@ def find_emscripten_root(active_tools):
     if 'EMSCRIPTEN_ROOT' in config:
       root = config['EMSCRIPTEN_ROOT']
   return root
+
+
+# returns a tuple (string,string) of config files paths that need to used
+# to activate emsdk env depending on $SHELL, defaults to bash.
+def get_emsdk_shell_env_configs():
+  default_emsdk_env = sdk_path('emsdk_env.sh')
+  default_shell_config_file = '$HOME/.bash_profile'
+  shell = os.getenv('SHELL', '')
+  if 'zsh' in shell:
+    return (default_emsdk_env, '$HOME/.zprofile')
+  elif 'csh' in shell:
+    return (sdk_path('emsdk_env.csh'), '$HOME/.cshrc')
+  elif 'fish' in shell:
+    return (sdk_path('emsdk_env.fish'), '$HOME/.config/fish/config.fish')
+  else:
+    return (default_emsdk_env, default_shell_config_file)
 
 
 def generate_em_config(active_tools, permanently_activate, system):
@@ -1552,22 +1523,16 @@ def generate_em_config(active_tools, permanently_activate, system):
       print('- Consider running `emsdk activate` with --permanent or --system')
       print('  to have emsdk settings available on startup.')
   else:
-    emsdk_env = sdk_path('emsdk_env.sh')
     print('Next steps:')
     print('- To conveniently access emsdk tools from the command line,')
     print('  consider adding the following directories to your PATH:')
     for p in path_add:
       print('    ' + p)
     print('- This can be done for the current shell by running:')
+    emsdk_env, shell_config_file = get_emsdk_shell_env_configs()
     print('    source "%s"' % emsdk_env)
     print('- Configure emsdk in your shell startup scripts by running:')
-    shell = os.getenv('SHELL', '')
-    if 'zsh' in shell:
-      print('    echo \'source "%s"\' >> $HOME/.zprofile' % emsdk_env)
-    elif 'csh' in shell:
-      print('    echo \'source "%s"\' >> $HOME/.cshrc' % emsdk_env)
-    else:
-      print('    echo \'source "%s"\' >> $HOME/.bash_profile' % emsdk_env)
+    print('    echo \'source "%s"\' >> %s' % (emsdk_env, shell_config_file))
 
 
 def find_msbuild_dir():
@@ -2100,13 +2065,13 @@ def get_emscripten_releases_tot():
     make_url('tar.xz' if not WINDOWS else 'zip')
     try:
       urlopen(make_url('tar.xz' if not WINDOWS else 'zip'))
-    except:
+    except Exception:
       if not WINDOWS:
         # Try the old `.tbz2` name
         # TODO:remove this once tot builds are all using xz
         try:
           urlopen(make_url('tbz2'))
-        except:
+        except Exception:
           continue
       else:
         continue
@@ -2574,6 +2539,8 @@ def unset_env(key):
     return 'set %s=\n' % key
   if CSH:
     return 'unsetenv %s;\n' % key
+  if FISH:
+    return 'set -e %s;\n' % key
   if BASH:
     return 'unset %s;\n' % key
   assert False
@@ -2595,6 +2562,8 @@ def construct_env_with_vars(env_vars_to_add):
         env_string += 'SET ' + key + '=' + value + '\n'
       elif CSH:
         env_string += 'setenv ' + key + ' "' + value + '";\n'
+      elif FISH:
+        env_string += 'set -gx ' + key + ' "' + value + '";\n'
       elif BASH:
         env_string += 'export ' + key + '="' + value + '";\n'
       else:
@@ -2612,7 +2581,7 @@ def construct_env_with_vars(env_vars_to_add):
   # of the SDK but we want to remove that from the current environment
   # if no such tool is active.
   # Ignore certain keys that are inputs to emsdk itself.
-  ignore_keys = set(['EMSDK_POWERSHELL', 'EMSDK_CSH', 'EMSDK_CMD', 'EMSDK_BASH',
+  ignore_keys = set(['EMSDK_POWERSHELL', 'EMSDK_CSH', 'EMSDK_CMD', 'EMSDK_BASH', 'EMSDK_FISH',
                      'EMSDK_NUM_CORES', 'EMSDK_NOTTY', 'EMSDK_KEEP_DOWNLOADS'])
   env_keys_to_add = set(pair[0] for pair in env_vars_to_add)
   for key in os.environ:
@@ -2683,6 +2652,7 @@ def main(args):
     errlog("Missing command; Type 'emsdk help' to get a list of commands.")
     return 1
 
+  debug_print('emsdk.py running under `%s`' % sys.executable)
   cmd = args.pop(0)
 
   if cmd in ('help', '--help', '-h'):
@@ -2886,7 +2856,7 @@ def main(args):
           build_type_index = [x.lower() for x in build_types].index(build_type.lower())
           CMAKE_BUILD_TYPE_OVERRIDE = build_types[build_type_index]
           args[i] = ''
-        except:
+        except Exception:
           errlog('Unknown CMake build type "' + build_type + '" specified! Please specify one of ' + str(build_types))
           return 1
       else:

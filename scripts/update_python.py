@@ -30,34 +30,19 @@ import shutil
 import subprocess
 import sys
 from subprocess import check_call
+from zip import unzip_cmd, zip_cmd
 
 version = '3.9.2'
 major_minor_version = '.'.join(version.split('.')[:2])  # e.g. '3.9.2' -> '3.9'
 download_url = 'https://www.nuget.org/api/v2/package/python/%s' % version
+# This is not part of official Python version, but a repackaging number appended by emsdk
+# when a version of Python needs to be redownloaded.
 revision = '4'
 
 pywin32_version = '227'
 pywin32_base = 'https://github.com/mhammond/pywin32/releases/download/b%s/' % pywin32_version
 
 upload_base = 'gs://webassembly/emscripten-releases-builds/deps/'
-
-
-def unzip_cmd():
-    # Use 7-Zip if available (https://www.7-zip.org/)
-    sevenzip = os.path.join(os.getenv('ProgramFiles', ''), '7-Zip', '7z.exe')
-    if os.path.isfile(sevenzip):
-        return [sevenzip, 'x']
-    # Fall back to 'unzip' tool
-    return ['unzip', '-q']
-
-
-def zip_cmd():
-    # Use 7-Zip if available (https://www.7-zip.org/)
-    sevenzip = os.path.join(os.getenv('ProgramFiles', ''), '7-Zip', '7z.exe')
-    if os.path.isfile(sevenzip):
-        return [sevenzip, 'a', '-mx9']
-    # Fall back to 'zip' tool
-    return ['zip', '-rq']
 
 
 def make_python_patch():
@@ -70,11 +55,12 @@ def make_python_patch():
         urllib.request.urlretrieve(url, pywin32_filename)
 
     if not os.path.exists(filename):
-        print('Downloading python: ' + download_url)
+        print(f'Downloading python: {download_url} to {filename}')
         urllib.request.urlretrieve(download_url, filename)
 
     os.mkdir('python-nuget')
     check_call(unzip_cmd() + [os.path.abspath(filename)], cwd='python-nuget')
+    os.remove(filename)
 
     os.mkdir('pywin32')
     rtn = subprocess.call(unzip_cmd() + [os.path.abspath(pywin32_filename)], cwd='pywin32')
@@ -84,12 +70,12 @@ def make_python_patch():
     shutil.move(os.path.join('pywin32', 'PLATLIB'), os.path.join('python-nuget', 'toolss', 'Lib', 'site-packages'))
 
     check_call(zip_cmd() + [os.path.join('..', '..', out_filename), '.'], cwd='python-nuget/tools')
+    print('Created: %s' % out_filename)
 
     # cleanup if everything went fine
     shutil.rmtree('python-nuget')
     shutil.rmtree('pywin32')
 
-    print('Created: %s' % out_filename)
     if '--upload' in sys.argv:
       upload_url = upload_base + out_filename
       print('Uploading: ' + upload_url)
@@ -148,12 +134,16 @@ def build_python():
 
     install_dir = os.path.join(src_dir, 'install')
 
-    # Install requests module.  This is needed in particualr on macOS to ensure
+    # Install requests module.  This is needed in particular on macOS to ensure
     # SSL certificates are available (certifi in installed and used by requests).
     pybin = os.path.join(src_dir, 'install', 'usr', 'local', 'bin', 'python3')
     pip = os.path.join(src_dir, 'install', 'usr', 'local', 'bin', 'pip3')
     check_call([pybin, '-m', 'ensurepip', '--upgrade'])
-    check_call([pybin, pip, 'install', 'requests'])
+    check_call([pybin, pip, 'install', 'requests==2.32.3'])
+
+    # Install psutil module. This is needed by emrun to track when browser
+    # process quits.
+    check_call([pybin, pip, 'install', 'psutil'])
 
     dirname = 'python-%s-%s' % (version, revision)
     if os.path.isdir(dirname):

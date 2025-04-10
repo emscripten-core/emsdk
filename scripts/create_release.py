@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import json
 import os
 import re
@@ -20,23 +21,33 @@ def version_key(version_string):
   return key
 
 
-def main(args):
+def main():
   if subprocess.check_output(['git', 'status', '--porcelain'], cwd=root_dir).strip():
     print('tree is not clean')
     sys.exit(1)
 
-  release_info = emsdk.load_releases_info()
-  new_version = version_key(release_info['aliases']['latest'])[0]
-  new_version[-1] += 1
+  parser = argparse.ArgumentParser()
+  parser.add_argument('-r', '--release-hash')
+  parser.add_argument('-a', '--asserts-hash')
+  parser.add_argument('-v', '--new-version')
+  parser.add_argument('--gh-action', action='store_true')
+  options = parser.parse_args()
 
-  new_version = '.'.join(str(part) for part in new_version)
+  release_info = emsdk.load_releases_info()
+  if options.new_version:
+    new_version = options.new_version
+  else:
+    new_version = version_key(release_info['aliases']['latest'])[0]
+    new_version[-1] += 1
+    new_version = '.'.join(str(part) for part in new_version)
+
   asserts_hash = None
-  if args:
-    new_hash = args[0]
-    if len(args) > 1:
-      asserts_hash = args[1]
+  if options.release_hash:
+    new_hash = options.release_hash
+    asserts_hash = options.asserts_hash
   else:
     new_hash = emsdk.get_emscripten_releases_tot()
+
   print('Creating new release: %s -> %s' % (new_version, new_hash))
   release_info['releases'][new_version] = new_hash
   if asserts_hash:
@@ -59,18 +70,23 @@ def main(args):
 
   branch_name = 'version_' + new_version
 
-  # Create a new git branch
-  subprocess.check_call(['git', 'checkout', '-b', branch_name, 'origin/main'], cwd=root_dir)
+  if options.gh_action:  # For GitHub Actions workflows
+    with open(os.environ['GITHUB_ENV'], 'a') as f:
+      f.write(f'RELEASE_VERSION={new_version}')
+  else:  # Local use
+    # Create a new git branch
+    subprocess.check_call(['git', 'checkout', '-b', branch_name, 'origin/main'], cwd=root_dir)
 
-  # Create auto-generated changes to the new git branch
-  subprocess.check_call(['git', 'add', '-u', '.'], cwd=root_dir)
-  subprocess.check_call(['git', 'commit', '-m', new_version], cwd=root_dir)
-  print('New release created in branch: `%s`' % branch_name)
+    # Create auto-generated changes to the new git branch
+    subprocess.check_call(['git', 'add', '-u', '.'], cwd=root_dir)
+    subprocess.check_call(['git', 'commit', '-m', new_version], cwd=root_dir)
+    print('New release created in branch: `%s`' % branch_name)
 
-  # Push new branch to origin
-  subprocess.check_call(['git', 'push', 'origin', branch_name], cwd=root_dir)
+    # Push new branch to origin
+    subprocess.check_call(['git', 'push', 'origin', branch_name], cwd=root_dir)
+
   return 0
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv[1:]))
+  sys.exit(main())

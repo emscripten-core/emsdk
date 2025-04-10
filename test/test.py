@@ -27,13 +27,13 @@ else:
 
 
 def listify(x):
-  if type(x) == list or type(x) == tuple:
+  if type(x) in {list, tuple}:
     return x
   return [x]
 
 
 def check_call(cmd, **args):
-  if type(cmd) != list:
+  if type(cmd) is not list:
     cmd = cmd.split()
   print('running: %s' % cmd)
   args['universal_newlines'] = True
@@ -115,7 +115,7 @@ def do_lib_building(emcc):
 
 
 def run_emsdk(cmd):
-  if type(cmd) != list:
+  if type(cmd) is not list:
     cmd = cmd.split()
   check_call([emsdk] + cmd)
 
@@ -176,9 +176,9 @@ int main() {
 
     # Test the normal tools like node don't re-download on re-install
     print('another install must re-download')
-    checked_call_with_output(emsdk + ' uninstall node-15.14.0-64bit')
-    checked_call_with_output(emsdk + ' install node-15.14.0-64bit', expected='Downloading:', unexpected='already installed')
-    checked_call_with_output(emsdk + ' install node-15.14.0-64bit', unexpected='Downloading:', expected='already installed')
+    checked_call_with_output(emsdk + ' uninstall node-20.18.0-64bit')
+    checked_call_with_output(emsdk + ' install node-20.18.0-64bit', expected='Downloading:', unexpected='already installed')
+    checked_call_with_output(emsdk + ' install node-20.18.0-64bit', unexpected='Downloading:', expected='already installed')
 
   def test_tot_upstream(self):
     print('test update-tags')
@@ -195,7 +195,7 @@ int main() {
     check_call(upstream_emcc + ' hello_world.c')
 
   def test_closure(self):
-    # Specificlly test with `--closure` so we know that node_modules is working
+    # Specifically test with `--closure` so we know that node_modules is working
     check_call(upstream_emcc + ' hello_world.c --closure=1')
 
   def test_specific_version(self):

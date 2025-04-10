@@ -8,21 +8,24 @@
 http://storage.google.com/webassembly.
 
 For the windows version we also alter the directory layout to add the 'bin'
-direcotry.
+directory.
 """
 
 import urllib.request
 import subprocess
+import sys
 import os
 import shutil
+from zip import unzip_cmd, zip_cmd
 
-version = '16.20.0'
-base = 'https://nodejs.org/dist/latest-v16.x/'
+version = '20.18.0'
+base = 'https://nodejs.org/dist/v20.18.0/'
 upload_base = 'gs://webassembly/emscripten-releases-builds/deps/'
 
 suffixes = [
     '-win-x86.zip',
     '-win-x64.zip',
+    '-win-arm64.zip',
     '-darwin-x64.tar.gz',
     '-darwin-arm64.tar.gz',
     '-linux-x64.tar.xz',
@@ -37,18 +40,19 @@ for suffix in suffixes:
     urllib.request.urlretrieve(download_url, filename)
 
     if '-win-' in suffix:
-      subprocess.check_call(['unzip', '-q', filename])
+      subprocess.check_call(unzip_cmd() + [filename])
       dirname = os.path.splitext(os.path.basename(filename))[0]
       shutil.move(dirname, 'bin')
       os.mkdir(dirname)
       shutil.move('bin', dirname)
       os.remove(filename)
-      subprocess.check_call(['zip', '-rq', filename, dirname])
+      subprocess.check_call(zip_cmd() + [filename, dirname])
       shutil.rmtree(dirname)
 
-    upload_url = upload_base + filename
-    print('Uploading: ' + upload_url)
-    cmd = ['gsutil', 'cp', '-n', filename, upload_url]
-    print(' '.join(cmd))
-    subprocess.check_call(cmd)
-    os.remove(filename)
+    if '--upload' in sys.argv:
+      upload_url = upload_base + filename
+      print('Uploading: ' + upload_url)
+      cmd = ['gsutil', 'cp', '-n', filename, upload_url]
+      print(' '.join(cmd))
+      subprocess.check_call(cmd)
+      os.remove(filename)

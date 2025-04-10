@@ -72,6 +72,8 @@ def _impl(ctx):
 
     emscripten_dir = ctx.attr.emscripten_binaries.label.workspace_root
 
+    nodejs_path = ctx.file.nodejs_bin.path
+
     builtin_sysroot = emscripten_dir + "/emscripten/cache/sysroot"
 
     emcc_script = "emcc.%s" % ctx.attr.script_extension
@@ -346,6 +348,16 @@ def _impl(ctx):
             provides = ["variant:crosstool_build_mode"],
         ),
 
+        # Feature to prevent 'command line too long' issues
+        feature(
+            name = "archive_param_file",
+            enabled = True,
+        ),
+        feature(
+            name = "compiler_param_file",
+            enabled = True,
+        ),
+
         #### User-settable features
 
         # Set if enabling exceptions.
@@ -424,13 +436,18 @@ def _impl(ctx):
             name = "wasm_simd",
             requires = [feature_set(features = ["llvm_backend"])],
         ),
+        # Adds relaxed-simd support, only available with the llvm backend.
+        feature(
+            name = "wasm_relaxed_simd",
+            requires = [feature_set(features = ["llvm_backend"])],
+        ),
         feature(
             name = "precise_long_double_printf",
             enabled = True,
         ),
         feature(
             name = "wasm_warnings_as_errors",
-            enabled = True,
+            enabled = False,
         ),
 
         # ASan and UBSan. See also:
@@ -549,6 +566,11 @@ def _impl(ctx):
             actions = all_compile_actions + all_link_actions,
             flags = ["-msimd128"],
             features = ["wasm_simd"],
+        ),
+        flag_set(
+            actions = all_compile_actions + all_link_actions,
+            flags = ["-msimd128", "-mrelaxed-simd"],
+            features = ["wasm_relaxed_simd"],
         ),
         flag_set(
             actions = all_link_actions,
@@ -914,7 +936,7 @@ def _impl(ctx):
                 "-iwithsysroot" + "/include/compat",
                 "-iwithsysroot" + "/include",
                 "-isystem",
-                emscripten_dir + "/lib/clang/19/include",
+                emscripten_dir + "/lib/clang/21/include",
             ],
         ),
         # Inputs and outputs
@@ -1040,6 +1062,10 @@ def _impl(ctx):
                     key = "EM_CONFIG_PATH",
                     value = ctx.file.em_config.path,
                 ),
+                env_entry(
+                    key = "NODE_JS_PATH",
+                    value = nodejs_path,
+                ),
             ],
         ),
         # Use llvm backend.  Off by default, enabled via --features=llvm_backend
@@ -1081,7 +1107,7 @@ def _impl(ctx):
         emscripten_dir + "/emscripten/cache/sysroot/include/c++/v1",
         emscripten_dir + "/emscripten/cache/sysroot/include/compat",
         emscripten_dir + "/emscripten/cache/sysroot/include",
-        emscripten_dir + "/lib/clang/19/include",
+        emscripten_dir + "/lib/clang/21/include",
     ]
 
     artifact_name_patterns = []
@@ -1114,6 +1140,7 @@ emscripten_cc_toolchain_config_rule = rule(
         "cpu": attr.string(mandatory = True, values = ["asmjs", "wasm"]),
         "em_config": attr.label(mandatory = True, allow_single_file = True),
         "emscripten_binaries": attr.label(mandatory = True, cfg = "exec"),
+        "nodejs_bin": attr.label(mandatory = True, allow_single_file = True),
         "script_extension": attr.string(mandatory = True, values = ["sh", "bat"]),
     },
     provides = [CcToolchainConfigInfo],
