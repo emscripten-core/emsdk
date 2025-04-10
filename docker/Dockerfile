@@ -52,7 +52,7 @@ RUN echo "## Aggressive optimization: Remove debug symbols" \
 
 RUN echo "## Installing tsc" \
     && cd ${EMSDK} && . ./emsdk_env.sh \
-    && cd ${EMSDK}/upstream/emscripten\
+    && cd ${EMSDK}/upstream/emscripten \
     && npm install tsc \
     && echo "## Done"
 
