@@ -64,10 +64,11 @@ def update_module_version(version):
     with open(BAZEL_MODULE_FILE, 'r') as f:
         content = f.read()
 
-    content = re.sub(
-        r'module\(name = "emsdk", version = "\d+.\d+.\d+"\)',
-        f'module(name = "emsdk", version = "{version}")',
-        content)
+    pattern = '(module\(\s*name = "emsdk",\s*version = )"\d+.\d+.\d+",\n\)'
+    # Verify that the pattern exists in the input since re.sub will
+    # will succeed either way.
+    assert re.search(pattern, content)
+    content = re.sub(pattern, fr'\1"{version}",\n)', content)
 
     with open(BAZEL_MODULE_FILE, 'w') as f:
         f.write(content)
