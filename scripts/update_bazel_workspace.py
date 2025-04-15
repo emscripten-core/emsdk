@@ -64,7 +64,7 @@ def update_module_version(version):
     with open(BAZEL_MODULE_FILE, 'r') as f:
         content = f.read()
 
-    pattern = '(module\(\s*name = "emsdk",\s*version = )"\d+.\d+.\d+",\n\)'
+    pattern = r'(module\(\s*name = "emsdk",\s*version = )"\d+.\d+.\d+",\n\)'
     # Verify that the pattern exists in the input since re.sub will
     # will succeed either way.
     assert re.search(pattern, content)
