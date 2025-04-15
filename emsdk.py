@@ -1315,6 +1315,7 @@ def build_binaryen_tool(tool):
   # Configure
   cmake_generator, args = get_generator_and_config_args(tool)
   args += ['-DENABLE_WERROR=0']  # -Werror is not useful for end users
+  args += ['-DBUILD_TESTS=0']  # We don't want to build or run tests
 
   if 'Visual Studio' in CMAKE_GENERATOR:
     if BUILD_FOR_TESTING:
