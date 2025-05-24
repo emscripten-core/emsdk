@@ -8,6 +8,7 @@
 http://storage.google.com/webassembly.
 
 We only supply binaries for windows and macOS, but we do it very different ways for those two OSes.
+On Linux, we depend on the system version of python.
 
 Windows recipe:
   1. Download precompiled version of python from NuGet package manager,
