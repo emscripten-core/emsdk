@@ -43,7 +43,7 @@ major_minor_version = '.'.join(version.split('.')[:2])  # e.g. '3.9.2' -> '3.9'
 # when a version of Python needs to be redownloaded.
 revision = '0'
 
-PSUTIL = 'psutil==6.0.0'
+PSUTIL = 'psutil==7.0.0'
 
 upload_base = 'gs://webassembly/emscripten-releases-builds/deps/'
 
@@ -78,7 +78,7 @@ def make_python_patch():
     src_dir = os.path.join('python-nuget', 'tools')
     python_exe = os.path.join(src_dir, 'python.exe')
     check_call([python_exe, '-m', 'ensurepip', '--upgrade'])
-    check_call([python_exe, '-m', 'pip', 'install', 'pywin32==310'])
+    check_call([python_exe, '-m', 'pip', 'install', 'pywin32==310', '--no-warn-script-location'])
     check_call([python_exe, '-m', 'pip', 'install', PSUTIL])
 
     check_call(zip_cmd() + [os.path.join('..', '..', out_filename), '.'], cwd=src_dir)
