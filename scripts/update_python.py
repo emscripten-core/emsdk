@@ -36,7 +36,7 @@ import sys
 from subprocess import check_call
 from zip import unzip_cmd, zip_cmd
 
-version = '3.13.0'
+version = '3.13.3'
 major_minor_version = '.'.join(version.split('.')[:2])  # e.g. '3.9.2' -> '3.9'
 # This is not part of official Python version, but a repackaging number appended by emsdk
 # when a version of Python needs to be redownloaded.

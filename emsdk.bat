@@ -8,8 +8,8 @@ setlocal
 :: PYTHONHOME or PYTHONPATH
 :: https://github.com/emscripten-core/emsdk/issues/598
 
-if exist "%~dp0python\3.13.0-0_64bit\python.exe" (
-  set EMSDK_PY="%~dp0python\3.13.0-0_64bit\python.exe"
+if exist "%~dp0python\3.13.3-0_64bit\python.exe" (
+  set EMSDK_PY="%~dp0python\3.13.3-0_64bit\python.exe"
   set PYTHONHOME=
   set PYTHONPATH=
   goto end
