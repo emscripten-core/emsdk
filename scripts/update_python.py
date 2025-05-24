@@ -78,7 +78,7 @@ def make_python_patch():
     src_dir = os.path.join('python-nuget', 'tools')
     python_exe = os.path.join(src_dir, 'python.exe')
     check_call([python_exe, '-m', 'ensurepip', '--upgrade'])
-    check_call([python_exe, '-m', 'pip', 'install', 'pywin32==308'])
+    check_call([python_exe, '-m', 'pip', 'install', 'pywin32==310'])
     check_call([python_exe, '-m', 'pip', 'install', PSUTIL])
 
     check_call(zip_cmd() + [os.path.join('..', '..', out_filename), '.'], cwd=src_dir)
