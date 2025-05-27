@@ -120,7 +120,9 @@ def build_python():
         osname = 'linux'
 
     src_dir = 'cpython'
-    if not os.path.exists(src_dir):
+    if os.path.exists(src_dir):
+      check_call(['git', 'fetch'], cwd=src_dir)
+    else:
       check_call(['git', 'clone', 'https://github.com/python/cpython'])
     check_call(['git', 'checkout', 'v' + version], cwd=src_dir)
 
