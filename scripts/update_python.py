@@ -99,7 +99,7 @@ def build_python():
         check_call(['brew', 'install', 'openssl', 'xz', 'pkg-config'])
         if platform.machine() == 'x86_64':
             prefix = '/usr/local'
-            min_macos_version = '10.13'
+            min_macos_version = '11.0'
         elif platform.machine() == 'arm64':
             prefix = '/opt/homebrew'
             min_macos_version = '11.0'
