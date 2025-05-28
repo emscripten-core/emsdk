@@ -8,12 +8,13 @@
 http://storage.google.com/webassembly.
 
 We only supply binaries for windows and macOS, but we do it very different ways for those two OSes.
+On Linux, we depend on the system version of python.
 
 Windows recipe:
-  1. Download the "embeddable zip file" version of python from python.org
-  2. Remove .pth file to work around https://bugs.python.org/issue34841
-  3. Download and install pywin32 in the `site-packages` directory
-  4. Re-zip and upload to storage.google.com
+  1. Download precompiled version of python from NuGet package manager,
+     either the package "python" for AMD64, or "pythonarm64" for ARM64.
+  2. Set up pip and install pywin32 and psutil via pip for emrun to work.
+  3. Re-zip and upload to storage.google.com
 
 macOS recipe:
   1. Clone cpython
@@ -32,27 +33,35 @@ import sys
 from subprocess import check_call
 from zip import unzip_cmd, zip_cmd
 
-version = '3.9.2'
+version = '3.13.3'
 major_minor_version = '.'.join(version.split('.')[:2])  # e.g. '3.9.2' -> '3.9'
-download_url = 'https://www.nuget.org/api/v2/package/python/%s' % version
 # This is not part of official Python version, but a repackaging number appended by emsdk
 # when a version of Python needs to be redownloaded.
-revision = '4'
+revision = '0'
 
-pywin32_version = '227'
-pywin32_base = 'https://github.com/mhammond/pywin32/releases/download/b%s/' % pywin32_version
+PSUTIL = 'psutil==7.0.0'
 
 upload_base = 'gs://webassembly/emscripten-releases-builds/deps/'
 
 
+# Detects whether current python interpreter architecture is ARM64 or AMD64
+# If running AMD64 python on an ARM64 Windows, this still intentionally returns AMD64
+def find_python_arch():
+    import sysconfig
+    arch = sysconfig.get_platform().lower()
+    if 'amd64' in arch:
+        return 'amd64'
+    if 'arm64' in arch:
+        return 'arm64'
+    raise f'Unknown Python sysconfig platform "{arch}" (neither AMD64 or ARM64)'
+
+
 def make_python_patch():
-    pywin32_filename = 'pywin32-%s.win-amd64-py%s.exe' % (pywin32_version, major_minor_version)
-    filename = 'python-%s-amd64.zip' % (version)
-    out_filename = 'python-%s-%s-amd64+pywin32.zip' % (version, revision)
-    if not os.path.exists(pywin32_filename):
-        url = pywin32_base + pywin32_filename
-        print('Downloading pywin32: ' + url)
-        urllib.request.urlretrieve(url, pywin32_filename)
+    python_arch = find_python_arch()
+    package_name = 'pythonarm64' if python_arch == 'arm64' else 'python'
+    download_url = f'https://www.nuget.org/api/v2/package/{package_name}/{version}'
+    filename = f'python-{version}-win-{python_arch}.zip'
+    out_filename = f'python-{version}-{revision}-win-{python_arch}.zip'
 
     if not os.path.exists(filename):
         print(f'Downloading python: {download_url} to {filename}')
@@ -62,19 +71,17 @@ def make_python_patch():
     check_call(unzip_cmd() + [os.path.abspath(filename)], cwd='python-nuget')
     os.remove(filename)
 
-    os.mkdir('pywin32')
-    rtn = subprocess.call(unzip_cmd() + [os.path.abspath(pywin32_filename)], cwd='pywin32')
-    assert rtn in [0, 1]
+    src_dir = os.path.join('python-nuget', 'tools')
+    python_exe = os.path.join(src_dir, 'python.exe')
+    check_call([python_exe, '-m', 'ensurepip', '--upgrade'])
+    check_call([python_exe, '-m', 'pip', 'install', 'pywin32==310', '--no-warn-script-location'])
+    check_call([python_exe, '-m', 'pip', 'install', PSUTIL])
 
-    os.mkdir(os.path.join('python-nuget', 'lib'))
-    shutil.move(os.path.join('pywin32', 'PLATLIB'), os.path.join('python-nuget', 'toolss', 'Lib', 'site-packages'))
-
-    check_call(zip_cmd() + [os.path.join('..', '..', out_filename), '.'], cwd='python-nuget/tools')
+    check_call(zip_cmd() + [os.path.join('..', '..', out_filename), '.'], cwd=src_dir)
     print('Created: %s' % out_filename)
 
     # cleanup if everything went fine
     shutil.rmtree('python-nuget')
-    shutil.rmtree('pywin32')
 
     if '--upload' in sys.argv:
       upload_url = upload_base + out_filename
@@ -92,7 +99,7 @@ def build_python():
         check_call(['brew', 'install', 'openssl', 'xz', 'pkg-config'])
         if platform.machine() == 'x86_64':
             prefix = '/usr/local'
-            min_macos_version = '10.11'
+            min_macos_version = '11.0'
         elif platform.machine() == 'arm64':
             prefix = '/opt/homebrew'
             min_macos_version = '11.0'
@@ -113,7 +120,9 @@ def build_python():
         osname = 'linux'
 
     src_dir = 'cpython'
-    if not os.path.exists(src_dir):
+    if os.path.exists(src_dir):
+      check_call(['git', 'fetch'], cwd=src_dir)
+    else:
       check_call(['git', 'clone', 'https://github.com/python/cpython'])
     check_call(['git', 'checkout', 'v' + version], cwd=src_dir)
 
@@ -143,7 +152,7 @@ def build_python():
 
     # Install psutil module. This is needed by emrun to track when browser
     # process quits.
-    check_call([pybin, pip, 'install', 'psutil'])
+    check_call([pybin, pip, 'install', PSUTIL])
 
     dirname = 'python-%s-%s' % (version, revision)
     if os.path.isdir(dirname):
