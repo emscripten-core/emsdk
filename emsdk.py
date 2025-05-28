@@ -984,17 +984,16 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
       generator = []
 
     cmdline = ['cmake'] + generator + ['-DCMAKE_BUILD_TYPE=' + build_type, '-DPYTHON_EXECUTABLE=' + sys.executable]
-    # Target macOS 10.14 at minimum, to support widest range of Mac devices
-    # from "Early 2008" and newer:
-    # https://en.wikipedia.org/wiki/MacBook_(2006-2012)#Supported_operating_systems
-    cmdline += ['-DCMAKE_OSX_DEPLOYMENT_TARGET=10.14']
+    # Target macOS 11.0 Big Sur at minimum, to support older Mac devices.
+    # See https://en.wikipedia.org/wiki/MacOS#Hardware_compatibility for min-spec details.
+    cmdline += ['-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0']
     cmdline += extra_cmake_args + [src_root]
 
     print('Running CMake: ' + str(cmdline))
 
     # Specify the deployment target also as an env. var, since some Xcode versions
     # read this instead of the CMake field.
-    os.environ['MACOSX_DEPLOYMENT_TARGET'] = '10.14'
+    os.environ['MACOSX_DEPLOYMENT_TARGET'] = '11.0'
 
     def quote_parens(x):
       if ' ' in x:
