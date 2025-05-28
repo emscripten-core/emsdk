@@ -987,7 +987,7 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
     else:
       generator = []
 
-    cmdline = ['cmake'] + generator + ['-DCMAKE_BUILD_TYPE=' + build_type, '-DPYTHON_EXECUTABLE=' + sys.executable]
+    cmdline = ['cmake'] + generator + ['-DCMAKE_BUILD_TYPE=' + build_type]
     # Target macOS 10.14 at minimum, to support widest range of Mac devices
     # from "Early 2008" and newer:
     # https://en.wikipedia.org/wiki/MacBook_(2006-2012)#Supported_operating_systems
@@ -1120,7 +1120,7 @@ def build_llvm(tool):
            '-DLLVM_ENABLE_ASSERTIONS=' + ('ON' if enable_assertions else 'OFF'),
            # Disable optional LLVM dependencies, these can cause unwanted .so dependencies
            # that prevent distributing the generated compiler for end users.
-           '-DLLVM_ENABLE_LIBXML2=OFF', '-DLLVM_ENABLE_TERMINFO=OFF', '-DLLDB_ENABLE_LIBEDIT=OFF',
+           '-DLLVM_ENABLE_LIBXML2=OFF',
            '-DLLVM_ENABLE_LIBEDIT=OFF', '-DLLVM_ENABLE_LIBPFM=OFF']
   # LLVM build system bug: compiler-rt does not build on Windows. It insists on performing a CMake install step that writes to C:\Program Files. Attempting
   # to reroute that to build_root directory then fails on an error
