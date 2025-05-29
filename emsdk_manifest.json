@@ -157,6 +157,56 @@
 
 
   {
+    "id": "node",
+    "version": "22.16.0",
+    "bitness": 32,
+    "arch": "x86",
+    "windows_url": "node-v22.16.0-win-x86.zip",
+    "activated_path": "%installation_dir%/bin",
+    "activated_path_skip": "node",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+  },
+  {
+    "id": "node",
+    "version": "22.16.0",
+    "arch": "arm",
+    "bitness": 32,
+    "linux_url": "node-v22.16.0-linux-armv7l.tar.xz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_path_skip": "node",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+  },
+  {
+    "id": "node",
+    "version": "22.16.0",
+    "bitness": 64,
+    "arch": "x86_64",
+    "windows_url": "node-v22.16.0-win-x64.zip",
+    "macos_url": "node-v22.16.0-darwin-x64.tar.gz",
+    "linux_url": "node-v22.16.0-linux-x64.tar.xz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_path_skip": "node",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+  },
+  {
+    "id": "node",
+    "version": "22.16.0",
+    "arch": "arm64",
+    "bitness": 64,
+    "windows_url": "node-v22.16.0-win-arm64.zip",
+    "macos_url": "node-v22.16.0-darwin-arm64.tar.gz",
+    "linux_url": "node-v22.16.0-linux-arm64.tar.xz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_path_skip": "node",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+  },
+
+
+  {
     "id": "python",
     "version": "3.9.2-nuget",
     "bitness": 64,
@@ -388,19 +438,19 @@
   {
     "version": "main",
     "bitness": 64,
-    "uses": ["python-3.13.3-64bit", "llvm-git-main-64bit", "node-20.18.0-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
+    "uses": ["python-3.13.3-64bit", "llvm-git-main-64bit", "node-22.16.0-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
     "os": "win"
   },
   {
     "version": "main",
     "bitness": 64,
-    "uses": ["python-3.13.3-64bit", "llvm-git-main-64bit", "node-20.18.0-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
+    "uses": ["python-3.13.3-64bit", "llvm-git-main-64bit", "node-22.16.0-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
     "os": "macos"
   },
   {
     "version": "main",
     "bitness": 64,
-    "uses": ["llvm-git-main-64bit", "node-20.18.0-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
+    "uses": ["llvm-git-main-64bit", "node-22.16.0-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
     "os": "linux"
   },
   {
@@ -412,14 +462,14 @@
   {
     "version": "releases-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-20.18.0-64bit", "releases-%releases-tag%-64bit"],
+    "uses": ["node-22.16.0-64bit", "releases-%releases-tag%-64bit"],
     "os": "linux",
     "custom_install_script": "emscripten_npm_install"
   },
   {
     "version": "releases-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-20.18.0-64bit", "python-3.13.3-64bit", "releases-%releases-tag%-64bit"],
+    "uses": ["node-22.16.0-64bit", "python-3.13.3-64bit", "releases-%releases-tag%-64bit"],
     "os": "macos",
     "arch": "x86_64",
     "custom_install_script": "emscripten_npm_install"
@@ -427,7 +477,7 @@
   {
     "version": "releases-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-20.18.0-64bit", "python-3.13.3-64bit", "releases-%releases-tag%-64bit"],
+    "uses": ["node-22.16.0-64bit", "python-3.13.3-64bit", "releases-%releases-tag%-64bit"],
     "os": "macos",
     "arch": "arm64",
     "custom_install_script": "emscripten_npm_install"
@@ -435,7 +485,7 @@
   {
     "version": "releases-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-20.18.0-64bit", "python-3.13.3-64bit", "releases-%releases-tag%-64bit"],
+    "uses": ["node-22.16.0-64bit", "python-3.13.3-64bit", "releases-%releases-tag%-64bit"],
     "os": "win",
     "custom_install_script": "emscripten_npm_install"
   }

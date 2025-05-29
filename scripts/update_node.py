@@ -18,8 +18,8 @@ import os
 import shutil
 from zip import unzip_cmd, zip_cmd
 
-version = '20.18.0'
-base = 'https://nodejs.org/dist/v20.18.0/'
+version = '22.16.0'
+base = f'https://nodejs.org/dist/v{version}/'
 upload_base = 'gs://webassembly/emscripten-releases-builds/deps/'
 
 suffixes = [
