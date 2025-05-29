@@ -911,7 +911,7 @@
               "node_urls": [
                 "https://nodejs.org/dist/v{version}/{filename}"
               ],
-              "node_version": "20.18.0",
+              "node_version": "22.16.0",
               "include_headers": false,
               "platform": "linux_amd64"
             }
@@ -924,7 +924,7 @@
               "node_urls": [
                 "https://nodejs.org/dist/v{version}/{filename}"
               ],
-              "node_version": "20.18.0",
+              "node_version": "22.16.0",
               "include_headers": false,
               "platform": "linux_arm64"
             }
@@ -937,7 +937,7 @@
               "node_urls": [
                 "https://nodejs.org/dist/v{version}/{filename}"
               ],
-              "node_version": "20.18.0",
+              "node_version": "22.16.0",
               "include_headers": false,
               "platform": "linux_s390x"
             }
@@ -950,7 +950,7 @@
               "node_urls": [
                 "https://nodejs.org/dist/v{version}/{filename}"
               ],
-              "node_version": "20.18.0",
+              "node_version": "22.16.0",
               "include_headers": false,
               "platform": "linux_ppc64le"
             }
@@ -963,7 +963,7 @@
               "node_urls": [
                 "https://nodejs.org/dist/v{version}/{filename}"
               ],
-              "node_version": "20.18.0",
+              "node_version": "22.16.0",
               "include_headers": false,
               "platform": "darwin_amd64"
             }
@@ -976,7 +976,7 @@
               "node_urls": [
                 "https://nodejs.org/dist/v{version}/{filename}"
               ],
-              "node_version": "20.18.0",
+              "node_version": "22.16.0",
               "include_headers": false,
               "platform": "darwin_arm64"
             }
@@ -989,7 +989,7 @@
               "node_urls": [
                 "https://nodejs.org/dist/v{version}/{filename}"
               ],
-              "node_version": "20.18.0",
+              "node_version": "22.16.0",
               "include_headers": false,
               "platform": "windows_amd64"
             }
