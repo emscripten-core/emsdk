@@ -29,3 +29,7 @@ ifdef alias
 	docker tag ${image_name}:${version} ${image_name}:${alias}
 	docker push ${image_name}:${alias}
 endif
+
+push-multiplatform: .TEST
+	docker manifest create ${image_name}:${version} $(foreach platform,x64 arm64,--amend ${image_name}:${version}-$(platform))
+	docker manifest push ${image_name}:${version}
