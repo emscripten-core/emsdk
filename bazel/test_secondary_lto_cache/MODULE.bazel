@@ -19,6 +19,7 @@ emscripten_cache.targets(targets = [
     "libdlmalloc",
     "libcompiler_rt",
     "libc++-noexcept",
+    "libc++-debug-noexcept",
     "libc++abi-debug-noexcept",
     "libsockets",
     "libdlmalloc-debug",
