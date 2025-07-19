@@ -363,6 +363,9 @@ def _impl(ctx):
         # Set if enabling exceptions.
         feature(name = "exceptions"),
 
+        # Set if enabling wasm_exceptions.
+        feature(name = "wasm_exceptions"),
+
         # This feature overrides the default optimization to prefer execution speed
         # over binary size (like clang -O3).
         feature(
@@ -515,7 +518,7 @@ def _impl(ctx):
             flags = [
                 "-fno-exceptions",
             ],
-            not_features = ["exceptions"],
+            not_features = ["exceptions", "wasm_exceptions"],
         ),
         flag_set(
             actions = all_cpp_compile_actions,
@@ -523,6 +526,13 @@ def _impl(ctx):
                 "-fexceptions",
             ],
             features = ["exceptions"],
+        ),
+        flag_set(
+            actions = all_cpp_compile_actions,
+            flags = [
+                "-fwasm-exceptions",
+            ],
+            features = ["wasm_exceptions"],
         ),
         # All compiles (and implicitly link)
         flag_set(
