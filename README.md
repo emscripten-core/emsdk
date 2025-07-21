@@ -14,7 +14,7 @@ You can also set up Emscripten from source, without the pre-built SDK, see
 ## Downloads / How do I get the latest Emscripten build?
 
 To get started with Emscripten development, see the [Emscripten website
-documentation](https://emscripten.org/docs/getting_started/downloads.html).
+documentation](https://emscripten.org/docs/getting_started/downloads.html)。
 
 That explains how to use the emsdk to get the latest binary builds (without
 compiling from source). Basically, that amounts to
