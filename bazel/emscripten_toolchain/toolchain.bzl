@@ -528,7 +528,8 @@ def _impl(ctx):
             features = ["exceptions"],
         ),
         flag_set(
-            actions = all_cpp_compile_actions,
+            actions = all_cpp_compile_actions +
+                      all_link_actions,
             flags = [
                 "-fwasm-exceptions",
             ],
