@@ -947,7 +947,7 @@ def _impl(ctx):
                 "-iwithsysroot" + "/include/compat",
                 "-iwithsysroot" + "/include",
                 "-isystem",
-                emscripten_dir + "/lib/clang/21/include",
+                emscripten_dir + "/lib/clang/22/include",
             ],
         ),
         # Inputs and outputs
