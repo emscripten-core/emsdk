@@ -63,14 +63,10 @@ _ALLOW_OUTPUT_EXTNAMES = [
     ".js",
     ".wasm",
     ".wasm.map",
-    ".worker.js",
-    ".js.mem",
     ".data",
-    ".fetch.js",
     ".js.symbols",
     ".wasm.debug.wasm",
     ".html",
-    ".aw.js",
 ]
 
 _WASM_BINARY_COMMON_ATTRS = {
@@ -145,14 +141,10 @@ def _wasm_cc_binary_legacy_impl(ctx):
         ctx.outputs.loader,
         ctx.outputs.wasm,
         ctx.outputs.map,
-        ctx.outputs.mem,
-        ctx.outputs.fetch,
-        ctx.outputs.worker,
         ctx.outputs.data,
         ctx.outputs.symbols,
         ctx.outputs.dwarf,
         ctx.outputs.html,
-        ctx.outputs.audio_worklet,
     ]
 
     args = ctx.actions.args()
@@ -196,14 +188,10 @@ def _wasm_binary_legacy_outputs(name, cc_target):
         "loader": "{}/{}.js".format(name, basename),
         "wasm": "{}/{}.wasm".format(name, basename),
         "map": "{}/{}.wasm.map".format(name, basename),
-        "mem": "{}/{}.js.mem".format(name, basename),
-        "fetch": "{}/{}.fetch.js".format(name, basename),
-        "worker": "{}/{}.worker.js".format(name, basename),
         "data": "{}/{}.data".format(name, basename),
         "symbols": "{}/{}.js.symbols".format(name, basename),
         "dwarf": "{}/{}.wasm.debug.wasm".format(name, basename),
         "html": "{}/{}.html".format(name, basename),
-        "audio_worklet": "{}/{}.aw.js".format(name, basename)
     }
 
     return outputs
