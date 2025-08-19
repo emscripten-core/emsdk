@@ -84,14 +84,10 @@ extensions = [
     '.js',
     '.wasm',
     '.wasm.map',
-    '.js.mem',
-    '.fetch.js',
-    '.worker.js',
     '.data',
     '.js.symbols',
     '.wasm.debug.wasm',
     '.html',
-    '.aw.js'
 ]
 
 for ext in extensions:
