@@ -431,6 +431,19 @@
     "activated_env": "_EMCC_CCACHE=1;CCACHE_CONFIGPATH=%installation_dir%/emcc_ccache.conf",
     "cmake_build_type": "Release",
     "custom_install_script": "build_ccache"
+  },
+  {
+    "id": "node-git",
+    "version": "main",
+    "install_path": "node/git",
+    "bitness": 64,
+    "url": "https://github.com/nodejs/node.git",
+    "git_branch": "main",
+    "activated_path": "%installation_dir%/bin",
+    "activated_path_skip": "node",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%",
+    "custom_install_script": "build_node"
   }
   ],
 

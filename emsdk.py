@@ -501,9 +501,9 @@ def is_nonempty_directory(path):
   return len(os.listdir(path)) != 0
 
 
-def run(cmd, cwd=None, quiet=False):
-  debug_print('run(cmd=' + str(cmd) + ', cwd=' + str(cwd) + ')')
-  process = subprocess.Popen(cmd, cwd=cwd, env=os.environ.copy())
+def run(cmd, cwd=None, quiet=False, shell=False):
+  debug_print(f'run(cmd="{cmd}, cwd="{cwd}")')
+  process = subprocess.Popen(cmd, cwd=cwd, env=os.environ.copy(), shell=shell)
   process.communicate()
   if process.returncode != 0 and not quiet:
     errlog(str(cmd) + ' failed with error code ' + str(process.returncode) + '!')
@@ -1230,6 +1230,53 @@ cache_dir = %s
   return success
 
 
+def build_node(tool):
+  debug_print('build_node(' + str(tool) + ')')
+  root = os.path.normpath(tool.installation_path())
+  src_root = os.path.join(root, 'src')
+  success = git_clone_checkout_and_pull(tool.download_url(), src_root, tool.git_branch)
+  if not success:
+    return False
+
+  build_root = os.path.join(src_root)
+
+  if WINDOWS:
+    nasm_path = os.path.join(os.getenv('ProgramFiles', 'C:\\Program Files'), 'NASM')
+    if not nasm_path and not which('nasm.exe'):
+      print('Unable to find NASM in PATH. Please open a new command prompt with administrator privileges and run "winget install nasm -i" in it.')
+      return False
+
+    vcvarsall = os.path.join(os.getenv('ProgramFiles', 'C:\\Program Files'), 'Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\vcvarsall.bat')
+    if not os.path.isfile(vcvarsall):
+      print('Unable to find Visual Studio installation!')
+      return False
+
+    vcbuild = os.path.join(src_root, 'vcbuild.bat')
+
+    retcode = run(f'cmd.exe /c "\"{vcvarsall}\" x64 && \"{vcbuild}\" release x64"', cwd=build_root, shell=True)
+  else:
+    retcode = run(['./configure'], cwd=build_root)
+    retcode |= run(['./make', f'-j{CPU_CORES}'], cwd=build_root)
+
+  if retcode != 0:
+    return False
+
+  def copy_tree(src, dst):
+    for root, dirs, files in os.walk(src):
+      for file in files:
+        src_file = os.path.join(root, file)
+        rel_path = os.path.relpath(root, src)
+        dst_dir = os.path.join(dst, rel_path)
+        os.makedirs(dst_dir, exist_ok=True)
+        shutil.copy2(src_file, dst_dir)
+
+  build_path = os.path.join(build_root, 'out', 'Release')
+  bin_dir = os.path.join(root, 'bin')
+  copy_tree(build_path, bin_dir)
+
+  return True
+
+
 # Finds the newest installed version of a given tool
 def find_latest_installed_tool(name):
   for t in reversed(tools):
@@ -1855,6 +1902,8 @@ class Tool(object):
       success = build_ninja(self)
     elif hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_ccache':
       success = build_ccache(self)
+    elif hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_node':
+      success = build_node(self)
     elif hasattr(self, 'git_branch'):
       success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch)
     elif url.endswith(ARCHIVE_SUFFIXES):
@@ -1869,7 +1918,7 @@ class Tool(object):
     if hasattr(self, 'custom_install_script'):
       if self.custom_install_script == 'emscripten_npm_install':
         success = emscripten_npm_install(self, self.installation_path())
-      elif self.custom_install_script in ('build_llvm', 'build_ninja', 'build_ccache'):
+      elif self.custom_install_script in ('build_llvm', 'build_ninja', 'build_ccache', 'build_node'):
         # 'build_llvm' is a special one that does the download on its
         # own, others do the download manually.
         pass
