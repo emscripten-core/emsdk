@@ -1256,7 +1256,7 @@ def build_node(tool):
     retcode = run(f'cmd.exe /c "\"{vcvarsall}\" x64 && \"{vcbuild}\" release x64"', cwd=build_root, shell=True)
   else:
     retcode = run(['./configure'], cwd=build_root)
-    retcode |= run(['./make', f'-j{CPU_CORES}'], cwd=build_root)
+    retcode |= run(['make', f'-j{CPU_CORES}'], cwd=build_root)
 
   if retcode != 0:
     return False
