@@ -200,10 +200,13 @@ else:
   EMSDK_SET_ENV = os.path.join(EMSDK_PATH, 'emsdk_set_env.bat')
 
 
-# Parses https://github.com/emscripten-core/emscripten/tree/d6aced8 to a pair (https://github.com/emscripten-core/emscripten, d6aced8)
+# Parses https://github.com/emscripten-core/emscripten/tree/d6aced8 to a triplet
+# (https://github.com/emscripten-core/emscripten, d6aced8, emscripten-core)
+# or https://github.com/emscripten-core/emscripten/commit/00b76f81f6474113fcf540db69297cfeb180347e
+# to (https://github.com/emscripten-core/emscripten, 00b76f81f6474113fcf540db69297cfeb180347e, emscripten-core)
 def parse_github_url_and_refspec(url):
   if not url:
-    return ('', '')
+    return ('', '', None)
 
   if url.endswith(('/tree/', '/tree', '/commit/', '/commit')):
     raise Exception('Malformed git URL and refspec ' + url + '!')
@@ -211,13 +214,17 @@ def parse_github_url_and_refspec(url):
   if '/tree/' in url:
     if url.endswith('/'):
       raise Exception('Malformed git URL and refspec ' + url + '!')
-    return url.split('/tree/')
+    url, refspec = url.split('/tree/')
+    remote_name = url.split('/')[-2]
+    return (url, refspec, remote_name)
   elif '/commit/' in url:
     if url.endswith('/'):
       raise Exception('Malformed git URL and refspec ' + url + '!')
-    return url.split('/commit/')
+    url, refspec = url.split('/commit/')
+    remote_name = url.split('/')[-2]
+    return (url, refspec, remote_name)
   else:
-    return (url, 'main')  # Assume the default branch is main in the absence of a refspec
+    return (url, 'main', None)  # Assume the default branch is main in the absence of a refspec
 
 
 ARCHIVE_SUFFIXES = ('zip', '.tar', '.gz', '.xz', '.tbz2', '.bz2')
@@ -812,40 +819,58 @@ def git_recent_commits(repo_path, n=20):
     return []
 
 
-def git_clone(url, dstpath, branch):
+def get_git_remotes(repo_path):
+  remotes = []
+  output = subprocess.check_output([GIT(), 'remote', '-v'], stderr=subprocess.STDOUT, text=True, cwd=repo_path)
+  for line in output.splitlines():
+    remotes += [line.split()[0]]
+  return remotes
+
+
+def git_clone(url, dstpath, branch, remote_name='origin'):
   debug_print('git_clone(url=' + url + ', dstpath=' + dstpath + ')')
   if os.path.isdir(os.path.join(dstpath, '.git')):
-    debug_print("Repository '" + url + "' already cloned to directory '" + dstpath + "', skipping.")
-    return True
+    remotes = get_git_remotes(dstpath)
+    if remote_name in remotes:
+      debug_print(f"Repository {url} with remote '{remote_name}' already cloned to directory '{dstpath}', skipping.")
+      return True
+    else:
+      debug_print(f"Repository {url} with remote '{remote_name}' already cloned to directory '{dstpath}', but remote has not yet been added. Creating.")
+      return run([GIT(), 'remote', 'add', remote_name, url]) == 0
+
   mkdir_p(dstpath)
   git_clone_args = ['--recurse-submodules', '--branch', branch]  # Do not check out a branch (installer will issue a checkout command right after)
   if GIT_CLONE_SHALLOW:
     git_clone_args += ['--depth', '1']
   print('Cloning from ' + url + '...')
-  return run([GIT(), 'clone'] + git_clone_args + [url, dstpath]) == 0
+  return run([GIT(), 'clone', '-o', remote_name] + git_clone_args + [url, dstpath]) == 0
 
 
-def git_pull(repo_path, branch_or_tag):
-  debug_print('git_pull(repo_path=' + repo_path + ', branch/tag=' + branch_or_tag + ')')
-  ret = run([GIT(), 'fetch', '--quiet', 'origin'], repo_path)
+def git_pull(repo_path, branch_or_tag, remote_name='origin'):
+  debug_print(f'git_pull(repo_path={repo_path}, branch/tag={branch_or_tag}, remote_name={remote_name})')
+  ret = run([GIT(), 'fetch', '--quiet', remote_name], repo_path)
   if ret != 0:
     return False
   try:
     print("Fetching latest changes to the branch/tag '" + branch_or_tag + "' for '" + repo_path + "'...")
-    ret = run([GIT(), 'fetch', '--quiet', 'origin'], repo_path)
-    if ret != 0:
-      return False
-    # this line assumes that the user has not gone and manually messed with the
-    # repo and added new remotes to ambiguate the checkout.
-    ret = run([GIT(), 'checkout', '--recurse-submodules', '--quiet', branch_or_tag], repo_path)
+    ret = run([GIT(), 'fetch', '--quiet', remote_name], repo_path)
     if ret != 0:
       return False
     # Test if branch_or_tag is a branch, or if it is a tag that needs to be updated
     target_is_tag = run([GIT(), 'symbolic-ref', '-q', 'HEAD'], repo_path, quiet=True)
+
+    if target_is_tag:
+      ret = run([GIT(), 'checkout', '--recurse-submodules', '--quiet', branch_or_tag], repo_path)
+    else:
+      local_branch_prefix = f'{remote_name}_' if remote_name != 'origin' else ''
+      ret = run([GIT(), 'checkout', '--recurse-submodules', '--quiet', '-B', f'{local_branch_prefix}{branch_or_tag}',
+                 '--track', f'{remote_name}/{branch_or_tag}'], repo_path)
+    if ret != 0:
+      return False
     if not target_is_tag:
       # update branch to latest (not needed for tags)
       # this line assumes that the user has not gone and made local changes to the repo
-      ret = run([GIT(), 'merge', '--ff-only', 'origin/' + branch_or_tag], repo_path)
+      ret = run([GIT(), 'merge', '--ff-only', f'{remote_name}/{branch_or_tag}'], repo_path)
     if ret != 0:
       return False
     run([GIT(), 'submodule', 'update', '--init'], repo_path, quiet=True)
@@ -857,14 +882,23 @@ def git_pull(repo_path, branch_or_tag):
   return True
 
 
-def git_clone_checkout_and_pull(url, dstpath, branch):
-  debug_print('git_clone_checkout_and_pull(url=' + url + ', dstpath=' + dstpath + ', branch=' + branch + ')')
+def git_clone_checkout_and_pull(url, dstpath, branch, override_remote_name=None):
+  debug_print(f'git_clone_checkout_and_pull(url={url}, dstpath={dstpath}, branch={branch}, override_remote_name={override_remote_name})')
 
-  # If the repository has already been cloned before, issue a pull operation. Otherwise do a new clone.
-  if os.path.isdir(os.path.join(dstpath, '.git')):
-    return git_pull(dstpath, branch)
+  # When overriding, name the local branch as 'remote_branch' to distinguish
+  # from origin's branches with the same name
+  if override_remote_name:
+    pass#branch = f'{override_remote_name}_{branch}'
   else:
-    return git_clone(url, dstpath, branch)
+    override_remote_name = 'origin'
+
+  # Make sure the repository is cloned first
+  success = git_clone(url, dstpath, branch, override_remote_name)
+  if not success:
+    return False
+
+  # And/or issue a pull/checkout to get to latest code.
+  return git_pull(dstpath, branch, override_remote_name)
 
 
 # Each tool can have its own build type, or it can be overridden on the command
@@ -1856,7 +1890,7 @@ class Tool(object):
     elif hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_ccache':
       success = build_ccache(self)
     elif hasattr(self, 'git_branch'):
-      success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch)
+      success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch, getattr(self, 'remote_name', None))
     elif url.endswith(ARCHIVE_SUFFIXES):
       success = download_and_extract(url, self.installation_path(),
                                      filename_prefix=getattr(self, 'download_prefix', ''))
@@ -2826,7 +2860,7 @@ def main(args):
       errlog('Failed to find tool ' + tool_name + '!')
       return False
     else:
-      t.url, t.git_branch = parse_github_url_and_refspec(url_and_refspec)
+      t.url, t.git_branch, t.remote_name = parse_github_url_and_refspec(url_and_refspec)
       debug_print('Reading git repository URL "' + t.url + '" and git branch "' + t.git_branch + '" for Tool "' + tool_name + '".')
 
     forked_url = extract_string_arg('--override-repository')
