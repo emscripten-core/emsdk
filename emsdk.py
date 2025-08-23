@@ -882,15 +882,8 @@ def git_pull(repo_path, branch_or_tag, remote_name='origin'):
   return True
 
 
-def git_clone_checkout_and_pull(url, dstpath, branch, override_remote_name=None):
+def git_clone_checkout_and_pull(url, dstpath, branch, override_remote_name='origin'):
   debug_print(f'git_clone_checkout_and_pull(url={url}, dstpath={dstpath}, branch={branch}, override_remote_name={override_remote_name})')
-
-  # When overriding, name the local branch as 'remote_branch' to distinguish
-  # from origin's branches with the same name
-  if override_remote_name:
-    pass#branch = f'{override_remote_name}_{branch}'
-  else:
-    override_remote_name = 'origin'
 
   # Make sure the repository is cloned first
   success = git_clone(url, dstpath, branch, override_remote_name)
@@ -1890,7 +1883,7 @@ class Tool(object):
     elif hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_ccache':
       success = build_ccache(self)
     elif hasattr(self, 'git_branch'):
-      success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch, getattr(self, 'remote_name', None))
+      success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch, getattr(self, 'remote_name', 'origin'))
     elif url.endswith(ARCHIVE_SUFFIXES):
       success = download_and_extract(url, self.installation_path(),
                                      filename_prefix=getattr(self, 'download_prefix', ''))
