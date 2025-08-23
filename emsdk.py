@@ -836,7 +836,7 @@ def git_clone(url, dstpath, branch, remote_name='origin'):
       return True
     else:
       debug_print(f"Repository {url} with remote '{remote_name}' already cloned to directory '{dstpath}', but remote has not yet been added. Creating.")
-      return run([GIT(), 'remote', 'add', remote_name, url]) == 0
+      return run([GIT(), 'remote', 'add', remote_name, url], cwd=dstpath) == 0
 
   mkdir_p(dstpath)
   git_clone_args = ['--recurse-submodules', '--branch', branch]  # Do not check out a branch (installer will issue a checkout command right after)
