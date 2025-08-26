@@ -1482,7 +1482,7 @@ def extract_newest_node_nightly_version(versions):
     return None
 
 
-def build_node_nightly(tool):
+def download_node_nightly(tool):
   nightly_versions = fetch_nightly_node_versions()
   latest_nightly = extract_newest_node_nightly_version(nightly_versions)
   print(f'Latest Node.js Nightly download available is "{latest_nightly}"')
@@ -1934,7 +1934,7 @@ class Tool(object):
       'build_llvm': build_llvm,
       'build_ninja': build_ninja,
       'build_ccache': build_ccache,
-      'build_node_nightly': build_node_nightly
+      'download_node_nightly': download_node_nightly
     }
     if hasattr(self, 'custom_install_script'):
       success = custom_install_scripts[self.custom_install_script](self)
@@ -1952,7 +1952,7 @@ class Tool(object):
     if hasattr(self, 'custom_install_script'):
       if self.custom_install_script == 'emscripten_npm_install':
         success = emscripten_npm_install(self, self.installation_path())
-      elif self.custom_install_script in ('build_llvm', 'build_ninja', 'build_ccache', 'build_node_nightly'):
+      elif self.custom_install_script in ('build_llvm', 'build_ninja', 'build_ccache', 'download_node_nightly'):
         # 'build_llvm' is a special one that does the download on its
         # own, others do the download manually.
         pass

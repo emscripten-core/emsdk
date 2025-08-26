@@ -220,7 +220,7 @@
     "version": "nightly",
     "bitness": 64,
     "install_path": "node/%latest_downloaded_node_nightly_dir%",
-    "custom_install_script": "build_node_nightly",
+    "custom_install_script": "download_node_nightly",
     "activated_path": "node/%latest_downloaded_node_nightly_dir%/bin",
     "activated_path_skip": "node",
     "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
