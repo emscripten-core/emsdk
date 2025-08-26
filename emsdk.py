@@ -1485,9 +1485,9 @@ def extract_newest_node_nightly_version(versions):
 def download_node_nightly(tool):
   nightly_versions = fetch_nightly_node_versions()
   latest_nightly = extract_newest_node_nightly_version(nightly_versions)
-  print(f'Latest Node.js Nightly download available is "{latest_nightly}"')
+  print('Latest Node.js Nightly download available is "' + latest_nightly + '"')
 
-  output_dir = os.path.abspath(f'node/nightly-{latest_nightly}')
+  output_dir = os.path.abspath('node/nightly-' + latest_nightly)
   # Node.js zip structure quirk: Linux and macOS archives have a /bin,
   # Windows does not. Unify the file structures.
   if WINDOWS:
@@ -1516,7 +1516,6 @@ def download_node_nightly(tool):
   url = url.replace('%os%', os_)
   url = url.replace('%arch%', arch)
   url = url.replace('%zip_suffix%', zip_suffix)
-  print(str(url))
   download_and_extract(url, output_dir)
   open(tool.get_version_file_path(), 'w').write('node-nightly-64bit')
   return True
@@ -1784,7 +1783,7 @@ class Tool(object):
       return True
 
     content_exists = is_nonempty_directory(self.installation_path())
-    debug_print(f'{self} installation path is {self.installation_path()}, exists: {content_exists}.')
+    debug_print(str(self) + ' installation path is ' + self.installation_path() + ', exists: ' + content_exists + '.')
 
     # For e.g. fastcomp clang from git repo, the activated PATH is the
     # directory where the compiler is built to, and installation_path is
