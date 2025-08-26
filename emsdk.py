@@ -1450,6 +1450,62 @@ def find_emscripten_root(active_tools):
   return root
 
 
+def fetch_nightly_node_versions():
+  url = "https://nodejs.org/download/nightly/"
+  with urlopen(url) as response:
+    html = response.read().decode("utf-8")
+
+  # Regex to capture href values like v7.0.0-nightly2016080175c6d9dd95/
+  pattern = re.compile(r'<a href="(v[0-9]+\.[0-9]+\.[0-9]+-nightly[0-9a-f]+)/">')
+  matches = pattern.findall(html)
+  return matches
+
+
+def dir_installed_nightly_node_versions():
+  path = os.path.abspath('node')
+  return [name for name in os.listdir(path)
+      if os.path.isdir(os.path.join(path, name)) and name.startswith("nightly-")]
+
+
+def extract_newest_node_nightly_version(versions):
+  def parse(v):
+    # example: v7.0.0-nightly2016080175c6d9dd95
+    m = re.match(r'v(\d+)\.(\d+)\.(\d+)-nightly(\d+)', v)
+    if m:
+      major, minor, patch, nightly = m.groups()
+      return [int(major), int(minor), int(patch), int(nightly)]
+    else:
+      return []
+
+  return max(versions, key=lambda v: parse(v))
+
+
+def build_node_nightly(tool):
+  nightly_versions = fetch_nightly_node_versions()
+  latest_nightly = extract_newest_node_nightly_version(nightly_versions)
+  print(f'Latest Node.js Nightly download available is "{latest_nightly}"')
+
+  output_dir = os.path.abspath(f'node/nightly-{latest_nightly}/bin')
+  if os.path.isdir(output_dir):
+    return True
+
+  url = tool.url.replace('%version%', latest_nightly)
+  if WINDOWS: os_ = 'win'
+  elif LINUX: os_ = 'linux'
+  elif MACOS: os_ = 'darwin'
+  else: os_ = ''
+  if platform.machine().lower() in ["x86_64", "amd64"]: arch = 'x64'
+  elif platform.machine().lower() in ["arm64", "aarch64"]: arch = 'arm64'
+  if WINDOWS: zip_suffix = 'zip'
+  else: zip_suffix = 'tar.gz'
+  url = url.replace('%os%', os_)
+  url = url.replace('%arch%', arch)
+  url = url.replace('%zip_suffix%', zip_suffix)
+  print(str(url))
+  download_and_extract(url, output_dir)
+  open(tool.get_version_file_path(), 'w').write('node-nightly-64bit')
+  return True
+
 # returns a tuple (string,string) of config files paths that need to used
 # to activate emsdk env depending on $SHELL, defaults to bash.
 def get_emsdk_shell_env_configs():
@@ -1579,6 +1635,10 @@ class Tool(object):
     str = str.replace('%.exe%', '.exe' if WINDOWS else '')
     if '%llvm_build_bin_dir%' in str:
       str = str.replace('%llvm_build_bin_dir%', llvm_build_bin_dir(self))
+    if '%latest_downloaded_node_nightly_dir%' in str:
+      installed_node_nightlys = dir_installed_nightly_node_versions()
+      latest_node_nightly = extract_newest_node_nightly_version(installed_node_nightlys)
+      str = str.replace('%latest_downloaded_node_nightly_dir%', latest_node_nightly)
 
     return str
 
@@ -1700,10 +1760,11 @@ class Tool(object):
           return False
 
     if self.download_url() is None:
-      # This tool does not contain downloadable elements, so it is installed by default.
+      debug_print(str(self) + ' has no files to download, so is installed by default.')
       return True
 
     content_exists = is_nonempty_directory(self.installation_path())
+    debug_print(f'{self} installation path is {self.installation_path()}, exists: {content_exists}.')
 
     # For e.g. fastcomp clang from git repo, the activated PATH is the
     # directory where the compiler is built to, and installation_path is
@@ -1849,12 +1910,14 @@ class Tool(object):
     print("Installing tool '" + str(self) + "'..")
     url = self.download_url()
 
-    if hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_llvm':
-      success = build_llvm(self)
-    elif hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_ninja':
-      success = build_ninja(self)
-    elif hasattr(self, 'custom_install_script') and self.custom_install_script == 'build_ccache':
-      success = build_ccache(self)
+    custom_install_scripts = {
+      'build_llvm': build_llvm,
+      'build_ninja': build_ninja,
+      'build_ccache': build_ccache,
+      'build_node_nightly': build_node_nightly
+    }
+    if hasattr(self, 'custom_install_script'):
+      success = custom_install_scripts[self.custom_install_script](self)
     elif hasattr(self, 'git_branch'):
       success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch)
     elif url.endswith(ARCHIVE_SUFFIXES):
@@ -1869,7 +1932,7 @@ class Tool(object):
     if hasattr(self, 'custom_install_script'):
       if self.custom_install_script == 'emscripten_npm_install':
         success = emscripten_npm_install(self, self.installation_path())
-      elif self.custom_install_script in ('build_llvm', 'build_ninja', 'build_ccache'):
+      elif self.custom_install_script in ('build_llvm', 'build_ninja', 'build_ccache', 'build_node_nightly'):
         # 'build_llvm' is a special one that does the download on its
         # own, others do the download manually.
         pass
