@@ -1463,8 +1463,7 @@ def fetch_nightly_node_versions():
 
 def dir_installed_nightly_node_versions():
   path = os.path.abspath('node')
-  return [name for name in os.listdir(path)
-      if os.path.isdir(os.path.join(path, name)) and name.startswith("nightly-")]
+  return [name for name in os.listdir(path) if os.path.isdir(os.path.join(path, name)) and name.startswith("nightly-")]
 
 
 def extract_newest_node_nightly_version(versions):
@@ -1479,7 +1478,7 @@ def extract_newest_node_nightly_version(versions):
 
   try:
     return max(versions, key=lambda v: parse(v))
-  except:
+  except Exception:
     return None
 
 
