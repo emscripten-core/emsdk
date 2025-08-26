@@ -832,10 +832,10 @@ def git_clone(url, dstpath, branch, remote_name='origin'):
   if os.path.isdir(os.path.join(dstpath, '.git')):
     remotes = get_git_remotes(dstpath)
     if remote_name in remotes:
-      debug_print(f"Repository {url} with remote '{remote_name}' already cloned to directory '{dstpath}', skipping.")
+      debug_print('Repository ' + url + ' with remote "' + remote_name + '" already cloned to directory ' + dstpath + ', skipping.')
       return True
     else:
-      debug_print(f"Repository {url} with remote '{remote_name}' already cloned to directory '{dstpath}', but remote has not yet been added. Creating.")
+      debug_print('Repository ' + url + ' with remote "' + remote_name + '" already cloned to directory ' + dstpath + ', but remote has not yet been added. Creating.')
       return run([GIT(), 'remote', 'add', remote_name, url], cwd=dstpath) == 0
 
   mkdir_p(dstpath)
@@ -847,7 +847,7 @@ def git_clone(url, dstpath, branch, remote_name='origin'):
 
 
 def git_pull(repo_path, branch_or_tag, remote_name='origin'):
-  debug_print(f'git_pull(repo_path={repo_path}, branch/tag={branch_or_tag}, remote_name={remote_name})')
+  debug_print('git_pull(repo_path=' + repo_path + ', branch/tag=' + branch_or_tag + ', remote_name=' + remote_name + ')')
   ret = run([GIT(), 'fetch', '--quiet', remote_name], repo_path)
   if ret != 0:
     return False
@@ -862,15 +862,15 @@ def git_pull(repo_path, branch_or_tag, remote_name='origin'):
     if target_is_tag:
       ret = run([GIT(), 'checkout', '--recurse-submodules', '--quiet', branch_or_tag], repo_path)
     else:
-      local_branch_prefix = f'{remote_name}_' if remote_name != 'origin' else ''
-      ret = run([GIT(), 'checkout', '--recurse-submodules', '--quiet', '-B', f'{local_branch_prefix}{branch_or_tag}',
-                 '--track', f'{remote_name}/{branch_or_tag}'], repo_path)
+      local_branch_prefix = ('remote_name' + '_') if remote_name != 'origin' else ''
+      ret = run([GIT(), 'checkout', '--recurse-submodules', '--quiet', '-B', 'local_branch_prefix' + 'branch_or_tag',
+                 '--track', remote_name + '/' + branch_or_tag], repo_path)
     if ret != 0:
       return False
     if not target_is_tag:
       # update branch to latest (not needed for tags)
       # this line assumes that the user has not gone and made local changes to the repo
-      ret = run([GIT(), 'merge', '--ff-only', f'{remote_name}/{branch_or_tag}'], repo_path)
+      ret = run([GIT(), 'merge', '--ff-only', remote_name + '/' + branch_or_tag], repo_path)
     if ret != 0:
       return False
     run([GIT(), 'submodule', 'update', '--init'], repo_path, quiet=True)
@@ -883,7 +883,7 @@ def git_pull(repo_path, branch_or_tag, remote_name='origin'):
 
 
 def git_clone_checkout_and_pull(url, dstpath, branch, override_remote_name='origin'):
-  debug_print(f'git_clone_checkout_and_pull(url={url}, dstpath={dstpath}, branch={branch}, override_remote_name={override_remote_name})')
+  debug_print('git_clone_checkout_and_pull(url=' + url + ', dstpath=' + dstpath + ', branch=' + branch + ', override_remote_name=' + override_remote_name + ')')
 
   # Make sure the repository is cloned first
   success = git_clone(url, dstpath, branch, override_remote_name)
