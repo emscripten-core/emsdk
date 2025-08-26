@@ -1477,7 +1477,10 @@ def extract_newest_node_nightly_version(versions):
     else:
       return []
 
-  return max(versions, key=lambda v: parse(v))
+  try:
+    return max(versions, key=lambda v: parse(v))
+  except:
+    return None
 
 
 def build_node_nightly(tool):
@@ -1485,7 +1488,12 @@ def build_node_nightly(tool):
   latest_nightly = extract_newest_node_nightly_version(nightly_versions)
   print(f'Latest Node.js Nightly download available is "{latest_nightly}"')
 
-  output_dir = os.path.abspath(f'node/nightly-{latest_nightly}/bin')
+  output_dir = os.path.abspath(f'node/nightly-{latest_nightly}')
+  # Node.js zip structure quirk: Linux and macOS archives have a /bin,
+  # Windows does not. Unify the file structures.
+  if WINDOWS:
+    output_dir += '/bin'
+
   if os.path.isdir(output_dir):
     return True
 
@@ -1540,7 +1548,10 @@ def generate_em_config(active_tools, permanently_activate, system):
     activated_config['NODE_JS'] = node_fallback
 
   for name, value in activated_config.items():
-    cfg += name + " = '" + value + "'\n"
+    if value.startswith('['):
+      cfg += name + " = " + value + "\n"
+    else:
+      cfg += name + " = '" + value + "'\n"
 
   emroot = find_emscripten_root(active_tools)
   if emroot:
@@ -1638,7 +1649,8 @@ class Tool(object):
     if '%latest_downloaded_node_nightly_dir%' in str:
       installed_node_nightlys = dir_installed_nightly_node_versions()
       latest_node_nightly = extract_newest_node_nightly_version(installed_node_nightlys)
-      str = str.replace('%latest_downloaded_node_nightly_dir%', latest_node_nightly)
+      if latest_node_nightly:
+        str = str.replace('%latest_downloaded_node_nightly_dir%', latest_node_nightly)
 
     return str
 

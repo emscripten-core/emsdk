@@ -207,13 +207,13 @@
   {
     "id": "node-big-endian-crosscompile",
     "version": "22.16.0",
-    "arch": "x64",
+    "arch": "x86_64",
     "bitness": 64,
     "linux_url": "https://nodejs.org/download/release/v22.16.0/node-v22.16.0-linux-s390x.tar.gz",
     "activated_path": "%installation_dir%/bin",
     "activated_path_skip": "node",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
-    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+    "activated_cfg": "NODE_JS=['qemu-s390x', '-L', '/usr/s390x-linux-gnu/', '%installation_dir%/bin/node']",
+    "activated_env": "EMSDK_NODE=qemu-s390x -L /usr/s390x-linux-gnu/ %installation_dir%/bin/node"
   },
   {
     "id": "node",
