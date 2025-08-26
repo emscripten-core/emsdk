@@ -862,8 +862,8 @@ def git_pull(repo_path, branch_or_tag, remote_name='origin'):
     if target_is_tag:
       ret = run([GIT(), 'checkout', '--recurse-submodules', '--quiet', branch_or_tag], repo_path)
     else:
-      local_branch_prefix = ('remote_name' + '_') if remote_name != 'origin' else ''
-      ret = run([GIT(), 'checkout', '--recurse-submodules', '--quiet', '-B', 'local_branch_prefix' + 'branch_or_tag',
+      local_branch_prefix = (remote_name + '_') if remote_name != 'origin' else ''
+      ret = run([GIT(), 'checkout', '--recurse-submodules', '--quiet', '-B', local_branch_prefix + branch_or_tag,
                  '--track', remote_name + '/' + branch_or_tag], repo_path)
     if ret != 0:
       return False
