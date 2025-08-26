@@ -1498,14 +1498,22 @@ def build_node_nightly(tool):
     return True
 
   url = tool.url.replace('%version%', latest_nightly)
-  if WINDOWS: os_ = 'win'
-  elif LINUX: os_ = 'linux'
-  elif MACOS: os_ = 'darwin'
-  else: os_ = ''
-  if platform.machine().lower() in ["x86_64", "amd64"]: arch = 'x64'
-  elif platform.machine().lower() in ["arm64", "aarch64"]: arch = 'arm64'
-  if WINDOWS: zip_suffix = 'zip'
-  else: zip_suffix = 'tar.gz'
+  if WINDOWS:
+    os_ = 'win'
+  elif LINUX:
+    os_ = 'linux'
+  elif MACOS:
+    os_ = 'darwin'
+  else:
+    os_ = ''
+  if platform.machine().lower() in ["x86_64", "amd64"]:
+    arch = 'x64'
+  elif platform.machine().lower() in ["arm64", "aarch64"]:
+    arch = 'arm64'
+  if WINDOWS:
+    zip_suffix = 'zip'
+  else:
+    zip_suffix = 'tar.gz'
   url = url.replace('%os%', os_)
   url = url.replace('%arch%', arch)
   url = url.replace('%zip_suffix%', zip_suffix)
@@ -1513,6 +1521,7 @@ def build_node_nightly(tool):
   download_and_extract(url, output_dir)
   open(tool.get_version_file_path(), 'w').write('node-nightly-64bit')
   return True
+
 
 # returns a tuple (string,string) of config files paths that need to used
 # to activate emsdk env depending on $SHELL, defaults to bash.
