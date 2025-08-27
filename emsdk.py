@@ -1478,6 +1478,11 @@ def find_emscripten_root(active_tools):
 
 
 def fetch_nightly_node_versions():
+  # Node.js Apple ARM64 nightly downloads are currently out of order, so pin
+  # to recent version that does still exist. https://github.com/nodejs/node/issues/59654
+  if MACOS and ARCH == 'arm64':
+    return ['v25.0.0-nightly20250715b305119844']
+
   url = "https://nodejs.org/download/nightly/"
   with urlopen(url) as response:
     html = response.read().decode("utf-8")
