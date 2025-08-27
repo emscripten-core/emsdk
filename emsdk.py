@@ -3107,7 +3107,7 @@ def main(args):
   elif cmd == 'update-tags':
     errlog('`update-tags` is not longer needed.  To install the latest tot release just run `install tot`')
     return 0
-  elif cmd == 'activate' or cmd =='deactivate':
+  elif cmd == 'activate' or cmd == 'deactivate':
     if arg_permanent:
       print('Registering active Emscripten environment permanently')
       print('')
