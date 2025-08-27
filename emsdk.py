@@ -1783,7 +1783,7 @@ class Tool(object):
       return True
 
     content_exists = is_nonempty_directory(self.installation_path())
-    debug_print(str(self) + ' installation path is ' + self.installation_path() + ', exists: ' + content_exists + '.')
+    debug_print(str(self) + ' installation path is ' + self.installation_path() + ', exists: ' + str(content_exists) + '.')
 
     # For e.g. fastcomp clang from git repo, the activated PATH is the
     # directory where the compiler is built to, and installation_path is
