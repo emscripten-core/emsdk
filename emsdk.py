@@ -1935,7 +1935,7 @@ class Tool(object):
       'build_ccache': build_ccache,
       'download_node_nightly': download_node_nightly
     }
-    if hasattr(self, 'custom_install_script'):
+    if hasattr(self, 'custom_install_script') and self.custom_install_script in custom_install_scripts:
       success = custom_install_scripts[self.custom_install_script](self)
     elif hasattr(self, 'git_branch'):
       success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch)
