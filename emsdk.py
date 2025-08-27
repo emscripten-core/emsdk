@@ -2838,6 +2838,9 @@ def main(args):
                                   --override-repository emscripten-main@https://github.com/<fork>/emscripten/tree/<refspec>
 
 
+   emsdk deactivate tool/sdk    - Removes the given tool or SDK from the current set of activated tools.
+
+
    emsdk uninstall <tool/sdk>   - Removes the given tool or SDK from disk.''')
 
     if WINDOWS:
@@ -3107,7 +3110,7 @@ def main(args):
   elif cmd == 'update-tags':
     errlog('`update-tags` is not longer needed.  To install the latest tot release just run `install tot`')
     return 0
-  elif cmd == 'activate':
+  elif cmd == 'activate' or cmd == 'deactivate':
     if arg_permanent:
       print('Registering active Emscripten environment permanently')
       print('')
@@ -3119,7 +3122,14 @@ def main(args):
         tool = find_sdk(arg)
         if tool is None:
           error_on_missing_tool(arg)
-      tools_to_activate += [tool]
+
+      if cmd == 'activate':
+        tools_to_activate += [tool]
+      elif tool in tools_to_activate:
+        print('Deactivating tool ' + str(tool) + '.')
+        tools_to_activate.remove(tool)
+      else:
+        print('Tool "' + arg + '" was not active, no need to deactivate.')
     if not tools_to_activate:
       errlog('No tools/SDKs specified to activate! Usage:\n   emsdk activate tool/sdk1 [tool/sdk2] [...]')
       return 1
