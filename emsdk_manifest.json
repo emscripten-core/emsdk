@@ -214,6 +214,44 @@
     "activated_path_skip": "node",
     "activated_cfg": "NODE_JS_TEST=['qemu-s390x', '-L', '/usr/s390x-linux-gnu/', '%installation_dir%/bin/node']"
   },
+
+  {
+    "id": "node",
+    "version": "24.7.0",
+    "bitness": 64,
+    "arch": "x86_64",
+    "windows_url": "node-v24.7.0-win-x64.zip",
+    "macos_url": "node-v24.7.0-darwin-x64.tar.gz",
+    "linux_url": "node-v24.7.0-linux-x64.tar.xz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_path_skip": "node",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+  },
+  {
+    "id": "node",
+    "version": "24.7.0",
+    "arch": "arm64",
+    "bitness": 64,
+    "windows_url": "node-v24.7.0-win-arm64.zip",
+    "macos_url": "node-v24.7.0-darwin-arm64.tar.gz",
+    "linux_url": "node-v24.7.0-linux-arm64.tar.xz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_path_skip": "node",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+  },
+  {
+    "id": "node-big-endian-crosscompile",
+    "version": "24.7.0",
+    "arch": "x86_64",
+    "bitness": 64,
+    "linux_url": "node-v24.7.0-linux-s390x.tar.gz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_path_skip": "node",
+    "activated_cfg": "NODE_JS_TEST=['qemu-s390x', '-L', '/usr/s390x-linux-gnu/', '%installation_dir%/bin/node']"
+  },
+
   {
     "id": "node",
     "version": "nightly",
@@ -461,19 +499,19 @@
   {
     "version": "main",
     "bitness": 64,
-    "uses": ["python-3.13.3-64bit", "llvm-git-main-64bit", "node-22.16.0-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
+    "uses": ["python-3.13.3-64bit", "llvm-git-main-64bit", "node-24.7.0-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
     "os": "win"
   },
   {
     "version": "main",
     "bitness": 64,
-    "uses": ["python-3.13.3-64bit", "llvm-git-main-64bit", "node-22.16.0-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
+    "uses": ["python-3.13.3-64bit", "llvm-git-main-64bit", "node-24.7.0-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
     "os": "macos"
   },
   {
     "version": "main",
     "bitness": 64,
-    "uses": ["llvm-git-main-64bit", "node-22.16.0-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
+    "uses": ["llvm-git-main-64bit", "node-24.7.0-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
     "os": "linux"
   },
   {
@@ -485,14 +523,14 @@
   {
     "version": "releases-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-22.16.0-64bit", "releases-%releases-tag%-64bit"],
+    "uses": ["node-24.7.0-64bit", "releases-%releases-tag%-64bit"],
     "os": "linux",
     "custom_install_script": "emscripten_npm_install"
   },
   {
     "version": "releases-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-22.16.0-64bit", "python-3.13.3-64bit", "releases-%releases-tag%-64bit"],
+    "uses": ["node-24.7.0-64bit", "python-3.13.3-64bit", "releases-%releases-tag%-64bit"],
     "os": "macos",
     "arch": "x86_64",
     "custom_install_script": "emscripten_npm_install"
@@ -500,7 +538,7 @@
   {
     "version": "releases-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-22.16.0-64bit", "python-3.13.3-64bit", "releases-%releases-tag%-64bit"],
+    "uses": ["node-24.7.0-64bit", "python-3.13.3-64bit", "releases-%releases-tag%-64bit"],
     "os": "macos",
     "arch": "arm64",
     "custom_install_script": "emscripten_npm_install"
@@ -508,7 +546,7 @@
   {
     "version": "releases-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-22.16.0-64bit", "python-3.13.3-64bit", "releases-%releases-tag%-64bit"],
+    "uses": ["node-24.7.0-64bit", "python-3.13.3-64bit", "releases-%releases-tag%-64bit"],
     "os": "win",
     "custom_install_script": "emscripten_npm_install"
   }
