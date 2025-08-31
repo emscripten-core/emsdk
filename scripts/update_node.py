@@ -29,8 +29,7 @@ suffixes = [
     '-darwin-arm64.tar.gz',
     '-linux-x64.tar.xz',
     '-linux-arm64.tar.xz',
-    '-linux-armv7l.tar.xz',
-    '-linux-s390x.tar.gz'
+    '-linux-s390x.tar.gz',
 ]
 
 for suffix in suffixes:
