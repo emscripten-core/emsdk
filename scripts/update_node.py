@@ -18,6 +18,10 @@ import os
 import shutil
 from zip import unzip_cmd, zip_cmd
 
+# When adjusting this version, visit
+# https://github.com/nodejs/node/blob/v24.x/BUILDING.md#platform-list
+# to verify minimum supported OS versions. Replace "v24.x" in the URL
+# with the version field.
 version = '24.7.0'
 base = f'https://nodejs.org/dist/v{version}/'
 upload_base = 'gs://webassembly/emscripten-releases-builds/deps/'
