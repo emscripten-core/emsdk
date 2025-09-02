@@ -18,19 +18,22 @@ import os
 import shutil
 from zip import unzip_cmd, zip_cmd
 
-version = '22.16.0'
+# When adjusting this version, visit
+# https://github.com/nodejs/node/blob/v24.x/BUILDING.md#platform-list
+# to verify minimum supported OS versions. Replace "v24.x" in the URL
+# with the version field.
+version = '24.7.0'
 base = f'https://nodejs.org/dist/v{version}/'
 upload_base = 'gs://webassembly/emscripten-releases-builds/deps/'
 
 suffixes = [
-    '-win-x86.zip',
     '-win-x64.zip',
     '-win-arm64.zip',
     '-darwin-x64.tar.gz',
     '-darwin-arm64.tar.gz',
     '-linux-x64.tar.xz',
     '-linux-arm64.tar.xz',
-    '-linux-armv7l.tar.xz',
+    '-linux-s390x.tar.gz',
 ]
 
 for suffix in suffixes:
