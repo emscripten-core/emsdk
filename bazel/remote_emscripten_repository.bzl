@@ -112,7 +112,7 @@ def create_toolchains(name, repo_name, exec_compatible_with):
         emscripten_binaries = repo_compiler_files_target,
         nodejs_bin = "@nodejs//:node",
         script_extension = select({
-            "@platforms//os:windows": "bat",
+            "@emsdk//emscripten_toolchain:windows_os": "bat",
             "//conditions:default": "sh",
         }),
     )
