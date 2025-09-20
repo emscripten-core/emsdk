@@ -41,3 +41,8 @@ py_binary(
     name = "wasm_binary",
     srcs = ["wasm_binary.py"],
 )
+
+config_setting(
+    name = "windows_os",
+    constraint_values = ["@platforms//os:windows"],
+)
