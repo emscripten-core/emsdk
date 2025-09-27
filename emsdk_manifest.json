@@ -346,6 +346,7 @@
     "version": "65.0",
     "bitness": 64,
     "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
+    "activated_cfg": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
     "activated_env": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
     "custom_install_script": "mozdownload_firefox"
   },
@@ -354,6 +355,7 @@
     "version": "latest",
     "bitness": 64,
     "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
+    "activated_cfg": "EMTEST_BROWSER=%actual_installation_dir%/firefox%.exe%",
     "activated_env": "EMTEST_BROWSER=%actual_installation_dir%/firefox%.exe%",
     "custom_install_script": "mozdownload_firefox",
     "custom_is_installed_script": "is_firefox_installed"
@@ -363,6 +365,7 @@
     "version": "daily",
     "bitness": 64,
     "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
+    "activated_cfg": "EMTEST_BROWSER=%actual_installation_dir%/firefox%.exe%",
     "activated_env": "EMTEST_BROWSER=%actual_installation_dir%/firefox%.exe%",
     "custom_install_script": "mozdownload_firefox",
     "custom_is_installed_script": "is_firefox_installed"

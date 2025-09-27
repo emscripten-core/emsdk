@@ -20,6 +20,7 @@ import stat
 import subprocess
 import sys
 import sysconfig
+import tarfile
 import zipfile
 if os.name == 'nt':
   try:
@@ -1265,7 +1266,9 @@ def mozdownload_firefox(tool):
   if WINDOWS:
     extension = 'exe'
   else:
-    extension = 'zip'
+    # Even when we ask .tar.xz, we might sometimes get .tar.bz2, depending on what is available
+    # on Firefox servers for the particular version. So prepare to handle both further down below.
+    extension = 'tar.xz'
 
   if tool.version == 'daily':
     scraper = FactoryScraper('daily', extension=extension)
@@ -1302,10 +1305,26 @@ def mozdownload_firefox(tool):
     # Uncompress the NSIS installer to 'install' Firefox
     run(['C:\\Program Files\\7-Zip\\7z.exe', 'x', '-y', filename, f'-o{root}'])
 
-    core_dir = os.path.join(root, 'core')
-    if os.path.isdir(core_dir):
-      for f in os.listdir(core_dir):
-        shutil.move(os.path.join(core_dir, f), os.path.dirname(core_dir))
+    collapse_subdir = os.path.join(root, 'core')
+  else:
+    collapse_subdir = os.path.join(root, 'firefox')
+
+  if filename.endswith('tar.bz2'):
+    with tarfile.open(filename, "r:bz2") as tar:
+      tar.extractall(path=root)
+  elif filename.endswith('tar.xz'):
+    with tarfile.open(filename, "r:xz") as tar:
+      tar.extractall(path=root)
+
+
+  if collapse_subdir and os.path.isdir(collapse_subdir):
+    # Rename the parent subdirectory first, since we will be handling a nested `firefox/firefox/`
+    collapse = collapse_subdir + '_bkp_renamed'
+    os.rename(collapse_subdir, collapse)
+    # Move all files up by one directory
+    for f in os.listdir(collapse):
+      shutil.move(os.path.join(collapse, f), os.path.dirname(collapse))
+
 
   os.remove(filename)
 
