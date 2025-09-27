@@ -1257,6 +1257,86 @@ cache_dir = %s
   return success
 
 
+def mozdownload_firefox(tool):
+  debug_print('mozdownload_firefox(' + str(tool) + ')')
+
+  # Use mozdownload to figure out what version of Firefox we are looking to get.
+  from mozdownload import FactoryScraper
+  if WINDOWS:
+    extension = 'exe'
+  else:
+    extension = 'zip'
+
+  if tool.version == 'daily':
+    scraper = FactoryScraper('daily', extension=extension)
+  else:
+    scraper = FactoryScraper('release', version=tool.version, extension=extension, locale='en-US')
+  print(scraper.url)
+  print(scraper.filename)
+
+  firefox_version = scraper.filename.split("firefox-")[1].split(".en-US")[0]
+  print(f'Target Firefox version: {firefox_version}')
+  if tool.version in ['latest', 'daily']:
+    pretend_version_dir = os.path.normpath(tool.installation_path())
+    orig_version = tool.version
+    tool.version = firefox_version
+    root = os.path.normpath(tool.installation_path())
+    tool.version = orig_version
+  else:
+    pretend_version_dir = None
+    root = os.path.normpath(tool.installation_path())
+
+  print(root)
+
+  # Check if already installed
+  firefox_exe = os.path.join(root, exe_suffix('firefox'))
+  if os.path.isfile(firefox_exe):
+    return True
+
+  filename = scraper.download()
+  print(filename)
+
+  os.makedirs(root, exist_ok=True)
+
+  if extension == 'exe':
+    # Uncompress the NSIS installer to 'install' Firefox
+    run(['C:\\Program Files\\7-Zip\\7z.exe', 'x', '-y', filename, f'-o{root}'])
+
+    core_dir = os.path.join(root, 'core')
+    if os.path.isdir(core_dir):
+      for f in os.listdir(core_dir):
+        shutil.move(os.path.join(core_dir, f), os.path.dirname(core_dir))
+
+  os.remove(filename)
+
+  # Write a policy file that prevents Firefox from auto-updating itself.
+  os.makedirs(os.path.join(root, 'distribution'), exist_ok=True)
+  open(os.path.join(root, 'distribution', 'policies.json'), 'w').write('''{
+  "policies": {
+    "AppAutoUpdate": false,
+    "DisableAppUpdate": true
+  }
+}''')
+
+  if os.path.isfile(firefox_exe) and pretend_version_dir:
+    print(pretend_version_dir)
+    os.makedirs(pretend_version_dir, exist_ok=True)
+    open(os.path.join(pretend_version_dir, 'actual.txt'), 'w').write(os.path.relpath(root, EMSDK_PATH))
+
+  # If we didn't get a Firefox executable, then installation failed.
+  return os.path.isfile(firefox_exe)
+
+
+def is_firefox_installed(tool):
+  actual_file = os.path.join(tool.installation_dir(), 'actual.txt')
+  if not os.path.isfile(actual_file):
+    return False
+
+  actual_installation_dir = sdk_path(open(actual_file).read())
+  firefox_exe = os.path.join(actual_installation_dir, exe_suffix('firefox'))
+  return os.path.isfile(firefox_exe)
+
+
 # Finds the newest installed version of a given tool
 def find_latest_installed_tool(name):
   for t in reversed(tools):
@@ -1683,6 +1763,12 @@ class Tool(object):
       str = str.replace('%cmake_build_type_on_win%', (decide_cmake_build_type(self) + '/') if WINDOWS else '')
     if '%installation_dir%' in str:
       str = str.replace('%installation_dir%', sdk_path(self.installation_dir()))
+    if '%actual_installation_dir%' in str:
+      actual_file = os.path.join(self.installation_dir(), 'actual.txt')
+      if os.path.isfile(actual_file):
+        str = str.replace('%actual_installation_dir%', sdk_path(open(actual_file).read()))
+      else:
+        str = str.replace('%actual_installation_dir%', '__NOT_INSTALLED__')
     if '%generator_prefix%' in str:
       str = str.replace('%generator_prefix%', cmake_generator_prefix())
     str = str.replace('%.exe%', '.exe' if WINDOWS else '')
@@ -1833,6 +1919,8 @@ class Tool(object):
     if hasattr(self, 'custom_is_installed_script'):
       if self.custom_is_installed_script == 'is_binaryen_installed':
         return is_binaryen_installed(self)
+      elif self.custom_is_installed_script == 'is_firefox_installed':
+        return is_firefox_installed(self)
       else:
         raise Exception('Unknown custom_is_installed_script directive "' + self.custom_is_installed_script + '"!')
 
@@ -1968,7 +2056,8 @@ class Tool(object):
       'build_llvm': build_llvm,
       'build_ninja': build_ninja,
       'build_ccache': build_ccache,
-      'download_node_nightly': download_node_nightly
+      'download_node_nightly': download_node_nightly,
+      'mozdownload_firefox': mozdownload_firefox
     }
     if hasattr(self, 'custom_install_script') and self.custom_install_script in custom_install_scripts:
       success = custom_install_scripts[self.custom_install_script](self)
@@ -1986,7 +2075,7 @@ class Tool(object):
     if hasattr(self, 'custom_install_script'):
       if self.custom_install_script == 'emscripten_npm_install':
         success = emscripten_npm_install(self, self.installation_path())
-      elif self.custom_install_script in ('build_llvm', 'build_ninja', 'build_ccache', 'download_node_nightly'):
+      elif self.custom_install_script in ('build_llvm', 'build_ninja', 'build_ccache', 'download_node_nightly', 'mozdownload_firefox'):
         # 'build_llvm' is a special one that does the download on its
         # own, others do the download manually.
         pass
