@@ -1268,6 +1268,8 @@ def mozdownload_firefox(tool):
   from mozdownload import FactoryScraper
   if WINDOWS:
     extension = 'exe'
+  elif MACOS:
+    extension = 'dmg'
   else:
     # Even when we ask .tar.xz, we might sometimes get .tar.bz2, depending on what is available
     # on Firefox servers for the particular version. So prepare to handle both further down below.
@@ -1299,30 +1301,39 @@ def mozdownload_firefox(tool):
   print(root)
 
   # Check if already installed
-  firefox_exe = os.path.join(root, exe_suffix('firefox'))
+  exe_dir = os.path.join(root, 'Contents', 'MacOS') if MACOS else root
+  firefox_exe = os.path.join(exe_dir, exe_suffix('firefox'))
   if os.path.isfile(firefox_exe):
     return True
 
   filename = scraper.download()
   print(filename)
 
-  os.makedirs(root, exist_ok=True)
+  if not MACOS:
+    os.makedirs(root, exist_ok=True)
 
   if extension == 'exe':
     # Uncompress the NSIS installer to 'install' Firefox
     run(['C:\\Program Files\\7-Zip\\7z.exe', 'x', '-y', filename, f'-o{root}'])
 
-    collapse_subdir = os.path.join(root, 'core')
-  else:
-    collapse_subdir = os.path.join(root, 'firefox')
-
-  if filename.endswith('tar.bz2'):
+  if filename.endswith('.tar.bz2'):
     with tarfile.open(filename, "r:bz2") as tar:
       tar.extractall(path=root)
-  elif filename.endswith('tar.xz'):
+    collapse_subdir = os.path.join(root, 'firefox')
+  elif filename.endswith('.tar.xz'):
     with tarfile.open(filename, "r:xz") as tar:
       tar.extractall(path=root)
-
+    collapse_subdir = os.path.join(root, 'firefox')
+  elif filename.endswith('.dmg'):
+    mount_point = '/Volumes/Firefox'
+    if os.path.exists(mount_point):
+      raise Exception('Previous mount of Firefox already exists, unable to proceed.')
+    run(['hdiutil', 'attach', filename])
+    shutil.copytree(os.path.join(mount_point, 'Firefox.app'), root)
+    run(['hdiutil', 'detach', mount_point])
+    collapse_subdir = None
+  elif filename.endswith('.exe'):
+    collapse_subdir = os.path.join(root, 'core')
 
   if collapse_subdir and os.path.isdir(collapse_subdir):
     # Rename the parent subdirectory first, since we will be handling a nested `firefox/firefox/`
@@ -1332,12 +1343,15 @@ def mozdownload_firefox(tool):
     for f in os.listdir(collapse):
       shutil.move(os.path.join(collapse, f), os.path.dirname(collapse))
 
-
   os.remove(filename)
 
   # Write a policy file that prevents Firefox from auto-updating itself.
-  os.makedirs(os.path.join(root, 'distribution'), exist_ok=True)
-  open(os.path.join(root, 'distribution', 'policies.json'), 'w').write('''{
+  if MACOS:
+    distribution_path = os.path.join(root, 'Contents', 'Resources', 'distribution')
+  else:
+    distribution_path = os.path.join(root, 'distribution')
+  os.makedirs(distribution_path, exist_ok=True)
+  open(os.path.join(distribution_path, 'policies.json'), 'w').write('''{
   "policies": {
     "AppAutoUpdate": false,
     "DisableAppUpdate": true
@@ -1846,20 +1860,29 @@ class Tool(object):
   # Returns the configuration item that needs to be added to .emscripten to make
   # this Tool active for the current user.
   def activated_config(self):
-    if not hasattr(self, 'activated_cfg'):
+    if MACOS and hasattr(self, 'mac_activated_cfg'):
+      activated_cfg = self.mac_activated_cfg
+    elif hasattr(self, 'activated_cfg'):
+      activated_cfg = self.activated_cfg
+    else:
       return {}
+
     config = OrderedDict()
-    expanded = to_unix_path(self.expand_vars(self.activated_cfg))
+    expanded = to_unix_path(self.expand_vars(activated_cfg))
     for specific_cfg in expanded.split(';'):
       name, value = specific_cfg.split('=')
       config[name] = value.strip("'")
     return config
 
   def activated_environment(self):
-    if hasattr(self, 'activated_env'):
-      return self.expand_vars(self.activated_env).split(';')
+    if MACOS and hasattr(self, 'mac_activated_env'):
+      activated_env = self.mac_activated_env
+    elif hasattr(self, 'activated_env'):
+      activated_env = self.activated_env
     else:
       return []
+
+    return self.expand_vars(activated_env).split(';')
 
   def compatible_with_this_arch(self):
     if hasattr(self, 'arch'):
