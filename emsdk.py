@@ -1278,20 +1278,20 @@ def mozdownload_firefox(tool):
     # on Firefox servers for the particular version. So prepare to handle both further down below.
     extension = 'tar.xz'
 
-  if tool.version == 'daily':
-    scraper = FactoryScraper('daily', extension=extension)
+  if tool.version == 'nightly':
+    scraper = FactoryScraper('nightly', extension=extension)
   else:
     scraper = FactoryScraper('release', version=tool.version, extension=extension, locale='en-US')
   print(scraper.url)
   print(scraper.filename)
 
-  if tool.version == 'daily':
+  if tool.version == 'nightly':
     firefox_version = os.path.basename(scraper.filename).split(".en-US")[0]
   else:
     firefox_version = os.path.basename(scraper.filename).split("firefox-")[1].split(".en-US")[0]
 
   print('Target Firefox version: ' + firefox_version)
-  if tool.version in ['latest', 'daily']:
+  if tool.version in ['latest', 'nightly']:
     pretend_version_dir = os.path.normpath(tool.installation_path())
     orig_version = tool.version
     tool.version = firefox_version
@@ -1328,8 +1328,8 @@ def mozdownload_firefox(tool):
       tar.extractall(path=root)
     collapse_subdir = os.path.join(root, 'firefox')
   elif filename.endswith('.dmg'):
-    mount_point = '/Volumes/Firefox Nightly' if tool.version == 'daily' else '/Volumes/Firefox' 
-    app_name = 'Firefox.app' if tool.version == 'daily' else 'Firefox Nightly.app'
+    mount_point = '/Volumes/Firefox Nightly' if tool.version == 'nightly' else '/Volumes/Firefox'
+    app_name = 'Firefox.app' if tool.version == 'nightly' else 'Firefox Nightly.app'
     # If a previous mount point exists, detach it first
     if os.path.exists(mount_point):
       run(['hdiutil', 'detach', mount_point])
