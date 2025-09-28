@@ -1373,7 +1373,8 @@ def is_firefox_installed(tool):
     return False
 
   actual_installation_dir = sdk_path(open(actual_file).read())
-  firefox_exe = os.path.join(actual_installation_dir, exe_suffix('firefox'))
+  exe_dir = os.path.join(actual_installation_dir, 'Contents', 'MacOS') if MACOS else actual_installation_dir
+  firefox_exe = os.path.join(exe_dir, exe_suffix('firefox'))
   return os.path.isfile(firefox_exe)
 
 
