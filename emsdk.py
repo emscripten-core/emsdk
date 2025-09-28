@@ -1264,7 +1264,7 @@ def mozdownload_firefox(tool):
   # Use mozdownload to figure out what version of Firefox we are looking to get.
   try:
     from mozdownload import FactoryScraper
-  except:
+  except ModuleNotFoundError:
     # Install mozdownload into the current python interpreter so that it can be imported.
     subprocess.check_call([sys.executable, "-m", "pip", "install", "mozdownload"])
     from mozdownload import FactoryScraper
@@ -1290,7 +1290,7 @@ def mozdownload_firefox(tool):
   else:
     firefox_version = os.path.basename(scraper.filename).split("firefox-")[1].split(".en-US")[0]
 
-  print(f'Target Firefox version: {firefox_version}')
+  print('Target Firefox version: ' + firefox_version)
   if tool.version in ['latest', 'daily']:
     pretend_version_dir = os.path.normpath(tool.installation_path())
     orig_version = tool.version
