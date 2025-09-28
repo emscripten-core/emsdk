@@ -1303,11 +1303,18 @@ def mozdownload_firefox(tool):
 
   print(root)
 
+  def save_pretend_version():
+    if os.path.isfile(firefox_exe) and pretend_version_dir:
+      print(pretend_version_dir)
+      os.makedirs(pretend_version_dir, exist_ok=True)
+      open(os.path.join(pretend_version_dir, 'actual.txt'), 'w').write(os.path.relpath(root, EMSDK_PATH))
+
   # Check if already installed
   exe_dir = os.path.join(root, 'Contents', 'MacOS') if MACOS else root
   firefox_exe = os.path.join(exe_dir, exe_suffix('firefox'))
   if os.path.isfile(firefox_exe):
     print(firefox_exe + ' is already installed, skipping..')
+    save_pretend_version()
     return True
 
   filename = scraper.download()
@@ -1371,10 +1378,7 @@ def mozdownload_firefox(tool):
   }
 }''')
 
-  if os.path.isfile(firefox_exe) and pretend_version_dir:
-    print(pretend_version_dir)
-    os.makedirs(pretend_version_dir, exist_ok=True)
-    open(os.path.join(pretend_version_dir, 'actual.txt'), 'w').write(os.path.relpath(root, EMSDK_PATH))
+  save_pretend_version()
 
   # If we didn't get a Firefox executable, then installation failed.
   return os.path.isfile(firefox_exe)
