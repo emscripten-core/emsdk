@@ -1261,6 +1261,9 @@ cache_dir = %s
 def mozdownload_firefox(tool):
   debug_print('mozdownload_firefox(' + str(tool) + ')')
 
+  # Install mozdownload into the current python interpreter so that it can be imported.
+  subprocess.check_call([sys.executable, "-m", "pip", "install", "mozdownload"])
+
   # Use mozdownload to figure out what version of Firefox we are looking to get.
   from mozdownload import FactoryScraper
   if WINDOWS:
