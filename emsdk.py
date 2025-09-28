@@ -1328,7 +1328,8 @@ def mozdownload_firefox(tool):
       tar.extractall(path=root)
     collapse_subdir = os.path.join(root, 'firefox')
   elif filename.endswith('.dmg'):
-    mount_point = '/Volumes/Firefox'
+    mount_point = '/Volumes/Firefox Nightly' if tool.version == 'daily' else '/Volumes/Firefox' 
+    app_name = 'Firefox.app' if tool.version == 'daily' else 'Firefox Nightly.app'
     # If a previous mount point exists, detach it first
     if os.path.exists(mount_point):
       run(['hdiutil', 'detach', mount_point])
@@ -1337,9 +1338,7 @@ def mozdownload_firefox(tool):
       raise Exception('Previous mount of Firefox already exists, unable to proceed.')
 
     run(['hdiutil', 'attach', filename])
-    firefox_dir = os.path.join(mount_point, 'Firefox.app')
-    if not os.path.isdir(firefox_dir):
-      firefox_dir = os.path.join(mount_point, 'Firefox Nightly.app')
+    firefox_dir = os.path.join(mount_point, app_name)
     if not os.path.isdir(firefox_dir):
       raise Exception('Unable to find Firefox directory inside app image.')
     shutil.copytree(firefox_dir, root)
