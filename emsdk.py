@@ -1279,7 +1279,7 @@ def mozdownload_firefox(tool):
     extension = 'tar.xz'
 
   if tool.version == 'nightly':
-    scraper = FactoryScraper('nightly', extension=extension)
+    scraper = FactoryScraper('daily', extension=extension)
   else:
     scraper = FactoryScraper('release', version=tool.version, extension=extension, locale='en-US')
   print(scraper.url)
