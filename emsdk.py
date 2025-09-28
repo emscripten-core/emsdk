@@ -1307,6 +1307,7 @@ def mozdownload_firefox(tool):
   exe_dir = os.path.join(root, 'Contents', 'MacOS') if MACOS else root
   firefox_exe = os.path.join(exe_dir, exe_suffix('firefox'))
   if os.path.isfile(firefox_exe):
+    print(firefox_exe + ' is already installed, skipping..')
     return True
 
   filename = scraper.download()

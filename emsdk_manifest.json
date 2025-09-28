@@ -525,8 +525,8 @@
     "git_branch": "dummy field, to instruct emsdk to attempt to reinstall this tool even if it is installed, to check for new version",
     "activated_cfg": "EMTEST_BROWSER=%actual_installation_dir%/firefox%.exe%",
     "activated_env": "EMTEST_BROWSER=%actual_installation_dir%/firefox%.exe%",
-    "mac_activated_cfg": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "mac_activated_env": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
+    "mac_activated_cfg": "EMTEST_BROWSER=%actual_installation_dir%/Contents/MacOS/firefox%.exe%",
+    "mac_activated_env": "EMTEST_BROWSER=%actual_installation_dir%/Contents/MacOS/firefox%.exe%",
     "custom_install_script": "mozdownload_firefox",
     "custom_is_installed_script": "is_firefox_installed"
   },
@@ -538,8 +538,8 @@
     "git_branch": "dummy field, to instruct emsdk to attempt to reinstall this tool even if it is installed, to check for new version",
     "activated_cfg": "EMTEST_BROWSER=%actual_installation_dir%/firefox%.exe%",
     "activated_env": "EMTEST_BROWSER=%actual_installation_dir%/firefox%.exe%",
-    "mac_activated_cfg": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "mac_activated_env": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
+    "mac_activated_cfg": "EMTEST_BROWSER=%actual_installation_dir%/Contents/MacOS/firefox%.exe%",
+    "mac_activated_env": "EMTEST_BROWSER=%actual_installation_dir%/Contents/MacOS/firefox%.exe%",
     "custom_install_script": "mozdownload_firefox",
     "custom_is_installed_script": "is_firefox_installed"
   },
@@ -551,8 +551,8 @@
     "git_branch": "dummy field, to instruct emsdk to attempt to reinstall this tool even if it is installed, to check for new version",
     "activated_cfg": "EMTEST_BROWSER=%actual_installation_dir%/firefox%.exe%",
     "activated_env": "EMTEST_BROWSER=%actual_installation_dir%/firefox%.exe%",
-    "mac_activated_cfg": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "mac_activated_env": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
+    "mac_activated_cfg": "EMTEST_BROWSER=%actual_installation_dir%/Contents/MacOS/firefox%.exe%",
+    "mac_activated_env": "EMTEST_BROWSER=%actual_installation_dir%/Contents/MacOS/firefox%.exe%",
     "custom_install_script": "mozdownload_firefox",
     "custom_is_installed_script": "is_firefox_installed"
   },
