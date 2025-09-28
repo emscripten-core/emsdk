@@ -1291,7 +1291,7 @@ def mozdownload_firefox(tool):
     firefox_version = os.path.basename(scraper.filename).split("firefox-")[1].split(".en-US")[0]
 
   print('Target Firefox version: ' + firefox_version)
-  if tool.version in ['latest', 'nightly']:
+  if tool.version in ['latest', 'latest-esr', 'nightly']:
     pretend_version_dir = os.path.normpath(tool.installation_path())
     orig_version = tool.version
     tool.version = firefox_version
