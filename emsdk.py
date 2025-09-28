@@ -1329,7 +1329,7 @@ def mozdownload_firefox(tool):
     collapse_subdir = os.path.join(root, 'firefox')
   elif filename.endswith('.dmg'):
     mount_point = '/Volumes/Firefox Nightly' if tool.version == 'nightly' else '/Volumes/Firefox'
-    app_name = 'Firefox.app' if tool.version == 'nightly' else 'Firefox Nightly.app'
+    app_name = 'Firefox Nightly.app' if tool.version == 'nightly' else 'Firefox.app'
     # If a previous mount point exists, detach it first
     if os.path.exists(mount_point):
       run(['hdiutil', 'detach', mount_point])
