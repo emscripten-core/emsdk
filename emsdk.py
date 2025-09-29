@@ -1328,7 +1328,7 @@ def download_firefox(tool):
     # Uncompress the NSIS installer to 'install' Firefox
     run(['C:\\Program Files\\7-Zip\\7z.exe', 'x', '-y', filename, '-o' + root])
 
-  if '.tar.' in filename:.endswith('.tar.bz2') or filename.endswith('.tar.xz'):
+  if '.tar.' in filename:
     if filename.endswith('.tar.bz2'):
       tar_type = 'r:bz2'
     elif filename.endswith('.tar.xz'):
