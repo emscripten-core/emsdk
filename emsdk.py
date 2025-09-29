@@ -1258,14 +1258,14 @@ cache_dir = %s
   return success
 
 
-def mozdownload_firefox(tool):
-  debug_print('mozdownload_firefox(' + str(tool) + ')')
+def download_firefox(tool):
+  debug_print('download_firefox(' + str(tool) + ')')
 
-  # Use mozdownload to figure out what version of Firefox we are looking to get.
+  # Use mozdownload to acquire Firefox versions.
   try:
     from mozdownload import FactoryScraper
   except ImportError:
-    # Install mozdownload into the current python interpreter so that it can be imported.
+    # If mozdownload is not available, invoke pip to install it.
     subprocess.check_call([sys.executable, "-m", "pip", "install", "mozdownload"])
     from mozdownload import FactoryScraper
 
@@ -1274,16 +1274,15 @@ def mozdownload_firefox(tool):
   elif MACOS:
     extension = 'dmg'
   else:
-    # Even when we ask .tar.xz, we might sometimes get .tar.bz2, depending on what is available
-    # on Firefox servers for the particular version. So prepare to handle both further down below.
+    # N.b. on Linux even when we ask .tar.xz, we might sometimes get .tar.bz2,
+    # depending on what is available on Firefox servers for the particular
+    # version. So prepare to handle both further down below.
     extension = 'tar.xz'
 
   if tool.version == 'nightly':
     scraper = FactoryScraper('daily', extension=extension)
   else:
     scraper = FactoryScraper('release', version=tool.version, extension=extension, locale='en-US')
-  print(scraper.url)
-  print(scraper.filename)
 
   if tool.version == 'nightly':
     firefox_version = os.path.basename(scraper.filename).split(".en-US")[0]
@@ -1301,24 +1300,26 @@ def mozdownload_firefox(tool):
     pretend_version_dir = None
     root = os.path.normpath(tool.installation_path())
 
-  print(root)
-
-  def save_pretend_version():
+  # For moving installer packages, e.g. "nightly", "latest", "latest-esr",
+  # store a text file to specify the actual installation directory.
+  def save_actual_version():
     if os.path.isfile(firefox_exe) and pretend_version_dir:
       print(pretend_version_dir)
       os.makedirs(pretend_version_dir, exist_ok=True)
       open(os.path.join(pretend_version_dir, 'actual.txt'), 'w').write(os.path.relpath(root, EMSDK_PATH))
 
   # Check if already installed
+  print('Firefox installation root directory: ' + root)
   exe_dir = os.path.join(root, 'Contents', 'MacOS') if MACOS else root
   firefox_exe = os.path.join(exe_dir, exe_suffix('firefox'))
   if os.path.isfile(firefox_exe):
     print(firefox_exe + ' is already installed, skipping..')
-    save_pretend_version()
+    save_actual_version()
     return True
 
+  print('Downloading Firefox from ' + scraper.url)
   filename = scraper.download()
-  print(filename)
+  print('Finished downloading ' + filename)
 
   if not MACOS:
     os.makedirs(root, exist_ok=True)
@@ -1327,42 +1328,56 @@ def mozdownload_firefox(tool):
     # Uncompress the NSIS installer to 'install' Firefox
     run(['C:\\Program Files\\7-Zip\\7z.exe', 'x', '-y', filename, '-o' + root])
 
-  if filename.endswith('.tar.bz2'):
-    with tarfile.open(filename, "r:bz2") as tar:
+  if '.tar.' in filename:.endswith('.tar.bz2') or filename.endswith('.tar.xz'):
+    if filename.endswith('.tar.bz2'):
+      tar_type = 'r:bz2'
+    elif filename.endswith('.tar.xz'):
+      tar_type = 'r:xz'
+    else:
+      raise Exception('Unknown archive type!')
+
+    with tarfile.open(filename, tar_type) as tar:
       tar.extractall(path=root)
     collapse_subdir = os.path.join(root, 'firefox')
-  elif filename.endswith('.tar.xz'):
-    with tarfile.open(filename, "r:xz") as tar:
-      tar.extractall(path=root)
-    collapse_subdir = os.path.join(root, 'firefox')
+
   elif filename.endswith('.dmg'):
     mount_point = '/Volumes/Firefox Nightly' if tool.version == 'nightly' else '/Volumes/Firefox'
     app_name = 'Firefox Nightly.app' if tool.version == 'nightly' else 'Firefox.app'
+
     # If a previous mount point exists, detach it first
     if os.path.exists(mount_point):
       run(['hdiutil', 'detach', mount_point])
+
     # Abort if detaching was not successful
     if os.path.exists(mount_point):
-      raise Exception('Previous mount of Firefox already exists, unable to proceed.')
+      raise Exception('Previous mount of Firefox already exists at "' + mount_point + '", unable to proceed.')
 
+    # Mount the archive
     run(['hdiutil', 'attach', filename])
     firefox_dir = os.path.join(mount_point, app_name)
     if not os.path.isdir(firefox_dir):
-      raise Exception('Unable to find Firefox directory inside app image.')
+      raise Exception('Unable to find Firefox directory "' + firefox_dir + '" inside app image.')
+
+    # And install by copying the files from the archive
     shutil.copytree(firefox_dir, root)
     run(['hdiutil', 'detach', mount_point])
     collapse_subdir = None
+
   elif filename.endswith('.exe'):
+    # NSIS installer package has a core/ directory, remove it as redundant.
     collapse_subdir = os.path.join(root, 'core')
 
+  # Remove a redundant subdirectory by moving installed files up one directory.
   if collapse_subdir and os.path.isdir(collapse_subdir):
     # Rename the parent subdirectory first, since we will be handling a nested `firefox/firefox/`
     collapse = collapse_subdir + '_bkp_renamed'
     os.rename(collapse_subdir, collapse)
+
     # Move all files up by one directory
     for f in os.listdir(collapse):
       shutil.move(os.path.join(collapse, f), os.path.dirname(collapse))
 
+  # Original installer is now done.
   os.remove(filename)
 
   # Write a policy file that prevents Firefox from auto-updating itself.
@@ -1378,7 +1393,7 @@ def mozdownload_firefox(tool):
   }
 }''')
 
-  save_pretend_version()
+  save_actual_version()
 
   # If we didn't get a Firefox executable, then installation failed.
   return os.path.isfile(firefox_exe)
@@ -2124,7 +2139,7 @@ class Tool(object):
       'build_ninja': build_ninja,
       'build_ccache': build_ccache,
       'download_node_nightly': download_node_nightly,
-      'mozdownload_firefox': mozdownload_firefox
+      'download_firefox': download_firefox
     }
     if hasattr(self, 'custom_install_script') and self.custom_install_script in custom_install_scripts:
       success = custom_install_scripts[self.custom_install_script](self)
@@ -2142,7 +2157,7 @@ class Tool(object):
     if hasattr(self, 'custom_install_script'):
       if self.custom_install_script == 'emscripten_npm_install':
         success = emscripten_npm_install(self, self.installation_path())
-      elif self.custom_install_script in ('build_llvm', 'build_ninja', 'build_ccache', 'download_node_nightly', 'mozdownload_firefox'):
+      elif self.custom_install_script in ('build_llvm', 'build_ninja', 'build_ccache', 'download_node_nightly', 'download_firefox'):
         # 'build_llvm' is a special one that does the download on its
         # own, others do the download manually.
         pass

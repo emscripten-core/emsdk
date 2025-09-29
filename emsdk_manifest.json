@@ -350,29 +350,7 @@
     "activated_env": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
     "mac_activated_cfg": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
     "mac_activated_env": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "custom_install_script": "mozdownload_firefox"
-  },
-  {
-    "id": "firefox",
-    "version": "90.0",
-    "bitness": 64,
-    "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
-    "activated_cfg": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
-    "activated_env": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
-    "mac_activated_cfg": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "mac_activated_env": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "custom_install_script": "mozdownload_firefox"
-  },
-  {
-    "id": "firefox",
-    "version": "100.0",
-    "bitness": 64,
-    "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
-    "activated_cfg": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
-    "activated_env": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
-    "mac_activated_cfg": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "mac_activated_env": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "custom_install_script": "mozdownload_firefox"
+    "custom_install_script": "download_firefox"
   },
   {
     "id": "firefox",
@@ -383,7 +361,7 @@
     "activated_env": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
     "mac_activated_cfg": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
     "mac_activated_env": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "custom_install_script": "mozdownload_firefox"
+    "custom_install_script": "download_firefox"
   },
   {
     "id": "firefox",
@@ -394,7 +372,7 @@
     "activated_env": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
     "mac_activated_cfg": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
     "mac_activated_env": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "custom_install_script": "mozdownload_firefox"
+    "custom_install_script": "download_firefox"
   },
   {
     "id": "firefox",
@@ -405,7 +383,7 @@
     "activated_env": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
     "mac_activated_cfg": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
     "mac_activated_env": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "custom_install_script": "mozdownload_firefox"
+    "custom_install_script": "download_firefox"
   },
   {
     "id": "firefox",
@@ -416,7 +394,7 @@
     "activated_env": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
     "mac_activated_cfg": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
     "mac_activated_env": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "custom_install_script": "mozdownload_firefox"
+    "custom_install_script": "download_firefox"
   },
   {
     "id": "firefox",
@@ -427,7 +405,7 @@
     "activated_env": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
     "mac_activated_cfg": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
     "mac_activated_env": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "custom_install_script": "mozdownload_firefox"
+    "custom_install_script": "download_firefox"
   },
   {
     "id": "firefox",
@@ -438,7 +416,7 @@
     "activated_env": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
     "mac_activated_cfg": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
     "mac_activated_env": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "custom_install_script": "mozdownload_firefox"
+    "custom_install_script": "download_firefox"
   },
   {
     "id": "firefox",
@@ -449,73 +427,7 @@
     "activated_env": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
     "mac_activated_cfg": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
     "mac_activated_env": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "custom_install_script": "mozdownload_firefox"
-  },
-  {
-    "id": "firefox",
-    "version": "110.0",
-    "bitness": 64,
-    "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
-    "activated_cfg": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
-    "activated_env": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
-    "mac_activated_cfg": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "mac_activated_env": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "custom_install_script": "mozdownload_firefox"
-  },
-  {
-    "id": "firefox",
-    "version": "120.0",
-    "bitness": 64,
-    "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
-    "activated_cfg": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
-    "activated_env": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
-    "mac_activated_cfg": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "mac_activated_env": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "custom_install_script": "mozdownload_firefox"
-  },
-  {
-    "id": "firefox",
-    "version": "130.0",
-    "bitness": 64,
-    "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
-    "activated_cfg": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
-    "activated_env": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
-    "mac_activated_cfg": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "mac_activated_env": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "custom_install_script": "mozdownload_firefox"
-  },
-  {
-    "id": "firefox",
-    "version": "125.0.1",
-    "bitness": 64,
-    "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
-    "activated_cfg": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
-    "activated_env": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
-    "mac_activated_cfg": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "mac_activated_env": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "custom_install_script": "mozdownload_firefox"
-  },
-  {
-    "id": "firefox",
-    "version": "122.0",
-    "bitness": 64,
-    "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
-    "activated_cfg": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
-    "activated_env": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
-    "mac_activated_cfg": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "mac_activated_env": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "custom_install_script": "mozdownload_firefox"
-  },
-  {
-    "id": "firefox",
-    "version": "123.0",
-    "bitness": 64,
-    "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
-    "activated_cfg": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
-    "activated_env": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
-    "mac_activated_cfg": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "mac_activated_env": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "custom_install_script": "mozdownload_firefox"
+    "custom_install_script": "download_firefox"
   },
   {
     "id": "firefox",
@@ -527,7 +439,7 @@
     "activated_env": "EMTEST_BROWSER=%actual_installation_dir%/firefox%.exe%",
     "mac_activated_cfg": "EMTEST_BROWSER=%actual_installation_dir%/Contents/MacOS/firefox%.exe%",
     "mac_activated_env": "EMTEST_BROWSER=%actual_installation_dir%/Contents/MacOS/firefox%.exe%",
-    "custom_install_script": "mozdownload_firefox",
+    "custom_install_script": "download_firefox",
     "custom_is_installed_script": "is_firefox_installed"
   },
   {
@@ -540,7 +452,7 @@
     "activated_env": "EMTEST_BROWSER=%actual_installation_dir%/firefox%.exe%",
     "mac_activated_cfg": "EMTEST_BROWSER=%actual_installation_dir%/Contents/MacOS/firefox%.exe%",
     "mac_activated_env": "EMTEST_BROWSER=%actual_installation_dir%/Contents/MacOS/firefox%.exe%",
-    "custom_install_script": "mozdownload_firefox",
+    "custom_install_script": "download_firefox",
     "custom_is_installed_script": "is_firefox_installed"
   },
   {
@@ -553,7 +465,7 @@
     "activated_env": "EMTEST_BROWSER=%actual_installation_dir%/firefox%.exe%",
     "mac_activated_cfg": "EMTEST_BROWSER=%actual_installation_dir%/Contents/MacOS/firefox%.exe%",
     "mac_activated_env": "EMTEST_BROWSER=%actual_installation_dir%/Contents/MacOS/firefox%.exe%",
-    "custom_install_script": "mozdownload_firefox",
+    "custom_install_script": "download_firefox",
     "custom_is_installed_script": "is_firefox_installed"
   },
   {
@@ -566,7 +478,7 @@
     "activated_env": "EMTEST_BROWSER=%actual_installation_dir%/firefox%.exe%",
     "mac_activated_cfg": "EMTEST_BROWSER=%actual_installation_dir%/Contents/MacOS/firefox%.exe%",
     "mac_activated_env": "EMTEST_BROWSER=%actual_installation_dir%/Contents/MacOS/firefox%.exe%",
-    "custom_install_script": "mozdownload_firefox",
+    "custom_install_script": "download_firefox",
     "custom_is_installed_script": "is_firefox_installed"
   },
 
