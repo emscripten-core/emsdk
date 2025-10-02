@@ -343,7 +343,29 @@
 
   {
     "id": "firefox",
-    "version": "79.0",
+    "version": "65.0",
+    "bitness": 64,
+    "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
+    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/firefox%.exe%",
+    "activated_env": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
+    "mac_activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
+    "mac_activated_env": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
+    "custom_install_script": "download_firefox"
+  },
+  {
+    "id": "firefox",
+    "version": "68.12.0esr",
+    "bitness": 64,
+    "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
+    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/firefox%.exe%",
+    "activated_env": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
+    "mac_activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
+    "mac_activated_env": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
+    "custom_install_script": "download_firefox"
+  },
+  {
+    "id": "firefox",
+    "version": "78.15.0esr",
     "bitness": 64,
     "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
     "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/firefox%.exe%",
