@@ -1370,12 +1370,15 @@ def download_firefox(tool):
   # Remove a redundant subdirectory by moving installed files up one directory.
   if collapse_subdir and os.path.isdir(collapse_subdir):
     # Rename the parent subdirectory first, since we will be handling a nested `firefox/firefox/`
-    collapse = collapse_subdir + '_bkp_renamed'
+    collapse = collapse_subdir + '_temp_renamed'
     os.rename(collapse_subdir, collapse)
 
     # Move all files up by one directory
     for f in os.listdir(collapse):
       shutil.move(os.path.join(collapse, f), os.path.dirname(collapse))
+
+    # The root directory should now be empty
+    os.rmdir(collapse)
 
   # Original installer is now done.
   os.remove(filename)
