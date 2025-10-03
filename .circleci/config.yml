@@ -138,22 +138,17 @@ jobs:
       name: win/server-2019
       shell: bash.exe
     environment:
-      # We need python installed before we can test anytyhing.
-      # There seems to be undocument copy of python installed here. Hopefully
-      # if this disappears there will be another way of getting a re-installed
-      # version.
-      PYTHON_BIN: "C:\\Python27amd64"
       PYTHONUNBUFFERED: "1"
       EMSDK_NOTTY: "1"
     steps:
       - checkout
-      - run:
-          name: Add python to bash path
-          command: echo "export PATH=\"$PATH:/c/python27amd64/\"" >> $BASH_ENV
+      - run: where python
+
       - run:
           name: Install latest
           shell: cmd.exe
           command: test\test.bat
+
       - run:
           name: test.py
           command: |
