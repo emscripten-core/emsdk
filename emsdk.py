@@ -1279,10 +1279,14 @@ def download_firefox(tool):
     # version. So prepare to handle both further down below.
     extension = 'tar.xz'
 
+  platform = None
+  if LINUX and 'arm' in ARCH:
+    platform = 'linux-arm64'
+
   if tool.version == 'nightly':
-    scraper = FactoryScraper('daily', extension=extension)
+    scraper = FactoryScraper('daily', extension=extension, locale='en-US', platform=platform)
   else:
-    scraper = FactoryScraper('release', version=tool.version, extension=extension, locale='en-US')
+    scraper = FactoryScraper('release', extension=extension, locale='en-US', platform=platform, version=tool.version)
 
   if tool.version == 'nightly':
     firefox_version = os.path.basename(scraper.filename).split(".en-US")[0]
