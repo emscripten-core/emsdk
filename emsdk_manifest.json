@@ -350,7 +350,8 @@
     "activated_env": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
     "mac_activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
     "mac_activated_env": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "custom_install_script": "download_firefox"
+    "custom_install_script": "download_firefox",
+    "is_old": true
   },
   {
     "id": "firefox",
@@ -361,7 +362,8 @@
     "activated_env": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
     "mac_activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
     "mac_activated_env": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "custom_install_script": "download_firefox"
+    "custom_install_script": "download_firefox",
+    "is_old": true
   },
   {
     "id": "firefox",
@@ -372,7 +374,8 @@
     "activated_env": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
     "mac_activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
     "mac_activated_env": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "custom_install_script": "download_firefox"
+    "custom_install_script": "download_firefox",
+    "is_old": true
   },
   {
     "id": "firefox",
@@ -383,7 +386,8 @@
     "activated_env": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
     "mac_activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
     "mac_activated_env": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "custom_install_script": "download_firefox"
+    "custom_install_script": "download_firefox",
+    "is_old": true
   },
   {
     "id": "firefox",
@@ -394,7 +398,8 @@
     "activated_env": "EMTEST_BROWSER=%installation_dir%/firefox%.exe%",
     "mac_activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
     "mac_activated_env": "EMTEST_BROWSER=%installation_dir%/Contents/MacOS/firefox%.exe%",
-    "custom_install_script": "download_firefox"
+    "custom_install_script": "download_firefox",
+    "is_old": true
   },
   {
     "id": "firefox",
