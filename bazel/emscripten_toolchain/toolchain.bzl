@@ -408,7 +408,7 @@ def _impl(ctx):
             implies = ["profiling"],
         ),
 
-        # Turns on full debug info (-g4).
+        # Turns on full debug info (-gsource-map).
         feature(name = "full_debug_info"),
 
         # Enables the use of "Emscripten" Pthread implementation.
@@ -667,7 +667,7 @@ def _impl(ctx):
             actions = all_compile_actions +
                       all_link_actions,
             flags = [
-                "-g4",
+                "-gsource-map",
                 "-fsanitize=undefined",
                 "-O1",
                 "-DUNDEFINED_BEHAVIOR_SANITIZER=1",
@@ -692,7 +692,7 @@ def _impl(ctx):
         flag_set(
             actions = all_compile_actions +
                       all_link_actions,
-            flags = ["-g4"],
+            flags = ["-gsource-map"],
             features = ["full_debug_info"],
         ),
         flag_set(
