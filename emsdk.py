@@ -1400,6 +1400,16 @@ def download_firefox(tool):
   }
 }''')
 
+  if MACOS:
+    # Disable a macOS feature where if the browser is terminated mid-execution, (e.g. by
+    # CI aborting), then the next time the browser is launched, macOS might bring up a dialog
+    # "The last time you opened Firefox, it unexpectedly quit while reopening windows.
+    #  Do you want to try to reopen its windows again?"
+    # that will block automated CI runs.
+    # Disable this feature by changing the behavior of the program with macOS 'defaults'.
+    run(['defaults', 'write', '-app', root, 'ApplePersistenceIgnoreState', 'YES'])
+    run(['defaults', 'write', '-app', root, 'NSQuitAlwaysKeepsWindows', '-bool', 'false'])
+
   save_actual_version()
 
   # If we didn't get a Firefox executable, then installation failed.
