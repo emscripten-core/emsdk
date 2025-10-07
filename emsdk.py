@@ -1843,6 +1843,8 @@ class Tool(object):
       str = str.replace('%cmake_build_type_on_win%', (decide_cmake_build_type(self) + '/') if WINDOWS else '')
     if '%installation_dir%' in str:
       str = str.replace('%installation_dir%', sdk_path(self.installation_dir()))
+    if '%macos_app_bundle_prefix%' in str:
+      str = str.replace('%macos_app_bundle_prefix%', 'Contents/MacOS/' if MACOS else '')
     if '%actual_installation_dir%' in str:
       actual_file = os.path.join(self.installation_dir(), 'actual.txt')
       if os.path.isfile(actual_file):
@@ -1900,9 +1902,7 @@ class Tool(object):
   # Returns the configuration item that needs to be added to .emscripten to make
   # this Tool active for the current user.
   def activated_config(self):
-    if MACOS and hasattr(self, 'mac_activated_cfg'):
-      activated_cfg = self.mac_activated_cfg
-    elif hasattr(self, 'activated_cfg'):
+    if hasattr(self, 'activated_cfg'):
       activated_cfg = self.activated_cfg
     else:
       return {}
@@ -1915,9 +1915,7 @@ class Tool(object):
     return config
 
   def activated_environment(self):
-    if MACOS and hasattr(self, 'mac_activated_env'):
-      activated_env = self.mac_activated_env
-    elif hasattr(self, 'activated_env'):
+    if hasattr(self, 'activated_env'):
       activated_env = self.activated_env
     else:
       return []
