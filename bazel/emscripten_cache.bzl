@@ -37,7 +37,23 @@ def _emscripten_cache_repository_impl(repository_ctx):
         ),
     )
 
-    if repository_ctx.attr.targets or repository_ctx.attr.configuration:
+    repo_metadata = None
+
+    if repository_ctx.attr.prebuilt_cache_url:
+        repository_ctx.download_and_extract(
+            url = repository_ctx.attr.prebuilt_cache_url,
+            output = "cache",
+            sha256 = repository_ctx.attr.prebuilt_cache_sha256,
+            strip_prefix = repository_ctx.attr.prebuilt_cache_strip_prefix,
+        )
+
+        # Use the prebuilt cache
+        prebuilt_cache_path = repository_ctx.path("cache")
+        default_config += "CACHE = '{}'\n".format(prebuilt_cache_path)
+
+        repo_metadata = repository_ctx.repo_metadata(reproducible = True)
+
+    elif repository_ctx.attr.targets or repository_ctx.attr.configuration:
         root, script_ext = get_root_and_script_ext(repository_ctx)
         llvm_root = root.get_child("bin")
         cache = repository_ctx.path("cache")
@@ -81,33 +97,56 @@ def _emscripten_cache_repository_impl(repository_ctx):
     repository_ctx.file("emscripten_config", default_config)
     repository_ctx.file("BUILD.bazel", BUILD_FILE_CONTENT_TEMPLATE)
 
+    return repo_metadata
+
 _emscripten_cache_repository = repository_rule(
     implementation = _emscripten_cache_repository_impl,
     attrs = {
         "configuration": attr.string_list(),
         "targets": attr.string_list(),
+        "prebuilt_cache_url": attr.string(),
+        "prebuilt_cache_sha256": attr.string(),
+        "prebuilt_cache_strip_prefix": attr.string(),
     },
 )
 
 def _emscripten_cache_impl(ctx):
     all_configuration = []
     all_targets = []
+
+    prebuilt_cache_url = None
+    prebuilt_cache_sha256 = None
+    prebuilt_cache_strip_prefix = None
     for mod in ctx.modules:
         for configuration in mod.tags.configuration:
             all_configuration += configuration.flags
         for targets in mod.tags.targets:
             all_targets += targets.targets
+        for prebuilt_cache in mod.tags.prebuilt_cache:
+            if prebuilt_cache_url != None:
+                fail("Only one prebuilt_cache tag is allowed")
+            prebuilt_cache_url = prebuilt_cache.http_archive_url
+            prebuilt_cache_sha256 = prebuilt_cache.sha256
+            prebuilt_cache_strip_prefix = prebuilt_cache.strip_prefix
 
     _emscripten_cache_repository(
         name = "emscripten_cache",
         configuration = all_configuration,
         targets = all_targets,
+        prebuilt_cache_url = prebuilt_cache_url,
+        prebuilt_cache_sha256 = prebuilt_cache_sha256,
+        prebuilt_cache_strip_prefix = prebuilt_cache_strip_prefix,
     )
 
 emscripten_cache = module_extension(
     tag_classes = {
         "configuration": tag_class(attrs = {"flags": attr.string_list()}),
         "targets": tag_class(attrs = {"targets": attr.string_list()}),
+        "prebuilt_cache": tag_class(attrs = {
+            "http_archive_url": attr.string(),
+            "sha256": attr.string(),
+            "strip_prefix": attr.string(),
+        }),
     },
     implementation = _emscripten_cache_impl,
 )
