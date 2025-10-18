@@ -19,6 +19,13 @@ filegroup(
 )
 
 filegroup(
+    name = "builtin_cache",
+    srcs = glob([
+        "emscripten/cache/**",
+    ]),
+)
+
+filegroup(
     name = "emcc_common",
     srcs = [
         "emscripten/emcc.py",
