@@ -1282,6 +1282,8 @@ def download_firefox(tool):
   platform = None
   if LINUX and 'arm' in ARCH:
     platform = 'linux-arm64'
+  if WINDOWS and 'arm' in ARCH:
+    platform = 'win64-aarch64'
 
   if tool.version == 'nightly':
     scraper = FactoryScraper('daily', extension=extension, locale='en-US', platform=platform)
