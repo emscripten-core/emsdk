@@ -220,6 +220,8 @@ int main() {
   def test_binaryen_from_source(self):
     if MACOS:
       self.skipTest("https://github.com/WebAssembly/binaryen/issues/4299")
+    if WINDOWS:
+      self.skipTest("https://github.com/emscripten-core/emsdk/issues/1624")
     print('test binaryen source build')
     run_emsdk(['install', '--build=Release', '--generator=Unix Makefiles', 'binaryen-main-64bit'])
 
