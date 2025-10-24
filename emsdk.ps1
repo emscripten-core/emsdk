@@ -30,7 +30,7 @@ $ExitCode = $LASTEXITCODE
 # python is not able to set environment variables to the parent calling process, so
 # therefore have it craft a .ps1 file, which we invoke after finishing python execution,
 # to set up the environment variables
-if (Test-Path $ScriptDirectory/emsdk_set_env.ps1) {
+if ($ExitCode -eq 0 -and (Test-Path $ScriptDirectory/emsdk_set_env.ps1)) {
     & $ScriptDirectory/emsdk_set_env.ps1
     Remove-Item $ScriptDirectory/emsdk_set_env.ps1
 }

@@ -34,9 +34,15 @@ set EMSDK_PY=python
 
 :end
 call %EMSDK_PY% "%~dp0\emsdk.py" %*
-set _EMSDK_ERRORLEVEL=%ERRORLEVEL%
 
-endlocal & set "_EMSDK_ERRORLEVEL=%_EMSDK_ERRORLEVEL%"
+:: If emsdk returned with error code >= 1, then skip executing emsdk_set_env
+:: below.
+if ERRORLEVEL 1 (
+  endlocal
+  exit /b %ERRORLEVEL%
+)
+
+endlocal
 
 :: python is not able to set environment variables to the parent calling
 :: process, so therefore have it craft a .bat file, which we invoke after
@@ -45,5 +51,3 @@ if exist "%~dp0\emsdk_set_env.bat" (
   call "%~dp0\emsdk_set_env.bat" > nul
   del /F /Q "%~dp0\emsdk_set_env.bat"
 )
-
-exit /b %_EMSDK_ERRORLEVEL%
