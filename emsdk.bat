@@ -35,6 +35,13 @@ set EMSDK_PY=python
 :end
 call %EMSDK_PY% "%~dp0\emsdk.py" %*
 
+:: If emsdk returned with error code >= 1, then skip executing emsdk_set_env
+:: below.
+if ERRORLEVEL 1 (
+  endlocal
+  exit /b %ERRORLEVEL%
+)
+
 endlocal
 
 :: python is not able to set environment variables to the parent calling
