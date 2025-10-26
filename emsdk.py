@@ -1,10 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2019 The Emscripten Authors.  All rights reserved.
 # Emscripten is available under two separate licenses, the MIT license and the
 # University of Illinois/NCSA Open Source License.  Both these licenses can be
 # found in the LICENSE file.
-
-from __future__ import print_function
 
 import copy
 from collections import OrderedDict
@@ -23,21 +21,16 @@ import sysconfig
 import tarfile
 import zipfile
 if os.name == 'nt':
-  try:
-    import winreg
-  except ImportError:
-    # old python 2 name
-    import _winreg as winreg
+  import winreg
   import ctypes.wintypes
 
-if sys.version_info >= (3,):
-  from urllib.parse import urljoin
-  from urllib.request import urlopen
-  import functools
-else:
-  from urlparse import urljoin
-  from urllib2 import urlopen
+from urllib.parse import urljoin
+from urllib.request import urlopen
+import functools
 
+if sys.version_info < (3, 0):
+  print(f'error: emsdk requires python 3.0 or above ({sys.executable} {sys.version})', file=sys.stderr)
+  sys.exit(1)
 
 emsdk_packages_url = 'https://storage.googleapis.com/webassembly/emscripten-releases-builds/deps/'
 
