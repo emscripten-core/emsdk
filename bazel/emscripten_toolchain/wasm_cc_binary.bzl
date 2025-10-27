@@ -67,6 +67,8 @@ _ALLOW_OUTPUT_EXTNAMES = [
     ".js.symbols",
     ".wasm.debug.wasm",
     ".html",
+    ".ts",
+    ".d.ts",
 ]
 
 _WASM_BINARY_COMMON_ATTRS = {
