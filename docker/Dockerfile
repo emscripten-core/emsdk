@@ -50,6 +50,12 @@ RUN echo "## Aggressive optimization: Remove debug symbols" \
     && find ${EMSDK}/upstream/bin -type f -exec strip -s {} + || true \
     && echo "## Done"
 
+RUN echo "## Installing tsc" \
+    && cd ${EMSDK} && . ./emsdk_env.sh \
+    && cd ${EMSDK}/upstream/emscripten \
+    && npm install tsc \
+    && echo "## Done"
+
 # ------------------------------------------------------------------------------
 # -------------------------------- STAGE DEPLOY --------------------------------
 # ------------------------------------------------------------------------------
