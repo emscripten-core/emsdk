@@ -272,6 +272,7 @@
     "version": "4.2.0-rc3",
     "bitness": 64,
     "arch": "x86_64",
+    "activated_cfg": "EMSDK_CMAKE='%installation_dir%/bin/cmake%.exe%'",
     "activated_path": "%installation_dir%/bin",
     "windows_url": "https://github.com/Kitware/CMake/releases/download/v4.2.0-rc3/cmake-4.2.0-rc3-windows-x86_64.zip",
     "linux_url": "https://github.com/Kitware/CMake/releases/download/v4.2.0-rc3/cmake-4.2.0-rc3-linux-x86_64.tar.gz"
@@ -281,6 +282,7 @@
     "version": "4.2.0-rc3",
     "bitness": 64,
     "arch": "x86_64",
+    "activated_cfg": "EMSDK_CMAKE='%installation_dir%/CMake.app/Contents/bin/cmake%.exe%'",
     "activated_path": "%installation_dir%/CMake.app/Contents/bin",
     "macos_url": "https://github.com/Kitware/CMake/releases/download/v4.2.0-rc3/cmake-4.2.0-rc3-macos-universal.tar.gz"
   },
@@ -289,6 +291,7 @@
     "version": "4.2.0-rc3",
     "bitness": 64,
     "arch": "arm64",
+    "activated_cfg": "EMSDK_CMAKE='%installation_dir%/bin/cmake%.exe%'",
     "activated_path": "%installation_dir%/bin",
     "windows_url": "https://github.com/Kitware/CMake/releases/download/v4.2.0-rc3/cmake-4.2.0-rc3-windows-arm64.zip",
     "linux_url": "https://github.com/Kitware/CMake/releases/download/v4.2.0-rc3/cmake-4.2.0-rc3-linux-aarch64.tar.gz"
@@ -298,6 +301,7 @@
     "version": "4.2.0-rc3",
     "bitness": 64,
     "arch": "arm64",
+    "activated_cfg": "EMSDK_CMAKE='%installation_dir%/CMake.app/Contents/bin/cmake%.exe%'",
     "activated_path": "%installation_dir%/CMake.app/Contents/bin",
     "macos_url": "https://github.com/Kitware/CMake/releases/download/v4.2.0-rc3/cmake-4.2.0-rc3-macos-universal.tar.gz"
   },
