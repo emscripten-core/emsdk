@@ -997,8 +997,7 @@ def find_cmake():
         info('Found installed CMake tool at "' + cmake_exe + '"')
         return cmake_exe
 
-  errlog('Unable to find "cmake" in PATH, or as installed/activated tool! Please install CMake first')
-  sys.exit(1)
+  exit_with_error('Unable to find "cmake" in PATH, or as installed/activated tool! Please install CMake first')
 
 
 def make_build(build_root, build_type):
