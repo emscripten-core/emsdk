@@ -977,13 +977,13 @@ def find_cmake():
     if tool.id == 'cmake' and tool.is_active():
       cmake_exe = locate_cmake_from_tool(tool)
       if cmake_exe:
-        info(f'Found installed+activated CMake tool at "{cmake_exe}"')
+        info('Found installed+activated CMake tool at "' + cmake_exe + '"')
         return cmake_exe
 
   # 2. If cmake already exists in PATH, then use that cmake to configure the build.
   cmake = which('cmake')
   if cmake:
-    info(f'Found CMake from PATH at "{cmake_exe}"')
+    info('Found CMake from PATH at "' + cmake_exe + '"')
     return cmake
 
   # 3. Finally, if user has installed a cmake tool, but has not activated that, then use
@@ -994,7 +994,7 @@ def find_cmake():
     if tool.id == 'cmake' and tool.is_installed():
       cmake_exe = locate_cmake_from_tool(tool)
       if cmake_exe:
-        info(f'Found installed CMake tool at "{cmake_exe}"')
+        info('Found installed CMake tool at "' + cmake_exe + '"')
         return cmake_exe
 
   errlog('Unable to find "cmake" in PATH, or as installed/activated tool! Please install CMake first')
