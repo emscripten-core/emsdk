@@ -981,10 +981,10 @@ def find_cmake():
         return cmake_exe
 
   # 2. If cmake already exists in PATH, then use that cmake to configure the build.
-  cmake = which('cmake')
-  if cmake:
+  cmake_exe = which('cmake')
+  if cmake_exe:
     info('Found CMake from PATH at "' + cmake_exe + '"')
-    return cmake
+    return cmake_exe
 
   # 3. Finally, if user has installed a cmake tool, but has not activated that, then use
   # that tool. This enables a single-liner directive
