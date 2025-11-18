@@ -962,6 +962,44 @@ def build_env(generator):
   return build_env
 
 
+# Find path to cmake executable, as one of the activated tools, in PATH, or from installed tools.
+def find_cmake():
+  def locate_cmake_from_tool(tool):
+    tool_path = get_required_path([tool])
+    tool_path = tool_path[-1]
+    cmake_exe = 'cmake.exe' if WINDOWS else 'cmake'
+    cmake_exe = os.path.join(tool_path, cmake_exe)
+    if os.path.isfile(cmake_exe):
+      return cmake_exe
+
+  # 1. If user has activated a specific cmake tool, then use that tool to configure the build.
+  for tool in reversed(tools):
+    if tool.id == 'cmake' and tool.is_active():
+      cmake_exe = locate_cmake_from_tool(tool)
+      if cmake_exe:
+        info('Found installed+activated CMake tool at "' + cmake_exe + '"')
+        return cmake_exe
+
+  # 2. If cmake already exists in PATH, then use that cmake to configure the build.
+  cmake_exe = which('cmake')
+  if cmake_exe:
+    info('Found CMake from PATH at "' + cmake_exe + '"')
+    return cmake_exe
+
+  # 3. Finally, if user has installed a cmake tool, but has not activated that, then use
+  # that tool. This enables a single-liner directive
+  #   "emsdk install cmake-4.2.0-rc3-64bit llvm-git-main-64bit" to first install CMake, and
+  # then use it to configure to build LLVM.
+  for tool in reversed(tools):
+    if tool.id == 'cmake' and tool.is_installed():
+      cmake_exe = locate_cmake_from_tool(tool)
+      if cmake_exe:
+        info('Found installed CMake tool at "' + cmake_exe + '"')
+        return cmake_exe
+
+  exit_with_error('Unable to find "cmake" in PATH, or as installed/activated tool! Please install CMake first')
+
+
 def make_build(build_root, build_type):
   debug_print('make_build(build_root=' + build_root + ', build_type=' + build_type + ')')
   if CPU_CORES > 1:
@@ -969,7 +1007,7 @@ def make_build(build_root, build_type):
   else:
     print('Performing a singlethreaded build.')
 
-  make = ['cmake', '--build', '.', '--config', build_type]
+  make = [find_cmake(), '--build', '.', '--config', build_type]
   if 'Visual Studio' in CMAKE_GENERATOR:
     # Visual Studio historically has had a two-tier problem in its build system design. A single MSBuild.exe instance only governs
     # the build of a single project (.exe/.lib/.dll) in a solution. Passing the -j parameter above will only enable multiple MSBuild.exe
@@ -1011,7 +1049,7 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
     else:
       generator = []
 
-    cmdline = ['cmake'] + generator + ['-DCMAKE_BUILD_TYPE=' + build_type, '-DPYTHON_EXECUTABLE=' + sys.executable]
+    cmdline = [find_cmake()] + generator + ['-DCMAKE_BUILD_TYPE=' + build_type, '-DPYTHON_EXECUTABLE=' + sys.executable]
     # Target macOS 11.0 Big Sur at minimum, to support older Mac devices.
     # See https://en.wikipedia.org/wiki/MacOS#Hardware_compatibility for min-spec details.
     cmdline += ['-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0']
