@@ -83,14 +83,7 @@ jobs:
           name: install python deps
           command: |
             apt-get update -q
-            apt-get install -q -y python2 python3-pip
-      - run:
-          name: python2 flake8
-          command: |
-            curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
-            python2 get-pip.py
-            python2 -m pip install flake8==3.9.2
-            python2 -m flake8 --show-source --statistics --extend-exclude=./scripts
+            apt-get install -q -y python3-pip
       - run:
           name: python3 flake8
           command: |
