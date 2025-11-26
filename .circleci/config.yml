@@ -6,7 +6,7 @@ orbs:
 executors:
   ubuntu:
     docker:
-      - image: buildpack-deps:focal
+      - image: buildpack-deps:jammy
   mac_arm64:
     environment:
       EMSDK_NOTTY: "1"
