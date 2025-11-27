@@ -238,7 +238,7 @@ jobs:
           name: push image
           command: |
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
-            make -C ./docker version=${CIRCLE_TAG} alias=${CIRCLE_TAG}-x64 only_alias=true push
+            make -C ./docker version=${CIRCLE_TAG} tag=${CIRCLE_TAG}-x64 push
 
   publish-docker-image-arm64:
     executor: linux_arm64
@@ -254,7 +254,7 @@ jobs:
           name: push image
           command: |
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
-            make -C ./docker version=${CIRCLE_TAG} alias=${CIRCLE_TAG}-arm64 only_alias=true push
+            make -C ./docker version=${CIRCLE_TAG} tag=${CIRCLE_TAG}-arm64 push
 
   publish-docker-image-multiplatform:
     executor: linux_arm64
@@ -264,7 +264,8 @@ jobs:
           name: push image
           command: |
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
-            make -C ./docker version=${CIRCLE_TAG} alias="latest" push-multiplatform
+            make -C ./docker version=${CIRCLE_TAG} tag=${CIRCLE_TAG} push-multiplatform
+            make -C ./docker version=${CIRCLE_TAG} tag="latest" push-multiplatform
 
   test-bazel7-linux:
     executor: ubuntu
