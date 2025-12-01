@@ -28,7 +28,6 @@ import os
 import platform
 import urllib.request
 import shutil
-import subprocess
 import sys
 from subprocess import check_call
 from zip import unzip_cmd, zip_cmd
