@@ -75,7 +75,7 @@ commands:
             .\test\test_bazel.ps1
 
 jobs:
-  flake8:
+  lint:
     executor: ubuntu
     steps:
       - checkout
@@ -85,12 +85,12 @@ jobs:
             apt-get update -q
             apt-get install -q -y python3-pip
       - run:
-          name: python3 flake8
+          name: python lint
           command: |
             python3 -m pip install --upgrade pip
-            python3 -m pip install flake8==7.1.1
+            python3 -m pip install flake8==7.1.1 ruff==0.14.1
             python3 -m flake8 --show-source --statistics --extend-exclude=./scripts
-
+            python3 -m ruff check
   test-linux:
     executor: ubuntu
     environment:
@@ -315,9 +315,9 @@ jobs:
       - test-bazel-windows
 
 workflows:
-  flake8:
+  lint:
     jobs:
-      - flake8
+      - lint
   test-linux:
     jobs:
       - test-linux

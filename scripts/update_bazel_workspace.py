@@ -9,8 +9,9 @@ import hashlib
 import json
 import os
 import re
-import requests
 import sys
+
+import requests
 
 STORAGE_URL = 'https://storage.googleapis.com/webassembly/emscripten-releases-builds'
 
@@ -51,7 +52,7 @@ def revisions_item(version, latest_hash):
 
 
 def insert_revision(item):
-    with open(BAZEL_REVISIONS_FILE, 'r') as f:
+    with open(BAZEL_REVISIONS_FILE) as f:
         lines = f.readlines()
 
     lines.insert(lines.index('EMSCRIPTEN_TAGS = {\n') + 1, item)
@@ -61,7 +62,7 @@ def insert_revision(item):
 
 
 def update_module_version(version):
-    with open(BAZEL_MODULE_FILE, 'r') as f:
+    with open(BAZEL_MODULE_FILE) as f:
         content = f.read()
 
     pattern = r'(module\(\s*name = "emsdk",\s*version = )"\d+.\d+.\d+",\n\)'
@@ -74,7 +75,7 @@ def update_module_version(version):
         f.write(content)
 
 
-def main(argv):
+def main():
     version, latest_hash = get_latest_info()
     update_module_version(version)
     item = revisions_item(version, latest_hash)
@@ -84,4 +85,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-    sys.exit(main(sys.argv))
+    sys.exit(main())

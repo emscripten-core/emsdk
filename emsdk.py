@@ -5,7 +5,6 @@
 # found in the LICENSE file.
 
 import copy
-from collections import OrderedDict
 import errno
 import json
 import multiprocessing
@@ -20,14 +19,16 @@ import sys
 import sysconfig
 import tarfile
 import zipfile
+from collections import OrderedDict
+
 if os.name == 'nt':
-  import winreg
   import ctypes.wintypes
+  import winreg
 
 from urllib.parse import urljoin
 from urllib.request import urlopen
 
-if sys.version_info < (3, 2):
+if sys.version_info < (3, 2):  # noqa: UP036
   print(f'error: emsdk requires python 3.2 or above ({sys.executable} {sys.version})', file=sys.stderr)
   sys.exit(1)
 
@@ -50,7 +51,10 @@ extra_release_tag = None
 # being run. Useful for debugging.
 VERBOSE = int(os.getenv('EMSDK_VERBOSE', '0'))
 QUIET = int(os.getenv('EMSDK_QUIET', '0'))
-TTY_OUTPUT = not os.getenv('EMSDK_NOTTY', not sys.stdout.isatty())
+if os.getenv('EMSDK_NOTTY'):
+  TTY_OUTPUT = False
+else:
+  TTY_OUTPUT = sys.stdout.isatty()
 
 
 def info(msg):
@@ -131,7 +135,7 @@ else:
 
 # platform.machine() may return AMD64 on windows, so standardize the case.
 machine = os.getenv('EMSDK_ARCH', platform.machine().lower())
-if machine.startswith('x64') or machine.startswith('amd64') or machine.startswith('x86_64'):
+if machine.startswith(('x64', 'amd64', 'x86_64')):
   ARCH = 'x86_64'
 elif machine.endswith('86'):
   ARCH = 'x86'
@@ -323,7 +327,7 @@ def remove_tree(d):
         os.chmod(path, stat.S_IWRITE)
         func(path)
       else:
-        raise
+        raise exc_info[1]
     shutil.rmtree(d, onerror=remove_readonly_and_try_again)
   except Exception as e:
     debug_print('remove_tree threw an exception, ignoring: ' + str(e))
@@ -718,7 +722,7 @@ def download_with_urllib(url, file_name):
 # On success, returns the filename on the disk pointing to the destination file that was produced
 # On failure, returns None.
 def download_file(url, dstpath, download_even_if_exists=False,
-                  filename_prefix='', silent=False):
+                  filename_prefix=''):
   debug_print(f'download_file(url={url}, dstpath={dstpath})')
   file_name = get_download_target(url, dstpath, filename_prefix)
 
@@ -934,19 +938,19 @@ def llvm_build_bin_dir(tool):
     return os.path.join(build_dir, 'bin')
 
 
-def build_env(generator):
-  build_env = os.environ.copy()
+def build_env():
+  env = os.environ.copy()
 
   # To work around a build issue with older Mac OS X builds, add -stdlib=libc++ to all builds.
   # See https://groups.google.com/forum/#!topic/emscripten-discuss/5Or6QIzkqf0
   if MACOS:
-    build_env['CXXFLAGS'] = ((build_env['CXXFLAGS'] + ' ') if hasattr(build_env, 'CXXFLAGS') else '') + '-stdlib=libc++'
+    env['CXXFLAGS'] = ((env['CXXFLAGS'] + ' ') if hasattr(env, 'CXXFLAGS') else '') + '-stdlib=libc++'
   if WINDOWS:
     # MSBuild.exe has an internal mechanism to avoid N^2 oversubscription of threads in its two-tier build model, see
     # https://devblogs.microsoft.com/cppblog/improved-parallelism-in-msbuild/
-    build_env['UseMultiToolTask'] = 'true'
-    build_env['EnforceProcessCountAcrossBuilds'] = 'true'
-  return build_env
+    env['UseMultiToolTask'] = 'true'
+    env['EnforceProcessCountAcrossBuilds'] = 'true'
+  return env
 
 
 # Find path to cmake executable, as one of the activated tools, in PATH, or from installed tools.
@@ -1010,7 +1014,7 @@ def make_build(build_root, build_type):
   # Build
   try:
     print('Running build: ' + str(make))
-    ret = subprocess.check_call(make, cwd=build_root, env=build_env(CMAKE_GENERATOR))
+    ret = subprocess.check_call(make, cwd=build_root, env=build_env())
     if ret != 0:
       errlog('Build failed with exit code {ret}!')
       errlog('Working directory: ' + build_root)
@@ -1024,7 +1028,7 @@ def make_build(build_root, build_type):
   return True
 
 
-def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_args=[]):
+def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_args):
   debug_print('cmake_configure(generator=' + str(generator) + ', build_root=' + str(build_root) + ', src_root=' + str(src_root) + ', build_type=' + str(build_type) + ', extra_cmake_args=' + str(extra_cmake_args) + ')')
   # Configure
   if not os.path.isdir(build_root):
@@ -1057,7 +1061,7 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
     # Create a file 'recmake.bat/sh' in the build root that user can call to
     # manually recmake the build tree with the previous build params
     open(os.path.join(build_root, 'recmake.' + ('bat' if WINDOWS else 'sh')), 'w').write(' '.join(map(quote_parens, cmdline)))
-    ret = subprocess.check_call(cmdline, cwd=build_root, env=build_env(CMAKE_GENERATOR))
+    ret = subprocess.check_call(cmdline, cwd=build_root, env=build_env())
     if ret != 0:
       errlog('CMake invocation failed with exit code {ret}!')
       errlog('Working directory: ' + build_root)
@@ -1085,9 +1089,7 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
 
 def xcode_sdk_version():
   try:
-    output = subprocess.check_output(['xcrun', '--show-sdk-version'])
-    if sys.version_info >= (3,):
-      output = output.decode('utf8')
+    output = subprocess.check_output(['xcrun', '--show-sdk-version'], universal_newlines=True)
     return output.strip().split('.')
   except Exception:
     return subprocess.checkplatform.mac_ver()[0].split('.')
@@ -1114,7 +1116,7 @@ def cmake_host_platform():
     'arm64': 'ARM64',
     'arm': 'ARM',
     'x86_64': 'x64',
-    'x86': 'x86'
+    'x86': 'x86',
   }
   return arch_to_cmake_host_platform[ARCH]
 
@@ -1152,7 +1154,7 @@ def build_llvm(tool):
 
   enable_assertions = ENABLE_LLVM_ASSERTIONS.lower() == 'on' or (ENABLE_LLVM_ASSERTIONS == 'auto' and build_type.lower() != 'release' and build_type.lower() != 'minsizerel')
 
-  if ARCH == 'x86' or ARCH == 'x86_64':
+  if ARCH in ('x86', 'x86_64'):
     targets_to_build = 'WebAssembly;X86'
   elif ARCH == 'arm':
     targets_to_build = 'WebAssembly;ARM'
@@ -1506,7 +1508,7 @@ def emscripten_npm_install(tool, directory):
 # Binaryen build scripts:
 def binaryen_build_root(tool):
   build_root = tool.installation_path().strip()
-  if build_root.endswith('/') or build_root.endswith('\\'):
+  if build_root.endswith(('/', '\\')):
     build_root = build_root[:-1]
   generator_prefix = cmake_generator_prefix()
   build_root = build_root + generator_prefix + '_' + str(tool.bitness) + 'bit_binaryen'
@@ -1561,19 +1563,18 @@ def download_and_extract(archive, dest_dir, filename_prefix='', clobber=True):
 
   url = urljoin(emsdk_packages_url, archive)
 
-  def try_download(url, silent=False):
-    return download_file(url, download_dir, not KEEP_DOWNLOADS,
-                         filename_prefix, silent=silent)
+  def try_download(url):
+    return download_file(url, download_dir, not KEEP_DOWNLOADS, filename_prefix)
 
   # Special hack for the wasm-binaries we transitioned from `.bzip2` to
   # `.xz`, but we can't tell from the version/url which one to use, so
   # try one and then fall back to the other.
   success = False
   if 'wasm-binaries' in archive and os.path.splitext(archive)[1] == '.xz':
-    success = try_download(url, silent=True)
+    success = try_download(url)
     if not success:
       alt_url = url.replace('.tar.xz', '.tbz2')
-      success = try_download(alt_url, silent=True)
+      success = try_download(alt_url)
       if success:
         url = alt_url
 
@@ -1647,7 +1648,7 @@ def load_em_config():
   EM_CONFIG_DICT.clear()
   lines = []
   try:
-    lines = open(EM_CONFIG_PATH, "r").read().split('\n')
+    lines = open(EM_CONFIG_PATH).read().split('\n')
   except Exception:
     pass
   for line in lines:
@@ -1999,14 +2000,13 @@ class Tool:
   def is_installed_version(self):
     version_file_path = self.get_version_file_path()
     if os.path.isfile(version_file_path):
-      with open(version_file_path, 'r') as version_file:
+      with open(version_file_path) as version_file:
         return version_file.read().strip() == self.name
     return False
 
   def update_installed_version(self):
     with open(self.get_version_file_path(), 'w') as version_file:
       version_file.write(self.name + '\n')
-    return None
 
   def is_installed(self, skip_version_check=False):
     # If this tool/sdk depends on other tools, require that all dependencies are
@@ -2178,7 +2178,7 @@ class Tool:
       'build_ninja': build_ninja,
       'build_ccache': build_ccache,
       'download_node_nightly': download_node_nightly,
-      'download_firefox': download_firefox
+      'download_firefox': download_firefox,
     }
     if hasattr(self, 'custom_install_script') and self.custom_install_script in custom_install_scripts:
       success = custom_install_scripts[self.custom_install_script](self)
@@ -2425,11 +2425,11 @@ def update_emsdk():
 # Lists all legacy (pre-emscripten-releases) tagged versions directly in the Git
 # repositories. These we can pull and compile from source.
 def load_legacy_emscripten_tags():
-  return open(sdk_path('legacy-emscripten-tags.txt'), 'r').read().split('\n')
+  return open(sdk_path('legacy-emscripten-tags.txt')).read().split('\n')
 
 
 def load_legacy_binaryen_tags():
-  return open(sdk_path('legacy-binaryen-tags.txt'), 'r').read().split('\n')
+  return open(sdk_path('legacy-binaryen-tags.txt')).read().split('\n')
 
 
 def remove_prefix(s, prefix):
@@ -2461,7 +2461,7 @@ def load_file_index_list(filename):
 def load_releases_info():
   if not hasattr(load_releases_info, 'cached_info'):
     try:
-      text = open(sdk_path('emscripten-releases-tags.json'), 'r').read()
+      text = open(sdk_path('emscripten-releases-tags.json')).read()
       load_releases_info.cached_info = json.loads(text)
     except Exception as e:
       print('Error parsing emscripten-releases-tags.json!')
@@ -2484,7 +2484,7 @@ def load_releases_tags():
   tags = []
   info = load_releases_info()
 
-  for version, sha in sorted(info['releases'].items(), key=lambda x: version_key(x[0])):
+  for _version, sha in sorted(info['releases'].items(), key=lambda x: version_key(x[0])):
     tags.append(sha)
 
   if extra_release_tag:
@@ -2508,7 +2508,7 @@ def load_releases_versions():
 
 def load_sdk_manifest():
   try:
-    manifest = json.loads(open(sdk_path("emsdk_manifest.json"), "r").read())
+    manifest = json.loads(open(sdk_path("emsdk_manifest.json")).read())
   except Exception as e:
     print('Error parsing emsdk_manifest.json!')
     print(str(e))
@@ -2679,7 +2679,7 @@ def set_active_tools(tools_to_activate, permanently_activate, system):
 
   if tools_to_activate:
     tools = [x for x in tools_to_activate if not x.is_sdk]
-    print('Setting the following tools as active:\n   ' + '\n   '.join(map(lambda x: str(x), tools)))
+    print('Setting the following tools as active:\n   ' + '\n   '.join([str(t) for t in tools]))
     print('')
 
   generate_em_config(tools_to_activate, permanently_activate, system)
@@ -2889,9 +2889,9 @@ def construct_env_with_vars(env_vars_to_add):
   # of the SDK but we want to remove that from the current environment
   # if no such tool is active.
   # Ignore certain keys that are inputs to emsdk itself.
-  ignore_keys = set(['EMSDK_POWERSHELL', 'EMSDK_CSH', 'EMSDK_CMD', 'EMSDK_BASH', 'EMSDK_FISH',
-                     'EMSDK_NUM_CORES', 'EMSDK_NOTTY', 'EMSDK_KEEP_DOWNLOADS'])
-  env_keys_to_add = set(pair[0] for pair in env_vars_to_add)
+  ignore_keys = {'EMSDK_POWERSHELL', 'EMSDK_CSH', 'EMSDK_CMD', 'EMSDK_BASH', 'EMSDK_FISH',
+                 'EMSDK_NUM_CORES', 'EMSDK_NOTTY', 'EMSDK_KEEP_DOWNLOADS'}
+  env_keys_to_add = {pair[0] for pair in env_vars_to_add}
   for key in os.environ:
     if key.startswith('EMSDK_') or key in ('EM_CACHE', 'EM_CONFIG'):
       if key not in env_keys_to_add and key not in ignore_keys:
@@ -2955,7 +2955,7 @@ def expand_sdk_name(name, activating):
   return name
 
 
-def main(args):
+def main(args):  # noqa: C901, PLR0911, PLR0912, PLR0915
   if not args:
     errlog("Missing command; Type 'emsdk help' to get a list of commands.")
     return 1
@@ -3182,7 +3182,7 @@ def main(args):
       sdk = find_sdk(name)
       return 'INSTALLED' if sdk and sdk.is_installed() else ''
 
-    if (LINUX or MACOS or WINDOWS) and (ARCH == 'x86' or ARCH == 'x86_64'):
+    if (LINUX or MACOS or WINDOWS) and ARCH in ('x86', 'x86_64'):
       print('The *recommended* precompiled SDK download is %s (%s).' % (find_latest_version(), find_latest_hash()))
       print()
       print('To install/activate it use:')
@@ -3310,7 +3310,7 @@ def main(args):
   elif cmd == 'update-tags':
     errlog('`update-tags` is not longer needed.  To install the latest tot release just run `install tot`')
     return 0
-  elif cmd == 'activate' or cmd == 'deactivate':
+  elif cmd in ('activate', 'deactivate'):
     if arg_permanent:
       print('Registering active Emscripten environment permanently')
       print('')

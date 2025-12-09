@@ -26,10 +26,11 @@ import glob
 import multiprocessing
 import os
 import platform
-import urllib.request
 import shutil
 import sys
+import urllib.request
 from subprocess import check_call
+
 from zip import unzip_cmd, zip_cmd
 
 version = '3.13.3'

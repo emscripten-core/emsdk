@@ -14,7 +14,6 @@ This wrapper currently serves the following purposes.
    bazel path.
 """
 
-from __future__ import print_function
 
 import argparse
 import os
@@ -24,7 +23,7 @@ import sys
 # Only argument should be @path/to/parameter/file
 assert sys.argv[1][0] == '@', sys.argv
 param_filename = sys.argv[1][1:]
-param_file_args = [line.strip() for line in open(param_filename, 'r').readlines()]
+param_file_args = [line.strip() for line in open(param_filename).readlines()]
 
 # Re-write response file if needed.
 if any(' ' in a for a in param_file_args):
@@ -151,7 +150,7 @@ if os.path.exists(wasm_base + '.debug.wasm') and os.path.exists(wasm_base):
         '--add-section=external_debug_info=' + base_name + '_debugsection.tmp'])
 
 # Make sure we have at least one output file.
-if not len(files):
+if not files:
   print('emcc.py did not appear to output any known files!')
   sys.exit(1)
 
