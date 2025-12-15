@@ -11,11 +11,12 @@ For the windows version we also alter the directory layout to add the 'bin'
 directory.
 """
 
-import urllib.request
-import subprocess
-import sys
 import os
 import shutil
+import subprocess
+import sys
+import urllib.request
+
 from zip import unzip_cmd, zip_cmd
 
 # When adjusting this version, visit
