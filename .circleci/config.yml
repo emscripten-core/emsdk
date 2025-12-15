@@ -14,10 +14,10 @@ executors:
       # brew itself which takes more than 4 minutes.
       HOMEBREW_NO_AUTO_UPDATE: "1"
     macos:
-      # Corresponds to macOS 12.6.1
+      # Corresponds to macOS 13.2.1
       # See https://circleci.com/docs/guides/execution-managed/using-macos/#supported-xcode-versions
-      xcode: "14.0.1"
-    resource_class: macos.m1.medium.gen1
+      xcode: "14.3.1"
+    resource_class: m4pro.medium
   linux_arm64:
     machine:
       image: ubuntu-2004:2023.07.1
