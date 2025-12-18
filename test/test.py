@@ -32,19 +32,18 @@ def listify(x):
   return [x]
 
 
-def check_call(cmd, **args):
+def check_call(cmd, **kwargs):
   if type(cmd) is not list:
     cmd = cmd.split()
   print('running: %s' % cmd)
-  args['universal_newlines'] = True
-  subprocess.check_call(cmd, **args)
+  subprocess.run(cmd, check=True, text=True, **kwargs)
 
 
 def checked_call_with_output(cmd, expected=None, unexpected=None, stderr=None, env=None):
   cmd = cmd.split(' ')
   print('running: %s' % cmd)
   try:
-    stdout = subprocess.check_output(cmd, stderr=stderr, universal_newlines=True, env=env)
+    stdout = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=stderr, check=True, text=True, env=env).stdout
   except subprocess.CalledProcessError as e:
     print(e.stderr)
     print(e.stdout)
@@ -59,8 +58,9 @@ def checked_call_with_output(cmd, expected=None, unexpected=None, stderr=None, e
 
 
 def failing_call_with_output(cmd, expected, env=None):
-  proc = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, env=env)
-  stdout, stderr = proc.communicate()
+  proc = subprocess.run(cmd.split(' '), capture_output=True, text=True, env=env)
+  stdout = proc.stdout
+  stderr = proc.stderr
   if WINDOWS:
     print('warning: skipping part of failing_call_with_output() due to error codes not being propagated (see #592)')
   else:
