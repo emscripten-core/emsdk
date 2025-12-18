@@ -32,6 +32,12 @@ def listify(x):
   return [x]
 
 
+def copy_emsdk_to(targetdir):
+  for filename in os.listdir('.'):
+    if not filename.startswith('.') and not os.path.isdir(filename):
+      shutil.copy2(filename, os.path.join(targetdir, filename))
+
+
 def check_call(cmd, **kwargs):
   if type(cmd) is not list:
     cmd = cmd.split()
@@ -137,6 +143,35 @@ int main() {
     run_emsdk('install latest')
     run_emsdk('activate latest')
 
+  def test_extrememly_long_filenames(self):
+    # We have special support for filenames longer than 256 on windows. This
+    # test installs emsdk in path that exceeds this limit in order to test
+    # this handling.
+    longpath = 'very_long_filename_indeed'
+    while len(longpath) < 256:
+      longpath = os.path.join(longpath, longpath)
+
+    if WINDOWS:
+      longpath = '\\\\?\\' + os.path.abspath(longpath)
+
+    os.makedirs(longpath, exist_ok=True)
+    copy_emsdk_to(longpath)
+
+    emsdk = os.path.join(longpath, 'emsdk')
+    if WINDOWS:
+      emsdk += '.bat'
+    print(emsdk)
+    self.assertTrue(os.path.exists(emsdk))
+
+    check_call([emsdk, 'install', 'latest'])
+    check_call([emsdk, 'activate', 'latest'])
+
+    emcc = os.path.join(longpath, 'upstream', 'emscripten', 'emcc')
+    print(emcc)
+    self.assertTrue(os.path.exists(emcc))
+
+    check_call([emcc, 'hello_world.c'])
+
   def test_unknown_arch(self):
     env = os.environ.copy()
     env['EMSDK_ARCH'] = 'mips'
@@ -236,9 +271,7 @@ int main() {
     print('test non-git update')
 
     temp_dir = tempfile.mkdtemp()
-    for filename in os.listdir('.'):
-      if not filename.startswith('.') and not os.path.isdir(filename):
-        shutil.copy2(filename, os.path.join(temp_dir, filename))
+    copy_emsdk_to(temp_dir)
 
     olddir = os.getcwd()
     try:
@@ -278,4 +311,4 @@ int main() {
 
 
 if __name__ == '__main__':
-  unittest.main(verbosity=2)
+  unittest.main(verbosity=2, failfast=True)
