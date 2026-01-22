@@ -77,13 +77,13 @@ MSYS = False
 MACOS = False
 LINUX = False
 
-if 'EMSDK_OS' in os.environ:
-  EMSDK_OS = os.environ['EMSDK_OS']
-  if EMSDK_OS == 'windows':
+os_override = os.environ.get('EMSDK_OS')
+if os_override:
+  if os_override == 'windows':
     WINDOWS = True
-  elif EMSDK_OS == 'linux':
+  elif os_override == 'linux':
     LINUX = True
-  elif EMSDK_OS == 'macos':
+  elif os_override == 'macos':
     MACOS = True
   else:
     assert False, 'EMSDK_OS must be one of: windows, linux, macos'
@@ -524,7 +524,7 @@ def untargz(source_filename, dest_dir):
 # See https://msdn.microsoft.com/en-us/library/aa365247.aspx#maxpath and http://stackoverflow.com/questions/3555527/python-win32-filename-length-workaround
 # In that mode, forward slashes cannot be used as delimiters.
 def fix_potentially_long_windows_pathname(pathname):
-  if not WINDOWS or MSYS:
+  if (not WINDOWS or MSYS) or os_override:
     return pathname
   # Test if emsdk calls fix_potentially_long_windows_pathname() with long
   # relative paths (which is problematic)
@@ -574,6 +574,7 @@ def unzip(source_filename, dest_dir):
 
       unzip_to_dir = dest_dir
       if common_subdir:
+        debug_print(f'common_subdir: {common_subdir}')
         unzip_to_dir = os.path.join(os.path.dirname(dest_dir), 'unzip_temp')
 
       # Now do the actual decompress.
@@ -589,8 +590,7 @@ def unzip(source_filename, dest_dir):
         # Move the extracted file to its final location without the base
         # directory name, if we are stripping that away.
         if common_subdir:
-          if not member.filename.startswith(common_subdir):
-            raise Exception('Unexpected filename "' + member.filename + '"!')
+          assert member.filename.startswith(common_subdir), f'unexpected filename {member.filename}'
           stripped_filename = '.' + member.filename[len(common_subdir):]
           final_dst_filename = os.path.join(dest_dir, stripped_filename)
           # Check if a directory
@@ -1598,7 +1598,7 @@ def download_and_extract(archive, dest_dir, filename_prefix='', clobber=True):
 
 
 def to_native_path(p):
-  if WINDOWS and not MSYS:
+  if (WINDOWS and not MSYS) and not os_override:
     return to_unix_path(p).replace('/', '\\')
   else:
     return to_unix_path(p)
