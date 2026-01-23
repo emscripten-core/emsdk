@@ -578,8 +578,9 @@ def unzip(source_filename, dest_dir):
         unzip_to_dir = os.path.join(os.path.dirname(dest_dir), 'unzip_temp')
 
       # Now do the actual decompress.
+      target_dir = fix_potentially_long_windows_pathname(unzip_to_dir)
       for member in zf.infolist():
-        zf.extract(member, fix_potentially_long_windows_pathname(unzip_to_dir))
+        zf.extract(member, target_dir)
         dst_filename = os.path.join(unzip_to_dir, member.filename)
 
         # See: https://stackoverflow.com/questions/42326428/zipfile-in-python-file-permission
