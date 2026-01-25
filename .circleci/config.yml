@@ -140,6 +140,10 @@ jobs:
       - run: where python
       - run: pip install pip-system-certs
       - run:
+          name: Install packages
+          command: choco install -y cmake.portable ninja pkgconfiglite
+
+      - run:
           name: Install latest
           shell: cmd.exe
           command: test\test.bat
