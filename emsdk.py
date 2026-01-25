@@ -270,16 +270,6 @@ def vswhere(version):
     return ''
 
 
-def vs_filewhere(installation_path, platform, file):
-  try:
-    vcvarsall = os.path.join(installation_path, 'VC\\Auxiliary\\Build\\vcvarsall.bat')
-    env = subprocess.check_output('cmd /c "%s" %s & where %s' % (vcvarsall, platform, file))
-    paths = [path[:-len(file)] for path in env.split('\r\n') if path.endswith(file)]
-    return paths[0]
-  except Exception:
-    return ''
-
-
 CMAKE_GENERATOR = 'Unix Makefiles'
 if WINDOWS:
   # Detect which CMake generator to use when building on Windows
@@ -1035,12 +1025,9 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
     # Create build output directory if it doesn't yet exist.
     os.mkdir(build_root)
   try:
+    cmdline = [find_cmake(), '-DCMAKE_BUILD_TYPE=' + build_type, '-DPYTHON_EXECUTABLE=' + sys.executable]
     if generator:
-      generator = ['-G', generator]
-    else:
-      generator = []
-
-    cmdline = [find_cmake()] + generator + ['-DCMAKE_BUILD_TYPE=' + build_type, '-DPYTHON_EXECUTABLE=' + sys.executable]
+      cmdline += ['-G', generator]
     # Target macOS 11.0 Big Sur at minimum, to support older Mac devices.
     # See https://en.wikipedia.org/wiki/MacOS#Hardware_compatibility for min-spec details.
     cmdline += ['-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0']
