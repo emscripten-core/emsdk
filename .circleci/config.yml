@@ -138,7 +138,7 @@ jobs:
     steps:
       - checkout
       - run: where python
-
+      - run: pip install pip-system-certs
       - run:
           name: Install latest
           shell: cmd.exe
