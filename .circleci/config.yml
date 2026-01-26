@@ -356,18 +356,21 @@ workflows:
   test-bazel7-linux:
     jobs:
       - test-bazel7-linux
-  test-bazel-latest-linux:
-    jobs:
-      - test-bazel-latest-linux
+  # https://github.com/emscripten-core/emsdk/issues/1642
+  # test-bazel-latest-linux:
+  #   jobs:
+  #     - test-bazel-latest-linux
   test-bazel7-mac-arm64:
     jobs:
       - test-bazel7-mac-arm64
-  test-bazel-latest-mac-arm64:
-    jobs:
-      - test-bazel-latest-mac-arm64
+  # https://github.com/emscripten-core/emsdk/issues/1642
+  # test-bazel-latest-mac-arm64:
+  #   jobs:
+  #     - test-bazel-latest-mac-arm64
   test-bazel7-windows:
     jobs:
       - test-bazel7-windows
-  test-bazel-latest-windows:
-    jobs:
-      - test-bazel-latest-windows
+  # https://github.com/emscripten-core/emsdk/issues/1642
+  # test-bazel-latest-windows:
+  #   jobs:
+  #     - test-bazel-latest-windows
