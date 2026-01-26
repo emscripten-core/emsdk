@@ -135,8 +135,10 @@ jobs:
     environment:
       PYTHONUNBUFFERED: "1"
       EMSDK_NOTTY: "1"
+    working_directory: ~/project with spaces
     steps:
       - checkout
+      - run: pwd
       - run: where python
       - run: pip install pip-system-certs
       - run:
