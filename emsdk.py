@@ -1825,19 +1825,6 @@ def generate_em_config(active_tools, permanently_activate, system):
     print('    echo \'source "%s"\' >> %s' % (emsdk_env, shell_config_file))
 
 
-def find_msbuild_dir():
-  program_files = os.getenv('ProgramFiles', 'C:/Program Files')
-  program_files_x86 = os.getenv('ProgramFiles(x86)', 'C:/Program Files (x86)')
-  MSBUILDX86_DIR = os.path.join(program_files_x86, "MSBuild/Microsoft.Cpp/v4.0/Platforms")
-  MSBUILD_DIR = os.path.join(program_files, "MSBuild/Microsoft.Cpp/v4.0/Platforms")
-  if os.path.exists(MSBUILDX86_DIR):
-    return MSBUILDX86_DIR
-  if os.path.exists(MSBUILD_DIR):
-    return MSBUILD_DIR
-  # No MSbuild installed.
-  return ''
-
-
 class Tool:
   def __init__(self, data):
     # Convert the dictionary representation of the tool in 'data' to members of
@@ -1859,10 +1846,6 @@ class Tool:
     return self.name
 
   def expand_vars(self, str):
-    if WINDOWS and '%MSBuildPlatformsDir%' in str:
-      str = str.replace('%MSBuildPlatformsDir%', find_msbuild_dir())
-    if '%cmake_build_type_on_win%' in str:
-      str = str.replace('%cmake_build_type_on_win%', (decide_cmake_build_type(self) + '/') if WINDOWS else '')
     if '%installation_dir%' in str:
       str = str.replace('%installation_dir%', sdk_path(self.installation_dir()))
     if '%macos_app_bundle_prefix%' in str:
