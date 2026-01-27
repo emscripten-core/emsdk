@@ -1,13 +1,13 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load(":emscripten_build_file.bzl", "EMSCRIPTEN_BUILD_FILE_CONTENT_TEMPLATE")
-load(":revisions.bzl", "EMSCRIPTEN_TAGS")
+load("@rules_cc//cc/toolchains:cc_toolchain.bzl", "cc_toolchain")
+load("@rules_cc//cc/toolchains:cc_toolchain_suite.bzl", "cc_toolchain_suite")
 load("//emscripten_toolchain:toolchain.bzl", "emscripten_cc_toolchain_config_rule")
+load(":emscripten_build_file.bzl", "EMSCRIPTEN_BUILD_FILE_CONTENT_TEMPLATE")
 
 def remote_emscripten_repository(
-    name,
-    bin_extension,
-    **kwargs,
-):
+        name,
+        bin_extension,
+        **kwargs):
     """Imports an Emscripten from an http archive
 
     Args:
@@ -116,8 +116,7 @@ def create_toolchains(name, repo_name, exec_compatible_with):
             "//conditions:default": "sh",
         }),
     )
-
-    native.cc_toolchain(
+    cc_toolchain(
         name = cc_wasm_name,
         all_files = all_files_target,
         ar_files = ar_files_target,
@@ -138,8 +137,7 @@ def create_toolchains(name, repo_name, exec_compatible_with):
         toolchain = cc_wasm_target,
         toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
     )
-
-    native.cc_toolchain_suite(
+    cc_toolchain_suite(
         name = "everything-" + name,
         toolchains = {
             "wasm": cc_wasm_target,
