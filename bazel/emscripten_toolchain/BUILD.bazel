@@ -1,6 +1,7 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_python//python:py_binary.bzl", "py_binary")
 load("//:emscripten_deps.bzl", "emscripten_repo_name")
 load("//:remote_emscripten_repository.bzl", "create_toolchains", "emscripten_toolchain_name")
-load("@rules_python//python:py_binary.bzl", "py_binary")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -9,32 +10,47 @@ cc_library(name = "malloc")
 
 create_toolchains(
     name = emscripten_toolchain_name("linux"),
+    exec_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
     repo_name = emscripten_repo_name("linux"),
-    exec_compatible_with = [ "@platforms//os:linux", "@platforms//cpu:x86_64"],
 )
 
 create_toolchains(
     name = emscripten_toolchain_name("linux_arm64"),
+    exec_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:arm64",
+    ],
     repo_name = emscripten_repo_name("linux_arm64"),
-    exec_compatible_with = ["@platforms//os:linux", "@platforms//cpu:arm64"],
 )
 
 create_toolchains(
     name = emscripten_toolchain_name("mac"),
+    exec_compatible_with = [
+        "@platforms//os:macos",
+        "@platforms//cpu:x86_64",
+    ],
     repo_name = emscripten_repo_name("mac"),
-    exec_compatible_with = ["@platforms//os:macos", "@platforms//cpu:x86_64"],
 )
 
 create_toolchains(
     name = emscripten_toolchain_name("mac_arm64"),
+    exec_compatible_with = [
+        "@platforms//os:macos",
+        "@platforms//cpu:arm64",
+    ],
     repo_name = emscripten_repo_name("mac_arm64"),
-    exec_compatible_with = ["@platforms//os:macos", "@platforms//cpu:arm64"],
 )
 
 create_toolchains(
     name = emscripten_toolchain_name("win"),
+    exec_compatible_with = [
+        "@platforms//os:windows",
+        "@platforms//cpu:x86_64",
+    ],
     repo_name = emscripten_repo_name("win"),
-    exec_compatible_with = ["@platforms//os:windows", "@platforms//cpu:x86_64"],
 )
 
 py_binary(
