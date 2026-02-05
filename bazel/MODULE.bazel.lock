@@ -189,7 +189,7 @@
     },
     "//:emscripten_deps.bzl%emscripten_deps": {
       "general": {
-        "bzlTransitiveDigest": "l13dpT30uo2JkUyTZcaXwreRsEt2lTQVOStOPWoZeaI=",
+        "bzlTransitiveDigest": "y6S20gbXD2Z1xg129G+ZN5voikh9/LZq7ibv7boVv2k=",
         "usagesDigest": "GRrT6scRlV2QxKUQntVM6GS5Ax0NopJWqNOSEDLPMbk=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
