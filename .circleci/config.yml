@@ -273,50 +273,40 @@ jobs:
             make -C ./docker version=${CIRCLE_TAG} tag=${CIRCLE_TAG} push-multiplatform
             make -C ./docker version=${CIRCLE_TAG} tag="latest" push-multiplatform
 
-  test-bazel7-linux:
+  test-bazel-linux:
+    parameters:
+      bazel_version:
+        type: string
+        default: "latest"
     executor: ubuntu
     environment:
-      USE_BAZEL_VERSION: "7.x"
+      USE_BAZEL_VERSION: << parameters.bazel_version >>
     steps:
       - test-bazel-linux
 
-  test-bazel-latest-linux:
-    executor: ubuntu
-    steps:
-      - test-bazel-linux
-
-  test-bazel7-mac-arm64:
+  test-bazel-mac-arm64:
+    parameters:
+      bazel_version:
+        type: string
+        default: "latest"
     executor: mac_arm64
     environment:
-      USE_BAZEL_VERSION: "7.x"
+      USE_BAZEL_VERSION: << parameters.bazel_version >>
     steps:
       - test-bazel-mac
 
-  test-bazel-latest-mac-arm64:
-    executor: mac_arm64
-    steps:
-      - test-bazel-mac
-
-  test-bazel7-windows:
+  test-bazel-windows:
+    parameters:
+      bazel_version:
+        type: string
+        default: "latest"
     executor:
       name: win/server-2019
       shell: powershell.exe -ExecutionPolicy Bypass
     environment:
       PYTHONUNBUFFERED: "1"
       EMSDK_NOTTY: "1"
-      # For some reason version resolution with "7.x" does not work on Windows,
-      # so we have to specify a full version.
-      USE_BAZEL_VERSION: "7.6.1"
-    steps:
-      - test-bazel-windows
-
-  test-bazel-latest-windows:
-    executor:
-      name: win/server-2019
-      shell: powershell.exe -ExecutionPolicy Bypass
-    environment:
-      PYTHONUNBUFFERED: "1"
-      EMSDK_NOTTY: "1"
+      USE_BAZEL_VERSION: << parameters.bazel_version >>
     steps:
       - test-bazel-windows
 
@@ -359,24 +349,35 @@ workflows:
             - publish-docker-image-x64
             - publish-docker-image-arm64
 
-  test-bazel7-linux:
+  test-bazel-linux:
     jobs:
-      - test-bazel7-linux
-  # https://github.com/emscripten-core/emsdk/issues/1642
-  # test-bazel-latest-linux:
-  #   jobs:
-  #     - test-bazel-latest-linux
-  test-bazel7-mac-arm64:
+      - test-bazel-linux:
+          matrix:
+            parameters:
+              bazel_version: 
+                - "7.x"
+                - "8.x"
+              # https://github.com/emscripten-core/emsdk/issues/1642
+              # - "9.x"
+  test-bazel-mac-arm64:
     jobs:
-      - test-bazel7-mac-arm64
-  # https://github.com/emscripten-core/emsdk/issues/1642
-  # test-bazel-latest-mac-arm64:
-  #   jobs:
-  #     - test-bazel-latest-mac-arm64
-  test-bazel7-windows:
+      - test-bazel-mac-arm64:
+          matrix:
+            parameters:
+              bazel_version: 
+                - "7.x"
+                - "8.x"
+              # https://github.com/emscripten-core/emsdk/issues/1642
+              # - "9.x"
+  test-bazel-windows:
     jobs:
-      - test-bazel7-windows
-  # https://github.com/emscripten-core/emsdk/issues/1642
-  # test-bazel-latest-windows:
-  #   jobs:
-  #     - test-bazel-latest-windows
+      - test-bazel-windows:
+          matrix:
+            parameters:
+              # For some reason version resolution with "x.x" does not work on Windows,
+              # so we have to specify full versions.
+              bazel_version: 
+                - "7.7.1"
+                - "8.5.1"
+              # https://github.com/emscripten-core/emsdk/issues/1642  
+              # - "9.0.0"

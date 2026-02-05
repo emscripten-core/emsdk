@@ -1,4 +1,5 @@
 load("@emsdk//emscripten_toolchain:wasm_rules.bzl", "wasm_cc_binary")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 
 _TEST_TARGETS = [
     "long_command_line_file01",
@@ -38,16 +39,16 @@ _TEST_TARGET_SUFFIXES = [
 
 [cc_library(
     name = "{}_{}".format(target, suffix),
+    srcs = ["{}.cc".format(target)],
     hdrs = ["include/{}.hh".format(target)],
     # stripping include prefix to create more flags passed to emcc
     strip_include_prefix = "include",
-    srcs = ["{}.cc".format(target)],
 ) for target in _TEST_TARGETS for suffix in _TEST_TARGET_SUFFIXES]
 
 cc_binary(
     name = "long_command_line",
-    linkshared = True,
     srcs = ["long_command_line.cc"],
+    linkshared = True,
     deps = [":{}_{}".format(target, suffix) for target in _TEST_TARGETS for suffix in _TEST_TARGET_SUFFIXES],
 )
 

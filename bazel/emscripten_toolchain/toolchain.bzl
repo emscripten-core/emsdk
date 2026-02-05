@@ -1,5 +1,6 @@
 """This module encapsulates logic to create emscripten_cc_toolchain_config rule."""
 
+load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
 load(
     "@bazel_tools//tools/cpp:cc_toolchain_config_lib.bzl",
     "action_config",
@@ -14,7 +15,7 @@ load(
     "with_feature_set",
     _flag_set = "flag_set",
 )
-load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
+load("@rules_cc//cc:defs.bzl", "CcToolchainConfigInfo")
 
 def flag_set(flags = None, features = None, not_features = None, **kwargs):
     """Extension to flag_set which allows for a "simple" form.
