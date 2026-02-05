@@ -2,7 +2,6 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@rules_cc//cc:defs.bzl", "cc_toolchain", "cc_toolchain_suite")
 load("//emscripten_toolchain:toolchain.bzl", "emscripten_cc_toolchain_config_rule")
 load(":emscripten_build_file.bzl", "EMSCRIPTEN_BUILD_FILE_CONTENT_TEMPLATE")
-load(":revisions.bzl", "EMSCRIPTEN_TAGS")
 
 def remote_emscripten_repository(
         name,
