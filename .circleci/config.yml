@@ -40,6 +40,18 @@ commands:
           command: |
             source emsdk_env.sh
             test/test.py
+  setup-docker:
+    steps:
+      - run:
+          name: install docker
+          command: |
+            apt-get update -q 
+            apt-get install -q -y ca-certificates curl gnupg lsb-release
+            mkdir -p /etc/apt/keyrings
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+            apt-get update -q
+            apt-get install -q -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
   test-bazel-linux:
     steps:
       - checkout
@@ -200,16 +212,7 @@ jobs:
     executor: ubuntu
     steps:
       - checkout
-      - run:
-          name: install docker
-          command: |
-            apt-get update -q 
-            apt-get install -q -y ca-certificates curl gnupg lsb-release
-            mkdir -p /etc/apt/keyrings
-            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-            apt-get update -q
-            apt-get install -q -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+      - setup-docker
       - setup_remote_docker
       # Build the `latest` version of EMSDK as docker image
       - run:
@@ -223,16 +226,7 @@ jobs:
     executor: ubuntu
     steps:
       - checkout
-      - run:
-          name: install docker
-          command: |
-            apt-get update -q 
-            apt-get install -q -y ca-certificates curl gnupg lsb-release
-            mkdir -p /etc/apt/keyrings
-            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-            apt-get update -q
-            apt-get install -q -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+      - setup-docker
       - setup_remote_docker
       - run:
           name: build
@@ -311,22 +305,62 @@ jobs:
       - test-bazel-windows
 
 workflows:
-  lint:
+  # Main CI pipeline - runs on all commits
+  main:
     jobs:
+      # Linting runs first as a fast quality check
       - lint
-  test-linux:
-    jobs:
-      - test-linux
-  test-linux-arm64:
-    jobs:
-      - test-linux-arm64
-  test-mac-arm64:
-    jobs:
-      - test-mac-arm64
-  test-windows:
-    jobs:
-      - test-windows
-  build-docker-image:
+      
+      # Regular tests run in parallel after linting
+      - test-linux:
+          requires:
+            - lint
+      - test-linux-arm64:
+          requires:
+            - lint
+      - test-mac-arm64:
+          requires:
+            - lint
+      - test-windows:
+          requires:
+            - lint
+      
+      # Bazel tests run in parallel with regular tests (grouped by platform with version matrix)
+      - test-bazel-linux:
+          requires:
+            - lint
+          matrix:
+            parameters:
+              bazel_version: 
+                - "7.x"
+                - "8.x"
+              # https://github.com/emscripten-core/emsdk/issues/1642
+              # - "9.x"
+      - test-bazel-mac-arm64:
+          requires:
+            - lint
+          matrix:
+            parameters:
+              bazel_version: 
+                - "7.x"
+                - "8.x"
+              # https://github.com/emscripten-core/emsdk/issues/1642
+              # - "9.x"
+      - test-bazel-windows:
+          requires:
+            - lint
+          matrix:
+            parameters:
+              # For some reason version resolution with "x.x" does not work on Windows,
+              # so we have to specify full versions.
+              bazel_version: 
+                - "7.7.1"
+                - "8.5.1"
+              # https://github.com/emscripten-core/emsdk/issues/1642  
+              # - "9.0.0"
+  
+  # Docker image builds and publishing
+  docker:
     jobs:
       - build-docker-image-x64
       - publish-docker-image-x64:
@@ -348,36 +382,3 @@ workflows:
           requires:
             - publish-docker-image-x64
             - publish-docker-image-arm64
-
-  test-bazel-linux:
-    jobs:
-      - test-bazel-linux:
-          matrix:
-            parameters:
-              bazel_version: 
-                - "7.x"
-                - "8.x"
-              # https://github.com/emscripten-core/emsdk/issues/1642
-              # - "9.x"
-  test-bazel-mac-arm64:
-    jobs:
-      - test-bazel-mac-arm64:
-          matrix:
-            parameters:
-              bazel_version: 
-                - "7.x"
-                - "8.x"
-              # https://github.com/emscripten-core/emsdk/issues/1642
-              # - "9.x"
-  test-bazel-windows:
-    jobs:
-      - test-bazel-windows:
-          matrix:
-            parameters:
-              # For some reason version resolution with "x.x" does not work on Windows,
-              # so we have to specify full versions.
-              bazel_version: 
-                - "7.7.1"
-                - "8.5.1"
-              # https://github.com/emscripten-core/emsdk/issues/1642  
-              # - "9.0.0"
