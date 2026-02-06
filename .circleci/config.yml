@@ -325,15 +325,37 @@ workflows:
   test-linux:
     jobs:
       - test-linux
-  test-linux-arm64:
-    jobs:
       - test-linux-arm64
-  test-mac-arm64:
+      - test-bazel-linux:
+          matrix:
+            parameters:
+              bazel_version: 
+                - "7.x"
+                - "8.x"
+                - "9.x"
+  test-macos:
     jobs:
       - test-mac-arm64
+      - test-bazel-mac-arm64:
+          matrix:
+            parameters:
+              bazel_version: 
+                - "7.x"
+                - "8.x"
+              # https://github.com/emscripten-core/emsdk/issues/1642
+              # - "9.x"
   test-windows:
     jobs:
       - test-windows
+      - test-bazel-windows:
+          matrix:
+            parameters:
+              # For some reason version resolution with "x.x" does not work on Windows,
+              # so we have to specify full versions.
+              bazel_version: 
+                - "7.7.1"
+                - "8.5.1"
+                - "9.0.0"
   docker:
     jobs:
       - build-docker-image-x64
@@ -356,34 +378,3 @@ workflows:
           requires:
             - publish-docker-image-x64
             - publish-docker-image-arm64
-
-  test-bazel-linux:
-    jobs:
-      - test-bazel-linux:
-          matrix:
-            parameters:
-              bazel_version: 
-                - "7.x"
-                - "8.x"
-                - "9.x"
-  test-bazel-mac-arm64:
-    jobs:
-      - test-bazel-mac-arm64:
-          matrix:
-            parameters:
-              bazel_version: 
-                - "7.x"
-                - "8.x"
-              # https://github.com/emscripten-core/emsdk/issues/1642
-              # - "9.x"
-  test-bazel-windows:
-    jobs:
-      - test-bazel-windows:
-          matrix:
-            parameters:
-              # For some reason version resolution with "x.x" does not work on Windows,
-              # so we have to specify full versions.
-              bazel_version: 
-                - "7.7.1"
-                - "8.5.1"
-                - "9.0.0"
