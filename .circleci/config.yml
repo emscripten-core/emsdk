@@ -79,16 +79,30 @@ jobs:
     executor: ubuntu
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - v1-lint-deps-{{ arch }}-{{ checksum "requirements-dev.txt" }}
       - run:
           name: install python deps
           command: |
-            apt-get update -q
-            apt-get install -q -y python3-pip
+            # Check if packages are already installed from cache
+            if python3 -m flake8 --version >/dev/null 2>&1 && \
+               python3 -m ruff --version >/dev/null 2>&1; then
+              echo "Packages already installed from cache, skipping pip install"
+            else
+              echo "Installing packages"
+              apt-get update -q
+              apt-get install -q -y python3-pip
+              python3 -m pip install --upgrade pip
+              python3 -m pip install -r requirements-dev.txt
+            fi
+      - save_cache:
+          key: v1-lint-deps-{{ arch }}-{{ checksum "requirements-dev.txt" }}
+          paths:
+            - ~/.cache/pip
       - run:
           name: python lint
           command: |
-            python3 -m pip install --upgrade pip
-            python3 -m pip install flake8==7.1.1 ruff==0.14.1
             python3 -m flake8 --show-source --statistics --extend-exclude=./scripts
             python3 -m ruff check
   test-linux:
