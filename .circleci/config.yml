@@ -40,6 +40,18 @@ commands:
           command: |
             source emsdk_env.sh
             test/test.py
+  setup-docker:
+    steps:
+      - run:
+          name: install docker
+          command: |
+            apt-get update -q 
+            apt-get install -q -y ca-certificates curl gnupg lsb-release
+            mkdir -p /etc/apt/keyrings
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+            apt-get update -q
+            apt-get install -q -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
   test-bazel-linux:
     steps:
       - checkout
@@ -214,16 +226,7 @@ jobs:
     executor: ubuntu
     steps:
       - checkout
-      - run:
-          name: install docker
-          command: |
-            apt-get update -q 
-            apt-get install -q -y ca-certificates curl gnupg lsb-release
-            mkdir -p /etc/apt/keyrings
-            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-            apt-get update -q
-            apt-get install -q -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+      - setup-docker
       - setup_remote_docker
       # Build the `latest` version of EMSDK as docker image
       - run:
@@ -237,16 +240,7 @@ jobs:
     executor: ubuntu
     steps:
       - checkout
-      - run:
-          name: install docker
-          command: |
-            apt-get update -q 
-            apt-get install -q -y ca-certificates curl gnupg lsb-release
-            mkdir -p /etc/apt/keyrings
-            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-            apt-get update -q
-            apt-get install -q -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+      - setup-docker
       - setup_remote_docker
       - run:
           name: build
@@ -340,7 +334,7 @@ workflows:
   test-windows:
     jobs:
       - test-windows
-  build-docker-image:
+  docker:
     jobs:
       - build-docker-image-x64
       - publish-docker-image-x64:
