@@ -58,6 +58,7 @@ def create_toolchains(name, repo_name, exec_compatible_with):
         name = common_files_name,
         srcs = [
             "@emscripten_cache//:emscripten_config",
+            "@emscripten_cache//:emscripten_cache",
             "@emsdk//emscripten_toolchain:env.sh",
             "@emsdk//emscripten_toolchain:env.bat",
             "@nodejs//:node_files",
