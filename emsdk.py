@@ -2179,11 +2179,24 @@ class Tool:
     # (If this is not an actual release, but some other build, then we do not
     # write anything.)
     if hasattr(self, 'emscripten_releases_hash'):
-      emscripten_version_file_path = os.path.join(to_native_path(self.expand_vars(self.activated_path)), 'emscripten-version.txt')
+      emscripten_root = to_native_path(self.expand_vars(self.activated_path))
+      emscripten_version_file_path = os.path.join(emscripten_root, 'emscripten-version.txt')
       version = get_emscripten_release_version(self.emscripten_releases_hash)
       if version:
         with open(emscripten_version_file_path, 'w') as f:
           f.write('"%s"\n' % version)
+        emscripten_version_header = os.path.join(emscripten_root, 'cache/sysroot/include/emscripten/version.h')
+        if os.path.exists(emscripten_version_header):
+          header = open(emscripten_version_header).read()
+          major, minor, tiny = version.split('.')
+          header = re.sub(r'define __EMSCRIPTEN_MAJOR__ \d*', f'define __EMSCRIPTEN_MAJOR__ {major}', header)
+          header = re.sub(r'define __EMSCRIPTEN_MINOR__ \d*', f'define __EMSCRIPTEN_MINOR__ {minor}', header)
+          header = re.sub(r'define __EMSCRIPTEN_TINY__ \d*', f'define __EMSCRIPTEN_TINY__ {tiny}', header)
+          header = re.sub(r'define __EMSCRIPTEN_major__ \d*', f'define __EMSCRIPTEN_major__ {major}', header)
+          header = re.sub(r'define __EMSCRIPTEN_minor__ \d*', f'define __EMSCRIPTEN_minor__ {minor}', header)
+          header = re.sub(r'define __EMSCRIPTEN_tiny__ \d*', f'define __EMSCRIPTEN_tiny__ {tiny}', header)
+          with open(emscripten_version_header, 'w') as f:
+            f.write(header)
 
     print(f"Done installing tool '{self}'.")
 
