@@ -62,6 +62,7 @@ def create_toolchains(name, repo_name, exec_compatible_with):
             "@emsdk//emscripten_toolchain:env.bat",
             "@nodejs//:node_files",
             "@python//:python",
+            "@python//:lib",
         ],
     )
 
