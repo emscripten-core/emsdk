@@ -61,6 +61,7 @@ def create_toolchains(name, repo_name, exec_compatible_with):
             "@emsdk//emscripten_toolchain:env.sh",
             "@emsdk//emscripten_toolchain:env.bat",
             "@nodejs//:node_files",
+            "@python//:python",
         ],
     )
 
@@ -110,6 +111,7 @@ def create_toolchains(name, repo_name, exec_compatible_with):
         em_config = "@emscripten_cache//:emscripten_config",
         emscripten_binaries = repo_compiler_files_target,
         nodejs_bin = "@nodejs//:node",
+        python_bin = "@python//:python",
         script_extension = select({
             "@bazel_tools//src/conditions:host_windows": "bat",
             "//conditions:default": "sh",
