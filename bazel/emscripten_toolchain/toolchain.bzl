@@ -75,7 +75,10 @@ def _impl(ctx):
 
     nodejs_path = ctx.file.nodejs_bin.path
 
-    python_path = ctx.file.python_bin.path
+    python_exec_runtime = (
+        ctx.toolchains["@rules_python//python:exec_tools_toolchain_type"].
+            exec_tools.exec_interpreter[platform_common.ToolchainInfo].py3_runtime
+        )
 
     builtin_sysroot = emscripten_dir + "/emscripten/cache/sysroot"
 
@@ -1082,7 +1085,7 @@ def _impl(ctx):
                 ),
                 env_entry(
                     key = "EMSDK_PYTHON",
-                    value = python_path,
+                    value = python_exec_runtime.interpreter.path,
                 ),
             ],
         ),
@@ -1159,8 +1162,26 @@ emscripten_cc_toolchain_config_rule = rule(
         "em_config": attr.label(mandatory = True, allow_single_file = True),
         "emscripten_binaries": attr.label(mandatory = True, cfg = "exec"),
         "nodejs_bin": attr.label(mandatory = True, allow_single_file = True),
-        "python_bin": attr.label(mandatory = True, allow_single_file = True),
         "script_extension": attr.string(mandatory = True, values = ["sh", "bat"]),
     },
     provides = [CcToolchainConfigInfo],
+    toolchains = [
+        "@rules_python//python:exec_tools_toolchain_type",
+    ]
+)
+
+def _python_interpreter_files_impl(ctx):
+    python_exec_runtime = (
+        ctx.toolchains["@rules_python//python:exec_tools_toolchain_type"].
+            exec_tools.exec_interpreter[platform_common.ToolchainInfo].py3_runtime
+        )
+
+    return DefaultInfo(files = python_exec_runtime.files)
+
+
+emscripten_python_interpreter_files = rule(
+    implementation = _python_interpreter_files_impl,
+    toolchains = [
+        "@rules_python//python:exec_tools_toolchain_type",
+    ]
 )
