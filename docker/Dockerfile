@@ -1,7 +1,7 @@
 FROM ubuntu:jammy AS stage_build
 
 ARG EMSCRIPTEN_VERSION=tot
-ENV EMSDK /emsdk
+ENV EMSDK=/emsdk
 
 # ------------------------------------------------------------------------------
 
@@ -62,8 +62,8 @@ COPY --from=stage_build /emsdk /emsdk
 # entrypoint is not utilized (as in a derived image) or overridden (e.g. when
 # using `--entrypoint /bin/bash` in CLI).
 # This corresponds to the env variables set during: `source ./emsdk_env.sh`
-ENV EMSDK=/emsdk \
-    PATH="/emsdk:/emsdk/upstream/emscripten:/emsdk/node/22.16.0_64bit/bin:${PATH}"
+ENV EMSDK=/emsdk
+ENV PATH="/emsdk:/emsdk/upstream/emscripten:/emsdk/node/22.16.0_64bit/bin:${PATH}"
 
 # ------------------------------------------------------------------------------
 # Create a 'standard` 1000:1000 user
