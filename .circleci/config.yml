@@ -374,8 +374,7 @@ workflows:
               bazel_version: 
                 - "7.x"
                 - "8.x"
-              # https://github.com/emscripten-core/emsdk/issues/1642
-              # - "9.x"
+                - "9.x"
   test-bazel-windows:
     jobs:
       - test-bazel-windows:

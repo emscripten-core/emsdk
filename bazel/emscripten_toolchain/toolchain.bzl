@@ -75,6 +75,11 @@ def _impl(ctx):
 
     nodejs_path = ctx.file.nodejs_bin.path
 
+    python_exec_runtime = (
+        ctx.toolchains["@rules_python//python:exec_tools_toolchain_type"].
+            exec_tools.exec_interpreter[platform_common.ToolchainInfo].py3_runtime
+        )
+
     builtin_sysroot = emscripten_dir + "/emscripten/cache/sysroot"
 
     emcc_script = "emcc.%s" % ctx.attr.script_extension
@@ -1078,6 +1083,10 @@ def _impl(ctx):
                     key = "NODE_JS_PATH",
                     value = nodejs_path,
                 ),
+                env_entry(
+                    key = "EMSDK_PYTHON",
+                    value = python_exec_runtime.interpreter.path,
+                ),
             ],
         ),
         # Use llvm backend.  Off by default, enabled via --features=llvm_backend
@@ -1156,4 +1165,23 @@ emscripten_cc_toolchain_config_rule = rule(
         "script_extension": attr.string(mandatory = True, values = ["sh", "bat"]),
     },
     provides = [CcToolchainConfigInfo],
+    toolchains = [
+        "@rules_python//python:exec_tools_toolchain_type",
+    ]
+)
+
+def _python_interpreter_files_impl(ctx):
+    python_exec_runtime = (
+        ctx.toolchains["@rules_python//python:exec_tools_toolchain_type"].
+            exec_tools.exec_interpreter[platform_common.ToolchainInfo].py3_runtime
+        )
+
+    return DefaultInfo(files = python_exec_runtime.files)
+
+
+emscripten_python_interpreter_files = rule(
+    implementation = _python_interpreter_files_impl,
+    toolchains = [
+        "@rules_python//python:exec_tools_toolchain_type",
+    ]
 )
