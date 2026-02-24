@@ -1,4 +1,4 @@
-FROM ubuntu:jammy AS stage_build
+FROM ubuntu:noble AS stage_build
 
 ARG EMSCRIPTEN_VERSION=tot
 ENV EMSDK=/emsdk
@@ -54,7 +54,7 @@ RUN echo "## Aggressive optimization: Remove debug symbols" \
 # -------------------------------- STAGE DEPLOY --------------------------------
 # ------------------------------------------------------------------------------
 
-FROM ubuntu:jammy AS stage_deploy
+FROM ubuntu:noble AS stage_deploy
 
 COPY --from=stage_build /emsdk /emsdk
 
@@ -64,19 +64,6 @@ COPY --from=stage_build /emsdk /emsdk
 # This corresponds to the env variables set during: `source ./emsdk_env.sh`
 ENV EMSDK=/emsdk
 ENV PATH="/emsdk:/emsdk/upstream/emscripten:/emsdk/node/22.16.0_64bit/bin:${PATH}"
-
-# ------------------------------------------------------------------------------
-# Create a 'standard` 1000:1000 user
-# Thanks to that this image can be executed as non-root user and created files
-# will not require root access level on host machine Please note that this
-# solution even if widely spread (i.e. Node.js uses it) is far from perfect as
-# user 1000:1000 might not exist on host machine, and in this case running any
-# docker image will cause other random problems (mostly due `$HOME` pointing to
-# `/`)
-RUN echo "## Create emscripten user (1000:1000)" \
-    && groupadd --gid 1000 emscripten \
-    && useradd --uid 1000 --gid emscripten --shell /bin/bash --create-home emscripten \
-    && echo "## Done"
 
 # ------------------------------------------------------------------------------
 
