@@ -88,3 +88,23 @@ emscripten_cache.targets(targets = [
 ```
 
 See `test_external/` for an example using [embind](https://emscripten.org/docs/porting/connecting_cpp_and_javascript/embind.html).
+
+Alternatively, you can use the embuilder to build the cache manually and put it into
+an archive that you serve from your HTTP server. Then you can declare it in your
+`MODULE.bazel` as follows:
+
+```starlark
+
+emscripten_cache = use_extension(
+    "@emsdk//:emscripten_cache.bzl",
+    "emscripten_cache",
+)
+
+emscripten_cache.prebuilt_cache(
+    http_archive_url = "https://my-host.com/my-emsdk-cache-4.0.16.tar.gz",
+    sha256 = "3e88abcbd22bac7b05af416c8f1859d12572c8e9356db604a2768fcfda863da8",
+    strip_prefix = "my-emsdk-cache",
+)
+```
+
+You cannot use both `prebuilt_cache` and `configuration`/`targets` at the same time. If you try to do so, `prebuilt_cache` will take precedence.
