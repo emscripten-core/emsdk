@@ -128,7 +128,7 @@ if not CSH and not POWERSHELL and not BASH and not CMD and not FISH:
   else:
     BASH = True
 
-if WINDOWS:
+if WINDOWS and not MSYS:
   ENVPATH_SEPARATOR = ';'
 else:
   ENVPATH_SEPARATOR = ':'
