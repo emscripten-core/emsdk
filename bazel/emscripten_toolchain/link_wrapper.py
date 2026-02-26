@@ -87,6 +87,8 @@ extensions = [
     '.js.symbols',
     '.wasm.debug.wasm',
     '.html',
+    '.ts',
+    '.d.ts',
 ]
 
 for ext in extensions:
