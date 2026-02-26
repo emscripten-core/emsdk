@@ -141,7 +141,7 @@ def create_toolchains(name, repo_name, exec_compatible_with):
         target_compatible_with = ["@platforms//cpu:wasm32"],
         exec_compatible_with = exec_compatible_with,
         toolchain = cc_wasm_target,
-        toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
+        toolchain_type = "@rules_cc//cc:toolchain_type",
     )
 
     cc_toolchain_suite(
