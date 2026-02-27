@@ -2,11 +2,21 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_python//python:py_binary.bzl", "py_binary")
 load("//:emscripten_deps.bzl", "emscripten_repo_name")
 load("//:remote_emscripten_repository.bzl", "create_toolchains", "emscripten_toolchain_name")
+load(":platform_info.bzl", "platform_info")
 
 package(default_visibility = ["//visibility:public"])
 
 # dlmalloc.bc is implicitly added by the emscripten toolchain
 cc_library(name = "malloc")
+
+platform_info(
+    name = "platform_info",
+    script_extension = select({
+        "@platforms//os:windows": "bat",
+        "//conditions:default": "sh",
+    }),
+    visibility = [":__subpackages__"],
+)
 
 create_toolchains(
     name = emscripten_toolchain_name("linux"),

@@ -16,6 +16,7 @@ load(
     _flag_set = "flag_set",
 )
 load("@rules_cc//cc:defs.bzl", "CcToolchainConfigInfo", "cc_common")
+load(":platform_info.bzl", "PlatformInfo", "platform_info")
 
 def flag_set(flags = None, features = None, not_features = None, **kwargs):
     """Extension to flag_set which allows for a "simple" form.
@@ -56,6 +57,8 @@ CROSSTOOL_DEFAULT_WARNINGS = [
 ]
 
 def _impl(ctx):
+    platform_info = ctx.attr._exec_platform_info[PlatformInfo]
+
     target_cpu = ctx.attr.cpu
     toolchain_identifier = "emscripten-" + target_cpu
     target_system_name = target_cpu + "-unknown-emscripten"
@@ -82,9 +85,9 @@ def _impl(ctx):
 
     builtin_sysroot = emscripten_dir + "/emscripten/cache/sysroot"
 
-    emcc_script = "emcc.%s" % ctx.attr.script_extension
-    emcc_link_script = "emcc_link.%s" % ctx.attr.script_extension
-    emar_script = "emar.%s" % ctx.attr.script_extension
+    emcc_script = "emcc.%s" % platform_info.script_extension
+    emcc_link_script = "emcc_link.%s" % platform_info.script_extension
+    emar_script = "emar.%s" % platform_info.script_extension
 
     ################################################################
     # Tools
@@ -1162,7 +1165,11 @@ emscripten_cc_toolchain_config_rule = rule(
         "em_config": attr.label(mandatory = True, allow_single_file = True),
         "emscripten_binaries": attr.label(mandatory = True, cfg = "exec"),
         "nodejs_bin": attr.label(mandatory = True, allow_single_file = True),
-        "script_extension": attr.string(mandatory = True, values = ["sh", "bat"]),
+        "_exec_platform_info": attr.label(
+            providers = [PlatformInfo],
+            default = Label(":platform_info"),
+            cfg = "exec",
+        ),
     },
     provides = [CcToolchainConfigInfo],
     toolchains = [
@@ -1177,7 +1184,6 @@ def _python_interpreter_files_impl(ctx):
         )
 
     return DefaultInfo(files = python_exec_runtime.files)
-
 
 emscripten_python_interpreter_files = rule(
     implementation = _python_interpreter_files_impl,
