@@ -32,6 +32,7 @@ use_repo(emscripten_deps, "emscripten_bin_win")
 npm = use_extension(
     "@aspect_rules_js//npm:extensions.bzl",
     "npm",
+    dev_dependency = True,
 )
 npm.npm_translate_lock(
     name = "emscripten_npm_linux",
