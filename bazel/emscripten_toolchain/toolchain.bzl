@@ -76,7 +76,8 @@ def _impl(ctx):
 
     emscripten_dir = ctx.attr.emscripten_binaries.label.workspace_root
 
-    nodejs_path = ctx.file.nodejs_bin.path
+    nodeinfo = ctx.toolchains["@rules_nodejs//nodejs:toolchain_type"].nodeinfo
+    nodejs_path = nodeinfo.node.path
 
     python_exec_runtime = (
         ctx.toolchains["@rules_python//python:exec_tools_toolchain_type"].
@@ -1164,7 +1165,6 @@ emscripten_cc_toolchain_config_rule = rule(
         "cpu": attr.string(mandatory = True, values = ["asmjs", "wasm"]),
         "em_config": attr.label(mandatory = True, allow_single_file = True),
         "emscripten_binaries": attr.label(mandatory = True, cfg = "exec"),
-        "nodejs_bin": attr.label(mandatory = True, allow_single_file = True),
         "_exec_platform_info": attr.label(
             providers = [PlatformInfo],
             default = Label(":platform_info"),
@@ -1174,6 +1174,7 @@ emscripten_cc_toolchain_config_rule = rule(
     provides = [CcToolchainConfigInfo],
     toolchains = [
         "@rules_python//python:exec_tools_toolchain_type",
+        "@rules_nodejs//nodejs:toolchain_type",
     ]
 )
 
