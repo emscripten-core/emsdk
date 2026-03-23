@@ -1,5 +1,6 @@
 """This module encapsulates logic to create emscripten_cc_toolchain_config rule."""
 
+load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
 load(
     "@bazel_tools//tools/cpp:cc_toolchain_config_lib.bzl",
     "action_config",
@@ -14,7 +15,7 @@ load(
     "with_feature_set",
     _flag_set = "flag_set",
 )
-load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
+load("@rules_cc//cc:defs.bzl", "CcToolchainConfigInfo", "cc_common")
 
 def flag_set(flags = None, features = None, not_features = None, **kwargs):
     """Extension to flag_set which allows for a "simple" form.
@@ -73,6 +74,11 @@ def _impl(ctx):
     emscripten_dir = ctx.attr.emscripten_binaries.label.workspace_root
 
     nodejs_path = ctx.file.nodejs_bin.path
+
+    python_exec_runtime = (
+        ctx.toolchains["@rules_python//python:exec_tools_toolchain_type"].
+            exec_tools.exec_interpreter[platform_common.ToolchainInfo].py3_runtime
+        )
 
     builtin_sysroot = emscripten_dir + "/emscripten/cache/sysroot"
 
@@ -947,7 +953,7 @@ def _impl(ctx):
                 "-iwithsysroot" + "/include/compat",
                 "-iwithsysroot" + "/include",
                 "-isystem",
-                emscripten_dir + "/lib/clang/22/include",
+                emscripten_dir + "/lib/clang/23/include",
             ],
         ),
         # Inputs and outputs
@@ -1077,6 +1083,10 @@ def _impl(ctx):
                     key = "NODE_JS_PATH",
                     value = nodejs_path,
                 ),
+                env_entry(
+                    key = "EMSDK_PYTHON",
+                    value = python_exec_runtime.interpreter.path,
+                ),
             ],
         ),
         # Use llvm backend.  Off by default, enabled via --features=llvm_backend
@@ -1155,4 +1165,23 @@ emscripten_cc_toolchain_config_rule = rule(
         "script_extension": attr.string(mandatory = True, values = ["sh", "bat"]),
     },
     provides = [CcToolchainConfigInfo],
+    toolchains = [
+        "@rules_python//python:exec_tools_toolchain_type",
+    ]
+)
+
+def _python_interpreter_files_impl(ctx):
+    python_exec_runtime = (
+        ctx.toolchains["@rules_python//python:exec_tools_toolchain_type"].
+            exec_tools.exec_interpreter[platform_common.ToolchainInfo].py3_runtime
+        )
+
+    return DefaultInfo(files = python_exec_runtime.files)
+
+
+emscripten_python_interpreter_files = rule(
+    implementation = _python_interpreter_files_impl,
+    toolchains = [
+        "@rules_python//python:exec_tools_toolchain_type",
+    ]
 )

@@ -2,4 +2,4 @@
 
 call %~dp0\env.bat
 
-py -3 %EMSCRIPTEN%\emar.py %*
+"%EMSDK_PYTHON%" %EMSCRIPTEN%\emar.py %*

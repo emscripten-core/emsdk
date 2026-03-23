@@ -6,7 +6,7 @@ orbs:
 executors:
   ubuntu:
     docker:
-      - image: buildpack-deps:focal
+      - image: buildpack-deps:jammy
   mac_arm64:
     environment:
       EMSDK_NOTTY: "1"
@@ -14,10 +14,10 @@ executors:
       # brew itself which takes more than 4 minutes.
       HOMEBREW_NO_AUTO_UPDATE: "1"
     macos:
-      # Corresponds to macOS 12.6.1
+      # Corresponds to macOS 13.2.1
       # See https://circleci.com/docs/guides/execution-managed/using-macos/#supported-xcode-versions
-      xcode: "14.0.1"
-    resource_class: macos.m1.medium.gen1
+      xcode: "14.3.1"
+    resource_class: m4pro.medium
   linux_arm64:
     machine:
       image: ubuntu-2004:2023.07.1
@@ -40,6 +40,18 @@ commands:
           command: |
             source emsdk_env.sh
             test/test.py
+  setup-docker:
+    steps:
+      - run:
+          name: install docker
+          command: |
+            apt-get update -q 
+            apt-get install -q -y ca-certificates curl gnupg lsb-release
+            mkdir -p /etc/apt/keyrings
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+            apt-get update -q
+            apt-get install -q -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
   test-bazel-linux:
     steps:
       - checkout
@@ -75,29 +87,36 @@ commands:
             .\test\test_bazel.ps1
 
 jobs:
-  flake8:
+  lint:
     executor: ubuntu
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - v1-lint-deps-{{ arch }}-{{ checksum "requirements-dev.txt" }}
       - run:
           name: install python deps
           command: |
-            apt-get update -q
-            apt-get install -q -y python2 python3-pip
+            # Check if packages are already installed from cache
+            if python3 -m flake8 --version >/dev/null 2>&1 && \
+               python3 -m ruff --version >/dev/null 2>&1; then
+              echo "Packages already installed from cache, skipping pip install"
+            else
+              echo "Installing packages"
+              apt-get update -q
+              apt-get install -q -y python3-pip
+              python3 -m pip install --upgrade pip
+              python3 -m pip install -r requirements-dev.txt
+            fi
+      - save_cache:
+          key: v1-lint-deps-{{ arch }}-{{ checksum "requirements-dev.txt" }}
+          paths:
+            - ~/.cache/pip
       - run:
-          name: python2 flake8
+          name: python lint
           command: |
-            curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
-            python2 get-pip.py
-            python2 -m pip install flake8==3.9.2
-            python2 -m flake8 --show-source --statistics --extend-exclude=./scripts
-      - run:
-          name: python3 flake8
-          command: |
-            python3 -m pip install --upgrade pip
-            python3 -m pip install flake8==7.1.1
             python3 -m flake8 --show-source --statistics --extend-exclude=./scripts
-
+            python3 -m ruff check
   test-linux:
     executor: ubuntu
     environment:
@@ -142,9 +161,15 @@ jobs:
     environment:
       PYTHONUNBUFFERED: "1"
       EMSDK_NOTTY: "1"
+    working_directory: ~/project with spaces
     steps:
       - checkout
+      - run: pwd
       - run: where python
+      - run: pip install pip-system-certs
+      - run:
+          name: Install packages
+          command: choco install -y cmake.portable ninja pkgconfiglite
 
       - run:
           name: Install latest
@@ -201,16 +226,7 @@ jobs:
     executor: ubuntu
     steps:
       - checkout
-      - run:
-          name: install docker
-          command: |
-            apt-get update -q 
-            apt-get install -q -y ca-certificates curl gnupg lsb-release
-            mkdir -p /etc/apt/keyrings
-            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-            apt-get update -q
-            apt-get install -q -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+      - setup-docker
       - setup_remote_docker
       # Build the `latest` version of EMSDK as docker image
       - run:
@@ -224,16 +240,7 @@ jobs:
     executor: ubuntu
     steps:
       - checkout
-      - run:
-          name: install docker
-          command: |
-            apt-get update -q 
-            apt-get install -q -y ca-certificates curl gnupg lsb-release
-            mkdir -p /etc/apt/keyrings
-            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-            apt-get update -q
-            apt-get install -q -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+      - setup-docker
       - setup_remote_docker
       - run:
           name: build
@@ -245,7 +252,7 @@ jobs:
           name: push image
           command: |
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
-            make -C ./docker version=${CIRCLE_TAG} alias=${CIRCLE_TAG}-x64 only_alias=true push
+            make -C ./docker version=${CIRCLE_TAG} tag=${CIRCLE_TAG}-x64 push
 
   publish-docker-image-arm64:
     executor: linux_arm64
@@ -261,7 +268,7 @@ jobs:
           name: push image
           command: |
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
-            make -C ./docker version=${CIRCLE_TAG} alias=${CIRCLE_TAG}-arm64 only_alias=true push
+            make -C ./docker version=${CIRCLE_TAG} tag=${CIRCLE_TAG}-arm64 push
 
   publish-docker-image-multiplatform:
     executor: linux_arm64
@@ -271,59 +278,50 @@ jobs:
           name: push image
           command: |
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
-            make -C ./docker version=${CIRCLE_TAG} alias="latest" push-multiplatform
+            make -C ./docker version=${CIRCLE_TAG} tag=${CIRCLE_TAG} push-multiplatform
+            make -C ./docker version=${CIRCLE_TAG} tag="latest" push-multiplatform
 
-  test-bazel7-linux:
+  test-bazel-linux:
+    parameters:
+      bazel_version:
+        type: string
+        default: "latest"
     executor: ubuntu
     environment:
-      USE_BAZEL_VERSION: "7.x"
+      USE_BAZEL_VERSION: << parameters.bazel_version >>
     steps:
       - test-bazel-linux
 
-  test-bazel-latest-linux:
-    executor: ubuntu
-    steps:
-      - test-bazel-linux
-
-  test-bazel7-mac-arm64:
+  test-bazel-mac-arm64:
+    parameters:
+      bazel_version:
+        type: string
+        default: "latest"
     executor: mac_arm64
     environment:
-      USE_BAZEL_VERSION: "7.x"
+      USE_BAZEL_VERSION: << parameters.bazel_version >>
     steps:
       - test-bazel-mac
 
-  test-bazel-latest-mac-arm64:
-    executor: mac_arm64
-    steps:
-      - test-bazel-mac
-
-  test-bazel7-windows:
+  test-bazel-windows:
+    parameters:
+      bazel_version:
+        type: string
+        default: "latest"
     executor:
       name: win/server-2019
       shell: powershell.exe -ExecutionPolicy Bypass
     environment:
       PYTHONUNBUFFERED: "1"
       EMSDK_NOTTY: "1"
-      # For some reason version resolution with "7.x" does not work on Windows,
-      # so we have to specify a full version.
-      USE_BAZEL_VERSION: "7.6.1"
-    steps:
-      - test-bazel-windows
-
-  test-bazel-latest-windows:
-    executor:
-      name: win/server-2019
-      shell: powershell.exe -ExecutionPolicy Bypass
-    environment:
-      PYTHONUNBUFFERED: "1"
-      EMSDK_NOTTY: "1"
+      USE_BAZEL_VERSION: << parameters.bazel_version >>
     steps:
       - test-bazel-windows
 
 workflows:
-  flake8:
+  lint:
     jobs:
-      - flake8
+      - lint
   test-linux:
     jobs:
       - test-linux
@@ -336,7 +334,7 @@ workflows:
   test-windows:
     jobs:
       - test-windows
-  build-docker-image:
+  docker:
     jobs:
       - build-docker-image-x64
       - publish-docker-image-x64:
@@ -359,21 +357,32 @@ workflows:
             - publish-docker-image-x64
             - publish-docker-image-arm64
 
-  test-bazel7-linux:
+  test-bazel-linux:
     jobs:
-      - test-bazel7-linux
-  test-bazel-latest-linux:
+      - test-bazel-linux:
+          matrix:
+            parameters:
+              bazel_version: 
+                - "7.x"
+                - "8.x"
+                - "9.x"
+  test-bazel-mac-arm64:
     jobs:
-      - test-bazel-latest-linux
-  test-bazel7-mac-arm64:
+      - test-bazel-mac-arm64:
+          matrix:
+            parameters:
+              bazel_version: 
+                - "7.x"
+                - "8.x"
+                - "9.x"
+  test-bazel-windows:
     jobs:
-      - test-bazel7-mac-arm64
-  test-bazel-latest-mac-arm64:
-    jobs:
-      - test-bazel-latest-mac-arm64
-  test-bazel7-windows:
-    jobs:
-      - test-bazel7-windows
-  test-bazel-latest-windows:
-    jobs:
-      - test-bazel-latest-windows
+      - test-bazel-windows:
+          matrix:
+            parameters:
+              # For some reason version resolution with "x.x" does not work on Windows,
+              # so we have to specify full versions.
+              bazel_version: 
+                - "7.7.1"
+                - "8.5.1"
+                - "9.0.0"

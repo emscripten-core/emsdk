@@ -55,8 +55,7 @@ https://emscripten.org/docs/building_from_source/toolchain_what_is_needed.html.
 
 ### Mac OS X
 
-- For Intel-based Macs, macOS 10.13 or newer. For ARM64 M1 based Macs, macOS
-  11.0 or newer.
+- macOS 11.0 or newer.
 - `java`: For running closure compiler (optional).  After installing emscripten
   via emsdk, typing 'emcc --help' should pop up a OS X dialog "Java is not
   installed. To open java, you need a Java SE 6 runtime. Would you like to
@@ -68,10 +67,12 @@ https://emscripten.org/docs/building_from_source/toolchain_what_is_needed.html.
 - `python`: Version 3.8 or above.
 - `java`: For running closure compiler (optional)
 
-The emsdk pre-compiled binaries are built against Ubuntu/Focal 20.04 LTS and
-therefore depend on system libraries compatible with versions of `glibc` and
-`libstdc++` present in that release.  If your linux distribution is very old
-you may not be able to use the pre-compiled binaries packages.
+The emsdk pre-compiled binaries are built against debian/stretch (for x86_64)
+and debian/bullseye (for arm64) sysroots and therefore depend on system
+libraries compatible with the version of `glibc` (and other libraries) present
+in those releases. If your linux distribution is very old you may not be able to
+use the pre-compiled binaries packages.  Note that `libc++` is statically linked
+so there should be no issues with older versions of `libstdc++` or `libc++`.
 
 ### Windows
 

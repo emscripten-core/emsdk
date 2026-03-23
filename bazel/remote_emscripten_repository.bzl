@@ -1,13 +1,12 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@rules_cc//cc:defs.bzl", "cc_toolchain", "cc_toolchain_suite")
+load("//emscripten_toolchain:toolchain.bzl", "emscripten_cc_toolchain_config_rule", "emscripten_python_interpreter_files")
 load(":emscripten_build_file.bzl", "EMSCRIPTEN_BUILD_FILE_CONTENT_TEMPLATE")
-load(":revisions.bzl", "EMSCRIPTEN_TAGS")
-load("//emscripten_toolchain:toolchain.bzl", "emscripten_cc_toolchain_config_rule")
 
 def remote_emscripten_repository(
-    name,
-    bin_extension,
-    **kwargs,
-):
+        name,
+        bin_extension,
+        **kwargs):
     """Imports an Emscripten from an http archive
 
     Args:
@@ -46,6 +45,7 @@ def create_toolchains(name, repo_name, exec_compatible_with):
     ar_files_name, ar_files_target = _get_name_and_target("ar_files_" + name)
     all_files_name, all_files_target = _get_name_and_target("all_files_" + name)
     cc_wasm_name, cc_wasm_target = _get_name_and_target("cc-compiler-wasm-" + name)
+    python_interpreter_name, python_interpreter_target = _get_name_and_target("python_interpreter-" + name)
 
     wasm_name = "wasm-" + name
 
@@ -55,6 +55,10 @@ def create_toolchains(name, repo_name, exec_compatible_with):
     repo_linker_files_target = remote_repo + ":linker_files"
     repo_ar_files_target = remote_repo + ":ar_files"
 
+    emscripten_python_interpreter_files(
+        name = python_interpreter_name,
+    )
+
     native.filegroup(
         name = common_files_name,
         srcs = [
@@ -62,6 +66,7 @@ def create_toolchains(name, repo_name, exec_compatible_with):
             "@emsdk//emscripten_toolchain:env.sh",
             "@emsdk//emscripten_toolchain:env.bat",
             "@nodejs//:node_files",
+            python_interpreter_target,
         ],
     )
 
@@ -117,7 +122,7 @@ def create_toolchains(name, repo_name, exec_compatible_with):
         }),
     )
 
-    native.cc_toolchain(
+    cc_toolchain(
         name = cc_wasm_name,
         all_files = all_files_target,
         ar_files = ar_files_target,
@@ -139,7 +144,7 @@ def create_toolchains(name, repo_name, exec_compatible_with):
         toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
     )
 
-    native.cc_toolchain_suite(
+    cc_toolchain_suite(
         name = "everything-" + name,
         toolchains = {
             "wasm": cc_wasm_target,

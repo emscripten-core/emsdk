@@ -1,6 +1,6 @@
 {
   "aliases": {
-    "latest": "4.0.20",
+    "latest": "5.0.3",
     "latest-sdk": "latest",
     "latest-arm64-linux": "latest",
     "latest-64bit": "latest",
@@ -10,6 +10,20 @@
     "latest-releases-upstream": "latest"
   },
   "releases": {
+    "5.0.3": "065bfade0ee2c02138b83cb10049d8be95e146b6",
+    "5.0.3-asserts": "f764597e2099113485f06ccbfc85b5d7256fc97a",
+    "5.0.2": "0a320d2395858e63288b3632b81535444ca2c59d",
+    "5.0.2-asserts": "5013293539ccfe1b6d2619f32da631a549cbf0ef",
+    "5.0.1": "bf32ae8b61ac8efeb7eca01b54c8307f992724f7",
+    "5.0.1-asserts": "1d15c4f844d2d521ec82e2cddd3fd1be288652f9",
+    "5.0.0": "e44d3cc557d78155966478aa2bd8dec657609619",
+    "5.0.0-asserts": "2e66e36bec3d78116561da35d341f01b3204b5d2",
+    "4.0.23": "aaa43392544d695232b70eda706d751f18980c2a",
+    "4.0.23-asserts": "7b0b10e1a743dabe4b66759c90ff2bcbed0d3b8d",
+    "4.0.22": "bebaf7e50e31865b0724f17eaa52e161e2dfef5a",
+    "4.0.22-asserts": "64750c136",
+    "4.0.21": "d70a5da89b3e673bf6a482724478fc17e81e575e",
+    "4.0.21-asserts": "50deeb529cc8a08f952af8a3087d2e27e0f77c3e",
     "4.0.20": "c387d7a7e9537d0041d2c3ae71b7538cc978104e",
     "4.0.20-asserts": "d4fdf09ba6e7a2d75bc1f643370caf4519021e89",
     "4.0.19": "8b01e2ec3f33e6b94842096d7312ce4ef5f33f6c",

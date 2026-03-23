@@ -32,19 +32,24 @@ def listify(x):
   return [x]
 
 
-def check_call(cmd, **args):
+def copy_emsdk_to(targetdir):
+  for filename in os.listdir('.'):
+    if not filename.startswith('.') and not os.path.isdir(filename):
+      shutil.copy2(filename, os.path.join(targetdir, filename))
+
+
+def check_call(cmd, **kwargs):
   if type(cmd) is not list:
     cmd = cmd.split()
   print('running: %s' % cmd)
-  args['universal_newlines'] = True
-  subprocess.check_call(cmd, **args)
+  subprocess.run(cmd, check=True, text=True, **kwargs)
 
 
 def checked_call_with_output(cmd, expected=None, unexpected=None, stderr=None, env=None):
   cmd = cmd.split(' ')
   print('running: %s' % cmd)
   try:
-    stdout = subprocess.check_output(cmd, stderr=stderr, universal_newlines=True, env=env)
+    stdout = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=stderr, check=True, text=True, env=env).stdout
   except subprocess.CalledProcessError as e:
     print(e.stderr)
     print(e.stdout)
@@ -59,8 +64,9 @@ def checked_call_with_output(cmd, expected=None, unexpected=None, stderr=None, e
 
 
 def failing_call_with_output(cmd, expected, env=None):
-  proc = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, env=env)
-  stdout, stderr = proc.communicate()
+  proc = subprocess.run(cmd.split(' '), capture_output=True, text=True, env=env)
+  stdout = proc.stdout
+  stderr = proc.stderr
   if WINDOWS:
     print('warning: skipping part of failing_call_with_output() due to error codes not being propagated (see #592)')
   else:
@@ -77,6 +83,16 @@ def hack_emsdk(marker, replacement):
   with open(name, 'w') as f:
     f.write(src)
   return name
+
+
+def get_longest_path_in_dir(dirname):
+  longest = ''
+  for root, _dirs, files in os.walk(dirname):
+    for f in files:
+      fullname = os.path.join(root, f)
+      if len(fullname) > len(longest):
+        longest = fullname
+  return longest
 
 
 # Set up
@@ -136,6 +152,46 @@ int main() {
   def setUp(self):
     run_emsdk('install latest')
     run_emsdk('activate latest')
+
+  def test_extrememly_long_filenames(self):
+    # We have special support for filenames longer than 256 on windows. This
+    # test installs emsdk in path that exceeds this limit in order to test
+    # this handling.
+    longpath = os.path.abspath('very_long_filename_indeed')
+
+    additional = 140 - len(longpath)
+    longpath += 'x' * additional
+    if os.path.exists(longpath):
+      # shutil.rmtree requires the special long path prefix
+      longpath_with_prefix = '\\\\?\\' + longpath
+      assert os.path.exists(longpath_with_prefix)
+      shutil.rmtree(longpath_with_prefix)
+
+    os.makedirs(longpath)
+    copy_emsdk_to(longpath)
+
+    emsdk = os.path.join(longpath, 'emsdk')
+    if WINDOWS:
+      emsdk += '.bat'
+    self.assertTrue(os.path.exists(emsdk))
+
+    check_call([emsdk, 'install', 'latest'])
+    check_call([emsdk, 'activate', 'latest'])
+
+    # Check that emcc exists in the expected location
+    emcc = os.path.join(longpath, 'upstream', 'emscripten', 'emcc')
+    if WINDOWS:
+      emcc += '.bat'
+    print(emcc)
+    self.assertTrue(os.path.exists(emcc))
+
+    # Find the longest installed path and assert this is longer than 256
+    longest_path = get_longest_path_in_dir(longpath)
+    print(f'longest ({len(longest_path)}: {longest_path})')
+    self.assertGreater(len(longest_path), 256)
+
+    # Finally make sure we can actaully compile something
+    check_call([emcc, 'hello_world.c'])
 
   def test_unknown_arch(self):
     env = os.environ.copy()
@@ -218,12 +274,10 @@ int main() {
     run_emsdk('activate sdk-tag-1.38.33-64bit')
 
   def test_binaryen_from_source(self):
-    if MACOS:
-      self.skipTest("https://github.com/WebAssembly/binaryen/issues/4299")
     if WINDOWS:
-      self.skipTest("https://github.com/emscripten-core/emsdk/issues/1624")
-    print('test binaryen source build')
-    run_emsdk(['install', '--build=Release', '--generator=Unix Makefiles', 'binaryen-main-64bit'])
+      # It takes over 30 mins to build binaryen using Visual Studio in CI
+      self.skipTest('test is too slow under windows')
+    run_emsdk(['install', '--build=Release', 'binaryen-main-64bit'])
 
   def test_no_32bit(self):
     print('test 32-bit error')
@@ -236,9 +290,7 @@ int main() {
     print('test non-git update')
 
     temp_dir = tempfile.mkdtemp()
-    for filename in os.listdir('.'):
-      if not filename.startswith('.') and not os.path.isdir(filename):
-        shutil.copy2(filename, os.path.join(temp_dir, filename))
+    copy_emsdk_to(temp_dir)
 
     olddir = os.getcwd()
     try:
