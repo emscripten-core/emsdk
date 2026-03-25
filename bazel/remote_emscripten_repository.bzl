@@ -65,7 +65,7 @@ def create_toolchains(name, repo_name, exec_compatible_with):
             "@emscripten_cache//:emscripten_config",
             "@emsdk//emscripten_toolchain:env.sh",
             "@emsdk//emscripten_toolchain:env.bat",
-            "@nodejs//:node_files",
+            "@rules_nodejs//nodejs:current_node_toolchain",
             python_interpreter_target,
         ],
     )
@@ -115,7 +115,6 @@ def create_toolchains(name, repo_name, exec_compatible_with):
         cpu = "wasm",
         em_config = "@emscripten_cache//:emscripten_config",
         emscripten_binaries = repo_compiler_files_target,
-        nodejs_bin = "@nodejs//:node",
     )
 
     cc_toolchain(
