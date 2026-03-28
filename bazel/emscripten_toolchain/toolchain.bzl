@@ -1084,7 +1084,7 @@ def _impl(ctx):
                     value = nodejs_path,
                 ),
                 env_entry(
-                    key = "EMSDK_PYTHON_PATH",
+                    key = "BAZEL_PYTHON_RELPATH",
                     value = python_exec_runtime.interpreter.path,
                 ),
             ],
