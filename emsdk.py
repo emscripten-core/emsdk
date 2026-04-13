@@ -720,11 +720,11 @@ def download_file(url, dstpath, download_even_if_exists=False,
   mkdir_p(os.path.dirname(file_name))
 
   try:
-    # Use curl on macOS to avoid CERTIFICATE_VERIFY_FAILED issue with
-    # python's urllib:
+    # Use curl on macOS or when EMSDK_USE_CURL is set to avoid
+    # CERTIFICATE_VERIFY_FAILED issue with python's urllib:
     # https://stackoverflow.com/questions/40684543/how-to-make-python-use-ca-certificates-from-mac-os-truststore
     # Unlike on linux or windows, curl is always available on macOS systems.
-    if MACOS:
+    if MACOS or 'EMSDK_USE_CURL' in os.environ:
       download_with_curl(url, file_name)
     else:
       download_with_urllib(url, file_name)
