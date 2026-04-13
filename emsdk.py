@@ -47,6 +47,7 @@ download_dir = 'downloads/'
 
 extra_release_tag = None
 
+
 def get_env_boolean(name):
   env_var = os.getenv(name)
   assert env_var in {None, '1', '0'}, f'invalid environment variable setting ${env_var} for ${name}'
