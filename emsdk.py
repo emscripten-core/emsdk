@@ -47,16 +47,16 @@ download_dir = 'downloads/'
 
 extra_release_tag = None
 
-def getEnvBoolean(b, default=False):
+def get_env_boolean(b, default=False):
   env_var = os.getenv(b) or str(default)
   return env_var == "1" or env_var.lower() == 'true'
 
 
 # Enable this to do very verbose printing about the different steps that are
 # being run. Useful for debugging.
-VERBOSE = getEnvBoolean('EMSDK_VERBOSE')
-QUIET = getEnvBoolean('EMSDK_QUIET')
-if getEnvBoolean('EMSDK_NOTTY'):
+VERBOSE = get_env_boolean('EMSDK_VERBOSE')
+QUIET = get_env_boolean('EMSDK_QUIET')
+if get_env_boolean('EMSDK_NOTTY'):
   TTY_OUTPUT = False
 else:
   TTY_OUTPUT = sys.stdout.isatty()
@@ -117,11 +117,11 @@ UNIX = (MACOS or LINUX)
 
 
 # Pick which shell of 4 shells to use
-POWERSHELL = getEnvBoolean('EMSDK_POWERSHELL')
-CSH = getEnvBoolean('EMSDK_CSH')
-CMD = getEnvBoolean('EMSDK_CMD')
-BASH = getEnvBoolean('EMSDK_BASH')
-FISH = getEnvBoolean('EMSDK_FISH')
+POWERSHELL = get_env_boolean('EMSDK_POWERSHELL')
+CSH = get_env_boolean('EMSDK_CSH')
+CMD = get_env_boolean('EMSDK_CMD')
+BASH = get_env_boolean('EMSDK_BASH')
+FISH = get_env_boolean('EMSDK_FISH')
 
 if WINDOWS and BASH:
   MSYS = True
@@ -170,7 +170,7 @@ BUILD_FOR_TESTING = False
 ENABLE_LLVM_ASSERTIONS = 'auto'
 
 # If true, keeps the downloaded archive files.
-KEEP_DOWNLOADS = getEnvBoolean('EMSDK_KEEP_DOWNLOADS')
+KEEP_DOWNLOADS = get_env_boolean('EMSDK_KEEP_DOWNLOADS')
 
 
 def os_name():
