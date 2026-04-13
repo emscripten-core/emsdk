@@ -21,6 +21,11 @@ import tarfile
 import zipfile
 from collections import OrderedDict
 
+def parseBool(b, default=False):
+  if b is None:
+    return default
+  return b == "1" or str(b).lower() == 'true'
+
 if os.name == 'nt':
   import ctypes.wintypes
   import winreg
@@ -49,9 +54,9 @@ extra_release_tag = None
 
 # Enable this to do very verbose printing about the different steps that are
 # being run. Useful for debugging.
-VERBOSE = int(os.getenv('EMSDK_VERBOSE', '0'))
-QUIET = int(os.getenv('EMSDK_QUIET', '0'))
-if os.getenv('EMSDK_NOTTY'):
+VERBOSE = parseBool(os.getenv('EMSDK_VERBOSE'))
+QUIET = parseBool(os.getenv('EMSDK_QUIET'))
+if parseBool(os.getenv('EMSDK_NOTTY')):
   TTY_OUTPUT = False
 else:
   TTY_OUTPUT = sys.stdout.isatty()
@@ -112,11 +117,11 @@ UNIX = (MACOS or LINUX)
 
 
 # Pick which shell of 4 shells to use
-POWERSHELL = bool(os.getenv('EMSDK_POWERSHELL'))
-CSH = bool(os.getenv('EMSDK_CSH'))
-CMD = bool(os.getenv('EMSDK_CMD'))
-BASH = bool(os.getenv('EMSDK_BASH'))
-FISH = bool(os.getenv('EMSDK_FISH'))
+POWERSHELL = parseBool(os.getenv('EMSDK_POWERSHELL'))
+CSH = parseBool(os.getenv('EMSDK_CSH'))
+CMD = parseBool(os.getenv('EMSDK_CMD'))
+BASH = parseBool(os.getenv('EMSDK_BASH'))
+FISH = parseBool(os.getenv('EMSDK_FISH'))
 
 if WINDOWS and BASH:
   MSYS = True
@@ -165,7 +170,7 @@ BUILD_FOR_TESTING = False
 ENABLE_LLVM_ASSERTIONS = 'auto'
 
 # If true, keeps the downloaded archive files.
-KEEP_DOWNLOADS = bool(os.getenv('EMSDK_KEEP_DOWNLOADS'))
+KEEP_DOWNLOADS = parseBool(os.getenv('EMSDK_KEEP_DOWNLOADS'))
 
 
 def os_name():
