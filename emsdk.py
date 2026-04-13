@@ -47,8 +47,8 @@ download_dir = 'downloads/'
 
 extra_release_tag = None
 
-def get_env_boolean(b, default=False):
-  env_var = os.getenv(b) or str(default)
+def get_env_boolean(b):
+  env_var = os.getenv(b) or ''
   return env_var == "1" or env_var.lower() == 'true'
 
 
