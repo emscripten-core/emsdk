@@ -47,9 +47,10 @@ download_dir = 'downloads/'
 
 extra_release_tag = None
 
-def get_env_boolean(b):
-  env_var = os.getenv(b) or ''
-  return env_var == "1" or env_var.lower() == 'true'
+def get_env_boolean(name):
+  env_var = os.getenv(name)
+  assert env_var in {None, '1', '0'}, f'invalid environment variable setting ${env_var} for ${name}'
+  return env_var == '1'
 
 
 # Enable this to do very verbose printing about the different steps that are
