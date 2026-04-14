@@ -109,7 +109,7 @@ else:
       # https://stackoverflow.com/questions/37460073/msys-vs-mingw-internal-environment-variables
       errlog('Warning: MSYSTEM environment variable is present, and is set to "' + os.getenv('MSYSTEM') + '". This shell has not been tested with emsdk and may not work.')
 
-  if platform.mac_ver()[0] != '':
+  if platform.mac_ver()[0]:
     MACOS = True
 
   if not MACOS and (platform.system() == 'Linux'):
@@ -294,7 +294,7 @@ if WINDOWS:
     CMAKE_GENERATOR = ''
 
 
-sys.argv = [a for a in sys.argv if a not in ('--mingw', '--vs2019', '--vs2022')]
+sys.argv = [a for a in sys.argv if a not in {'--mingw', '--vs2019', '--vs2022'}]
 
 
 # Computes a suitable path prefix to use when building with a given generator.
@@ -626,7 +626,7 @@ def path_points_to_directory(path):
   suffix = path[last_dot:]
   # Very simple logic for the only file suffixes used by emsdk downloader. Other
   # suffixes, like 'clang-3.2' are treated as dirs.
-  if suffix in ('.exe', '.zip', '.txt'):
+  if suffix in {'.exe', '.zip', '.txt'}:
     return False
   else:
     return True
@@ -1145,7 +1145,7 @@ def build_llvm(tool):
 
   enable_assertions = ENABLE_LLVM_ASSERTIONS.lower() == 'on' or (ENABLE_LLVM_ASSERTIONS == 'auto' and build_type.lower() != 'release' and build_type.lower() != 'minsizerel')
 
-  if ARCH in ('x86', 'x86_64'):
+  if ARCH in {'x86', 'x86_64'}:
     targets_to_build = 'WebAssembly;X86'
   elif ARCH == 'arm':
     targets_to_build = 'WebAssembly;ARM'
@@ -1314,7 +1314,7 @@ def download_firefox(tool):
     firefox_version = os.path.basename(scraper.filename).split("firefox-")[1].split(".en-US")[0]
 
   print('Target Firefox version: ' + firefox_version)
-  if tool.version in ['latest', 'latest-esr', 'latest-beta', 'nightly']:
+  if tool.version in {'latest', 'latest-esr', 'latest-beta', 'nightly'}:
     pretend_version_dir = os.path.normpath(tool.installation_path())
     orig_version = tool.version
     tool.version = firefox_version
@@ -1645,7 +1645,7 @@ def load_em_config():
   for line in lines:
     try:
       key, value = parse_key_value(line)
-      if value != '':
+      if value:
         EM_CONFIG_DICT[key] = value
     except Exception:
       pass
@@ -1701,7 +1701,7 @@ def extract_newest_node_nightly_version(versions):
       return []
 
   try:
-    return max(versions, key=lambda v: parse(v))
+    return max(versions, key=parse)
   except Exception:
     return None
 
@@ -1729,9 +1729,9 @@ def download_node_nightly(tool):
     os_ = 'darwin'
   else:
     os_ = ''
-  if platform.machine().lower() in ["x86_64", "amd64"]:
+  if platform.machine().lower() in {'x86_64', 'amd64'}:
     arch = 'x64'
-  elif platform.machine().lower() in ["arm64", "aarch64"]:
+  elif platform.machine().lower() in {'arm64', 'aarch64'}:
     arch = 'arm64'
   if WINDOWS:
     zip_suffix = 'zip'
@@ -1946,7 +1946,7 @@ class Tool:
       else:
         return False
     else:
-      if not hasattr(self, 'macos_url') and not hasattr(self, 'windows_url') and not hasattr(self, 'unix_url') and not hasattr(self, 'linux_url'):
+      if not any(hasattr(self, a) for a in ('macos_url', 'windows_url', 'unix_url', 'linux_url')):
         return True
 
     if MACOS and hasattr(self, 'macos_url') and self.compatible_with_this_arch():
@@ -2170,7 +2170,7 @@ class Tool:
     if hasattr(self, 'custom_install_script'):
       if self.custom_install_script == 'emscripten_npm_install':
         success = emscripten_npm_install(self, self.installation_path())
-      elif self.custom_install_script in ('build_llvm', 'build_ninja', 'build_ccache', 'download_node_nightly', 'download_firefox'):
+      elif self.custom_install_script in {'build_llvm', 'build_ninja', 'build_ccache', 'download_node_nightly', 'download_firefox'}:
         # 'build_llvm' is a special one that does the download on its
         # own, others do the download manually.
         pass
@@ -2867,7 +2867,7 @@ def construct_env_with_vars(env_vars_to_add):
                  'EMSDK_NUM_CORES', 'EMSDK_NOTTY', 'EMSDK_KEEP_DOWNLOADS'}
   env_keys_to_add = {pair[0] for pair in env_vars_to_add}
   for key in os.environ:
-    if key.startswith('EMSDK_') or key in ('EM_CACHE', 'EM_CONFIG'):
+    if key.startswith('EMSDK_') or key in {'EM_CACHE', 'EM_CONFIG'}:
       if key not in env_keys_to_add and key not in ignore_keys:
         info('Clearing existing environment variable: %s' % key)
         env_string += unset_env(key)
@@ -2888,7 +2888,7 @@ def expand_sdk_name(name, activating):
     name = name.replace('upstream-master', 'main')
   if 'fastcomp' in name:
     exit_with_error('the fastcomp backend is no longer supported.  Please use an older version of emsdk (for example 3.1.29) if you want to install the old fastcomp-based SDK')
-  if name in ('tot', 'sdk-tot', 'tot-upstream'):
+  if name in {'tot', 'sdk-tot', 'tot-upstream'}:
     if activating:
       # When we are activating a tot release, assume that the currently
       # installed SDK, if any, is the tot release we want to activate.
@@ -2937,7 +2937,7 @@ def main(args):  # noqa: C901, PLR0911, PLR0912, PLR0915
   debug_print('emsdk.py running under `%s`' % sys.executable)
   cmd = args.pop(0)
 
-  if cmd in ('help', '--help', '-h'):
+  if cmd in {'help', '--help', '-h'}:
     print(' emsdk: Available commands:')
 
     print('''
@@ -3099,7 +3099,7 @@ def main(args):  # noqa: C901, PLR0911, PLR0912, PLR0915
     TTY_OUTPUT = False
 
   # Replace meta-packages with the real package names.
-  if cmd in ('update', 'install', 'activate'):
+  if cmd in {'update', 'install', 'activate'}:
     activating = cmd == 'activate'
     args = [expand_sdk_name(a, activating=activating) for a in args]
 
@@ -3156,7 +3156,7 @@ def main(args):  # noqa: C901, PLR0911, PLR0912, PLR0915
       sdk = find_sdk(name)
       return 'INSTALLED' if sdk and sdk.is_installed() else ''
 
-    if (LINUX or MACOS or WINDOWS) and ARCH in ('x86', 'x86_64'):
+    if (LINUX or MACOS or WINDOWS) and ARCH in {'x86', 'x86_64'}:
       print('The *recommended* precompiled SDK download is %s (%s).' % (find_latest_version(), find_latest_hash()))
       print()
       print('To install/activate it use:')
@@ -3284,7 +3284,7 @@ def main(args):  # noqa: C901, PLR0911, PLR0912, PLR0915
   elif cmd == 'update-tags':
     errlog('`update-tags` is not longer needed.  To install the latest tot release just run `install tot`')
     return 0
-  elif cmd in ('activate', 'deactivate'):
+  elif cmd in {'activate', 'deactivate'}:
     if arg_permanent:
       print('Registering active Emscripten environment permanently')
       print('')
