@@ -1,6 +1,6 @@
 module(
     name = "emsdk",
-    version = "5.0.5",
+    version = "5.0.6",
 )
 
 bazel_dep(name = "platforms", version = "1.0.0")
