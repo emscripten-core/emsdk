@@ -1938,24 +1938,27 @@ class Tool:
     return True
 
   def compatible_with_this_os(self):
+    if not self.compatible_with_this_arch():
+      return False
+
     if hasattr(self, 'os'):
+      assert self.os in {'all', 'linux', 'win', 'macos'}
       if self.os == 'all':
         return True
-      if self.compatible_with_this_arch() and ((WINDOWS and 'win' in self.os) or (LINUX and ('linux' in self.os or 'unix' in self.os)) or (MACOS and ('macos' in self.os or 'unix' in self.os))):
+      if (WINDOWS and self.os == 'win') or (LINUX and (self.os in {'linux', 'unix'})) or (MACOS and (self.os in {'macos', 'unix'})):
         return True
-      else:
-        return False
-    else:
-      if not any(hasattr(self, a) for a in ('macos_url', 'windows_url', 'unix_url', 'linux_url')):
-        return True
+      return False
 
-    if MACOS and hasattr(self, 'macos_url') and self.compatible_with_this_arch():
+    if not any(hasattr(self, a) for a in ('macos_url', 'windows_url', 'unix_url', 'linux_url')):
       return True
 
-    if LINUX and hasattr(self, 'linux_url') and self.compatible_with_this_arch():
+    if MACOS and hasattr(self, 'macos_url'):
       return True
 
-    if WINDOWS and hasattr(self, 'windows_url') and self.compatible_with_this_arch():
+    if LINUX and hasattr(self, 'linux_url'):
+      return True
+
+    if WINDOWS and hasattr(self, 'windows_url'):
       return True
 
     if UNIX and hasattr(self, 'unix_url'):
