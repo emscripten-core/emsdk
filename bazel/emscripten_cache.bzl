@@ -3,6 +3,21 @@ package(default_visibility = ['//visibility:public'])
 exports_files(['emscripten_config'])
 """
 
+BUILD_FILE_USE_BUILTIN_CACHE = """
+alias(
+    name = "emscripten_cache",
+    actual = "{}//:builtin_cache",
+)
+"""
+
+BUILD_FILE_USE_SECONDARY_CACHE = """
+filegroup(
+    name = "emscripten_cache",
+    srcs = glob(["cache/**"]),
+    visibility = ["//visibility:public"],
+)
+"""
+
 EMBUILDER_CONFIG_TEMPLATE = """
 CACHE = '{cache}'
 BINARYEN_ROOT = '{binaryen_root}'
@@ -29,6 +44,26 @@ def get_root_and_script_ext(repository_ctx):
     else:
         fail("Unsupported operating system")
 
+def get_bin_deps_repo_name(repository_ctx):
+    if repository_ctx.os.name.startswith("linux"):
+        if "amd64" in repository_ctx.os.arch or "x86_64" in repository_ctx.os.arch:
+            return "@emscripten_bin_linux"
+        elif "aarch64" in repository_ctx.os.arch:
+            return "@emscripten_bin_linux_arm64"
+        else:
+            fail("Unsupported architecture for Linux")
+    elif repository_ctx.os.name.startswith("mac"):
+        if "amd64" in repository_ctx.os.arch or "x86_64" in repository_ctx.os.arch:
+            return "@emscripten_bin_mac"
+        elif "aarch64" in repository_ctx.os.arch:
+            return "@emscripten_bin_mac_arm64"
+        else:
+            fail("Unsupported architecture for MacOS")
+    elif repository_ctx.os.name.startswith("windows"):
+        return "@emscripten_bin_win"
+    else:
+        fail("Unsupported operating system")
+
 def _emscripten_cache_repository_impl(repository_ctx):
     # Read the default emscripten configuration file
     default_config = repository_ctx.read(
@@ -37,7 +72,24 @@ def _emscripten_cache_repository_impl(repository_ctx):
         ),
     )
 
-    if repository_ctx.attr.targets or repository_ctx.attr.configuration:
+    repo_metadata = None
+    build_file_content = BUILD_FILE_CONTENT_TEMPLATE
+    use_builtin_cache = True
+
+    if repository_ctx.attr.prebuilt_cache_url:
+        repository_ctx.download_and_extract(
+            url = repository_ctx.attr.prebuilt_cache_url,
+            output = "cache",
+            sha256 = repository_ctx.attr.prebuilt_cache_sha256,
+            strip_prefix = repository_ctx.attr.prebuilt_cache_strip_prefix,
+        )
+
+        # Use the prebuilt cache
+        use_builtin_cache = False
+
+        repo_metadata = repository_ctx.repo_metadata(reproducible = True)
+
+    elif repository_ctx.attr.targets or repository_ctx.attr.configuration:
         root, script_ext = get_root_and_script_ext(repository_ctx)
         llvm_root = root.get_child("bin")
         cache = repository_ctx.path("cache")
@@ -74,40 +126,68 @@ def _emscripten_cache_repository_impl(repository_ctx):
         if result.return_code != 0:
             fail("Embuilder exited with a non-zero return code")
 
-        # Override Emscripten's cache with the secondary cache
-        default_config += "CACHE = '{}'\n".format(cache)
+        use_builtin_cache = False
+
+    if use_builtin_cache:
+        build_file_content += BUILD_FILE_USE_BUILTIN_CACHE.format(get_bin_deps_repo_name(repository_ctx))
+    else:
+        default_config += 'CACHE = os.path.join(os.path.dirname(os.environ["EM_CONFIG_PATH"]), "cache")\n'
+        build_file_content += BUILD_FILE_USE_SECONDARY_CACHE
 
     # Create the configuration file for the toolchain and export
     repository_ctx.file("emscripten_config", default_config)
-    repository_ctx.file("BUILD.bazel", BUILD_FILE_CONTENT_TEMPLATE)
+    repository_ctx.file("BUILD.bazel", build_file_content)
+
+    return repo_metadata
 
 _emscripten_cache_repository = repository_rule(
     implementation = _emscripten_cache_repository_impl,
     attrs = {
         "configuration": attr.string_list(),
         "targets": attr.string_list(),
+        "prebuilt_cache_url": attr.string(),
+        "prebuilt_cache_sha256": attr.string(),
+        "prebuilt_cache_strip_prefix": attr.string(),
     },
 )
 
 def _emscripten_cache_impl(ctx):
     all_configuration = []
     all_targets = []
+
+    prebuilt_cache_url = None
+    prebuilt_cache_sha256 = None
+    prebuilt_cache_strip_prefix = None
     for mod in ctx.modules:
         for configuration in mod.tags.configuration:
             all_configuration += configuration.flags
         for targets in mod.tags.targets:
             all_targets += targets.targets
+        for prebuilt_cache in mod.tags.prebuilt_cache:
+            if prebuilt_cache_url != None:
+                fail("Only one prebuilt_cache tag is allowed")
+            prebuilt_cache_url = prebuilt_cache.http_archive_url
+            prebuilt_cache_sha256 = prebuilt_cache.sha256
+            prebuilt_cache_strip_prefix = prebuilt_cache.strip_prefix
 
     _emscripten_cache_repository(
         name = "emscripten_cache",
         configuration = all_configuration,
         targets = all_targets,
+        prebuilt_cache_url = prebuilt_cache_url,
+        prebuilt_cache_sha256 = prebuilt_cache_sha256,
+        prebuilt_cache_strip_prefix = prebuilt_cache_strip_prefix,
     )
 
 emscripten_cache = module_extension(
     tag_classes = {
         "configuration": tag_class(attrs = {"flags": attr.string_list()}),
         "targets": tag_class(attrs = {"targets": attr.string_list()}),
+        "prebuilt_cache": tag_class(attrs = {
+            "http_archive_url": attr.string(),
+            "sha256": attr.string(),
+            "strip_prefix": attr.string(),
+        }),
     },
     implementation = _emscripten_cache_impl,
 )
