@@ -1667,11 +1667,6 @@ def find_emscripten_root(active_tools):
 
 
 def fetch_nightly_node_versions():
-  # Node.js Apple ARM64 nightly downloads are currently out of order, so pin
-  # to recent version that does still exist. https://github.com/nodejs/node/issues/59654
-  if MACOS and ARCH == 'arm64':
-    return ['v25.0.0-nightly20250715b305119844']
-
   url = "https://nodejs.org/download/nightly/"
   with urlopen(url) as response:
     html = response.read().decode("utf-8")
@@ -1693,7 +1688,7 @@ def dir_installed_nightly_node_versions():
 def extract_newest_node_nightly_version(versions):
   def parse(v):
     # example: v7.0.0-nightly2016080175c6d9dd95
-    m = re.match(r'v(\d+)\.(\d+)\.(\d+)-nightly(\d+)', v)
+    m = re.search(r'v(\d+)\.(\d+)\.(\d+)-nightly(\d{8})', v)
     if m:
       major, minor, patch, nightly = m.groups()
       return [int(major), int(minor), int(patch), int(nightly)]
@@ -1709,7 +1704,7 @@ def extract_newest_node_nightly_version(versions):
 def download_node_nightly(tool):
   nightly_versions = fetch_nightly_node_versions()
   latest_nightly = extract_newest_node_nightly_version(nightly_versions)
-  print('Latest Node.js Nightly download available is "{latest_nightly}"')
+  print(f'Latest Node.js Nightly download available is "{latest_nightly}"')
 
   output_dir = os.path.abspath('node/nightly-' + latest_nightly)
   # Node.js zip structure quirk: Linux and macOS archives have a /bin,
