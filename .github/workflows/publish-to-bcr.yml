@@ -1,0 +1,23 @@
+name: Publish to BCR
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  publish:
+    uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.0.0
+    with:
+      tag_name: ${{ inputs.tag_name || github.ref_name }}
+      registry_fork: emscripten-core/bazel-central-registry
+      # see note on Attestation Support
+      attest: true
+    permissions:
+      contents: write
+      # Necessary if attest:true
+      id-token: write
+      # Necessary if attest:true
+      attestations: write
+    secrets:
+      # Necessary to push to the BCR fork, and to open a pull request against a registry
+      publish_token: ${{ secrets.BCR_PUBLISH_TOKEN }}
