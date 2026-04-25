@@ -1127,6 +1127,23 @@ def get_generator_and_config_args(tool):
   return (cmake_generator, args)
 
 
+def cmake_configure_and_build(cmake_generator, build_root, cmakelists_dir, build_type, args):
+  success = cmake_configure(cmake_generator, build_root, cmakelists_dir, build_type, args)
+  if success:
+    success = make_build(build_root, build_type)
+
+  if not success and get_env_boolean('EMSDK_RETRY_CLEAN_BUILD'):
+    # Delete the CMake build directory to force a full re-cmake + clean rebuild.
+    shutil.rmtree(build_root)
+
+    # And re-try configure + build again.
+    success = cmake_configure(cmake_generator, build_root, cmakelists_dir, build_type, args)
+    if success:
+      success = make_build(build_root, build_type)
+
+  return success
+
+
 def build_llvm(tool):
   debug_print('build_llvm(' + str(tool) + ')')
   llvm_root = tool.installation_path()
@@ -1181,12 +1198,9 @@ def build_llvm(tool):
     args += extra_args
 
   cmakelists_dir = os.path.join(llvm_src_root, 'llvm')
-  success = cmake_configure(cmake_generator, build_root, cmakelists_dir, build_type, args)
-  if not success:
-    return False
 
-  # Make
-  success = make_build(build_root, build_type)
+  success = cmake_configure_and_build(cmake_generator, build_root, cmakelists_dir, build_type, args)
+
   return success
 
 
@@ -1207,12 +1221,8 @@ def build_ninja(tool):
   cmake_generator, args = get_generator_and_config_args(tool)
 
   cmakelists_dir = os.path.join(src_root)
-  success = cmake_configure(cmake_generator, build_root, cmakelists_dir, build_type, args)
-  if not success:
-    return False
 
-  # Make
-  success = make_build(build_root, build_type)
+  success = cmake_configure_and_build(cmake_generator, build_root, cmakelists_dir, build_type, args)
 
   if success:
     bin_dir = os.path.join(root, 'bin')
@@ -1247,12 +1257,8 @@ def build_ccache(tool):
   args += ['-DZSTD_FROM_INTERNET=ON']
 
   cmakelists_dir = os.path.join(src_root)
-  success = cmake_configure(cmake_generator, build_root, cmakelists_dir, build_type, args)
-  if not success:
-    return False
 
-  # Make
-  success = make_build(build_root, build_type)
+  success = cmake_configure_and_build(cmake_generator, build_root, cmakelists_dir, build_type, args)
 
   if success:
     bin_dir = os.path.join(root, 'bin')
@@ -1533,18 +1539,14 @@ def build_binaryen_tool(tool):
     if BUILD_FOR_TESTING:
       args += ['-DRUN_STATIC_ANALYZER=1']
 
-  success = cmake_configure(cmake_generator, build_root, src_root, build_type, args)
-  if not success:
-    return False
+  success = cmake_configure_and_build(cmake_generator, build_root, src_root, build_type, args)
 
-  # Make
-  success = make_build(build_root, build_type)
-
-  # Deploy scripts needed from source repository to build directory
-  remove_tree(os.path.join(build_root, 'scripts'))
-  shutil.copytree(os.path.join(src_root, 'scripts'), os.path.join(build_root, 'scripts'))
-  remove_tree(os.path.join(build_root, 'src', 'js'))
-  shutil.copytree(os.path.join(src_root, 'src', 'js'), os.path.join(build_root, 'src', 'js'))
+  if success:
+    # Deploy scripts needed from source repository to build directory
+    remove_tree(os.path.join(build_root, 'scripts'))
+    shutil.copytree(os.path.join(src_root, 'scripts'), os.path.join(build_root, 'scripts'))
+    remove_tree(os.path.join(build_root, 'src', 'js'))
+    shutil.copytree(os.path.join(src_root, 'src', 'js'), os.path.join(build_root, 'src', 'js'))
 
   return success
 
@@ -3055,7 +3057,9 @@ def main(args):  # noqa: C901, PLR0911, PLR0912, PLR0915
       EMSDK_KEEP_DOWNLOADS=1     - if you want to keep the downloaded archives.
       EMSDK_NOTTY=1              - override isatty() result (mainly to log progress).
       EMSDK_NUM_CORES=n          - limit parallelism to n cores.
-      EMSDK_VERBOSE=1            - very verbose output, useful for debugging.''')
+      EMSDK_VERBOSE=1            - very verbose output, useful for debugging.
+      EMSDK_RETRY_CLEAN_BUILD=1  - performs a clean rebuild of compiled tools if
+                                   incremental build fails. Useful on CI.''')
     return 0
 
   # Extracts a boolean command line argument from args and returns True if it was present
