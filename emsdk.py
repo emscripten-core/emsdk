@@ -234,30 +234,6 @@ def parse_github_url_and_refspec(url):
 ARCHIVE_SUFFIXES = ('zip', '.tar', '.gz', '.xz', '.tbz2', '.bz2')
 
 
-# Finds the given executable 'program' in PATH. Operates like the Unix tool 'which'.
-def which(program):
-  def is_exe(fpath):
-    return os.path.isfile(fpath) and (WINDOWS or os.access(fpath, os.X_OK))
-
-  fpath, fname = os.path.split(program)
-  if fpath:
-    if is_exe(program):
-      return program
-  else:
-    exe_suffixes = ['']
-    if WINDOWS and '.' not in fname:
-      exe_suffixes = ['.exe', '.cmd', '.bat']
-
-    for path in os.environ["PATH"].split(os.pathsep):
-      path = path.strip('"')
-      exe_file = os.path.join(path, program)
-      for ext in exe_suffixes:
-        if is_exe(exe_file + ext):
-          return exe_file + ext
-
-  return None
-
-
 def vswhere(version):
   try:
     program_files = os.getenv('ProgramFiles(x86)')
@@ -287,7 +263,7 @@ if WINDOWS:
     CMAKE_GENERATOR = 'Visual Studio 17'
   elif len(vswhere(16)) > 0:
     CMAKE_GENERATOR = 'Visual Studio 16'
-  elif which('mingw32-make') is not None and which('g++') is not None:
+  elif shutil.which('mingw32-make') is not None and shutil.which('g++') is not None:
     CMAKE_GENERATOR = 'MinGW Makefiles'
   else:
     # No detected generator
@@ -663,7 +639,7 @@ def get_download_target(url, dstpath, filename_prefix=''):
 
 def download_with_curl(url, file_name):
   print("Downloading: %s from %s" % (file_name, url))
-  if not which('curl'):
+  if not shutil.which('curl'):
     exit_with_error('curl not found in PATH')
   # -#: show progress bar
   # -L: Follow HTTP 3XX redirections
@@ -766,7 +742,7 @@ def GIT(must_succeed=True):
   # The order in the following is important, and specifies the preferred order
   # of using the git tools.  Primarily use git from emsdk if installed. If not,
   # use system git.
-  gits = ['git/1.9.4/bin/git.exe', which('git')]
+  gits = ['git/1.9.4/bin/git.exe', shutil.which('git')]
   for git in gits:
     try:
       ret, stdout, stderr = run_get_output([git, '--version'])
@@ -966,7 +942,7 @@ def find_cmake():
         return cmake_exe
 
   # 2. If cmake already exists in PATH, then use that cmake to configure the build.
-  cmake_exe = which('cmake')
+  cmake_exe = shutil.which('cmake')
   if cmake_exe:
     info(f'Found CMake from PATH at "{cmake_exe}"')
     return cmake_exe
@@ -1458,7 +1434,7 @@ def find_latest_installed_tool(name):
 def emscripten_npm_install(tool, directory):
   node_tool = find_latest_installed_tool('node')
   if not node_tool:
-    npm_fallback = which('npm')
+    npm_fallback = shutil.which('npm')
     if not npm_fallback:
       errlog('Failed to find npm command!')
       errlog('Running "npm ci" in installed Emscripten root directory ' + tool.installation_path() + ' is required!')
@@ -1608,7 +1584,7 @@ def get_required_path(active_tools):
       # node to the users PATH if, and only if, they don't already have a
       # another version of node in their PATH.
       if hasattr(tool, 'activated_path_skip'):
-        current_path = which(tool.activated_path_skip)
+        current_path = shutil.which(tool.activated_path_skip)
         # We found an executable by this name in the current PATH, but we
         # ignore our own version for this purpose.
         if current_path and os.path.dirname(current_path) != path:
@@ -1773,7 +1749,7 @@ def generate_em_config(active_tools, permanently_activate, system):
       activated_config[name] = value
 
   if 'NODE_JS' not in activated_config:
-    node_fallback = which('nodejs')
+    node_fallback = shutil.which('nodejs')
     if not node_fallback:
       node_fallback = 'node'
     activated_config['NODE_JS'] = node_fallback
