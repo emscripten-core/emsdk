@@ -183,7 +183,6 @@
                 "--lto"
               ],
               "targets": [
-                "crtbegin",
                 "libprintf_long_double-debug",
                 "libstubs-debug",
                 "libnoexit",
