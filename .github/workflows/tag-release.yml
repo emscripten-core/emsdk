@@ -25,7 +25,7 @@ jobs:
     steps:
       - name: Match message and create tag
         id: create-tag
-        uses: actions/github-script@v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           github-token: ${{ secrets.EMSCRIPTEN_BOT_TOKEN }}
           # A commit with the message of the form 'Release X.Y.Z' is expected
@@ -58,14 +58,14 @@ jobs:
     if: ${{ needs.tag-release.outputs.is_release == 'true' }}
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Find emscripten revision
         # get_emscripten_revision_info.py sets env.EMSCRIPTEN_HASH to the
         # emscripten hash associated with the latest release in
         # emscripten-releases-tags.json
         run: python3 scripts/get_emscripten_revision_info.py
       - name: Dispatch emscripten workflow
-        uses: actions/github-script@v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           github-token: ${{ secrets.EMSCRIPTEN_BOT_TOKEN }}
           script: |
