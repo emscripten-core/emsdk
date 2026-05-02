@@ -158,17 +158,19 @@ def _emscripten_cache_impl(ctx):
     prebuilt_cache_url = ""
     prebuilt_cache_sha256 = ""
     prebuilt_cache_strip_prefix = ""
+    prebuilt_cache_seen = False
     for mod in ctx.modules:
         for configuration in mod.tags.configuration:
             all_configuration += configuration.flags
         for targets in mod.tags.targets:
             all_targets += targets.targets
         for prebuilt_cache in mod.tags.prebuilt_cache:
-            if prebuilt_cache_url != None:
+            if prebuilt_cache_seen:
                 fail("Only one prebuilt_cache tag is allowed")
             prebuilt_cache_url = prebuilt_cache.http_archive_url
             prebuilt_cache_sha256 = prebuilt_cache.sha256
             prebuilt_cache_strip_prefix = prebuilt_cache.strip_prefix
+            prebuilt_cache_seen = True
 
     _emscripten_cache_repository(
         name = "emscripten_cache",
