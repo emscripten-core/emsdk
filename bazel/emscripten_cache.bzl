@@ -184,8 +184,8 @@ emscripten_cache = module_extension(
         "configuration": tag_class(attrs = {"flags": attr.string_list()}),
         "targets": tag_class(attrs = {"targets": attr.string_list()}),
         "prebuilt_cache": tag_class(attrs = {
-            "http_archive_url": attr.string(),
-            "sha256": attr.string(),
+            "http_archive_url": attr.string(mandatory = True),
+            "sha256": attr.string(mandatory = True),
             "strip_prefix": attr.string(),
         }),
     },
