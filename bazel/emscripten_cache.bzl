@@ -155,9 +155,9 @@ def _emscripten_cache_impl(ctx):
     all_configuration = []
     all_targets = []
 
-    prebuilt_cache_url = None
-    prebuilt_cache_sha256 = None
-    prebuilt_cache_strip_prefix = None
+    prebuilt_cache_url = ""
+    prebuilt_cache_sha256 = ""
+    prebuilt_cache_strip_prefix = ""
     for mod in ctx.modules:
         for configuration in mod.tags.configuration:
             all_configuration += configuration.flags
