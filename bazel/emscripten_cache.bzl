@@ -81,7 +81,7 @@ def _emscripten_cache_repository_impl(repository_ctx):
             url = repository_ctx.attr.prebuilt_cache_url,
             output = "cache",
             sha256 = repository_ctx.attr.prebuilt_cache_sha256,
-            strip_prefix = repository_ctx.attr.prebuilt_cache_strip_prefix,
+            stripPrefix = repository_ctx.attr.prebuilt_cache_strip_prefix,
         )
 
         # Use the prebuilt cache
