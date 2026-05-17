@@ -1,0 +1,29 @@
+bazel_dep(name = "rules_cc", version = "0.2.16")
+bazel_dep(name = "emsdk")
+local_path_override(
+    module_name = "emsdk",
+    path = "..",
+)
+
+emscripten_deps = use_extension(
+    "@emsdk//:emscripten_deps.bzl",
+    "emscripten_deps",
+)
+
+# Need to use the same version of Emscripten as the prebuilt cache was built with to ensure compatibility even when future versions of Emscripten are released.
+emscripten_deps.config(
+    version = "5.0.7",
+)
+
+emscripten_cache = use_extension(
+    "@emsdk//:emscripten_cache.bzl",
+    "emscripten_cache",
+)
+
+# This cache was built with Emscripten 5.0.7, and contains opt-thinlto build.
+# It has been build according to these instructions: https://github.com/DoDoENT/bazel-playground/blob/master/tools/emsdk-cache-builder/README.md
+emscripten_cache.prebuilt_cache(
+    http_archive_url = "https://github.com/DoDoENT/bazel-playground/releases/download/emsdk-cache/emsdk-cache-5.0.7.tar.gz",
+    sha256 = "bbfdab09ae64769c4aa977b1d88f776490c459c87e7ed7e31fe00190cd56b14a",
+    strip_prefix = "emsdk-cache",
+)
