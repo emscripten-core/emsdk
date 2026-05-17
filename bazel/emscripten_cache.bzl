@@ -124,7 +124,7 @@ def _emscripten_cache_repository_impl(repository_ctx):
             },
         )
         if result.return_code != 0:
-            fail("Embuilder exited with a non-zero return code")
+            fail("Embuilder exited with a non-zero return code\nstdout: {}\nstderr: {}".format(result.stdout, result.stderr))
 
         use_builtin_cache = False
 
