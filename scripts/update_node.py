@@ -44,13 +44,13 @@ for suffix in suffixes:
     urllib.request.urlretrieve(download_url, filename)
 
     if '-win-' in suffix:
-      subprocess.check_call(unzip_cmd() + [filename])
+      subprocess.check_call([*unzip_cmd(), filename])
       dirname = os.path.splitext(os.path.basename(filename))[0]
       shutil.move(dirname, 'bin')
       os.mkdir(dirname)
       shutil.move('bin', dirname)
       os.remove(filename)
-      subprocess.check_call(zip_cmd() + [filename, dirname])
+      subprocess.check_call([*zip_cmd(), filename, dirname])
       shutil.rmtree(dirname)
 
     if '--upload' in sys.argv:

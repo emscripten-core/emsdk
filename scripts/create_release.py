@@ -12,7 +12,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.dirname(script_dir)
 sys.path.append(root_dir)
 
-import emsdk  # noqa
+import emsdk
 
 
 def version_key(version_string):

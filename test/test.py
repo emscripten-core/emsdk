@@ -133,7 +133,7 @@ def do_lib_building(emcc):
 def run_emsdk(cmd):
   if type(cmd) is not list:
     cmd = cmd.split()
-  check_call([emsdk] + cmd)
+  check_call([emsdk, *cmd])
 
 
 class Emsdk(unittest.TestCase):
