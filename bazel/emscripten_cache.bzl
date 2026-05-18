@@ -119,14 +119,14 @@ def _emscripten_cache_repository_impl(repository_ctx):
         repository_ctx.report_progress("Building secondary cache")
         result = repository_ctx.execute(
             embuilder_args,
-            quiet = True,
+            quiet = False,
             environment = {
                 "EM_IGNORE_SANITY": "1",
                 "EM_NODE_JS": "empty",
             },
         )
         if result.return_code != 0:
-            fail("Embuilder exited with a non-zero return code\nstdout: {}\nstderr: {}".format(result.stdout, result.stderr))
+            fail("Embuilder exited with a non-zero return code")
 
         use_builtin_cache = False
 
