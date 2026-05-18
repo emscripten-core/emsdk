@@ -29,3 +29,5 @@ bazel build //:hello-world-wasm
 cd ../test_secondary_lto_cache
 bazel build //:hello-world-wasm
 
+cd ../test_prebuilt_cache
+bazel build //:hello-world-wasm --compilation_mode opt # test only release as used prebuilt cache is only for release builds
