@@ -21,7 +21,7 @@ emscripten_cache = use_extension(
 )
 
 # This cache was built with Emscripten 5.0.7, and contains opt-thinlto build.
-# It has been build according to these instructions: https://github.com/DoDoENT/bazel-playground/blob/master/tools/emsdk-cache-builder/README.md
+# It has been built according to these instructions: https://github.com/DoDoENT/bazel-playground/blob/master/tools/emsdk-cache-builder/README.md
 emscripten_cache.prebuilt_cache(
     http_archive_url = "https://github.com/DoDoENT/bazel-playground/releases/download/emsdk-cache/emsdk-cache-5.0.7.tar.gz",
     sha256 = "bbfdab09ae64769c4aa977b1d88f776490c459c87e7ed7e31fe00190cd56b14a",
