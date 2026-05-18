@@ -38,7 +38,7 @@ if any(' ' in a for a in param_file_args):
   sys.argv[1] = '@' + new_param_filename
 
 emcc_py = os.path.join(os.environ['EMSCRIPTEN'], 'emcc.py')
-rtn = subprocess.call([sys.executable, emcc_py] + sys.argv[1:])
+rtn = subprocess.call([sys.executable, emcc_py, *sys.argv[1:]])
 if rtn != 0:
   sys.exit(1)
 
@@ -157,7 +157,7 @@ if not files:
   sys.exit(1)
 
 # cc_binary must output exactly one file; put all the output files in a tarball.
-cmd = ['tar', 'cf', base_name + '.tar'] + files
+cmd = ['tar', 'cf', base_name + '.tar', *files]
 subprocess.check_call(cmd, cwd=outdir)
 os.replace(os.path.join(outdir, base_name + '.tar'), output_file)
 

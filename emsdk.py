@@ -745,7 +745,7 @@ def GIT(must_succeed=True):
   gits = ['git/1.9.4/bin/git.exe', shutil.which('git')]
   for git in gits:
     try:
-      ret, stdout, stderr = run_get_output([git, '--version'])
+      ret, _stdout, _stderr = run_get_output([git, '--version'])
       if ret == 0:
         cached_git_executable = git
         return git
@@ -766,7 +766,7 @@ def GIT(must_succeed=True):
 
 
 def git_repo_version(repo_path):
-  returncode, stdout, stderr = run_get_output([GIT(), 'log', '-n', '1', '--pretty="%aD %H"'], cwd=repo_path)
+  returncode, stdout, _stderr = run_get_output([GIT(), 'log', '-n', '1', '--pretty="%aD %H"'], cwd=repo_path)
   if returncode == 0:
     return stdout.strip()
   else:
@@ -774,7 +774,7 @@ def git_repo_version(repo_path):
 
 
 def git_recent_commits(repo_path, n=20):
-  returncode, stdout, stderr = run_get_output([GIT(), 'log', '-n', str(n), '--pretty="%H"'], cwd=repo_path)
+  returncode, stdout, _stderr = run_get_output([GIT(), 'log', '-n', str(n), '--pretty="%H"'], cwd=repo_path)
   if returncode == 0:
     return stdout.strip().replace('\r', '').replace('"', '').split('\n')
   else:
@@ -805,7 +805,7 @@ def git_clone(url, dstpath, branch, remote_name='origin'):
   if GIT_CLONE_SHALLOW:
     git_clone_args += ['--depth', '1']
   print(f'Cloning from {url}...')
-  return run([GIT(), 'clone', '-o', remote_name] + git_clone_args + [url, dstpath]) == 0
+  return run([GIT(), 'clone', '-o', remote_name, *git_clone_args, url, dstpath]) == 0
 
 
 def git_pull(repo_path, branch_or_tag, remote_name='origin'):
@@ -986,7 +986,7 @@ def make_build(build_root, build_type):
     print('Running build: ' + str(make))
     ret = subprocess.check_call(make, cwd=build_root, env=build_env())
     if ret != 0:
-      errlog('Build failed with exit code {ret}!')
+      errlog(f'Build failed with exit code {ret}!')
       errlog('Working directory: ' + build_root)
       return False
   except Exception as e:
@@ -1011,9 +1011,9 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
     # Target macOS 11.0 Big Sur at minimum, to support older Mac devices.
     # See https://en.wikipedia.org/wiki/MacOS#Hardware_compatibility for min-spec details.
     cmdline += ['-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0']
-    cmdline += extra_cmake_args + [src_root]
+    cmdline += [*extra_cmake_args, src_root]
 
-    print('Running CMake: ' + str(cmdline))
+    print(f'Running CMake: {cmdline}')
 
     # Specify the deployment target also as an env. var, since some Xcode versions
     # read this instead of the CMake field.
@@ -1030,8 +1030,8 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
     open(os.path.join(build_root, 'recmake.' + ('bat' if WINDOWS else 'sh')), 'w').write(' '.join(map(quote_parens, cmdline)))
     ret = subprocess.check_call(cmdline, cwd=build_root, env=build_env())
     if ret != 0:
-      errlog('CMake invocation failed with exit code {ret}!')
-      errlog('Working directory: ' + build_root)
+      errlog(f'CMake invocation failed with exit code {ret}')
+      errlog(f'Working directory: {build_root}')
       return False
   except OSError as e:
     if e.errno == errno.ENOENT:
@@ -1046,8 +1046,8 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
       return False
     raise
   except Exception as e:
-    errlog('CMake invocation failed due to exception!')
-    errlog('Working directory: ' + build_root)
+    errlog('CMake invocation failed due to exception')
+    errlog(f'Working directory: {build_root}')
     errlog(str(e))
     return False
 
@@ -1528,7 +1528,7 @@ def build_binaryen_tool(tool):
 
 
 def download_and_extract(archive, dest_dir, filename_prefix='', clobber=True):
-  debug_print('download_and_extract(archive={archive}, dest_dir={dest_dir})')
+  debug_print(f'download_and_extract(archive={archive}, dest_dir={dest_dir})')
 
   url = urljoin(emsdk_packages_url, archive)
 
@@ -2902,7 +2902,7 @@ def expand_sdk_name(name, activating):
   return name
 
 
-def main(args):  # noqa: C901, PLR0911, PLR0912, PLR0915
+def main(args):  # noqa: C901, PLR0911, PLR0912
   if not args:
     errlog("Missing command; Type 'emsdk help' to get a list of commands.")
     return 1
@@ -3087,7 +3087,7 @@ def main(args):  # noqa: C901, PLR0911, PLR0912, PLR0915
     tool_name, url_and_refspec = forked_url.split('@')
     t = find_tool(tool_name)
     if not t:
-      errlog('Failed to find tool {tool_name}!')
+      errlog(f'Failed to find tool {tool_name}')
       return False
     else:
       t.url, t.git_branch, t.remote_name = parse_github_url_and_refspec(url_and_refspec)

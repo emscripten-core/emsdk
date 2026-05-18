@@ -68,7 +68,7 @@ def make_python_patch():
         urllib.request.urlretrieve(download_url, filename)
 
     os.mkdir('python-nuget')
-    check_call(unzip_cmd() + [os.path.abspath(filename)], cwd='python-nuget')
+    check_call([*unzip_cmd(), os.path.abspath(filename)], cwd='python-nuget')
     os.remove(filename)
 
     src_dir = os.path.join('python-nuget', 'tools')
@@ -77,7 +77,7 @@ def make_python_patch():
     check_call([python_exe, '-m', 'pip', 'install', 'pywin32==310', '--no-warn-script-location'])
     check_call([python_exe, '-m', 'pip', 'install', PSUTIL])
 
-    check_call(zip_cmd() + [os.path.join('..', '..', out_filename), '.'], cwd=src_dir)
+    check_call([*zip_cmd(), os.path.join('..', '..', out_filename), '.'], cwd=src_dir)
     print('Created: %s' % out_filename)
 
     # cleanup if everything went fine
@@ -137,7 +137,7 @@ def build_python():
       configure_args = ['CFLAGS=' + build_flags, 'CXXFLAGS=' + build_flags, 'LDFLAGS=' + min_macos_version_line]
     else:
       configure_args = []
-    check_call(['./configure'] + configure_args, cwd=src_dir, env=env)
+    check_call(['./configure', *configure_args], cwd=src_dir, env=env)
     check_call(['make', '-j', str(multiprocessing.cpu_count())], cwd=src_dir, env=env)
     check_call(['make', 'install', 'DESTDIR=install'], cwd=src_dir, env=env)
 
