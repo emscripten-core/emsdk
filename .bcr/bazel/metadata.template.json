@@ -1,0 +1,16 @@
+{
+  "homepage": "https://emscripten.org",
+  "maintainers": [
+    {
+      "name": "Sam Clegg",
+      "email": "sbc@chromium.org",
+      "github": "sbc100",
+      "github_user_id": 515813
+    }
+  ],
+  "repository": [
+    "github:emscripten-core/emsdk"
+  ],
+  "versions": [],
+  "yanked_versions": {}
+}
