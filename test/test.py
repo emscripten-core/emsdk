@@ -15,10 +15,7 @@ MACOS_ARM64 = MACOS and platform.machine() == 'arm64'
 emconfig = os.path.abspath('.emscripten')
 assert os.path.exists(emconfig)
 
-upstream_emcc = os.path.join('upstream', 'emscripten', 'emcc')
-emsdk = './emsdk'
 if WINDOWS:
-  upstream_emcc += '.bat'
   emsdk = 'emsdk.bat'
 else:
   emsdk = './emsdk'
@@ -136,6 +133,16 @@ def run_emsdk(cmd):
   check_call([emsdk, *cmd])
 
 
+def upstream_emcc():
+  emcc = os.path.join('upstream', 'emscripten', 'emcc')
+  if WINDOWS:
+    if os.path.exists(emcc + '.exe'):
+      return emcc + '.exe'
+    else:
+      return emcc + '.bat'
+  return emcc
+
+
 class Emsdk(unittest.TestCase):
   @classmethod
   def setUpClass(cls):
@@ -224,7 +231,7 @@ int main() {
 
   def test_lib_building(self):
     print('building proper system libraries')
-    do_lib_building(upstream_emcc)
+    do_lib_building(upstream_emcc())
 
   def test_redownload(self):
     print('go back to using upstream')
@@ -248,11 +255,11 @@ int main() {
       old_config = f.read()
     self.assertEqual(config, old_config)
     # TODO; test on latest as well
-    check_call(upstream_emcc + ' hello_world.c')
+    check_call(upstream_emcc() + ' hello_world.c')
 
   def test_closure(self):
     # Specifically test with `--closure` so we know that node_modules is working
-    check_call(upstream_emcc + ' hello_world.c --closure=1')
+    check_call(upstream_emcc() + ' hello_world.c --closure=1')
 
   def test_specific_version(self):
     if MACOS_ARM64:
