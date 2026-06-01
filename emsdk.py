@@ -870,7 +870,7 @@ def llvm_build_dir(tool):
   generator_suffix = cmake_generator_prefix()
   bitness_suffix = '_32' if tool.bitness == 32 else '_64'
 
-  if hasattr(tool, 'git_branch'):
+  if tool.git_branch:
     build_dir = 'build_' + tool.git_branch.replace(os.sep, '-') + generator_suffix + bitness_suffix
   else:
     build_dir = 'build_' + tool.version + generator_suffix + bitness_suffix
@@ -1064,7 +1064,7 @@ def xcode_sdk_version():
 
 def cmake_target_platform(tool):
   # Source: https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2017%202022.html#platform-selection
-  if hasattr(tool, 'arch'):
+  if tool.arch:
     if tool.arch == 'arm64':
       return 'ARM64'
     elif tool.arch == 'x86_64':
@@ -1578,14 +1578,14 @@ def to_native_path(p):
 def get_required_path(active_tools):
   path_add = [to_native_path(EMSDK_PATH)]
   for tool in active_tools:
-    if hasattr(tool, 'activated_path'):
+    if tool.activated_path:
       path = to_native_path(tool.expand_vars(tool.activated_path))
       # If the tool has an activated_path_skip attribute then we don't add
       # the tools path to the users path if a program by that name is found
       # in the existing PATH.  This allows us to, for example, add our version
       # node to the users PATH if, and only if, they don't already have a
       # another version of node in their PATH.
-      if hasattr(tool, 'activated_path_skip'):
+      if tool.activated_path_skip:
         current_path = shutil.which(tool.activated_path_skip)
         # We found an executable by this name in the current PATH, but we
         # ignore our own version for this purpose.
@@ -1803,7 +1803,32 @@ def generate_em_config(active_tools, permanently_activate, system):
 
 
 class Tool:
+  os = None
+  bitness = None
+  append_bitness = True
+  is_old = False
+  version = None
+  activated_path = None
+  cmake_build_type = None
+  install_path = None
+  activated_path_skip = False
+  activated_cfg = None
+  activated_env = None
+  arch = None
+  custom_is_installed_script = None
+  custom_install_script = None
+  custom_uninstall_script = None
+  emscripten_releases_hash = None
+  git_branch = None
+  url = None
+  macos_url = None
+  unix_url = None
+  linux_url = None
+  windows_url = None
+
   def __init__(self, data):
+    self.uses = []
+
     # Convert the dictionary representation of the tool in 'data' to members of
     # this class for convenience.
     for key, value in data.items():
@@ -1813,7 +1838,7 @@ class Tool:
     self.name = self.id
     if self.version:
       self.name += '-' + self.version
-    if hasattr(self, 'bitness'):
+    if self.bitness:
       self.name += '-' + str(self.bitness) + 'bit'
 
   def __str__(self):
@@ -1848,29 +1873,28 @@ class Tool:
 
   # Return true if this tool requires building from source, and false if this is a precompiled tool.
   def needs_compilation(self):
-    if hasattr(self, 'cmake_build_type'):
+    if self.cmake_build_type:
       return True
 
-    if hasattr(self, 'uses'):
-      for tool_name in self.uses:
-        tool = find_tool(tool_name)
-        if not tool:
-          debug_print(f'Tool {self} depends on {tool_name} which does not exist!')
-          continue
-        if tool.needs_compilation():
-          return True
+    for tool_name in self.uses:
+      tool = find_tool(tool_name)
+      if not tool:
+        debug_print(f'Tool {self} depends on {tool_name} which does not exist!')
+        continue
+      if tool.needs_compilation():
+        return True
 
     return False
 
   # Specifies the target path where this tool will be installed to. This could
   # either be a directory or a filename (e.g. in case of node.js)
   def installation_path(self):
-    if hasattr(self, 'install_path'):
+    if self.install_path:
       pth = self.expand_vars(self.install_path)
       return sdk_path(pth)
     p = self.version
-    if hasattr(self, 'bitness') and (not hasattr(self, 'append_bitness') or self.append_bitness):
-      p += '_' + str(self.bitness) + 'bit'
+    if self.bitness and self.append_bitness:
+      p += f'_{self.bitness}bit'
     return sdk_path(os.path.join(self.id, p))
 
   # Specifies the target directory this tool will be installed to.
@@ -1884,34 +1908,27 @@ class Tool:
   # Returns the configuration item that needs to be added to .emscripten to make
   # this Tool active for the current user.
   def activated_config(self):
-    if hasattr(self, 'activated_cfg'):
-      activated_cfg = self.activated_cfg
-    else:
+    if not self.activated_cfg:
       return {}
 
     config = OrderedDict()
-    expanded = to_unix_path(self.expand_vars(activated_cfg))
+    expanded = to_unix_path(self.expand_vars(self.activated_cfg))
     for specific_cfg in expanded.split(';'):
       name, value = specific_cfg.split('=')
       config[name] = value.strip("'")
     return config
 
   def activated_environment(self):
-    if hasattr(self, 'activated_env'):
-      activated_env = self.activated_env
-    else:
+    if not self.activated_env:
       return []
 
-    return self.expand_vars(activated_env).split(';')
+    return self.expand_vars(self.activated_env).split(';')
 
   def compatible_with_this_arch(self):
-    if hasattr(self, 'arch'):
-      if self.arch != ARCH:
-        return False
-    return True
+    return self.arch == ARCH or not self.arch
 
   def compatible_with_this_os(self):
-    if hasattr(self, 'os'):
+    if self.os:
       if self.os == 'all':
         return True
       if self.compatible_with_this_arch() and ((WINDOWS and 'win' in self.os) or (LINUX and ('linux' in self.os or 'unix' in self.os)) or (MACOS and ('macos' in self.os or 'unix' in self.os))):
@@ -1919,22 +1936,22 @@ class Tool:
       else:
         return False
     else:
-      if not any(hasattr(self, a) for a in ('macos_url', 'windows_url', 'unix_url', 'linux_url')):
+      if not any((self.macos_url, self.windows_url, self.unix_url, self.linux_url)):
         return True
 
-    if MACOS and hasattr(self, 'macos_url') and self.compatible_with_this_arch():
+    if MACOS and self.macos_url and self.compatible_with_this_arch():
       return True
 
-    if LINUX and hasattr(self, 'linux_url') and self.compatible_with_this_arch():
+    if LINUX and self.linux_url and self.compatible_with_this_arch():
       return True
 
-    if WINDOWS and hasattr(self, 'windows_url') and self.compatible_with_this_arch():
+    if WINDOWS and self.windows_url and self.compatible_with_this_arch():
       return True
 
-    if UNIX and hasattr(self, 'unix_url'):
+    if UNIX and self.unix_url:
       return True
 
-    return hasattr(self, 'url')
+    return self.url is not None
 
   # the "version file" is a file inside install dirs that indicates the
   # version installed there. this helps disambiguate when there is more than
@@ -1958,7 +1975,7 @@ class Tool:
   def is_installed(self, skip_version_check=False):
     # If this tool/sdk depends on other tools, require that all dependencies are
     # installed for this tool to count as being installed.
-    if hasattr(self, 'uses'):
+    if self.uses:
       for tool_name in self.uses:
         tool = find_tool(tool_name)
         if tool is None:
@@ -1981,10 +1998,10 @@ class Tool:
     # clang-main-64bit, clang-main-32bit and clang-main-64bit each
     # share the same git repo), require that in addition to the installation
     # directory, each item in the activated PATH must exist.
-    if hasattr(self, 'activated_path') and not os.path.exists(self.expand_vars(self.activated_path)):
+    if self.activated_path and not os.path.exists(self.expand_vars(self.activated_path)):
       content_exists = False
 
-    if hasattr(self, 'custom_is_installed_script'):
+    if self.custom_is_installed_script:
       if self.custom_is_installed_script == 'is_binaryen_installed':
         return is_binaryen_installed(self)
       elif self.custom_is_installed_script == 'is_firefox_installed':
@@ -2031,7 +2048,7 @@ class Tool:
         debug_print(f'{self} is not active, because environment variable key="{key}" has value "{os.getenv(key)}" but should have value "{value}"')
         return False
 
-    if hasattr(self, 'activated_path'):
+    if self.activated_path:
       path = to_unix_path(self.expand_vars(self.activated_path))
       for p in path:
         path_items = os.environ['PATH'].replace('\\', '/').split(ENVPATH_SEPARATOR)
@@ -2044,24 +2061,20 @@ class Tool:
   # Otherwise, this function returns a string that describes the reason why this
   # tool is not available.
   def can_be_installed(self):
-    if hasattr(self, 'bitness'):
-      if self.bitness == 64 and not is_os_64bit():
+    if self.bitness == 64 and not is_os_64bit():
         return "this tool is only provided for 64-bit OSes"
     return True
 
   def download_url(self):
-    if WINDOWS and hasattr(self, 'windows_url'):
+    if WINDOWS and self.windows_url:
       return self.windows_url
-    elif MACOS and hasattr(self, 'macos_url'):
+    elif MACOS and self.macos_url:
       return self.macos_url
-    elif LINUX and hasattr(self, 'linux_url'):
+    elif LINUX and self.linux_url:
       return self.linux_url
-    elif UNIX and hasattr(self, 'unix_url'):
+    elif UNIX and self.unix_url:
       return self.unix_url
-    elif hasattr(self, 'url'):
-      return self.url
-    else:
-      return None
+    return self.url
 
   def install(self):
     """Returns True if the Tool was installed of False if was skipped due to
@@ -2092,7 +2105,7 @@ class Tool:
       print(f"All SDK components already installed: '{self}'.")
       return False
 
-    if getattr(self, 'custom_install_script', None) == 'emscripten_npm_install':
+    if self.custom_install_script == 'emscripten_npm_install':
       # upstream tools have hardcoded paths that are not stored in emsdk_manifest.json registry
       install_path = 'upstream'
       emscripten_dir = os.path.join(EMSDK_PATH, install_path, 'emscripten')
@@ -2113,7 +2126,7 @@ class Tool:
     # However all tools that are sourced directly from git branches do need to be
     # installed every time when requested, since the install step is then used to git
     # pull the tool to a newer version.
-    if self.is_installed() and not hasattr(self, 'git_branch'):
+    if self.is_installed() and not self.git_branch:
       print(f"Skipped installing {self.name}, already installed.")
       return False
 
@@ -2127,9 +2140,9 @@ class Tool:
       'download_node_nightly': download_node_nightly,
       'download_firefox': download_firefox,
     }
-    if hasattr(self, 'custom_install_script') and self.custom_install_script in custom_install_scripts:
+    if self.custom_install_script in custom_install_scripts:
       success = custom_install_scripts[self.custom_install_script](self)
-    elif hasattr(self, 'git_branch'):
+    elif self.git_branch:
       success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch, getattr(self, 'remote_name', 'origin'))
     elif url.endswith(ARCHIVE_SUFFIXES):
       success = download_and_extract(url, self.installation_path(),
@@ -2140,7 +2153,7 @@ class Tool:
     if not success:
       exit_with_error("installation failed!")
 
-    if hasattr(self, 'custom_install_script'):
+    if self.custom_install_script:
       if self.custom_install_script == 'emscripten_npm_install':
         success = emscripten_npm_install(self, self.installation_path())
       elif self.custom_install_script in {'build_llvm', 'build_ninja', 'build_ccache', 'download_node_nightly', 'download_firefox'}:
@@ -2158,7 +2171,7 @@ class Tool:
     # Install an emscripten-version.txt file if told to, and if there is one.
     # (If this is not an actual release, but some other build, then we do not
     # write anything.)
-    if hasattr(self, 'emscripten_releases_hash'):
+    if self.emscripten_releases_hash:
       emscripten_version_file_path = os.path.join(to_native_path(self.expand_vars(self.activated_path)), 'emscripten-version.txt')
       version = get_emscripten_release_version(self.emscripten_releases_hash)
       if version:
@@ -2190,7 +2203,7 @@ class Tool:
       print(f"Tool '{self}' was not installed. No need to uninstall.")
       return
     print(f"Uninstalling tool '{self}'..")
-    if hasattr(self, 'custom_uninstall_script'):
+    if self.custom_uninstall_script:
       if self.custom_uninstall_script == 'uninstall_binaryen':
         uninstall_binaryen(self)
       else:
@@ -2200,8 +2213,6 @@ class Tool:
     print(f"Done uninstalling '{self}'.")
 
   def dependencies(self):
-    if not hasattr(self, 'uses'):
-      return []
     deps = []
 
     for tool_name in self.uses:
@@ -2211,8 +2222,6 @@ class Tool:
     return deps
 
   def recursive_dependencies(self):
-    if not hasattr(self, 'uses'):
-      return []
     deps = []
     for tool_name in self.uses:
       tool = find_tool(tool_name)
@@ -2512,14 +2521,7 @@ def load_sdk_manifest():
       if not found_param:
         continue
       t2.is_old = i < len(category_list) - 2
-      if hasattr(t2, 'uses'):
-        t2.uses = [x.replace(param, ver) for x in t2.uses]
-
-      # Filter out expanded tools by version requirements, such as ["tag", "<=", "1.37.22"]
-      if hasattr(t2, 'version_filter'):
-        passes = passes_filters(param, ver, t2.version_filter)
-        if not passes:
-          continue
+      t2.uses = [x.replace(param, ver) for x in t2.uses]
 
       if is_sdk:
         if dependencies_exist(t2):
@@ -2536,9 +2538,6 @@ def load_sdk_manifest():
   for tool in manifest['tools']:
     t = Tool(tool)
     if t.compatible_with_this_os():
-      if not hasattr(t, 'is_old'):
-        t.is_old = False
-
       # Expand the metapackages that refer to tags
       if '%tag%' in t.version:
         expand_category_param('%tag%', emscripten_tags, t, is_sdk=False)
