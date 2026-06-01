@@ -48,7 +48,6 @@ _TEST_TARGET_SUFFIXES = [
 cc_binary(
     name = "long_command_line",
     srcs = ["long_command_line.cc"],
-    linkshared = True,
     deps = [":{}_{}".format(target, suffix) for target in _TEST_TARGETS for suffix in _TEST_TARGET_SUFFIXES],
 )
 
