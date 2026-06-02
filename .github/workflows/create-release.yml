@@ -9,6 +9,9 @@ on:
       nonlto-sha:
         required: true
         type: string
+      version:
+        required: false
+        type: string
 
 jobs:
   create-release-pr:
@@ -17,7 +20,14 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Run create_release.py
-        run: python3 scripts/create_release.py -r ${{ inputs.lto-sha }} -a ${{ inputs.nonlto-sha }} --gh-action
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          EXTRA_ARGS=""
+          if [ -n "$VERSION" ]; then
+            EXTRA_ARGS="-v $VERSION"
+          fi
+          python3 scripts/create_release.py -r ${{ inputs.lto-sha }} -a ${{ inputs.nonlto-sha }} --gh-action $EXTRA_ARGS
       - name: Create PR
         id: cpr
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
