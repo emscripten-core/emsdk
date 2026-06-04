@@ -40,7 +40,7 @@ def get_root_and_script_ext(repository_ctx):
         else:
             fail("Unsupported architecture for MacOS")
     elif repository_ctx.os.name.startswith("windows"):
-        return (repository_ctx.path(Label("@emscripten_bin_win//:BUILD.bazel")).dirname, ".bat")
+        return (repository_ctx.path(Label("@emscripten_bin_win//:BUILD.bazel")).dirname, ".exe")
     else:
         fail("Unsupported operating system")
 
