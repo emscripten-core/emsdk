@@ -133,8 +133,8 @@ def run_emsdk(cmd):
   check_call([emsdk, *cmd])
 
 
-def upstream_emcc():
-  emcc = os.path.join('upstream', 'emscripten', 'emcc')
+def upstream_emcc(root='.'):
+  emcc = os.path.join(root, 'upstream', 'emscripten', 'emcc')
   if WINDOWS:
     if os.path.exists(emcc + '.exe'):
       return emcc + '.exe'
@@ -186,9 +186,7 @@ int main() {
     check_call([emsdk, 'activate', 'latest'])
 
     # Check that emcc exists in the expected location
-    emcc = os.path.join(longpath, 'upstream', 'emscripten', 'emcc')
-    if WINDOWS:
-      emcc += '.bat'
+    emcc = upstream_emcc(longpath)
     print(emcc)
     self.assertTrue(os.path.exists(emcc))
 
