@@ -282,6 +282,10 @@ int main() {
     if WINDOWS:
       # It takes over 30 mins to build binaryen using Visual Studio in CI
       self.skipTest('test is too slow under windows')
+    if MACOS:
+      # Our CI uses and older version of macOS which only as 14.3.1
+      # TODO: Remove this if/when we update the emsdk CI.
+      self.skipTest('building binaryen requries xcode 15.3 because it uses std::ranges')
     run_emsdk(['install', '--build=Release', 'binaryen-main-64bit'])
 
   def test_no_32bit(self):
