@@ -1928,24 +1928,27 @@ class Tool:
     return self.arch == ARCH or not self.arch
 
   def compatible_with_this_os(self):
+    if not self.compatible_with_this_arch():
+      return False
+
     if self.os:
+      assert self.os in {'all', 'linux', 'win', 'macos'}
       if self.os == 'all':
         return True
-      if self.compatible_with_this_arch() and ((WINDOWS and 'win' in self.os) or (LINUX and ('linux' in self.os or 'unix' in self.os)) or (MACOS and ('macos' in self.os or 'unix' in self.os))):
+      if (WINDOWS and self.os == 'win') or (LINUX and (self.os in {'linux', 'unix'})) or (MACOS and (self.os in {'macos', 'unix'})):
         return True
-      else:
-        return False
-    else:
-      if not any((self.macos_url, self.windows_url, self.unix_url, self.linux_url)):
-        return True
+      return False
 
-    if MACOS and self.macos_url and self.compatible_with_this_arch():
+    if not any((self.macos_url, self.windows_url, self.unix_url, self.linux_url)):
       return True
 
-    if LINUX and self.linux_url and self.compatible_with_this_arch():
+    if MACOS and self.macos_url:
       return True
 
-    if WINDOWS and self.windows_url and self.compatible_with_this_arch():
+    if LINUX and self.linux_url:
+      return True
+
+    if WINDOWS and self.windows_url:
       return True
 
     if UNIX and self.unix_url:
