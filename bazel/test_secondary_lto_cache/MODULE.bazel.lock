@@ -188,7 +188,7 @@
                 "libnoexit",
                 "libc-debug",
                 "libdlmalloc",
-                "libcompiler_rt",
+                "libclang_rt.builtins",
                 "libc++-noexcept",
                 "libc++-debug-noexcept",
                 "libc++abi-debug-noexcept",
