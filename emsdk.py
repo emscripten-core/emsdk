@@ -98,16 +98,17 @@ else:
   if os.name == 'nt' or ('windows' in os.getenv('SYSTEMROOT', '').lower()) or ('windows' in os.getenv('COMSPEC', '').lower()):
     WINDOWS = True
 
-  if os.getenv('MSYSTEM'):
+  msystem = os.getenv('MSYSTEM')
+  if msystem:
     MSYS = True
     # Some functions like os.path.normpath() exhibit different behavior between
     # different versions of Python, so we need to distinguish between the MinGW
     # and MSYS versions of Python
     if sysconfig.get_platform() == 'mingw':
       MINGW = True
-    if os.getenv('MSYSTEM') != 'MSYS' and os.getenv('MSYSTEM') != 'MINGW64':
+    if msystem not in {'MSYS', 'MINGW64'}:
       # https://stackoverflow.com/questions/37460073/msys-vs-mingw-internal-environment-variables
-      errlog('Warning: MSYSTEM environment variable is present, and is set to "' + os.getenv('MSYSTEM') + '". This shell has not been tested with emsdk and may not work.')
+      errlog(f'Warning: MSYSTEM environment variable is present, and is set to "{msystem}". This shell has not been tested with emsdk and may not work.')
 
   if platform.mac_ver()[0]:
     MACOS = True
@@ -288,7 +289,7 @@ def cmake_generator_prefix():
 # Removes a directory tree even if it was readonly, and doesn't throw exception
 # on failure.
 def remove_tree(d):
-  debug_print('remove_tree(' + str(d) + ')')
+  debug_print(f'remove_tree({d})')
   if not os.path.exists(d):
     return
   try:
@@ -364,7 +365,7 @@ def win_get_environment_variable(key, system=True, user=True, fallback=True):
 
 
 def win_set_environment_variable(key, value, system, user):
-  debug_print('set ' + str(key) + '=' + str(value) + ', in system=' + str(system))
+  debug_print(f'set {key}={value}, in system={system}')
   previous_value = win_get_environment_variable(key, system=system, user=user)
   if previous_value == value:
     debug_print('  no need to set, since same value already exists.')
@@ -417,7 +418,7 @@ def win_set_environment_variables(env_vars_to_add, system, user):
         changed = True
         print('Setting global environment variables:')
 
-      print(key + ' = ' + value)
+      print(f'{key} = {value}')
 
   if not changed:
     print('Global environment variables up to date')
@@ -471,11 +472,11 @@ def is_nonempty_directory(path):
 
 
 def run(cmd, cwd=None, quiet=False):
-  debug_print('run(cmd=' + str(cmd) + ', cwd=' + str(cwd) + ')')
+  debug_print(f'run(cmd={cmd}, cwd={cwd})')
   process = subprocess.Popen(cmd, cwd=cwd, env=os.environ.copy())
   process.communicate()
   if process.returncode != 0 and not quiet:
-    errlog(str(cmd) + ' failed with error code ' + str(process.returncode) + '!')
+    errlog(f'{cmd} failed with error code {process.returncode}')
   return process.returncode
 
 
@@ -964,7 +965,7 @@ def find_cmake():
 def make_build(build_root, build_type):
   debug_print(f'make_build(build_root={build_root}, build_type={build_type})')
   if CPU_CORES > 1:
-    print('Performing a parallel build with ' + str(CPU_CORES) + ' cores.')
+    print(f'Performing a parallel build with {CPU_CORES} cores.')
   else:
     print('Performing a singlethreaded build.')
 
@@ -999,7 +1000,7 @@ def make_build(build_root, build_type):
 
 
 def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_args):
-  debug_print('cmake_configure(generator=' + str(generator) + ', build_root=' + str(build_root) + ', src_root=' + str(src_root) + ', build_type=' + str(build_type) + ', extra_cmake_args=' + str(extra_cmake_args) + ')')
+  debug_print(f'cmake_configure(generator={generator}, build_root={build_root}, src_root={src_root}, build_type={build_type}, extra_cmake_args={extra_cmake_args})')
   # Configure
   if not os.path.isdir(build_root):
     # Create build output directory if it doesn't yet exist.
@@ -1121,7 +1122,7 @@ def cmake_configure_and_build(cmake_generator, build_root, cmakelists_dir, build
 
 
 def build_llvm(tool):
-  debug_print('build_llvm(' + str(tool) + ')')
+  debug_print(f'build_llvm({tool})')
   llvm_root = tool.installation_path()
   llvm_src_root = os.path.join(llvm_root, 'src')
   success = git_clone_checkout_and_pull(tool.download_url(), llvm_src_root, tool.git_branch)
@@ -1181,7 +1182,7 @@ def build_llvm(tool):
 
 
 def build_ninja(tool):
-  debug_print('build_ninja(' + str(tool) + ')')
+  debug_print(f'build_ninja({tool})')
   root = os.path.normpath(tool.installation_path())
   src_root = os.path.join(root, 'src')
   success = git_clone_checkout_and_pull(tool.download_url(), src_root, tool.git_branch)
@@ -1216,7 +1217,7 @@ def build_ninja(tool):
 
 
 def build_ccache(tool):
-  debug_print('build_ccache(' + str(tool) + ')')
+  debug_print(f'build_ccache({tool})')
   root = os.path.normpath(tool.installation_path())
   src_root = os.path.join(root, 'src')
   success = git_clone_checkout_and_pull(tool.download_url(), src_root, tool.git_branch)
@@ -1259,7 +1260,7 @@ cache_dir = %s
 
 
 def download_firefox(tool):
-  debug_print('download_firefox(' + str(tool) + ')')
+  debug_print(f'download_firefox({tool})')
 
   # Use mozdownload to acquire Firefox versions.
   try:
@@ -1319,7 +1320,7 @@ def download_firefox(tool):
   exe_dir = os.path.join(root, 'Contents', 'MacOS') if MACOS else root
   firefox_exe = os.path.join(exe_dir, exe_suffix('firefox'))
   if os.path.isfile(firefox_exe):
-    print(firefox_exe + ' is already installed, skipping..')
+    print(f'{firefox_exe} is already installed, skipping..')
     save_actual_version()
     return True
 
@@ -1340,7 +1341,7 @@ def download_firefox(tool):
     elif filename.endswith('.tar.xz'):
       tar_type = 'r:xz'
     else:
-      raise Exception('Unknown archive type!')
+      raise Exception('Unknown archive type')
 
     with tarfile.open(filename, tar_type) as tar:
       tar.extractall(path=root)
@@ -1442,9 +1443,9 @@ def emscripten_npm_install(tool, directory):
   if not node_tool:
     npm_fallback = shutil.which('npm')
     if not npm_fallback:
-      errlog('Failed to find npm command!')
-      errlog('Running "npm ci" in installed Emscripten root directory ' + tool.installation_path() + ' is required!')
-      errlog('Please install node.js first!')
+      errlog('Failed to find npm command')
+      errlog(f'Running "npm ci" in installed Emscripten root directory {tool.installation_path()} is required')
+      errlog('Please install node.js first')
       return False
     node_path = os.path.dirname(npm_fallback)
   else:
@@ -1484,12 +1485,12 @@ def binaryen_build_root(tool):
   if build_root.endswith(('/', '\\')):
     build_root = build_root[:-1]
   generator_prefix = cmake_generator_prefix()
-  build_root = build_root + generator_prefix + '_' + str(tool.bitness) + 'bit_binaryen'
+  build_root = f'{build_root}{generator_prefix}_{tool.bitness}bit_binaryen'
   return build_root
 
 
 def uninstall_binaryen(tool):
-  debug_print('uninstall_binaryen(' + str(tool) + ')')
+  debug_print(f'uninstall_binaryen({tool})')
   build_root = binaryen_build_root(tool)
   print(f"Deleting path '{build_root}'")
   remove_tree(build_root)
@@ -1501,7 +1502,7 @@ def is_binaryen_installed(tool):
 
 
 def build_binaryen_tool(tool):
-  debug_print('build_binaryen_tool(' + str(tool) + ')')
+  debug_print(f'build_binaryen_tool({tool})')
   src_root = tool.installation_path()
   build_root = binaryen_build_root(tool)
   build_type = decide_cmake_build_type(tool)
@@ -1837,9 +1838,9 @@ class Tool:
     # Cache the name ID of this Tool (these are read very often)
     self.name = self.id
     if self.version:
-      self.name += '-' + self.version
+      self.name += f'-{self.version}'
     if self.bitness:
-      self.name += '-' + str(self.bitness) + 'bit'
+      self.name += f'-{self.bitness}bit'
 
   def __str__(self):
     return self.name
@@ -1988,11 +1989,11 @@ class Tool:
           return False
 
     if self.download_url() is None:
-      debug_print(str(self) + ' has no files to download, so is installed by default.')
+      debug_print(f'{self} has no files to download, so is installed by default.')
       return True
 
     content_exists = is_nonempty_directory(self.installation_path())
-    debug_print(str(self) + ' installation path is ' + self.installation_path() + ', exists: ' + str(content_exists) + '.')
+    debug_print(f'{self} installation path is {self.installation_path()}, exists: {content_exists}.')
 
     # For e.g. fastcomp clang from git repo, the activated PATH is the
     # directory where the compiler is built to, and installation_path is
@@ -2010,7 +2011,7 @@ class Tool:
       elif self.custom_is_installed_script == 'is_firefox_installed':
         return is_firefox_installed(self)
       else:
-        raise Exception('Unknown custom_is_installed_script directive "' + self.custom_is_installed_script + '"!')
+        raise Exception(f'Unknown custom_is_installed_script: "{self.custom_is_installed_script}"')
 
     return content_exists and (skip_version_check or self.is_installed_version())
 
@@ -2166,7 +2167,7 @@ class Tool:
       elif self.custom_install_script == 'build_binaryen':
         success = build_binaryen_tool(self)
       else:
-        raise Exception('Unknown custom_install_script command "' + self.custom_install_script + '"!')
+        raise Exception(f'Unknown custom_install_script: "{self.custom_install_script}"')
 
     if not success:
       exit_with_error("installation failed!")
@@ -2531,12 +2532,12 @@ def load_sdk_manifest():
           if not find_sdk(t2.name):
             add_sdk(t2)
           else:
-            debug_print('SDK ' + str(t2) + ' already existed in manifest, not adding twice')
+            debug_print(f'SDK {t2} already existed in manifest, not adding twice')
       else:
         if not find_tool(t2.name):
           add_tool(t2)
         else:
-          debug_print('Tool ' + str(t2) + ' already existed in manifest, not adding twice')
+          debug_print(f'Tool {t2} already existed in manifest, not adding twice')
 
   for tool in manifest['tools']:
     t = Tool(tool)
@@ -2628,7 +2629,9 @@ def set_active_tools(tools_to_activate, permanently_activate, system):
 
   if tools_to_activate:
     tools = [x for x in tools_to_activate if not x.is_sdk]
-    print('Setting the following tools as active:\n   ' + '\n   '.join([str(t) for t in tools]))
+    print('Setting the following tools as active:')
+    for t in tools:
+      print(f'   {t}')
     print('')
 
   generate_em_config(tools_to_activate, permanently_activate, system)
@@ -2812,7 +2815,7 @@ def construct_env_with_vars(env_vars_to_add):
       # Don't set env vars which are already set to the correct value.
       if key in os.environ and to_unix_path(os.environ[key]) == to_unix_path(value):
         continue
-      info(key + ' = ' + value)
+      info(f'{key} = {value}')
       if POWERSHELL:
         env_string += f'$env:{key}="{value}"\n'
       elif CMD:
@@ -3277,7 +3280,7 @@ def main(args):  # noqa: C901, PLR0911, PLR0912
       if cmd == 'activate':
         tools_to_activate += [tool]
       elif tool in tools_to_activate:
-        print('Deactivating tool ' + str(tool) + '.')
+        print(f'Deactivating tool {tool}.')
         tools_to_activate.remove(tool)
       else:
         print(f'Tool "{arg}" was not active, no need to deactivate.')
