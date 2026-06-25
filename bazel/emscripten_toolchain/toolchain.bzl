@@ -318,6 +318,7 @@ def _impl(ctx):
         # Blaze requests this feature by default.
         # Blaze also tests if this feature is supported before setting includes. (...but why?)
         feature(name = "include_paths"),
+        feature(name = "external_include_paths"),
 
         # Blaze tests if this feature is enabled in order to create implicit
         # "nodeps" .so outputs from cc_library rules.
@@ -747,6 +748,17 @@ def _impl(ctx):
                     expand_if_available = "includes",
                 ),
             ],
+        ),
+        flag_set(
+            actions = preprocessor_compile_actions,
+            flag_groups = [
+                flag_group(
+                    flags = ["-isystem", "%{external_include_paths}"],
+                    iterate_over = "external_include_paths",
+                    expand_if_available = "external_include_paths",
+                ),
+            ],
+            features = ["external_include_paths"],
         ),
         flag_set(
             actions = preprocessor_compile_actions,
