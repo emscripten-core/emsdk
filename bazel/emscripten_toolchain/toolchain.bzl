@@ -1105,14 +1105,6 @@ def _impl(ctx):
                 ),
             ],
         ),
-        # Use llvm backend.  Off by default, enabled via --features=llvm_backend
-        env_set(
-            actions = all_compile_actions +
-                      all_link_actions +
-                      [ACTION_NAMES.cpp_link_static_library],
-            env_entries = [env_entry(key = "EMCC_WASM_BACKEND", value = "1")],
-            with_features = [with_feature_set(features = ["llvm_backend"])],
-        ),
         # Debug compile and link. Off by default, enabled via --features=emcc_debug
         env_set(
             actions = all_compile_actions,
