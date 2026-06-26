@@ -565,18 +565,18 @@ def _impl(ctx):
         # Emscripten-specific settings:
         flag_set(
             actions = all_compile_actions + all_link_actions,
-            flags = ["-s", "WASM=0"],
+            flags = ["-sWASM=0"],
             features = ["crosstool_cpu_asmjs"],
         ),
         flag_set(
             actions = all_compile_actions +
                       all_link_actions,
-            flags = ["-s", "USE_PTHREADS=1"],
+            flags = ["-sUSE_PTHREADS"],
             features = ["use_pthreads"],
         ),
         flag_set(
             actions = all_link_actions,
-            flags = ["-s", "EXIT_RUNTIME=1"],
+            flags = ["-sEXIT_RUNTIME"],
             features = ["exit_runtime"],
         ),
         flag_set(
@@ -596,7 +596,7 @@ def _impl(ctx):
         ),
         flag_set(
             actions = all_link_actions,
-            flags = ["-s", "PRINTF_LONG_DOUBLE=1"],
+            flags = ["-sPRINTF_LONG_DOUBLE"],
             features = ["precise_long_double_printf"],
         ),
         flag_set(
