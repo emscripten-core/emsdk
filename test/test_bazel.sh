@@ -22,6 +22,7 @@ cd bazel
 
 bazel build //hello-world:hello-world-wasm
 bazel build //hello-world:hello-world-wasm-simd
+bazel build //hello-world:hello-world-wasm-relaxed-simd
 
 pushd test_external
 bazel build //:hello-world-wasm

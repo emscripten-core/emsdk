@@ -454,6 +454,7 @@ def _impl(ctx):
         feature(
             name = "wasm_relaxed_simd",
             requires = [feature_set(features = ["llvm_backend"])],
+            implies = ["wasm_simd"],
         ),
         feature(
             name = "precise_long_double_printf",

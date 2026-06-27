@@ -25,6 +25,9 @@ def _wasm_transition_impl(settings, attr):
     if attr.simd:
         features.append("wasm_simd")
 
+    if attr.relaxed_simd:
+        features.append("wasm_relaxed_simd")
+
     platform = "@emsdk//:platform_wasm"
     if attr.standalone:
         platform = "@emsdk//:platform_wasi"
@@ -88,6 +91,9 @@ _WASM_BINARY_COMMON_ATTRS = {
         values = ["_default", "emscripten", "off"],
     ),
     "simd": attr.bool(
+        default = False,
+    ),
+    "relaxed_simd": attr.bool(
         default = False,
     ),
     "standalone": attr.bool(
