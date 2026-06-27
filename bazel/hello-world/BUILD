@@ -21,3 +21,10 @@ wasm_cc_binary(
     cc_target = ":hello-world-simd",
     simd = True,
 )
+
+wasm_cc_binary(
+    name = "hello-world-wasm-relaxed-simd",
+    cc_target = ":hello-world-simd",
+    simd = True,
+    relaxed_simd = True,
+)

@@ -8,6 +8,9 @@ if (-not $?) { Exit $LastExitCode }
 bazel build //hello-world:hello-world-wasm-simd
 if (-not $?) { Exit $LastExitCode }
 
+bazel build //hello-world:hello-world-wasm-relaxed-simd
+if (-not $?) { Exit $LastExitCode }
+
 Set-Location test_external
 
 bazel build //:hello-world-wasm
