@@ -17,11 +17,6 @@ def _wasm_transition_impl(settings, attr):
     if attr.exit_runtime == True:
         features.append("exit_runtime")
 
-    if attr.backend == "llvm":
-        features.append("llvm_backend")
-    elif attr.backend == "emscripten":
-        features.append("-llvm_backend")
-
     if attr.simd:
         features.append("wasm_simd")
 
@@ -72,10 +67,6 @@ _ALLOW_OUTPUT_EXTNAMES = [
 ]
 
 _WASM_BINARY_COMMON_ATTRS = {
-    "backend": attr.string(
-        default = "_default",
-        values = ["_default", "emscripten", "llvm"],
-    ),
     "cc_target": attr.label(
         cfg = _wasm_transition,
         mandatory = True,
