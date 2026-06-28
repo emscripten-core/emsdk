@@ -433,11 +433,6 @@ def _impl(ctx):
         # Primarily for toolchain maintainers:
         feature(name = "emcc_debug"),
         feature(name = "emcc_debug_link"),
-        feature(
-            name = "llvm_backend",
-            requires = [feature_set(features = ["crosstool_cpu_wasm"])],
-            enabled = True,
-        ),
 
         # Remove once flag is flipped.
         # See https://github.com/bazelbuild/bazel/issues/7687
@@ -448,12 +443,10 @@ def _impl(ctx):
         # Adds simd support, only available with the llvm backend.
         feature(
             name = "wasm_simd",
-            requires = [feature_set(features = ["llvm_backend"])],
         ),
         # Adds relaxed-simd support, only available with the llvm backend.
         feature(
             name = "wasm_relaxed_simd",
-            requires = [feature_set(features = ["llvm_backend"])],
         ),
         feature(
             name = "precise_long_double_printf",
@@ -576,7 +569,7 @@ def _impl(ctx):
         flag_set(
             actions = all_compile_actions + all_link_actions,
             flags = ["-pthread"],
-            features = ["llvm_backend", "use_pthreads"],
+            features = ["use_pthreads"],
         ),
         flag_set(
             actions = all_compile_actions + all_link_actions,
