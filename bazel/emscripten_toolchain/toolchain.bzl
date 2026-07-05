@@ -440,13 +440,14 @@ def _impl(ctx):
             name = "do_not_split_linking_cmdline",
         ),
 
-        # Adds simd support, only available with the llvm backend.
+        # Adds simd support
         feature(
             name = "wasm_simd",
         ),
-        # Adds relaxed-simd support, only available with the llvm backend.
+        # Adds relaxed-simd support
         feature(
             name = "wasm_relaxed_simd",
+            implies = ["wasm_simd"],
         ),
         feature(
             name = "precise_long_double_printf",
