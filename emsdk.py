@@ -1437,23 +1437,28 @@ def find_latest_installed_tool(name):
       return t
 
 
-# npm install in Emscripten root directory
-def emscripten_npm_install(tool, directory):
+def get_node_env():
   node_tool = find_latest_installed_tool('node')
   if not node_tool:
     npm_fallback = shutil.which('npm')
     if not npm_fallback:
       errlog('Failed to find npm command')
-      errlog(f'Running "npm ci" in installed Emscripten root directory {tool.installation_path()} is required')
-      errlog('Please install node.js first')
-      return False
+      errlog('npm is required for Emscripten setup. Please install node.js first')
+      return None, None
     node_path = os.path.dirname(npm_fallback)
   else:
     node_path = os.path.join(node_tool.installation_path(), 'bin')
 
-  npm = os.path.join(node_path, 'npm' + ('.cmd' if WINDOWS else ''))
   env = os.environ.copy()
   env["PATH"] = node_path + os.pathsep + env["PATH"]
+  return env, node_path
+
+
+def emscripten_npm_setup(directory):
+  env, node_path = get_node_env()
+  if not env:
+    return False
+  npm = os.path.join(node_path, 'npm' + ('.cmd' if WINDOWS else ''))
   print('Running post-install step: npm ci ...')
   try:
     subprocess.check_output(
@@ -1465,8 +1470,27 @@ def emscripten_npm_install(tool, directory):
     return False
 
   print('Done running: npm ci')
+  return True
 
+
+def sdk_post_install():
+  # Older versions of the sdk did not include the node_modules directory
+  # and require `npm ci` to be run post-install
+  emscripten_dir = os.path.join(EMSDK_PATH, 'upstream', 'emscripten')
+  if os.path.exists(os.path.join(emscripten_dir, 'node_modules')):
+    return True
+
+  return emscripten_npm_setup(emscripten_dir)
+
+
+def emscripten_install(tool):
+  # Modern versions of emscripten require bootstrap.py to be run before they
+  # can be used from a git checkout. On older versions we just run `npm ci`
+  directory = tool.installation_path()
   if os.path.isfile(os.path.join(directory, 'bootstrap.py')):
+    env = get_node_env()[0]
+    if not env:
+      return False
     try:
       subprocess.check_output([sys.executable, os.path.join(directory, 'bootstrap.py')],
                               cwd=directory, stderr=subprocess.STDOUT, env=env,
@@ -1476,6 +1500,9 @@ def emscripten_npm_install(tool, directory):
       return False
 
     print('Done running: Emscripten bootstrap')
+  else:
+    return emscripten_npm_setup(directory)
+
   return True
 
 
@@ -2109,15 +2136,9 @@ class Tool:
       print(f"All SDK components already installed: '{self}'.")
       return False
 
-    if self.custom_install_script == 'emscripten_npm_install':
-      # upstream tools have hardcoded paths that are not stored in emsdk_manifest.json registry
-      install_path = 'upstream'
-      emscripten_dir = os.path.join(EMSDK_PATH, install_path, 'emscripten')
-      # Older versions of the sdk did not include the node_modules directory
-      # and require `npm ci` to be run post-install
-      if not os.path.exists(os.path.join(emscripten_dir, 'node_modules')):
-        if not emscripten_npm_install(self, emscripten_dir):
-          exit_with_error('post-install step failed: emscripten_npm_install')
+    if self.custom_install_script == 'sdk_post_install':
+      if not sdk_post_install():
+        exit_with_error('post-install step failed: sdk_post_install')
 
     print(f"Done installing SDK '{self}'.")
     return True
@@ -2158,8 +2179,8 @@ class Tool:
       exit_with_error("installation failed!")
 
     if self.custom_install_script:
-      if self.custom_install_script == 'emscripten_npm_install':
-        success = emscripten_npm_install(self, self.installation_path())
+      if self.custom_install_script == 'emscripten_install':
+        success = emscripten_install(self)
       elif self.custom_install_script in {'build_llvm', 'build_ninja', 'build_ccache', 'download_node_nightly', 'download_firefox'}:
         # 'build_llvm' is a special one that does the download on its
         # own, others do the download manually.

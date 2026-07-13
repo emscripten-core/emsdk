@@ -504,7 +504,7 @@
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%",
     "activated_env": "EMSCRIPTEN=%installation_dir%",
-    "custom_install_script": "emscripten_npm_install"
+    "custom_install_script": "emscripten_install"
   },
   {
     "id": "emscripten",
@@ -516,7 +516,7 @@
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%",
     "activated_env": "EMSCRIPTEN=%installation_dir%",
-    "custom_install_script": "emscripten_npm_install"
+    "custom_install_script": "emscripten_install"
   },
   {
     "id": "emscripten",
@@ -570,7 +570,7 @@
     "activated_path": "%installation_dir%",
     "activated_env": "EMSCRIPTEN=%installation_dir%",
     "cmake_build_type": "Release",
-    "custom_install_script": "emscripten_npm_install"
+    "custom_install_script": "emscripten_install"
   },
   {
     "id": "emscripten",
@@ -583,7 +583,7 @@
     "activated_path": "%installation_dir%",
     "activated_env": "EMSCRIPTEN=%installation_dir%",
     "cmake_build_type": "Release",
-    "custom_install_script": "emscripten_npm_install"
+    "custom_install_script": "emscripten_install"
   },
   {
     "id": "binaryen",
@@ -677,7 +677,7 @@
     "bitness": 64,
     "uses": ["node-22.16.0-64bit", "releases-%releases-tag%-64bit"],
     "os": "linux",
-    "custom_install_script": "emscripten_npm_install"
+    "custom_install_script": "sdk_post_install"
   },
   {
     "version": "releases-%releases-tag%",
@@ -685,7 +685,7 @@
     "uses": ["node-22.16.0-64bit", "python-3.13.3-64bit", "releases-%releases-tag%-64bit"],
     "os": "macos",
     "arch": "x86_64",
-    "custom_install_script": "emscripten_npm_install"
+    "custom_install_script": "sdk_post_install"
   },
   {
     "version": "releases-%releases-tag%",
@@ -693,14 +693,14 @@
     "uses": ["node-22.16.0-64bit", "python-3.13.3-64bit", "releases-%releases-tag%-64bit"],
     "os": "macos",
     "arch": "arm64",
-    "custom_install_script": "emscripten_npm_install"
+    "custom_install_script": "sdk_post_install"
   },
   {
     "version": "releases-%releases-tag%",
     "bitness": 64,
     "uses": ["node-22.16.0-64bit", "python-3.13.3-64bit", "releases-%releases-tag%-64bit"],
     "os": "win",
-    "custom_install_script": "emscripten_npm_install"
+    "custom_install_script": "sdk_post_install"
   }
   ]
 }
