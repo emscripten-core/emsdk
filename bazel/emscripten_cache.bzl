@@ -86,10 +86,7 @@ def _emscripten_cache_repository_impl(repository_ctx):
 
         # Use the prebuilt cache
         use_builtin_cache = False
-
-        # Bazel 7 does not have the repo_metadata API, so prebuilt cache on Bazel 7 will not be marked as reproducible. This is not ideal, but it is a limitation of Bazel 7.
-        if hasattr(repository_ctx, "repo_metadata"):
-            repo_metadata = repository_ctx.repo_metadata(reproducible = True)
+        repo_metadata = repository_ctx.repo_metadata(reproducible = True)
 
     elif repository_ctx.attr.targets or repository_ctx.attr.configuration:
         root, script_ext = get_root_and_script_ext(repository_ctx)

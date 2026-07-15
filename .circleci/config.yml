@@ -363,7 +363,6 @@ workflows:
           matrix:
             parameters:
               bazel_version: 
-                - "7.x"
                 - "8.x"
                 - "9.x"
   test-bazel-mac-arm64:
@@ -372,7 +371,6 @@ workflows:
           matrix:
             parameters:
               bazel_version: 
-                - "7.x"
                 - "8.x"
                 - "9.x"
   test-bazel-windows:
@@ -383,6 +381,5 @@ workflows:
               # For some reason version resolution with "x.x" does not work on Windows,
               # so we have to specify full versions.
               bazel_version: 
-                - "7.7.1"
                 - "8.5.1"
                 - "9.0.0"
