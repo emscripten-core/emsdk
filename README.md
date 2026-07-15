@@ -50,7 +50,7 @@ important concepts to help understanding the internals of the SDK:
 
 Using the emsdk pre-compiled packages requires only the minimal set of
 dependencies lists below.  When building from source a wider set of tools
-include git, cmake, and a host compiler are required. See:
+including git, cmake, ninja, and a host compiler are required. See:
 https://emscripten.org/docs/building_from_source/toolchain_what_is_needed.html.
 
 ### Mac OS X
@@ -77,6 +77,9 @@ so there should be no issues with older versions of `libstdc++` or `libc++`.
 ### Windows
 
 - `java`: For running closure compiler (optional)
+
+If building from source, you must run `emsdk` inside a Visual Studio Developer
+Command Prompt (`cl.exe` in `PATH`) and have `ninja` installed.
 
 ## Uninstalling the Emscripten SDK
 
@@ -142,6 +145,13 @@ To obtain and build latest wasm SDK from source, run
 emsdk install sdk-main-64bit
 emsdk activate sdk-main-64bit
 ```
+
+Note that when building from source (`emsdk install sdk-main-64bit`,
+`binaryen-main-64bit`, or `llvm-git-main-64bit`), `emsdk` uses the Ninja
+generator (`-G Ninja`). You must have `ninja` installed in your `PATH`. On
+Windows, you must also invoke `emsdk` from a Visual Studio Developer Command
+Prompt (where `cl.exe` and Visual Studio environment variables are loaded in
+your shell).
 
 You can use this target for example to bootstrap developing patches to LLVM,
 Binaryen or Emscripten. (After initial installation, use `git remote add`

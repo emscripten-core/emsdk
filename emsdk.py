@@ -6,7 +6,6 @@
 
 import copy
 import json
-import multiprocessing
 import os
 import os.path
 import platform
@@ -153,16 +152,12 @@ else:
   exit_with_error('unknown machine architecture: ' + machine)
 
 
-# Don't saturate all cores to not steal the whole system, but be aggressive.
-CPU_CORES = int(os.getenv('EMSDK_NUM_CORES', max(multiprocessing.cpu_count() - 1, 1)))
-
 CMAKE_BUILD_TYPE_OVERRIDE = None
 
 # If true, perform a --shallow clone of git.
 GIT_CLONE_SHALLOW = False
 
-# If true, LLVM backend is built with tests enabled, and Binaryen is built with
-# Visual Studio static analyzer enabled.
+# If true, LLVM backend is built with tests enabled.
 BUILD_FOR_TESTING = False
 
 # If 'auto', assertions are decided by the build type
@@ -234,57 +229,6 @@ def parse_github_url_and_refspec(url):
 
 
 ARCHIVE_SUFFIXES = ('zip', '.tar', '.gz', '.xz', '.tbz2', '.bz2')
-
-
-def vswhere(version):
-  try:
-    program_files = os.getenv('ProgramFiles(x86)')
-    if not program_files:
-      program_files = os.environ['ProgramFiles']
-    vswhere_path = os.path.join(program_files, 'Microsoft Visual Studio', 'Installer', 'vswhere.exe')
-    # Source: https://learn.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-build-tools?view=vs-2022
-    tools_arch = 'ARM64' if ARCH == 'arm64' else 'x86.x64'
-    # The "-products *" allows detection of Build Tools, the "-prerelease" allows detection of Preview version
-    # of Visual Studio and Build Tools.
-    output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-products', '*', '-prerelease', '-version', '[%s.0,%s.0)' % (version, version + 1), '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.' + tools_arch, '-property', 'installationPath', '-format', 'json']))
-    return str(output[0]['installationPath'])
-  except Exception:
-    return ''
-
-
-CMAKE_GENERATOR = 'Unix Makefiles'
-if WINDOWS:
-  # Detect which CMake generator to use when building on Windows
-  if '--mingw' in sys.argv:
-    CMAKE_GENERATOR = 'MinGW Makefiles'
-  elif '--vs2022' in sys.argv:
-    CMAKE_GENERATOR = 'Visual Studio 17'
-  elif '--vs2019' in sys.argv:
-    CMAKE_GENERATOR = 'Visual Studio 16'
-  elif len(vswhere(17)) > 0:
-    CMAKE_GENERATOR = 'Visual Studio 17'
-  elif len(vswhere(16)) > 0:
-    CMAKE_GENERATOR = 'Visual Studio 16'
-  elif shutil.which('mingw32-make') is not None and shutil.which('g++') is not None:
-    CMAKE_GENERATOR = 'MinGW Makefiles'
-  else:
-    # No detected generator
-    CMAKE_GENERATOR = ''
-
-
-sys.argv = [a for a in sys.argv if a not in {'--mingw', '--vs2019', '--vs2022'}]
-
-
-def cmake_generator_prefix():
-  """Computes a suitable path prefix to use when building with a given generator."""
-  if CMAKE_GENERATOR == 'Visual Studio 17':
-    return '_vs2022'
-  if CMAKE_GENERATOR == 'Visual Studio 16':
-    return '_vs2019'
-  elif CMAKE_GENERATOR == 'MinGW Makefiles':
-    return '_mingw'
-  # Unix Makefiles do not specify a path prefix for backwards path compatibility
-  return ''
 
 
 def remove_tree(d):
@@ -846,13 +790,12 @@ def decide_cmake_build_type(tool):
 
 def llvm_build_dir(tool):
   """The root directory of the build."""
-  generator_suffix = cmake_generator_prefix()
   bitness_suffix = '_32' if tool.bitness == 32 else '_64'
 
   if tool.git_branch:
-    build_dir = 'build_' + tool.git_branch.replace(os.sep, '-') + generator_suffix + bitness_suffix
+    build_dir = 'build_' + tool.git_branch.replace(os.sep, '-') + bitness_suffix
   else:
-    build_dir = 'build_' + tool.version + generator_suffix + bitness_suffix
+    build_dir = 'build_' + tool.version + bitness_suffix
   return build_dir
 
 
@@ -867,38 +810,7 @@ def llvm_build_bin_dir(tool):
   root directory of the tool)
   """
   build_dir = llvm_build_dir(tool)
-  if WINDOWS and 'Visual Studio' in CMAKE_GENERATOR:
-    old_llvm_bin_dir = os.path.join(build_dir, 'bin', decide_cmake_build_type(tool))
-
-    new_llvm_bin_dir = None
-    default_cmake_build_type = decide_cmake_build_type(tool)
-    cmake_build_types = [default_cmake_build_type, 'Release', 'RelWithDebInfo', 'MinSizeRel', 'Debug']
-    for build_type in cmake_build_types:
-      d = os.path.join(build_dir, build_type, 'bin')
-      if os.path.isfile(os.path.join(tool.installation_path(), d, exe_suffix('clang'))):
-        new_llvm_bin_dir = d
-        break
-
-    if new_llvm_bin_dir and os.path.exists(os.path.join(tool.installation_path(), new_llvm_bin_dir)):
-      return new_llvm_bin_dir
-    elif os.path.exists(os.path.join(tool.installation_path(), old_llvm_bin_dir)):
-      return old_llvm_bin_dir
-    return os.path.join(build_dir, default_cmake_build_type, 'bin')
-  else:
-    return os.path.join(build_dir, 'bin')
-
-
-def build_env():
-  if WINDOWS and 'Visual Studio' in CMAKE_GENERATOR:
-    env = os.environ.copy()
-    # MSBuild.exe has an internal mechanism to avoid N^2 oversubscription of threads in its two-tier build model, see
-    # https://devblogs.microsoft.com/cppblog/improved-parallelism-in-msbuild/
-    env['UseMultiToolTask'] = 'true'
-    env['EnforceProcessCountAcrossBuilds'] = 'true'
-    return env
-
-  # By default, just inherit the parent env
-  return None
+  return os.path.join(build_dir, 'bin')
 
 
 def find_cmake():
@@ -941,27 +853,11 @@ def find_cmake():
 
 def make_build(build_root, build_type):
   debug_print(f'make_build(build_root={build_root}, build_type={build_type})')
-  if CPU_CORES > 1:
-    print(f'Performing a parallel build with {CPU_CORES} cores.')
-  else:
-    print('Performing a singlethreaded build.')
-
-  make = [find_cmake(), '--build', '.', '--config', build_type]
-  if 'Visual Studio' in CMAKE_GENERATOR:
-    # Visual Studio historically has had a two-tier problem in its build system design. A single MSBuild.exe instance only governs
-    # the build of a single project (.exe/.lib/.dll) in a solution. Passing the -j parameter above will only enable multiple MSBuild.exe
-    # instances to be spawned to build multiple projects in parallel, but each MSBuild.exe is still singlethreaded.
-    # To enable each MSBuild.exe instance to also compile several .cpp files in parallel inside a single project, pass the extra
-    # MSBuild.exe specific "Multi-ToolTask" (MTT) setting /p:CL_MPCount. This enables each MSBuild.exe to parallelize builds wide.
-    # This requires CMake 3.12 or newer.
-    make += ['-j', str(CPU_CORES), '--', '/p:CL_MPCount=' + str(CPU_CORES)]
-  else:
-    # Pass -j to native make, CMake might not support -j option.
-    make += ['--', '-j', str(CPU_CORES)]
+  make = [find_cmake(), '--build', '.', '--verbose', '--config', build_type]
 
   # Build
   print('Running build: ' + str(make))
-  ret = subprocess.call(make, cwd=build_root, env=build_env())
+  ret = subprocess.call(make, cwd=build_root)
   if ret != 0:
     errlog(f'Build failed with exit code {ret}!')
     errlog('Working directory: ' + build_root)
@@ -980,12 +876,16 @@ def read_file(filename):
     return f.read()
 
 
-def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_args):
-  debug_print(f'cmake_configure(generator={generator}, build_root={build_root}, src_root={src_root}, build_type={build_type}, extra_cmake_args={extra_cmake_args})')
+def cmake_configure(build_root, src_root, build_type, extra_cmake_args):
+  debug_print(f'cmake_configure(build_root={build_root}, src_root={src_root}, build_type={build_type}, extra_cmake_args={extra_cmake_args})')
+  if WINDOWS and not shutil.which('cl.exe'):
+    exit_with_error('building from source on windows requires cl.exe in the PATH.  This means you need to run it from Visual Studio command prompt, or an environment that has run vcvarsall.bat')
+
   # Configure
   if not os.path.isdir(build_root):
     # Create build output directory if it doesn't yet exist.
     os.mkdir(build_root)
+
   cmdline = [find_cmake(), '-DCMAKE_BUILD_TYPE=' + build_type, '-DPYTHON_EXECUTABLE=' + sys.executable]
   if generator:
     cmdline += ['-G', generator]
@@ -1011,7 +911,7 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
   re_cmake_script = os.path.join(build_root, 'recmake.' + ('bat' if WINDOWS else 'sh'))
   write_file(re_cmake_script, ' '.join(map(quote_parens, cmdline)))
   try:
-    subprocess.check_call(cmdline, cwd=build_root, env=build_env())
+    subprocess.check_call(cmdline, cwd=build_root)
   except Exception as e:
     errlog('CMake invocation failed due to exception')
     errlog(f'Working directory: {build_root}')
@@ -1029,49 +929,8 @@ def xcode_sdk_version():
     return subprocess.checkplatform.mac_ver()[0].split('.')
 
 
-def cmake_target_platform(tool):
-  # Source: https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2017%202022.html#platform-selection
-  if tool.arch:
-    if tool.arch == 'arm64':
-      return 'ARM64'
-    elif tool.arch == 'x86_64':
-      return 'x64'
-    elif tool.arch == 'x86':
-      return 'Win32'
-  if ARCH == 'arm64':
-    return 'ARM64'
-  else:
-    return 'x64' if tool.bitness == 64 else 'Win32'
-
-
-def cmake_host_platform():
-  # Source: https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2017%202022.html#toolset-selection
-  arch_to_cmake_host_platform = {
-    'arm64': 'ARM64',
-    'arm': 'ARM',
-    'x86_64': 'x64',
-    'x86': 'x86',
-  }
-  return arch_to_cmake_host_platform[ARCH]
-
-
-def get_generator_and_config_args(tool):
-  args = []
-  cmake_generator = CMAKE_GENERATOR
-  if 'Visual Studio 16' in CMAKE_GENERATOR or 'Visual Studio 17' in CMAKE_GENERATOR:  # VS2019 or VS2022
-    # With Visual Studio 16 2019, CMake changed the way they specify target arch.
-    # Instead of appending it into the CMake generator line, it is specified
-    # with a -A arch parameter.
-    args += ['-A', cmake_target_platform(tool)]
-    args += ['-Thost=' + cmake_host_platform()]
-  elif 'Visual Studio' in CMAKE_GENERATOR and tool.bitness == 64:
-    cmake_generator += ' Win64'
-    args += ['-Thost=x64']
-  return (cmake_generator, args)
-
-
-def cmake_configure_and_build(cmake_generator, build_root, cmakelists_dir, build_type, args):
-  success = cmake_configure(cmake_generator, build_root, cmakelists_dir, build_type, args)
+def cmake_configure_and_build(build_root, cmakelists_dir, build_type, args):
+  success = cmake_configure(build_root, cmakelists_dir, build_type, args)
   if success:
     success = make_build(build_root, build_type)
 
@@ -1080,7 +939,7 @@ def cmake_configure_and_build(cmake_generator, build_root, cmakelists_dir, build
     shutil.rmtree(build_root)
 
     # And re-try configure + build again.
-    success = cmake_configure(cmake_generator, build_root, cmakelists_dir, build_type, args)
+    success = cmake_configure(build_root, cmakelists_dir, build_type, args)
     if success:
       success = make_build(build_root, build_type)
 
@@ -1113,16 +972,15 @@ def build_llvm(tool):
     targets_to_build = 'WebAssembly;AArch64'
   else:
     targets_to_build = 'WebAssembly'
-  cmake_generator, args = get_generator_and_config_args(tool)
-  args += ['-DLLVM_TARGETS_TO_BUILD=' + targets_to_build,
-           '-DLLVM_INCLUDE_EXAMPLES=OFF',
-           '-DLLVM_INCLUDE_TESTS=' + tests_arg,
-           '-DCLANG_INCLUDE_TESTS=' + tests_arg,
-           '-DLLVM_ENABLE_ASSERTIONS=' + ('ON' if enable_assertions else 'OFF'),
-           # Disable optional LLVM dependencies, these can cause unwanted .so dependencies
-           # that prevent distributing the generated compiler for end users.
-           '-DLLVM_ENABLE_LIBXML2=OFF', '-DLLDB_ENABLE_LIBEDIT=OFF',
-           '-DLLVM_ENABLE_LIBEDIT=OFF', '-DLLVM_ENABLE_LIBPFM=OFF']
+  args = ['-DLLVM_TARGETS_TO_BUILD=' + targets_to_build,
+          '-DLLVM_INCLUDE_EXAMPLES=OFF',
+          '-DLLVM_INCLUDE_TESTS=' + tests_arg,
+          '-DCLANG_INCLUDE_TESTS=' + tests_arg,
+          '-DLLVM_ENABLE_ASSERTIONS=' + ('ON' if enable_assertions else 'OFF'),
+          # Disable optional LLVM dependencies, these can cause unwanted .so dependencies
+          # that prevent distributing the generated compiler for end users.
+          '-DLLVM_ENABLE_LIBXML2=OFF', '-DLLDB_ENABLE_LIBEDIT=OFF',
+          '-DLLVM_ENABLE_LIBEDIT=OFF', '-DLLVM_ENABLE_LIBPFM=OFF']
   # LLVM build system bug: compiler-rt does not build on Windows. It insists on performing a CMake install step that writes to C:\Program Files. Attempting
   # to reroute that to build_root directory then fails on an error
   #  file INSTALL cannot find
@@ -1142,7 +1000,7 @@ def build_llvm(tool):
 
   cmakelists_dir = os.path.join(llvm_src_root, 'llvm')
 
-  success = cmake_configure_and_build(cmake_generator, build_root, cmakelists_dir, build_type, args)
+  success = cmake_configure_and_build(build_root, cmakelists_dir, build_type, args)
 
   return success
 
@@ -1161,11 +1019,11 @@ def build_ninja(tool):
   build_type = decide_cmake_build_type(tool)
 
   # Configure
-  cmake_generator, args = get_generator_and_config_args(tool)
+  args = []
 
   cmakelists_dir = os.path.join(src_root)
 
-  success = cmake_configure_and_build(cmake_generator, build_root, cmakelists_dir, build_type, args)
+  success = cmake_configure_and_build(build_root, cmakelists_dir, build_type, args)
 
   if success:
     bin_dir = os.path.join(root, 'bin')
@@ -1196,12 +1054,11 @@ def build_ccache(tool):
   build_type = decide_cmake_build_type(tool)
 
   # Configure
-  cmake_generator, args = get_generator_and_config_args(tool)
-  args += ['-DZSTD_FROM_INTERNET=ON']
+  args = ['-DZSTD_FROM_INTERNET=ON']
 
   cmakelists_dir = os.path.join(src_root)
 
-  success = cmake_configure_and_build(cmake_generator, build_root, cmakelists_dir, build_type, args)
+  success = cmake_configure_and_build(build_root, cmakelists_dir, build_type, args)
 
   if success:
     bin_dir = os.path.join(root, 'bin')
@@ -1480,8 +1337,7 @@ def binaryen_build_root(tool):
   build_root = tool.installation_path().strip()
   if build_root.endswith(('/', '\\')):
     build_root = build_root[:-1]
-  generator_prefix = cmake_generator_prefix()
-  build_root = f'{build_root}{generator_prefix}_{tool.bitness}bit_binaryen'
+  build_root = f'{build_root}_{tool.bitness}bit_binaryen'
   return build_root
 
 
@@ -1504,15 +1360,9 @@ def build_binaryen_tool(tool):
   build_type = decide_cmake_build_type(tool)
 
   # Configure
-  cmake_generator, args = get_generator_and_config_args(tool)
-  args += ['-DENABLE_WERROR=0']  # -Werror is not useful for end users
-  args += ['-DBUILD_TESTS=0']  # We don't want to build or run tests
+  args = ['-DENABLE_WERROR=0', '-DBUILD_TESTS=0']  # -Werror is not useful for end users; we don't want to build or run tests
 
-  if 'Visual Studio' in CMAKE_GENERATOR:
-    if BUILD_FOR_TESTING:
-      args += ['-DRUN_STATIC_ANALYZER=1']
-
-  success = cmake_configure_and_build(cmake_generator, build_root, src_root, build_type, args)
+  success = cmake_configure_and_build(build_root, src_root, build_type, args)
 
   if success:
     # Deploy scripts needed from source repository to build directory
@@ -1865,8 +1715,6 @@ class Tool:
         str = str.replace('%actual_installation_dir%', sdk_path(read_file(actual_file)))
       else:
         str = str.replace('%actual_installation_dir%', '__NOT_INSTALLED__')
-    if '%generator_prefix%' in str:
-      str = str.replace('%generator_prefix%', cmake_generator_prefix())
     str = str.replace('%.exe%', '.exe' if WINDOWS else '')
     if '%llvm_build_bin_dir%' in str:
       str = str.replace('%llvm_build_bin_dir%', llvm_build_bin_dir(self))
@@ -2949,22 +2797,10 @@ def main(args):  # ruff: ignore[complex-structure, too-many-return-statements, t
                                 - Downloads and installs given tools or SDKs.
                                   Options can contain:
 
-                         -j<num>: Specifies the number of cores to use when
-                                  building the tool. Default: use one less
-                                  than the # of detected cores.
-
                   --build=<type>: Controls what kind of build of LLVM to
                                   perform. Pass either 'Debug', 'Release',
                                   'MinSizeRel' or 'RelWithDebInfo'. Default:
                                   'Release'.
-
-              --generator=<type>: Specifies the CMake Generator to be used
-                                  during the build. Possible values are the
-                                  same as what your CMake supports and whether
-                                  the generator is valid depends on the tools
-                                  you have installed. Defaults to 'Unix Makefiles'
-                                  on *nix systems. If generator name is multiple
-                                  words, enclose with single or double quotes.
 
                        --shallow: When installing tools from one of the git
                                   development branches, this parameter can be
@@ -2986,13 +2822,6 @@ def main(args):  # ruff: ignore[complex-structure, too-many-return-statements, t
                                   purposes. Default: Enabled
             --disable-assertions: Forces assertions off during the build.
 
-               --vs2019/--vs2022: If building from source, overrides to build
-                                  using the specified compiler. When installing
-                                  precompiled packages, this has no effect.
-                                  Note: The same compiler specifier must be
-                                  passed to the emsdk activate command to
-                                  activate the desired version.
-
                                   Notes on building from source:
 
                                   To pass custom CMake directives when configuring
@@ -3012,7 +2841,7 @@ def main(args):  # ruff: ignore[complex-structure, too-many-return-statements, t
 
     if WINDOWS:
       print('''
-   emsdk activate [--permanent] [--system] [--build=type] [--vs2019/--vs2022] <tool/sdk>
+   emsdk activate [--permanent] [--system] [--build=type] <tool/sdk>
 
                                 - Activates the given tool or SDK in the
                                   environment of the current shell.
@@ -3024,10 +2853,6 @@ def main(args):  # ruff: ignore[complex-structure, too-many-return-statements, t
                                   is done for all users of the system.
                                   This needs admin privileges
                                   (uses Machine environment variables).
-
-                                - If a custom compiler version was used to override
-                                  the compiler to use, pass the same --vs2019/--vs2022
-                                  parameter here to choose which version to activate.
 
    emcmdprompt.bat              - Spawns a new command prompt window with the
                                   Emscripten environment active.''')
@@ -3117,16 +2942,7 @@ def main(args):  # ruff: ignore[complex-structure, too-many-return-statements, t
 
   # Process global args
   for i in range(len(args)):
-    if args[i].startswith('--generator='):
-      build_generator = re.match(r'''^--generator=['"]?([^'"]+)['"]?$''', args[i])
-      if build_generator:
-        global CMAKE_GENERATOR
-        CMAKE_GENERATOR = build_generator.group(1)
-        args[i] = ''
-      else:
-        errlog(f"Cannot parse CMake generator string: {args[i]}. Try wrapping generator string with quotes")
-        return 1
-    elif args[i].startswith('--build='):
+    if args[i].startswith('--build='):
       build_type = re.match(r'^--build=(.+)$', args[i])
       if build_type:
         global CMAKE_BUILD_TYPE_OVERRIDE
@@ -3310,19 +3126,11 @@ def main(args):  # ruff: ignore[complex-structure, too-many-return-statements, t
       errlog('The changes made to environment variables only apply to the currently running shell instance. Use the \'emsdk_env.bat\' to re-enter this environment later, or if you\'d like to register this environment permanently, rerun this command with the option --permanent.')
     return 0
   elif cmd == 'install':
-    global BUILD_FOR_TESTING, ENABLE_LLVM_ASSERTIONS, CPU_CORES, GIT_CLONE_SHALLOW
+    global BUILD_FOR_TESTING, ENABLE_LLVM_ASSERTIONS, GIT_CLONE_SHALLOW
 
     # Process args
     for i in range(len(args)):
-      if args[i].startswith('-j'):
-        multicore = re.match(r'^-j(\d+)$', args[i])
-        if multicore:
-          CPU_CORES = int(multicore.group(1))
-          args[i] = ''
-        else:
-          errlog(f'Invalid command line parameter {args[i]} specified!')
-          return 1
-      elif args[i] == '--shallow':
+      if args[i] == '--shallow':
         GIT_CLONE_SHALLOW = True
         args[i] = ''
       elif args[i] == '--build-tests':
