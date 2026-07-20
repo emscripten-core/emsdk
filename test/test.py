@@ -223,9 +223,37 @@ int main() {
 
   def test_config_contents(self):
     print('test .emscripten contents')
+    run_emsdk('install 6.0.3')
+    run_emsdk('activate 6.0.3')
     with open(emconfig) as f:
       config = f.read()
-    assert 'upstream' in config
+    self.assertIn('upstream', config)
+
+    # Older version of emscripten (prior to 6.0.3) don't support $CFGDIR
+    self.assertIn('import os', config)
+    self.assertIn('emsdk_path + ', config)
+    self.assertNotIn('$CFGDIR', config)
+
+    # For newer versions we use $CFGDIR
+    version_file = os.path.join('upstream', 'emscripten', 'emscripten-version.txt')
+    with open(version_file) as f:
+      old_ver = f.read()
+    try:
+      # Hack the version file to contain 6.0.4
+      with open(version_file, 'w') as f:
+        f.write('6.0.4\n')
+      # Re-activate 6.0.3 but with the hacked version file which makes it
+      # appear to contain 6.0.4.
+      run_emsdk('activate 6.0.3')
+      with open(emconfig) as f:
+        config = f.read()
+      self.assertNotIn('import os', config)
+      self.assertNotIn('emsdk_path', config)
+      self.assertIn('$CFGDIR', config)
+    finally:
+      with open(version_file, 'w') as f:
+        f.write(old_ver)
+      run_emsdk('activate 6.0.3')
 
   def test_lib_building(self):
     print('building proper system libraries')

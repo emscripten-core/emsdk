@@ -1784,8 +1784,17 @@ def get_emsdk_shell_env_configs():
 
 
 def generate_em_config(active_tools, permanently_activate, system):
-  cfg = 'import os\n'
-  cfg += "emsdk_path = os.path.dirname(os.getenv('EM_CONFIG')).replace('\\\\', '/')\n"
+  emroot = find_emscripten_root(active_tools)
+  version = None
+  if emroot and os.path.exists(os.path.join(emroot, 'emscripten-version.txt')):
+    version = parse_emscripten_version(emroot)
+
+  supports_cfgdir = version and version >= [6, 0, 4]
+
+  cfg = ''
+  if not supports_cfgdir:
+    cfg += 'import os\n'
+    cfg += "emsdk_path = os.path.dirname(os.getenv('EM_CONFIG')).replace('\\\\', '/')\n"
 
   # Different tools may provide the same activated configs; the latest to be
   # activated is the relevant one.
@@ -1806,9 +1815,7 @@ def generate_em_config(active_tools, permanently_activate, system):
     else:
       cfg += f"{name} = '{value}'\n"
 
-  emroot = find_emscripten_root(active_tools)
-  if emroot:
-    version = parse_emscripten_version(emroot)
+  if version:
     # Older emscripten versions of emscripten depend on certain config
     # keys that are no longer used.
     # See https://github.com/emscripten-core/emscripten/pull/9469
@@ -1818,7 +1825,10 @@ def generate_em_config(active_tools, permanently_activate, system):
     if version < [1, 38, 48]:
       cfg += 'JS_ENGINES = [NODE_JS]\n'
 
-  cfg = cfg.replace("'" + EMSDK_PATH, "emsdk_path + '")
+  if supports_cfgdir:
+    cfg = cfg.replace(EMSDK_PATH, '$CFGDIR')
+  else:
+    cfg = cfg.replace("'" + EMSDK_PATH, "emsdk_path + '")
 
   if os.path.exists(EM_CONFIG_PATH):
     backup_path = EM_CONFIG_PATH + ".old"
@@ -2087,7 +2097,7 @@ class Tool:
 
       # all paths are stored dynamically relative to the emsdk root, so
       # normalize those first.
-      config_value = EM_CONFIG_DICT[key].replace("emsdk_path + '", "'" + EMSDK_PATH)
+      config_value = EM_CONFIG_DICT[key].replace("emsdk_path + '", "'" + EMSDK_PATH).replace("$CFGDIR", EMSDK_PATH)
       config_value = config_value.strip("'")
       if config_value != value:
         debug_print(f'{self} is not active, because key="{key}" has value "{config_value}" but should have value "{value}"')
@@ -2356,8 +2366,16 @@ def parse_emscripten_version(emscripten_root):
   version_file = os.path.join(emscripten_root, 'emscripten-version.txt')
   with open(version_file) as f:
     version = f.read().strip()
-    version = version.strip('"').split('-')[0].split('.')
-    return [int(v) for v in version]
+  version = version.strip('"')
+  suffix = None
+  if '-' in version:
+    version, suffix = version.split('-')
+  version = [int(v) for v in version.split('.')]
+  if suffix == 'git':
+    # Treat 1.2.3-git as 1.2.2 since it doesn't contain all the changes
+    # present in the final 1.2.3 release.
+    version[-1] -= 1
+  return version
 
 
 def get_emscripten_release_version(emscripten_releases_hash):
