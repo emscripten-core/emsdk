@@ -739,45 +739,19 @@ def run_get_output(cmd, cwd=None):
   return (process.returncode, stdout, stderr)
 
 
-cached_git_executable = None
-
-
-def GIT(must_succeed=True):
-  """Return the path to the git executable.
-
-  :param must_succeed: If false, the search is performed silently without
-    printing out errors if not found. Empty string is returned if git is not
-    found.
-    If true, the search is required to succeed, and the execution will
-    terminate with sys.exit(1) if not found.
-  """
-  global cached_git_executable
-  if cached_git_executable is not None:
-    return cached_git_executable
-  # The order in the following is important, and specifies the preferred order
-  # of using the git tools.  Primarily use git from emsdk if installed. If not,
-  # use system git.
-  gits = ['git/1.9.4/bin/git.exe', shutil.which('git')]
-  for git in gits:
-    try:
-      ret, _stdout, _stderr = run_get_output([git, '--version'])
-      if ret == 0:
-        cached_git_executable = git
-        return git
-    except Exception:
-      pass
-  if must_succeed:
+def GIT():
+  git = shutil.which('git')
+  if not git:
+    msg = 'git executable was not found. Please install git for this operation!'
     if WINDOWS:
-      msg = "git executable was not found. Please install it by typing 'emsdk install git-1.9.4', or alternatively by installing it manually from http://git-scm.com/downloads . If you install git manually, remember to add it to PATH"
+      msg += "This can be done from http://git-scm.com/"
     elif MACOS:
-      msg = "git executable was not found. Please install git for this operation! This can be done from http://git-scm.com/ , or by installing XCode and then the XCode Command Line Tools (see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools )"
+      msg += "This can be done from http://git-scm.com/, or by installing XCode and then the XCode Command Line Tools (see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools )"
     elif LINUX:
-      msg = "git executable was not found. Please install git for this operation! This can be probably be done using your package manager, see http://git-scm.com/book/en/Getting-Started-Installing-Git"
-    else:
-      msg = "git executable was not found. Please install git for this operation!"
+      msg += "This can be probably be done using your package manager, see http://git-scm.com/book/en/Getting-Started-Installing-Git"
     exit_with_error(msg)
-  # Not found
-  return ''
+
+  return git
 
 
 def git_repo_version(repo_path):
