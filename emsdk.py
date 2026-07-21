@@ -734,9 +734,7 @@ def download_file(url, dstpath, download_even_if_exists=False,
 
 def run_get_output(cmd, cwd=None):
   debug_print(f'run_get_output(cmd={cmd}, cwd={cwd})')
-  process = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE, env=os.environ.copy(), universal_newlines=True)
-  stdout, stderr = process.communicate()
-  return (process.returncode, stdout, stderr)
+  return subprocess.check_output(cmd, cwd=cwd, universal_newlines=True)
 
 
 def GIT():
@@ -755,19 +753,13 @@ def GIT():
 
 
 def git_repo_version(repo_path):
-  returncode, stdout, _stderr = run_get_output([GIT(), 'log', '-n', '1', '--pretty="%aD %H"'], cwd=repo_path)
-  if returncode == 0:
-    return stdout.strip()
-  else:
-    return ""
+  stdout = run_get_output([GIT(), 'log', '-n', '1', '--pretty="%aD %H"'], cwd=repo_path)
+  return stdout.strip()
 
 
 def git_recent_commits(repo_path, n=20):
-  returncode, stdout, _stderr = run_get_output([GIT(), 'log', '-n', str(n), '--pretty="%H"'], cwd=repo_path)
-  if returncode == 0:
-    return stdout.strip().replace('\r', '').replace('"', '').split('\n')
-  else:
-    return []
+  stdout = run_get_output([GIT(), 'log', '-n', str(n), '--pretty="%H"'], cwd=repo_path)
+  return stdout.strip().replace('\r', '').replace('"', '').split('\n')
 
 
 def get_git_remotes(repo_path):
@@ -2348,7 +2340,9 @@ def get_emscripten_release_version(emscripten_releases_hash):
 
 def get_emscripten_releases_tot():
   """Get the tip-of-tree build identifier."""
-  git_clone_checkout_and_pull(emscripten_releases_repo, sdk_path('releases'), 'main')
+  success = git_clone_checkout_and_pull(emscripten_releases_repo, sdk_path('releases'), 'main')
+  if not success:
+    exit_with_error('error checking out emscripten-releases repo')
   recent_releases = git_recent_commits(sdk_path('releases'))
   # The recent releases are the latest hashes in the git repo. There
   # may not be a build for the most recent ones yet; find the last
