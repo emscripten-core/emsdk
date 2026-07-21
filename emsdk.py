@@ -475,13 +475,12 @@ def is_nonempty_directory(path):
   return len(os.listdir(path)) != 0
 
 
-def run(cmd, cwd=None, quiet=False):
+def run(cmd, cwd=None, check=True):
   debug_print(f'run(cmd={cmd}, cwd={cwd})')
-  process = subprocess.Popen(cmd, cwd=cwd, env=os.environ.copy())
-  process.communicate()
-  if process.returncode != 0 and not quiet:
-    errlog(f'{cmd} failed with error code {process.returncode}')
-  return process.returncode
+  returncode = subprocess.call(cmd, cwd=cwd, env=os.environ.copy())
+  if returncode != 0 and check:
+    errlog(f'{cmd} failed with error code {returncode}')
+  return returncode
 
 
 def untargz(source_filename, dest_dir):
@@ -808,7 +807,7 @@ def git_pull(repo_path, branch_or_tag, remote_name='origin'):
     if ret != 0:
       return False
     # Test if branch_or_tag is a branch, or if it is a tag that needs to be updated
-    target_is_tag = run([GIT(), 'symbolic-ref', '-q', 'HEAD'], repo_path, quiet=True)
+    target_is_tag = run([GIT(), 'symbolic-ref', '-q', 'HEAD'], repo_path, check=False)
 
     if target_is_tag:
       ret = run([GIT(), 'checkout', '--recurse-submodules', '--quiet', branch_or_tag], repo_path)
@@ -824,7 +823,7 @@ def git_pull(repo_path, branch_or_tag, remote_name='origin'):
       ret = run([GIT(), 'merge', '--ff-only', remote_name + '/' + branch_or_tag], repo_path)
     if ret != 0:
       return False
-    run([GIT(), 'submodule', 'update', '--init'], repo_path, quiet=True)
+    run([GIT(), 'submodule', 'update', '--init'], repo_path, check=False)
   except Exception:
     errlog('git operation failed!')
     return False
