@@ -383,7 +383,7 @@ def win_set_environment_variable(key, value, system, user):
       else:
         cmd = ['REG', 'DELETE', 'HKCU\\Environment', '/V', key, '/f']
       debug_print(str(cmd))
-      value = subprocess.call(cmd, stdout=subprocess.PIPE)
+      subprocess.call(cmd, stdout=subprocess.PIPE)
     except Exception:
       return False
     return True
