@@ -644,22 +644,12 @@
     "id": "ninja",
     "version": "1.13.2",
     "bitness": 64,
+    "url_windows": "ninja-1.13.2-winarm64.zip",
+    "url_linux": "ninja-1.13.2-linux-aarch64.zip",
     "url_macos": "ninja-1.13.2-mac.zip",
-    "os": "macos",
     "arch": "arm64",
     "activated_cfg": "NINJA_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%"
-  },
-  {
-    "id": "ninja",
-    "version": "git-release",
-    "bitness": 64,
-    "url": "https://github.com/ninja-build/ninja.git",
-    "git_branch": "release",
-    "activated_cfg": "NINJA=%installation_dir%/bin",
-    "activated_path": "%installation_dir%/bin",
-    "cmake_build_type": "Release",
-    "custom_install_script": "build_ninja"
   },
   {
     "id": "ccache",

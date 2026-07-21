@@ -1155,41 +1155,6 @@ def build_llvm(tool):
   return success
 
 
-def build_ninja(tool):
-  debug_print(f'build_ninja({tool})')
-  root = os.path.normpath(tool.installation_path())
-  src_root = os.path.join(root, 'src')
-  success = git_clone_checkout_and_pull(tool.url, src_root, tool.git_branch)
-  if not success:
-    return False
-
-  build_dir = llvm_build_dir(tool)
-  build_root = os.path.join(root, build_dir)
-
-  build_type = decide_cmake_build_type(tool)
-
-  # Configure
-  cmake_generator, args = get_generator_and_config_args(tool)
-
-  cmakelists_dir = os.path.join(src_root)
-
-  success = cmake_configure_and_build(cmake_generator, build_root, cmakelists_dir, build_type, args)
-
-  if success:
-    bin_dir = os.path.join(root, 'bin')
-    mkdir_p(bin_dir)
-    exe_paths = [os.path.join(build_root, 'Release', 'ninja'), os.path.join(build_root, 'ninja')]
-    for e in exe_paths:
-      for s in ['.exe', '']:
-        ninja = e + s
-        if os.path.isfile(ninja):
-          dst = os.path.join(bin_dir, 'ninja' + s)
-          shutil.copyfile(ninja, dst)
-          os.chmod(dst, os.stat(dst).st_mode | stat.S_IEXEC)
-
-  return success
-
-
 def build_ccache(tool):
   debug_print(f'build_ccache({tool})')
   root = os.path.normpath(tool.installation_path())
@@ -2128,7 +2093,6 @@ class Tool:
 
     custom_install_scripts = {
       'build_llvm': build_llvm,
-      'build_ninja': build_ninja,
       'build_ccache': build_ccache,
       'download_node_nightly': download_node_nightly,
       'download_firefox': download_firefox,
@@ -2149,7 +2113,7 @@ class Tool:
     if self.custom_install_script:
       if self.custom_install_script == 'emscripten_install':
         success = emscripten_install(self)
-      elif self.custom_install_script in {'build_llvm', 'build_ninja', 'build_ccache', 'download_node_nightly', 'download_firefox'}:
+      elif self.custom_install_script in {'build_llvm', 'build_ccache', 'download_node_nightly', 'download_firefox'}:
         # 'build_llvm' is a special one that does the download on its
         # own, others do the download manually.
         pass
