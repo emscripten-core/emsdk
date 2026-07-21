@@ -891,18 +891,16 @@ def llvm_build_bin_dir(tool):
 
 
 def build_env():
-  env = os.environ.copy()
-
-  # To work around a build issue with older Mac OS X builds, add -stdlib=libc++ to all builds.
-  # See https://groups.google.com/forum/#!topic/emscripten-discuss/5Or6QIzkqf0
-  if MACOS:
-    env['CXXFLAGS'] = ((env['CXXFLAGS'] + ' ') if hasattr(env, 'CXXFLAGS') else '') + '-stdlib=libc++'
-  if WINDOWS:
+  if WINDOWS and 'Visual Studio' in CMAKE_GENERATOR:
+    env = os.environ.copy()
     # MSBuild.exe has an internal mechanism to avoid N^2 oversubscription of threads in its two-tier build model, see
     # https://devblogs.microsoft.com/cppblog/improved-parallelism-in-msbuild/
     env['UseMultiToolTask'] = 'true'
     env['EnforceProcessCountAcrossBuilds'] = 'true'
-  return env
+    return env
+
+  # By default, just inherit the parent env
+  return None
 
 
 def find_cmake():
