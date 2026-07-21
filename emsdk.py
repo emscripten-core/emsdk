@@ -964,17 +964,11 @@ def make_build(build_root, build_type):
     make += ['--', '-j', str(CPU_CORES)]
 
   # Build
-  try:
-    print('Running build: ' + str(make))
-    ret = subprocess.check_call(make, cwd=build_root, env=build_env())
-    if ret != 0:
-      errlog(f'Build failed with exit code {ret}!')
-      errlog('Working directory: ' + build_root)
-      return False
-  except Exception as e:
-    errlog('Build failed due to exception!')
+  print('Running build: ' + str(make))
+  ret = subprocess.call(make, cwd=build_root, env=build_env())
+  if ret != 0:
+    errlog(f'Build failed with exit code {ret}!')
     errlog('Working directory: ' + build_root)
-    errlog(str(e))
     return False
 
   return True
