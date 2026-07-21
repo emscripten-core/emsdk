@@ -1,6 +1,6 @@
 [project]
 name = 'emsdk'
-requires-python = ">=3.2"
+requires-python = ">=3.10"
 
 [tool.ruff]
 preview = true

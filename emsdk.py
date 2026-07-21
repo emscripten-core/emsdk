@@ -19,7 +19,6 @@ import sys
 import sysconfig
 import tarfile
 import zipfile
-from collections import OrderedDict
 
 if os.name == 'nt':
   import ctypes.wintypes
@@ -28,8 +27,8 @@ if os.name == 'nt':
 from urllib.parse import urljoin
 from urllib.request import urlopen
 
-if sys.version_info < (3, 2):  # noqa: UP036
-  print(f'error: emsdk requires python 3.2 or above ({sys.executable} {sys.version})', file=sys.stderr)
+if sys.version_info < (3, 10):  # noqa: UP036
+  print(f'error: emsdk requires python 3.10 or above ({sys.executable} {sys.version})', file=sys.stderr)
   sys.exit(1)
 
 emsdk_packages_url = 'https://storage.googleapis.com/webassembly/emscripten-releases-builds/deps/'
@@ -733,7 +732,7 @@ def download_file(url, dstpath, download_even_if_exists=False,
 
 def run_get_output(cmd, cwd=None):
   debug_print(f'run_get_output(cmd={cmd}, cwd={cwd})')
-  return subprocess.check_output(cmd, cwd=cwd, universal_newlines=True)
+  return subprocess.check_output(cmd, cwd=cwd, text=True)
 
 
 def GIT():
@@ -1036,7 +1035,7 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
 
 def xcode_sdk_version():
   try:
-    output = subprocess.check_output(['xcrun', '--show-sdk-version'], universal_newlines=True)
+    output = subprocess.check_output(['xcrun', '--show-sdk-version'], text=True)
     return output.strip().split('.')
   except Exception:
     return subprocess.checkplatform.mac_ver()[0].split('.')
@@ -1443,8 +1442,7 @@ def emscripten_npm_setup(directory):
   try:
     subprocess.check_output(
         [npm, 'ci', '--production'],
-        cwd=directory, stderr=subprocess.STDOUT, env=env,
-        universal_newlines=True)
+        cwd=directory, stderr=subprocess.STDOUT, env=env, text=True)
   except subprocess.CalledProcessError as e:
     errlog('Error running %s:\n%s' % (e.cmd, e.output))
     return False
@@ -1475,8 +1473,7 @@ def emscripten_install(tool):
       return False
     try:
       subprocess.check_output([sys.executable, os.path.join(directory, 'bootstrap.py')],
-                              cwd=directory, stderr=subprocess.STDOUT, env=env,
-                              universal_newlines=True)
+                              cwd=directory, stderr=subprocess.STDOUT, env=env, text=True)
     except subprocess.CalledProcessError as e:
       errlog('Error running %s:\n%s' % (e.cmd, e.output))
       return False
@@ -1752,10 +1749,9 @@ def generate_em_config(active_tools, permanently_activate, system):
 
   # Different tools may provide the same activated configs; the latest to be
   # activated is the relevant one.
-  activated_config = OrderedDict()
+  activated_config = {}
   for tool in active_tools:
-    for name, value in tool.activated_config().items():
-      activated_config[name] = value
+    activated_config.update(tool.activated_config())
 
   if 'NODE_JS' not in activated_config:
     node_fallback = shutil.which('nodejs')
@@ -1925,7 +1921,7 @@ class Tool:
     if not self.activated_cfg:
       return {}
 
-    config = OrderedDict()
+    config = {}
     expanded = to_unix_path(self.expand_vars(self.activated_cfg))
     for specific_cfg in expanded.split(';'):
       name, value = specific_cfg.split('=')
