@@ -205,11 +205,14 @@ else:
   EMSDK_SET_ENV = os.path.join(EMSDK_PATH, 'emsdk_set_env.bat')
 
 
-# Parses https://github.com/emscripten-core/emscripten/tree/d6aced8 to a triplet
-# (https://github.com/emscripten-core/emscripten, d6aced8, emscripten-core)
-# or https://github.com/emscripten-core/emscripten/commit/00b76f81f6474113fcf540db69297cfeb180347e
-# to (https://github.com/emscripten-core/emscripten, 00b76f81f6474113fcf540db69297cfeb180347e, emscripten-core)
 def parse_github_url_and_refspec(url):
+  """Parse a github URL a tuple of its components.
+
+  Parses https://github.com/emscripten-core/emscripten/tree/d6aced8 to the
+  tuple (https://github.com/emscripten-core/emscripten, d6aced8, emscripten-core)
+  or https://github.com/emscripten-core/emscripten/commit/00b76f81f6474113fcf540db69297cfeb180347e
+  to (https://github.com/emscripten-core/emscripten, 00b76f81f6474113fcf540db69297cfeb180347e, emscripten-core)
+  """
   if not url:
     return ('', '', None)
 
@@ -274,8 +277,8 @@ if WINDOWS:
 sys.argv = [a for a in sys.argv if a not in {'--mingw', '--vs2019', '--vs2022'}]
 
 
-# Computes a suitable path prefix to use when building with a given generator.
 def cmake_generator_prefix():
+  """Computes a suitable path prefix to use when building with a given generator."""
   if CMAKE_GENERATOR == 'Visual Studio 17':
     return '_vs2022'
   if CMAKE_GENERATOR == 'Visual Studio 16':
@@ -286,9 +289,10 @@ def cmake_generator_prefix():
   return ''
 
 
-# Removes a directory tree even if it was readonly, and doesn't throw exception
-# on failure.
 def remove_tree(d):
+  """Removes a directory tree even if it was readonly, and doesn't throw exception
+  on failure.
+  """
   debug_print(f'remove_tree({d})')
   if not os.path.exists(d):
     return
@@ -445,16 +449,16 @@ def win_delete_environment_variable(key, system=True, user=True):
   return win_set_environment_variable(key, None, system, user)
 
 
-# Returns the absolute pathname to the given path inside the Emscripten SDK.
 def sdk_path(path):
+  """Returns the absolute pathname to the given path inside the Emscripten SDK."""
   if os.path.isabs(path):
     return path
 
   return to_unix_path(os.path.join(EMSDK_PATH, path))
 
 
-# Removes a single file, suppressing exceptions on failure.
 def rmfile(filename):
+  """Removes a single file, suppressing exceptions on failure."""
   debug_print(f'rmfile({filename})')
   if os.path.lexists(filename):
     os.remove(filename)
@@ -480,7 +484,6 @@ def run(cmd, cwd=None, quiet=False):
   return process.returncode
 
 
-# http://pythonicprose.blogspot.fi/2009/10/python-extract-targz-archive.html
 def untargz(source_filename, dest_dir):
   print(f"Unpacking '{source_filename}' to '{dest_dir}'")
   mkdir_p(dest_dir)
@@ -490,11 +493,15 @@ def untargz(source_filename, dest_dir):
   return returncode == 0
 
 
-# On Windows, it is not possible to reference path names that are longer than
-# ~260 characters, unless the path is referenced via a "\\?\" prefix.
-# See https://msdn.microsoft.com/en-us/library/aa365247.aspx#maxpath and http://stackoverflow.com/questions/3555527/python-win32-filename-length-workaround
-# In that mode, forward slashes cannot be used as delimiters.
 def fix_potentially_long_windows_pathname(pathname):
+  """Convert pathname to use extended-length path prefix on windows.
+
+  On Windows, it is not possible to reference path names that are longer than
+  ~260 characters, unless the path is referenced via a "\\?\" prefix.
+  See https://msdn.microsoft.com/en-us/library/aa365247.aspx#maxpath and
+  http://stackoverflow.com/questions/3555527/python-win32-filename-length-workaround
+  In that mode, forward slashes cannot be used as delimiters.
+  """
   if (not WINDOWS or MSYS) or os_override:
     return pathname
   # Test if emsdk calls fix_potentially_long_windows_pathname() with long
@@ -512,10 +519,11 @@ def fix_potentially_long_windows_pathname(pathname):
   return '\\\\?\\' + pathname
 
 
-# On windows, rename/move will fail if the destination exists, and there is no
-# race-free way to do it. This method removes the destination if it exists, so
-# the move always works
 def move_with_overwrite(src, dest):
+  """On windows, rename/move will fail if the destination exists, and there is no
+  race-free way to do it. This method removes the destination if it exists, so
+  the move always works
+  """
   if os.path.exists(dest):
     os.remove(dest)
   os.rename(src, dest)
@@ -588,11 +596,12 @@ def unzip(source_filename, dest_dir):
   return True
 
 
-# This function interprets whether the given string looks like a path to a
-# directory instead of a file, without looking at the actual filesystem.
-# 'a/b/c' points to directory, so does 'a/b/c/', but 'a/b/c.x' is parsed as a
-# filename
 def path_points_to_directory(path):
+  """This function interprets whether the given string looks like a path to a
+  directory instead of a file, without looking at the actual filesystem.
+  'a/b/c' points to directory, so does 'a/b/c/', but 'a/b/c.x' is parsed as a
+  filename
+  """
   if path == '.':
      return True
   last_slash = max(path.rfind('/'), path.rfind('\\'))
@@ -690,10 +699,11 @@ def download_with_urllib(url, file_name):
   debug_print('finished downloading (%d bytes)' % file_size_dl)
 
 
-# On success, returns the filename on the disk pointing to the destination file that was produced
-# On failure, returns None.
 def download_file(url, dstpath, download_even_if_exists=False,
                   filename_prefix=''):
+  """On success, returns the filename on the disk pointing to the destination file that was produced
+  On failure, returns None.
+  """
   debug_print(f'download_file(url={url}, dstpath={dstpath})')
   file_name = get_download_target(url, dstpath, filename_prefix)
 
@@ -732,11 +742,15 @@ def run_get_output(cmd, cwd=None):
 cached_git_executable = None
 
 
-# must_succeed: If false, the search is performed silently without printing out
-#               errors if not found. Empty string is returned if git is not found.
-#               If true, the search is required to succeed, and the execution
-#               will terminate with sys.exit(1) if not found.
 def GIT(must_succeed=True):
+  """Return the path to the git executable.
+
+  :param must_succeed: If false, the search is performed silently without
+    printing out errors if not found. Empty string is returned if git is not
+    found.
+    If true, the search is required to succeed, and the execution will
+    terminate with sys.exit(1) if not found.
+  """
   global cached_git_executable
   if cached_git_executable is not None:
     return cached_git_executable
@@ -857,17 +871,18 @@ def git_clone_checkout_and_pull(url, dstpath, branch, override_remote_name='orig
   return git_pull(dstpath, branch, override_remote_name)
 
 
-# Each tool can have its own build type, or it can be overridden on the command
-# line.
 def decide_cmake_build_type(tool):
+  """Each tool can have its own build type, or it can be overridden on the command
+  line.
+  """
   if CMAKE_BUILD_TYPE_OVERRIDE:
     return CMAKE_BUILD_TYPE_OVERRIDE
   else:
     return tool.cmake_build_type
 
 
-# The root directory of the build.
 def llvm_build_dir(tool):
+  """The root directory of the build."""
   generator_suffix = cmake_generator_prefix()
   bitness_suffix = '_32' if tool.bitness == 32 else '_64'
 
@@ -884,9 +899,10 @@ def exe_suffix(filename):
   return filename
 
 
-# The directory where the binaries are produced. (relative to the installation
-# root directory of the tool)
 def llvm_build_bin_dir(tool):
+  """The directory where the binaries are produced. (relative to the installation
+  root directory of the tool)
+  """
   build_dir = llvm_build_dir(tool)
   if WINDOWS and 'Visual Studio' in CMAKE_GENERATOR:
     old_llvm_bin_dir = os.path.join(build_dir, 'bin', decide_cmake_build_type(tool))
@@ -924,8 +940,8 @@ def build_env():
   return env
 
 
-# Find path to cmake executable, as one of the activated tools, in PATH, or from installed tools.
 def find_cmake():
+  """Find path to cmake executable, as one of the activated tools, in PATH, or from installed tools."""
   def locate_cmake_from_tool(tool):
     tool_path = get_required_path([tool])
     tool_path = tool_path[-1]
@@ -1307,9 +1323,10 @@ def download_firefox(tool):
     pretend_version_dir = None
     root = os.path.normpath(tool.installation_path())
 
-  # For moving installer packages, e.g. "nightly", "latest", "latest-esr",
-  # store a text file to specify the actual installation directory.
   def save_actual_version():
+    """For moving installer packages, e.g. "nightly", "latest", "latest-esr",
+    store a text file to specify the actual installation directory.
+    """
     if os.path.isfile(firefox_exe) and pretend_version_dir:
       print(pretend_version_dir)
       os.makedirs(pretend_version_dir, exist_ok=True)
@@ -1430,8 +1447,8 @@ def is_firefox_installed(tool):
   return os.path.isfile(firefox_exe)
 
 
-# Finds the newest installed version of a given tool
 def find_latest_installed_tool(name):
+  """Finds the newest installed version of a given tool"""
   for t in reversed(tools):
     if t.id == name and t.is_installed():
       return t
@@ -1474,8 +1491,9 @@ def emscripten_npm_setup(directory):
 
 
 def sdk_post_install():
-  # Older versions of the sdk did not include the node_modules directory
-  # and require `npm ci` to be run post-install
+  """Older versions of the sdk did not include the node_modules directory
+  and require `npm ci` to be run post-install
+  """
   emscripten_dir = os.path.join(EMSDK_PATH, 'upstream', 'emscripten')
   if os.path.exists(os.path.join(emscripten_dir, 'node_modules')):
     return True
@@ -1484,8 +1502,9 @@ def sdk_post_install():
 
 
 def emscripten_install(tool):
-  # Modern versions of emscripten require bootstrap.py to be run before they
-  # can be used from a git checkout. On older versions we just run `npm ci`
+  """Modern versions of emscripten require bootstrap.py to be run before they
+  can be used from a git checkout. On older versions we just run `npm ci`
+  """
   directory = tool.installation_path()
   if os.path.isfile(os.path.join(directory, 'bootstrap.py')):
     env = get_node_env()[0]
@@ -1601,9 +1620,10 @@ def to_native_path(p):
     return to_unix_path(p)
 
 
-# Finds and returns a list of the directories that need to be added to PATH for
-# the given set of tools.
 def get_required_path(active_tools):
+  """Finds and returns a list of the directories that need to be added to PATH for
+  the given set of tools.
+  """
   path_add = [to_native_path(EMSDK_PATH)]
   for tool in active_tools:
     if tool.activated_path:
@@ -1746,9 +1766,10 @@ def download_node_nightly(tool):
   return True
 
 
-# returns a tuple (string,string) of config files paths that need to used
-# to activate emsdk env depending on $SHELL, defaults to bash.
 def get_emsdk_shell_env_configs():
+  """returns a tuple (string,string) of config files paths that need to used
+  to activate emsdk env depending on $SHELL, defaults to bash.
+  """
   default_emsdk_env = sdk_path('emsdk_env.sh')
   default_shell_config_file = '$HOME/.bash_profile'
   shell = os.getenv('SHELL', '')
@@ -1899,8 +1920,8 @@ class Tool:
 
     return str
 
-  # Return true if this tool requires building from source, and false if this is a precompiled tool.
   def needs_compilation(self):
+    """Return true if this tool requires building from source, and false if this is a precompiled tool."""
     if self.cmake_build_type:
       return True
 
@@ -1914,9 +1935,10 @@ class Tool:
 
     return False
 
-  # Specifies the target path where this tool will be installed to. This could
-  # either be a directory or a filename (e.g. in case of node.js)
   def installation_path(self):
+    """Specifies the target path where this tool will be installed to. This could
+    either be a directory or a filename (e.g. in case of node.js)
+    """
     if self.install_path:
       pth = self.expand_vars(self.install_path)
       return sdk_path(pth)
@@ -1925,17 +1947,18 @@ class Tool:
       p += f'_{self.bitness}bit'
     return sdk_path(os.path.join(self.id, p))
 
-  # Specifies the target directory this tool will be installed to.
   def installation_dir(self):
+    """Specifies the target directory this tool will be installed to."""
     dir = self.installation_path()
     if path_points_to_directory(dir):
       return dir
     else:
       return os.path.dirname(dir)
 
-  # Returns the configuration item that needs to be added to .emscripten to make
-  # this Tool active for the current user.
   def activated_config(self):
+    """Returns the configuration item that needs to be added to .emscripten to make
+    this Tool active for the current user.
+    """
     if not self.activated_cfg:
       return {}
 
@@ -1984,12 +2007,13 @@ class Tool:
 
     return self.url is not None
 
-  # the "version file" is a file inside install dirs that indicates the
-  # version installed there. this helps disambiguate when there is more than
-  # one version that may be installed to the same directory (which is used
-  # to avoid accumulating builds over time in some cases, with new builds
-  # overwriting the old)
   def get_version_file_path(self):
+    """the "version file" is a file inside install dirs that indicates the
+    version installed there. this helps disambiguate when there is more than
+    one version that may be installed to the same directory (which is used
+    to avoid accumulating builds over time in some cases, with new builds
+    overwriting the old)
+    """
     return os.path.join(self.installation_path(), '.emsdk_version')
 
   def is_installed_version(self):
@@ -2070,8 +2094,8 @@ class Tool:
         return False
     return True
 
-  # Returns true if the system environment variables requires by this tool are currently active.
   def is_env_active(self):
+    """Returns true if the system environment variables requires by this tool are currently active."""
     envs = self.activated_environment()
     for env in envs:
       key, value = parse_key_value(env)
@@ -2088,10 +2112,11 @@ class Tool:
           return False
     return True
 
-  # If this tool can be installed on this system, this function returns True.
-  # Otherwise, this function returns a string that describes the reason why this
-  # tool is not available.
   def can_be_installed(self):
+    """If this tool can be installed on this system, this function returns True.
+    Otherwise, this function returns a string that describes the reason why this
+    tool is not available.
+    """
     if self.bitness == 64 and not is_os_64bit():
         return "this tool is only provided for 64-bit OSes"
     return True
@@ -2335,10 +2360,11 @@ def parse_emscripten_version(emscripten_root):
     return [int(v) for v in version]
 
 
-# Given a git hash in emscripten-releases, find the emscripten
-# version for it. There may not be one if this is not the hash of
-# a release, in which case we return None.
 def get_emscripten_release_version(emscripten_releases_hash):
+  """Given a git hash in emscripten-releases, find the emscripten
+  version for it. There may not be one if this is not the hash of
+  a release, in which case we return None.
+  """
   releases_info = load_releases_info()
   for key, value in dict(releases_info['releases']).items():
     if value == emscripten_releases_hash:
@@ -2346,8 +2372,8 @@ def get_emscripten_release_version(emscripten_releases_hash):
   return None
 
 
-# Get the tip-of-tree build identifier.
 def get_emscripten_releases_tot():
+  """Get the tip-of-tree build identifier."""
   git_clone_checkout_and_pull(emscripten_releases_repo, sdk_path('releases'), 'main')
   recent_releases = git_recent_commits(sdk_path('releases'))
   # The recent releases are the latest hashes in the git repo. There
@@ -2403,9 +2429,10 @@ def update_emsdk():
     sys.exit(1)
 
 
-# Lists all legacy (pre-emscripten-releases) tagged versions directly in the Git
-# repositories. These we can pull and compile from source.
 def load_legacy_emscripten_tags():
+  """Lists all legacy (pre-emscripten-releases) tagged versions directly in the Git
+  repositories. These we can pull and compile from source.
+  """
   return open(sdk_path('legacy-emscripten-tags.txt')).read().split('\n')
 
 
@@ -2427,8 +2454,8 @@ def remove_suffix(s, suffix):
     return s
 
 
-# filename should be one of: 'llvm-precompiled-tags-32bit.txt', 'llvm-precompiled-tags-64bit.txt'
 def load_file_index_list(filename):
+  """filename should be one of: 'llvm-precompiled-tags-32bit.txt', 'llvm-precompiled-tags-64bit.txt'"""
   items = open(sdk_path(filename)).read().splitlines()
   items = [remove_suffix(remove_suffix(remove_prefix(x, 'emscripten-llvm-e'), '.tar.gz'), '.zip').strip() for x in items]
   items = [x for x in items if 'latest' not in x and len(x) > 0]
@@ -2438,8 +2465,8 @@ def load_file_index_list(filename):
   return sorted(items, key=version_key)
 
 
-# Load the json info for emscripten-releases.
 def load_releases_info():
+  """Load the json info for emscripten-releases."""
   if not hasattr(load_releases_info, 'cached_info'):
     try:
       text = open(sdk_path('emscripten-releases-tags.json')).read()
@@ -2460,8 +2487,8 @@ def get_installed_sdk_version():
   return version.split('-')[1]
 
 
-# Get a list of tags for emscripten-releases.
 def load_releases_tags():
+  """Get a list of tags for emscripten-releases."""
   tags = []
   info = load_releases_info()
 
@@ -2531,9 +2558,10 @@ def load_sdk_manifest():
         return False
     return True
 
-  # A 'category parameter' is a %foo%-encoded identifier that specifies
-  # a class of tools instead of just one tool, e.g. %tag%
   def expand_category_param(param, category_list, t, is_sdk):
+    """A 'category parameter' is a %foo%-encoded identifier that specifies
+    a class of tools instead of just one tool, e.g. %tag%
+    """
     for i, ver in enumerate(category_list):
       if not ver.strip():
         continue
@@ -2600,15 +2628,16 @@ def load_sdk_manifest():
         add_sdk(sdk)
 
 
-# Tests if the two given tools can be active at the same time.
-# Currently only a simple check for name for same tool with different versions,
-# possibly adds more logic in the future.
 def can_simultaneously_activate(tool1, tool2):
+  """Tests if the two given tools can be active at the same time.
+  Currently only a simple check for name for same tool with different versions,
+  possibly adds more logic in the future.
+  """
   return tool1.id != tool2.id
 
 
-# Expands dependencies for each tool, and removes ones that don't exist.
 def process_tool_list(tools_to_activate):
+  """Expands dependencies for each tool, and removes ones that don't exist."""
   i = 0
   # Gather dependencies for each tool
   while i < len(tools_to_activate):
@@ -2642,10 +2671,11 @@ def write_set_env_script(env_string):
   open(EMSDK_SET_ENV, 'w').write(env_string)
 
 
-# Reconfigure .emscripten to choose the currently activated toolset, set PATH
-# and other environment variables.
-# Returns the full list of deduced tools that are now active.
 def set_active_tools(tools_to_activate, permanently_activate, system):
+  """Reconfigure .emscripten to choose the currently activated toolset, set PATH
+  and other environment variables.
+  Returns the full list of deduced tools that are now active.
+  """
   tools_to_activate = process_tool_list(tools_to_activate)
 
   if tools_to_activate:
@@ -2696,8 +2726,8 @@ def unique_items(seq):
   return [x for x in seq if x not in seen and not seen_add(x)]
 
 
-# Tests if a path is contained in the given list, but with separators normalized.
 def normalized_contains(lst, elem):
+  """Tests if a path is contained in the given list, but with separators normalized."""
   elem = to_unix_path(elem)
   for e in lst:
     if elem == to_unix_path(e):
@@ -2713,9 +2743,10 @@ def to_msys_path(p):
   return new_path
 
 
-# Looks at the current PATH and adds and removes entries so that the PATH reflects
-# the set of given active tools.
 def adjusted_path(tools_to_activate, system=False, user=False):
+  """Looks at the current PATH and adds and removes entries so that the PATH reflects
+  the set of given active tools.
+  """
   # These directories should be added to PATH
   path_add = get_required_path(tools_to_activate)
   # These already exist.
@@ -3064,8 +3095,8 @@ def main(args):  # noqa: C901, PLR0911, PLR0912
                                    incremental build fails. Useful on CI.''')
     return 0
 
-  # Extracts a boolean command line argument from args and returns True if it was present
   def extract_bool_arg(name):
+    """Extracts a boolean command line argument from args and returns True if it was present"""
     if name in args:
       args.remove(name)
       return True
