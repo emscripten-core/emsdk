@@ -1580,8 +1580,8 @@ def get_required_path(active_tools):
   """
   path_add = [to_native_path(EMSDK_PATH)]
   for tool in active_tools:
-    if tool.activated_path:
-      path = to_native_path(tool.expand_vars(tool.activated_path))
+    for path in tool.activated_paths():
+      path = to_native_path(path)
       # If the tool has an activated_path_skip attribute then we don't add
       # the tools path to the users path if a program by that name is found
       # in the existing PATH.  This allows us to, for example, add our version
@@ -1821,6 +1821,7 @@ class Tool:
   is_old = False
   version = None
   activated_path = None
+  activated_path_extra = None
   cmake_build_type = None
   install_path = None
   activated_path_skip = False
@@ -1858,6 +1859,16 @@ class Tool:
 
   def __repr__(self):
     return self.name
+
+  def activated_paths(self):
+    paths = []
+    if self.activated_path_extra:
+      path = self.expand_vars(self.activated_path_extra)
+      if os.path.exists(path):
+        paths.append(path)
+    if self.activated_path:
+      paths.append(self.expand_vars(self.activated_path))
+    return paths
 
   def expand_vars(self, str):
     if '%installation_dir%' in str:
@@ -2066,13 +2077,12 @@ class Tool:
         debug_print(f'{self} is not active, because environment variable key="{key}" has value "{os.getenv(key)}" but should have value "{value}"')
         return False
 
-    if self.activated_path:
-      path = to_unix_path(self.expand_vars(self.activated_path))
-      for p in path:
-        path_items = os.environ['PATH'].replace('\\', '/').split(ENVPATH_SEPARATOR)
-        if not normalized_contains(path_items, p):
-          debug_print(f'{self} is not active, because environment variable PATH item "{p}" is not present (PATH={os.environ["PATH"]})')
-          return False
+    for path in self.activated_paths():
+      p = to_unix_path(path)
+      path_items = os.environ['PATH'].replace('\\', '/').split(ENVPATH_SEPARATOR)
+      if not normalized_contains(path_items, p):
+        debug_print(f'{self} is not active, because environment variable PATH item "{p}" is not present (PATH={os.environ["PATH"]})')
+        return False
     return True
 
   def can_be_installed(self):
