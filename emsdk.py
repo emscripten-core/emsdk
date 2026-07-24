@@ -971,6 +971,16 @@ def make_build(build_root, build_type):
   return True
 
 
+def write_file(filename, content):
+  with open(filename, 'w', encoding='utf-8') as f:
+    f.write(content)
+
+
+def read_file(filename):
+  with open(filename, encoding='utf-8') as f:
+    return f.read()
+
+
 def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_args):
   debug_print(f'cmake_configure(generator={generator}, build_root={build_root}, src_root={src_root}, build_type={build_type}, extra_cmake_args={extra_cmake_args})')
   # Configure
@@ -1000,7 +1010,8 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
 
     # Create a file 'recmake.bat/sh' in the build root that user can call to
     # manually recmake the build tree with the previous build params
-    open(os.path.join(build_root, 'recmake.' + ('bat' if WINDOWS else 'sh')), 'w').write(' '.join(map(quote_parens, cmdline)))
+    re_cmake_script = os.path.join(build_root, 'recmake.' + ('bat' if WINDOWS else 'sh'))
+    write_file(re_cmake_script, ' '.join(map(quote_parens, cmdline)))
     subprocess.check_call(cmdline, cwd=build_root, env=build_env())
   except OSError as e:
     if e.errno == errno.ENOENT:
@@ -1218,7 +1229,8 @@ def build_ccache(tool):
           os.chmod(dst, os.stat(dst).st_mode | stat.S_IEXEC)
 
     cache_dir = os.path.join(root, 'cache')
-    open(os.path.join(root, 'emcc_ccache.conf'), 'w').write('''# Set maximum cache size to 10 GB:
+    write_file(os.path.join(root, 'emcc_ccache.conf'), '''\
+# Set maximum cache size to 10 GB:
 max_size = 10G
 cache_dir = %s
 ''' % cache_dir)
@@ -1282,7 +1294,7 @@ def download_firefox(tool):
     if os.path.isfile(firefox_exe) and pretend_version_dir:
       print(pretend_version_dir)
       os.makedirs(pretend_version_dir, exist_ok=True)
-      open(os.path.join(pretend_version_dir, 'actual.txt'), 'w').write(os.path.relpath(root, EMSDK_PATH))
+      write_file(os.path.join(pretend_version_dir, 'actual.txt'), os.path.relpath(root, EMSDK_PATH))
 
   # Check if already installed
   print('Firefox installation root directory: ' + root)
@@ -1365,7 +1377,8 @@ def download_firefox(tool):
   else:
     distribution_path = os.path.join(root, 'distribution')
   os.makedirs(distribution_path, exist_ok=True)
-  open(os.path.join(distribution_path, 'policies.json'), 'w').write('''{
+  write_file(os.path.join(distribution_path, 'policies.json'), '''\
+{
   "policies": {
     "AppAutoUpdate": false,
     "DisableAppUpdate": true
@@ -1393,7 +1406,7 @@ def is_firefox_installed(tool):
   if not os.path.isfile(actual_file):
     return False
 
-  actual_installation_dir = sdk_path(open(actual_file).read())
+  actual_installation_dir = sdk_path(read_file(actual_file))
   exe_dir = os.path.join(actual_installation_dir, 'Contents', 'MacOS') if MACOS else actual_installation_dir
   firefox_exe = os.path.join(exe_dir, exe_suffix('firefox'))
   return os.path.isfile(firefox_exe)
@@ -1615,7 +1628,7 @@ def load_em_config():
   EM_CONFIG_DICT.clear()
   lines = []
   try:
-    lines = open(EM_CONFIG_PATH).read().split('\n')
+    lines = read_file(EM_CONFIG_PATH).splitlines()
   except Exception:
     pass
   for line in lines:
@@ -1712,7 +1725,7 @@ def download_node_nightly(tool):
   url = url.replace('%arch%', arch)
   url = url.replace('%zip_suffix%', zip_suffix)
   download_and_extract(url, output_dir)
-  open(tool.get_version_file_path(), 'w').write('node-nightly-64bit')
+  write_file(tool.get_version_file_path(), 'node-nightly-64bit')
   return True
 
 
@@ -1783,8 +1796,7 @@ def generate_em_config(active_tools, permanently_activate, system):
     backup_path = EM_CONFIG_PATH + ".old"
     move_with_overwrite(EM_CONFIG_PATH, backup_path)
 
-  with open(EM_CONFIG_PATH, "w") as text_file:
-    text_file.write(cfg)
+  write_file(EM_CONFIG_PATH, cfg)
 
   # Clear old emscripten content.
   rmfile(os.path.join(EMSDK_PATH, ".emscripten_sanity"))
@@ -1863,7 +1875,7 @@ class Tool:
     if '%actual_installation_dir%' in str:
       actual_file = os.path.join(self.installation_dir(), 'actual.txt')
       if os.path.isfile(actual_file):
-        str = str.replace('%actual_installation_dir%', sdk_path(open(actual_file).read()))
+        str = str.replace('%actual_installation_dir%', sdk_path(read_file(actual_file)))
       else:
         str = str.replace('%actual_installation_dir%', '__NOT_INSTALLED__')
     if '%generator_prefix%' in str:
@@ -1978,13 +1990,11 @@ class Tool:
   def is_installed_version(self):
     version_file_path = self.get_version_file_path()
     if os.path.isfile(version_file_path):
-      with open(version_file_path) as version_file:
-        return version_file.read().strip() == self.name
+      return read_file(version_file_path).strip() == self.name
     return False
 
   def update_installed_version(self):
-    with open(self.get_version_file_path(), 'w') as version_file:
-      version_file.write(self.name + '\n')
+    write_file(self.get_version_file_path(), self.name + '\n')
 
   def is_installed(self, skip_version_check=False):
     # If this tool/sdk depends on other tools, require that all dependencies are
@@ -2184,8 +2194,7 @@ class Tool:
       emscripten_version_file_path = os.path.join(to_native_path(self.expand_vars(self.activated_path)), 'emscripten-version.txt')
       version = get_emscripten_release_version(self.emscripten_releases_hash)
       if version:
-        with open(emscripten_version_file_path, 'w') as f:
-          f.write('"%s"\n' % version)
+        write_file(emscripten_version_file_path, f'"{version}"\n')
 
     print(f"Done installing tool '{self}'.")
 
@@ -2313,8 +2322,7 @@ def find_tot_sdk():
 
 def parse_emscripten_version(emscripten_root):
   version_file = os.path.join(emscripten_root, 'emscripten-version.txt')
-  with open(version_file) as f:
-    version = f.read().strip()
+  version = read_file(version_file).strip()
   version = version.strip('"')
   suffix = None
   if '-' in version:
@@ -2402,11 +2410,11 @@ def load_legacy_emscripten_tags():
   """Lists all legacy (pre-emscripten-releases) tagged versions directly in the Git
   repositories. These we can pull and compile from source.
   """
-  return open(sdk_path('legacy-emscripten-tags.txt')).read().split('\n')
+  return read_file(sdk_path('legacy-emscripten-tags.txt')).splitlines()
 
 
 def load_legacy_binaryen_tags():
-  return open(sdk_path('legacy-binaryen-tags.txt')).read().split('\n')
+  return read_file(sdk_path('legacy-binaryen-tags.txt')).splitlines()
 
 
 def remove_prefix(s, prefix):
@@ -2425,7 +2433,7 @@ def remove_suffix(s, suffix):
 
 def load_file_index_list(filename):
   """filename should be one of: 'llvm-precompiled-tags-32bit.txt', 'llvm-precompiled-tags-64bit.txt'"""
-  items = open(sdk_path(filename)).read().splitlines()
+  items = read_file(sdk_path(filename)).splitlines()
   items = [remove_suffix(remove_suffix(remove_prefix(x, 'emscripten-llvm-e'), '.tar.gz'), '.zip').strip() for x in items]
   items = [x for x in items if 'latest' not in x and len(x) > 0]
 
@@ -2438,7 +2446,7 @@ def load_releases_info():
   """Load the json info for emscripten-releases."""
   if not hasattr(load_releases_info, 'cached_info'):
     try:
-      text = open(sdk_path('emscripten-releases-tags.json')).read()
+      text = read_file(sdk_path('emscripten-releases-tags.json'))
       load_releases_info.cached_info = json.loads(text)
     except Exception as e:
       print('Error parsing emscripten-releases-tags.json!')
@@ -2451,8 +2459,7 @@ def get_installed_sdk_version():
   version_file = sdk_path(os.path.join('upstream', '.emsdk_version'))
   if not os.path.exists(version_file):
     return None
-  with open(version_file) as f:
-    version = f.read()
+  version = read_file(version_file)
   return version.split('-')[1]
 
 
@@ -2485,7 +2492,7 @@ def load_releases_versions():
 
 def load_sdk_manifest():
   try:
-    manifest = json.loads(open(sdk_path("emsdk_manifest.json")).read())
+    manifest = json.loads(read_file(sdk_path('emsdk_manifest.json')))
   except Exception as e:
     print('Error parsing emsdk_manifest.json!')
     print(str(e))
@@ -2637,7 +2644,7 @@ def process_tool_list(tools_to_activate):
 
 def write_set_env_script(env_string):
   assert CMD or POWERSHELL
-  open(EMSDK_SET_ENV, 'w').write(env_string)
+  write_file(EMSDK_SET_ENV, env_string)
 
 
 def set_active_tools(tools_to_activate, permanently_activate, system):
