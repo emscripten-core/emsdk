@@ -1001,11 +1001,7 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
     # Create a file 'recmake.bat/sh' in the build root that user can call to
     # manually recmake the build tree with the previous build params
     open(os.path.join(build_root, 'recmake.' + ('bat' if WINDOWS else 'sh')), 'w').write(' '.join(map(quote_parens, cmdline)))
-    ret = subprocess.check_call(cmdline, cwd=build_root, env=build_env())
-    if ret != 0:
-      errlog(f'CMake invocation failed with exit code {ret}')
-      errlog(f'Working directory: {build_root}')
-      return False
+    subprocess.check_call(cmdline, cwd=build_root, env=build_env())
   except OSError as e:
     if e.errno == errno.ENOENT:
       errlog(str(e))
