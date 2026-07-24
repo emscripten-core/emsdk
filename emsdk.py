@@ -27,7 +27,7 @@ if os.name == 'nt':
 from urllib.parse import urljoin
 from urllib.request import urlopen
 
-if sys.version_info < (3, 10):  # noqa: UP036
+if sys.version_info < (3, 10):  # ruff: ignore[outdated-version-block]
   print(f'error: emsdk requires python 3.10 or above ({sys.executable} {sys.version})', file=sys.stderr)
   sys.exit(1)
 
@@ -2932,7 +2932,7 @@ def expand_sdk_name(name, activating):
   return name
 
 
-def main(args):  # noqa: C901, PLR0911, PLR0912
+def main(args):  # ruff: ignore[complex-structure, too-many-return-statements, too-many-branches]
   if not args:
     errlog("Missing command; Type 'emsdk help' to get a list of commands.")
     return 1
