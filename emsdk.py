@@ -5,7 +5,6 @@
 # found in the LICENSE file.
 
 import copy
-import errno
 import json
 import multiprocessing
 import os
@@ -987,44 +986,32 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
   if not os.path.isdir(build_root):
     # Create build output directory if it doesn't yet exist.
     os.mkdir(build_root)
+  cmdline = [find_cmake(), '-DCMAKE_BUILD_TYPE=' + build_type, '-DPYTHON_EXECUTABLE=' + sys.executable]
+  if generator:
+    cmdline += ['-G', generator]
+  # Target macOS 11.0 Big Sur at minimum, to support older Mac devices.
+  # See https://en.wikipedia.org/wiki/MacOS#Hardware_compatibility for min-spec details.
+  cmdline += ['-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0']
+  cmdline += [*extra_cmake_args, src_root]
+
+  print(f'Running CMake: {cmdline}')
+
+  # Specify the deployment target also as an env. var, since some Xcode versions
+  # read this instead of the CMake field.
+  os.environ['MACOSX_DEPLOYMENT_TARGET'] = '11.0'
+
+  def quote_parens(x):
+    if ' ' in x:
+      return '"' + x.replace('"', '\\"') + '"'
+    else:
+      return x
+
+  # Create a file 'recmake.bat/sh' in the build root that user can call to
+  # manually recmake the build tree with the previous build params
+  re_cmake_script = os.path.join(build_root, 'recmake.' + ('bat' if WINDOWS else 'sh'))
+  write_file(re_cmake_script, ' '.join(map(quote_parens, cmdline)))
   try:
-    cmdline = [find_cmake(), '-DCMAKE_BUILD_TYPE=' + build_type, '-DPYTHON_EXECUTABLE=' + sys.executable]
-    if generator:
-      cmdline += ['-G', generator]
-    # Target macOS 11.0 Big Sur at minimum, to support older Mac devices.
-    # See https://en.wikipedia.org/wiki/MacOS#Hardware_compatibility for min-spec details.
-    cmdline += ['-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0']
-    cmdline += [*extra_cmake_args, src_root]
-
-    print(f'Running CMake: {cmdline}')
-
-    # Specify the deployment target also as an env. var, since some Xcode versions
-    # read this instead of the CMake field.
-    os.environ['MACOSX_DEPLOYMENT_TARGET'] = '11.0'
-
-    def quote_parens(x):
-      if ' ' in x:
-        return '"' + x.replace('"', '\\"') + '"'
-      else:
-        return x
-
-    # Create a file 'recmake.bat/sh' in the build root that user can call to
-    # manually recmake the build tree with the previous build params
-    re_cmake_script = os.path.join(build_root, 'recmake.' + ('bat' if WINDOWS else 'sh'))
-    write_file(re_cmake_script, ' '.join(map(quote_parens, cmdline)))
     subprocess.check_call(cmdline, cwd=build_root, env=build_env())
-  except OSError as e:
-    if e.errno == errno.ENOENT:
-      errlog(str(e))
-      errlog('Could not run CMake, perhaps it has not been installed?')
-      if WINDOWS:
-        errlog('Installing this package requires CMake. Get it from http://www.cmake.org/')
-      elif LINUX:
-        errlog('Installing this package requires CMake. Get it via your system package manager (e.g. sudo apt-get install cmake), or from http://www.cmake.org/')
-      elif MACOS:
-        errlog('Installing this package requires CMake. Get it via a macOS package manager (Homebrew: "brew install cmake", or MacPorts: "sudo port install cmake"), or from http://www.cmake.org/')
-      return False
-    raise
   except Exception as e:
     errlog('CMake invocation failed due to exception')
     errlog(f'Working directory: {build_root}')
