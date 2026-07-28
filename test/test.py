@@ -307,10 +307,8 @@ int main() {
     run_emsdk('activate sdk-tag-1.38.33-64bit')
 
   def test_binaryen_from_source(self):
-    if WINDOWS:
-      # It takes over 30 mins to build binaryen using Visual Studio in CI
-      self.skipTest('test is too slow under windows')
-    run_emsdk(['install', '--build=Release', 'binaryen-main-64bit'])
+    # Use the debug build here since it should be a little faster (doesn't try to do LTO, for example)
+    run_emsdk(['install', '--build=Debug', '--vs2022', 'binaryen-main-64bit'])
 
   def test_no_32bit(self):
     print('test 32-bit error')

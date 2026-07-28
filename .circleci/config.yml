@@ -156,7 +156,7 @@ jobs:
       - test-macos
   test-windows:
     executor:
-      name: win/server-2019
+      name: win/server-2022
       shell: bash.exe
     environment:
       PYTHONUNBUFFERED: "1"
