@@ -1462,10 +1462,10 @@ def emscripten_install(tool):
     if not env:
       return False
     try:
-      subprocess.check_output([sys.executable, os.path.join(directory, 'bootstrap.py')],
-                              cwd=directory, stderr=subprocess.STDOUT, env=env, text=True)
+      subprocess.check_call([sys.executable, os.path.join(directory, 'bootstrap.py')],
+                            cwd=directory, stdin=subprocess.DEVNULL, env=env, text=True)
     except subprocess.CalledProcessError as e:
-      errlog('Error running %s:\n%s' % (e.cmd, e.output))
+      errlog('Error running %s' % str(e))
       return False
 
     print('Done running: Emscripten bootstrap')
