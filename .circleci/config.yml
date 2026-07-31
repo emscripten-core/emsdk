@@ -29,7 +29,7 @@ commands:
       - checkout
       - run:
           name: Install CMake
-          command: brew install cmake
+          command: brew install cmake ninja
   test-macos:
     steps:
       - run:
@@ -132,7 +132,7 @@ jobs:
       - checkout
       - run:
           name: Install debian packages
-          command: apt-get update -q && apt-get install -q -y cmake build-essential openjdk-8-jre-headless ksh zsh
+          command: apt-get update -q && apt-get install -q -y cmake ninja-build build-essential openjdk-8-jre-headless ksh zsh
       - run: test/test_node_path.sh
       - run: test/test.sh
       - run: test/test_source_env.sh
@@ -147,7 +147,7 @@ jobs:
       - checkout
       - run:
           name: Install debian packages
-          command: sudo apt-get update -q && sudo apt-get install -q cmake build-essential openjdk-8-jre-headless
+          command: sudo apt-get update -q && sudo apt-get install -q cmake ninja-build build-essential openjdk-8-jre-headless
       - run: test/test.sh
   test-mac-arm64:
     executor: mac_arm64
