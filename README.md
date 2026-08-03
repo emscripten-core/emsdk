@@ -192,7 +192,7 @@ latest git development branch `main`, run the following:
     emsdk install sdk-main-64bit # Clone+pull the latest emscripten-core/emscripten/main.
     emsdk activate sdk-main-64bit # Set the main SDK as the currently active one.
 
-### How do I use my own Emscripten GitHub fork with the SDK?
+### How do I use my own Emscripten fork with the SDK?
 
 It is also possible to use your own fork of the Emscripten repository via the
 SDK. This is achieved with standard git machinery, so if you are already
