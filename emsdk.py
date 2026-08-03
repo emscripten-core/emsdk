@@ -1416,15 +1416,15 @@ def find_latest_installed_tool(name):
 
 def get_node_env():
   node_tool = find_latest_installed_tool('node')
-  if not node_tool:
+  if node_tool:
+    node_path = node_tool.expand_vars(node_tool.activated_path)
+  else:
     npm_fallback = shutil.which('npm')
     if not npm_fallback:
       errlog('Failed to find npm command')
       errlog('npm is required for Emscripten setup. Please install node.js first')
       return None, None
     node_path = os.path.dirname(npm_fallback)
-  else:
-    node_path = os.path.join(node_tool.installation_path(), 'bin')
 
   env = os.environ.copy()
   env["PATH"] = node_path + os.pathsep + env["PATH"]
