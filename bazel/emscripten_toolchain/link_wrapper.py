@@ -14,7 +14,6 @@ This wrapper currently serves the following purposes.
    bazel path.
 """
 
-from __future__ import print_function
 
 import argparse
 import os
@@ -24,7 +23,7 @@ import sys
 # Only argument should be @path/to/parameter/file
 assert sys.argv[1][0] == '@', sys.argv
 param_filename = sys.argv[1][1:]
-param_file_args = [line.strip() for line in open(param_filename, 'r').readlines()]
+param_file_args = [line.strip() for line in open(param_filename).readlines()]
 
 # Re-write response file if needed.
 if any(' ' in a for a in param_file_args):
@@ -39,7 +38,7 @@ if any(' ' in a for a in param_file_args):
   sys.argv[1] = '@' + new_param_filename
 
 emcc_py = os.path.join(os.environ['EMSCRIPTEN'], 'emcc.py')
-rtn = subprocess.call([sys.executable, emcc_py] + sys.argv[1:])
+rtn = subprocess.call([sys.executable, emcc_py, *sys.argv[1:]])
 if rtn != 0:
   sys.exit(1)
 
@@ -84,14 +83,12 @@ extensions = [
     '.js',
     '.wasm',
     '.wasm.map',
-    '.js.mem',
-    '.fetch.js',
-    '.worker.js',
     '.data',
     '.js.symbols',
     '.wasm.debug.wasm',
     '.html',
-    '.aw.js'
+    '.ts',
+    '.d.ts',
 ]
 
 for ext in extensions:
@@ -155,12 +152,12 @@ if os.path.exists(wasm_base + '.debug.wasm') and os.path.exists(wasm_base):
         '--add-section=external_debug_info=' + base_name + '_debugsection.tmp'])
 
 # Make sure we have at least one output file.
-if not len(files):
+if not files:
   print('emcc.py did not appear to output any known files!')
   sys.exit(1)
 
 # cc_binary must output exactly one file; put all the output files in a tarball.
-cmd = ['tar', 'cf', base_name + '.tar'] + files
+cmd = ['tar', 'cf', base_name + '.tar', *files]
 subprocess.check_call(cmd, cwd=outdir)
 os.replace(os.path.join(outdir, base_name + '.tar'), output_file)
 

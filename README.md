@@ -55,8 +55,7 @@ https://emscripten.org/docs/building_from_source/toolchain_what_is_needed.html.
 
 ### Mac OS X
 
-- For Intel-based Macs, macOS 10.13 or newer. For ARM64 M1 based Macs, macOS
-  11.0 or newer.
+- macOS 11.0 or newer.
 - `java`: For running closure compiler (optional).  After installing emscripten
   via emsdk, typing 'emcc --help' should pop up a OS X dialog "Java is not
   installed. To open java, you need a Java SE 6 runtime. Would you like to
@@ -65,13 +64,15 @@ https://emscripten.org/docs/building_from_source/toolchain_what_is_needed.html.
 
 ### Linux
 
-- `python`: Version 3.9.2 or above.
+- `python`: Version 3.10 or above.
 - `java`: For running closure compiler (optional)
 
-The emsdk pre-compiled binaries are built against Ubuntu/Focal 20.04 LTS and
-therefore depend on system libraries compatible with versions of `glibc` and
-`libstdc++` present in that release.  If your linux distribution is very old
-you may not be able to use the pre-compiled binaries packages.
+The emsdk pre-compiled binaries are built against debian/stretch (for x86_64)
+and debian/bullseye (for arm64) sysroots and therefore depend on system
+libraries compatible with the version of `glibc` (and other libraries) present
+in those releases. If your linux distribution is very old you may not be able to
+use the pre-compiled binaries packages.  Note that `libc++` is statically linked
+so there should be no issues with older versions of `libstdc++` or `libc++`.
 
 ### Windows
 
@@ -181,17 +182,17 @@ the `activate` command to register the environment permanently for the current u
 ### How do I track the latest Emscripten development with the SDK?
 
 A common and supported use case of the Emscripten SDK is to enable the workflow
-where you directly interact with the github repositories. This allows you to
+where you directly interact with the GitHub repositories. This allows you to
 obtain new features and latest fixes immediately as they are pushed to the
-github repository, without having to wait for release to be tagged. You do not
-need a github account or a fork of Emscripten to do this. To switch to using the
+GitHub repository, without having to wait for release to be tagged. You do not
+need a GitHub account or a fork of Emscripten to do this. To switch to using the
 latest git development branch `main`, run the following:
 
     emsdk install git-1.9.4 # Install git. Skip if the system already has it.
     emsdk install sdk-main-64bit # Clone+pull the latest emscripten-core/emscripten/main.
     emsdk activate sdk-main-64bit # Set the main SDK as the currently active one.
 
-### How do I use my own Emscripten github fork with the SDK?
+### How do I use my own Emscripten fork with the SDK?
 
 It is also possible to use your own fork of the Emscripten repository via the
 SDK. This is achieved with standard git machinery, so if you are already

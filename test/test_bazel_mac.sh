@@ -21,6 +21,7 @@ grep ${VER} bazel/MODULE.bazel || (echo ${FAILMSG} && false)
 cd bazel
 bazel build //hello-world:hello-world-wasm
 bazel build //hello-world:hello-world-wasm-simd
+bazel build //hello-world:hello-world-wasm-relaxed-simd
 
 cd test_external
 bazel build //long_command_line:long_command_line_wasm
@@ -29,3 +30,5 @@ bazel build //:hello-world-wasm
 cd ../test_secondary_lto_cache
 bazel build //:hello-world-wasm
 
+cd ../test_prebuilt_cache
+bazel build //:hello-world-wasm --compilation_mode opt # test only release as used prebuilt cache is only for release builds

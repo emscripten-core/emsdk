@@ -3,8 +3,7 @@
 # Emscripten version to build: Should match the version that has been already released.
 # i.e.:  1.39.18
 version =
-alias =
-only_alias =
+tag =
 
 image_name ?= emscripten/emsdk
 
@@ -22,10 +21,13 @@ test: test_dockerimage.sh .TEST
 	docker run --rm -u `id -u`:`id -g` -w /emsdk/docker --net=host --entrypoint /bin/bash ${image_name}:${version} $<
 
 push: .TEST
-ifndef only_alias
-	docker push ${image_name}:${version}
+ifdef tag
+	docker tag ${image_name}:${version} ${image_name}:${tag}
+	docker push ${image_name}:${tag}
 endif
-ifdef alias
-	docker tag ${image_name}:${version} ${image_name}:${alias}
-	docker push ${image_name}:${alias}
+
+push-multiplatform: .TEST
+ifdef tag
+	docker manifest create ${image_name}:${tag} $(foreach platform,x64 arm64,--amend ${image_name}:${version}-$(platform))
+	docker manifest push ${image_name}:${tag}
 endif

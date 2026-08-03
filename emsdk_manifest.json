@@ -157,6 +157,156 @@
 
 
   {
+    "id": "node",
+    "version": "22.16.0",
+    "bitness": 32,
+    "arch": "x86",
+    "windows_url": "node-v22.16.0-win-x86.zip",
+    "activated_path": "%installation_dir%/bin",
+    "activated_path_skip": "node",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+  },
+  {
+    "id": "node",
+    "version": "22.16.0",
+    "arch": "arm",
+    "bitness": 32,
+    "linux_url": "node-v22.16.0-linux-armv7l.tar.xz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_path_skip": "node",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+  },
+  {
+    "id": "node",
+    "version": "22.16.0",
+    "bitness": 64,
+    "arch": "x86_64",
+    "windows_url": "node-v22.16.0-win-x64.zip",
+    "macos_url": "node-v22.16.0-darwin-x64.tar.gz",
+    "linux_url": "node-v22.16.0-linux-x64.tar.xz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_path_skip": "node",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+  },
+  {
+    "id": "node",
+    "version": "22.16.0",
+    "arch": "arm64",
+    "bitness": 64,
+    "windows_url": "node-v22.16.0-win-arm64.zip",
+    "macos_url": "node-v22.16.0-darwin-arm64.tar.gz",
+    "linux_url": "node-v22.16.0-linux-arm64.tar.xz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_path_skip": "node",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+  },
+  {
+    "id": "node-big-endian-crosscompile",
+    "version": "22.16.0",
+    "arch": "x86_64",
+    "bitness": 64,
+    "linux_url": "https://nodejs.org/download/release/v22.16.0/node-v22.16.0-linux-s390x.tar.gz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_path_skip": "node",
+    "activated_cfg": "NODE_JS_TEST=['qemu-s390x', '-L', '/usr/s390x-linux-gnu/', '%installation_dir%/bin/node']"
+  },
+
+  {
+    "id": "node",
+    "version": "24.7.0",
+    "bitness": 64,
+    "arch": "x86_64",
+    "windows_url": "node-v24.7.0-win-x64.zip",
+    "macos_url": "node-v24.7.0-darwin-x64.tar.gz",
+    "linux_url": "node-v24.7.0-linux-x64.tar.xz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_path_skip": "node",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+  },
+  {
+    "id": "node",
+    "version": "24.7.0",
+    "arch": "arm64",
+    "bitness": 64,
+    "windows_url": "node-v24.7.0-win-arm64.zip",
+    "macos_url": "node-v24.7.0-darwin-arm64.tar.gz",
+    "linux_url": "node-v24.7.0-linux-arm64.tar.xz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_path_skip": "node",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
+  },
+  {
+    "id": "node-big-endian-crosscompile",
+    "version": "24.7.0",
+    "arch": "x86_64",
+    "bitness": 64,
+    "linux_url": "node-v24.7.0-linux-s390x.tar.gz",
+    "activated_path": "%installation_dir%/bin",
+    "activated_path_skip": "node",
+    "activated_cfg": "NODE_JS_TEST=['qemu-s390x', '-L', '/usr/s390x-linux-gnu/', '%installation_dir%/bin/node']"
+  },
+
+  {
+    "id": "node",
+    "version": "nightly",
+    "bitness": 64,
+    "install_path": "node/%latest_downloaded_node_nightly_dir%",
+    "custom_install_script": "download_node_nightly",
+    "activated_path": "node/%latest_downloaded_node_nightly_dir%/bin",
+    "activated_path_skip": "node",
+    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
+    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%",
+    "url": "https://nodejs.org/download/nightly/%version%/node-%version%-%os%-%arch%.%zip_suffix%",
+    "git_branch": "nightly"
+  },
+
+
+  {
+    "id": "cmake",
+    "version": "4.2.0-rc3",
+    "bitness": 64,
+    "arch": "x86_64",
+    "activated_cfg": "EMSDK_CMAKE='%installation_dir%/bin/cmake%.exe%'",
+    "activated_path": "%installation_dir%/bin",
+    "windows_url": "https://github.com/Kitware/CMake/releases/download/v4.2.0-rc3/cmake-4.2.0-rc3-windows-x86_64.zip",
+    "linux_url": "https://github.com/Kitware/CMake/releases/download/v4.2.0-rc3/cmake-4.2.0-rc3-linux-x86_64.tar.gz"
+  },
+  {
+    "id": "cmake",
+    "version": "4.2.0-rc3",
+    "bitness": 64,
+    "arch": "x86_64",
+    "activated_cfg": "EMSDK_CMAKE='%installation_dir%/CMake.app/Contents/bin/cmake%.exe%'",
+    "activated_path": "%installation_dir%/CMake.app/Contents/bin",
+    "macos_url": "https://github.com/Kitware/CMake/releases/download/v4.2.0-rc3/cmake-4.2.0-rc3-macos-universal.tar.gz"
+  },
+  {
+    "id": "cmake",
+    "version": "4.2.0-rc3",
+    "bitness": 64,
+    "arch": "arm64",
+    "activated_cfg": "EMSDK_CMAKE='%installation_dir%/bin/cmake%.exe%'",
+    "activated_path": "%installation_dir%/bin",
+    "windows_url": "https://github.com/Kitware/CMake/releases/download/v4.2.0-rc3/cmake-4.2.0-rc3-windows-arm64.zip",
+    "linux_url": "https://github.com/Kitware/CMake/releases/download/v4.2.0-rc3/cmake-4.2.0-rc3-linux-aarch64.tar.gz"
+  },
+  {
+    "id": "cmake",
+    "version": "4.2.0-rc3",
+    "bitness": 64,
+    "arch": "arm64",
+    "activated_cfg": "EMSDK_CMAKE='%installation_dir%/CMake.app/Contents/bin/cmake%.exe%'",
+    "activated_path": "%installation_dir%/CMake.app/Contents/bin",
+    "macos_url": "https://github.com/Kitware/CMake/releases/download/v4.2.0-rc3/cmake-4.2.0-rc3-macos-universal.tar.gz"
+  },
+
+  {
     "id": "python",
     "version": "3.9.2-nuget",
     "bitness": 64,
@@ -192,6 +342,157 @@
     "activated_cfg": "PYTHON='%installation_dir%/bin/python3'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.9/site-packages/certifi/cacert.pem"
   },
+
+  {
+    "id": "python",
+    "version": "3.13.3",
+    "bitness": 64,
+    "arch": "x86_64",
+    "windows_url": "python-3.13.3-0-win-amd64.zip",
+    "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
+  },
+  {
+    "id": "python",
+    "version": "3.13.3",
+    "bitness": 64,
+    "arch": "arm64",
+    "windows_url": "python-3.13.3-0-win-arm64.zip",
+    "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
+  },
+  {
+    "id": "python",
+    "version": "3.13.3",
+    "bitness": 64,
+    "arch": "x86_64",
+    "macos_url": "python-3.13.3-0-macos-x86_64.tar.gz",
+    "activated_cfg": "PYTHON='%installation_dir%/bin/python3'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.13/site-packages/certifi/cacert.pem"
+  },
+  {
+    "id": "python",
+    "version": "3.13.3",
+    "bitness": 64,
+    "arch": "arm64",
+    "macos_url": "python-3.13.3-0-macos-arm64.tar.gz",
+    "activated_cfg": "PYTHON='%installation_dir%/bin/python3'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.13/site-packages/certifi/cacert.pem"
+  },
+
+  {
+    "id": "firefox",
+    "version": "68.12.0esr",
+    "bitness": 64,
+    "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
+    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "activated_env": "EMTEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "custom_install_script": "download_firefox",
+    "is_old": true
+  },
+  {
+    "id": "firefox",
+    "version": "78.15.0esr",
+    "bitness": 64,
+    "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
+    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "activated_env": "EMTEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "custom_install_script": "download_firefox",
+    "is_old": true
+  },
+  {
+    "id": "firefox",
+    "version": "91.13.0esr",
+    "bitness": 64,
+    "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
+    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "activated_env": "EMTEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "custom_install_script": "download_firefox",
+    "is_old": true
+  },
+  {
+    "id": "firefox",
+    "version": "102.15.1esr",
+    "bitness": 64,
+    "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
+    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "activated_env": "EMTEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "custom_install_script": "download_firefox",
+    "is_old": true
+  },
+  {
+    "id": "firefox",
+    "version": "115.28.0esr",
+    "bitness": 64,
+    "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
+    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "activated_env": "EMTEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "custom_install_script": "download_firefox",
+    "is_old": true
+  },
+  {
+    "id": "firefox",
+    "version": "128.14.0esr",
+    "bitness": 64,
+    "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
+    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "activated_env": "EMTEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "custom_install_script": "download_firefox"
+  },
+  {
+    "id": "firefox",
+    "version": "140.3.1esr",
+    "bitness": 64,
+    "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
+    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "activated_env": "EMTEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "custom_install_script": "download_firefox"
+  },
+  {
+    "id": "firefox",
+    "version": "latest",
+    "bitness": 64,
+    "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
+    "git_branch": "dummy field, to instruct emsdk to attempt to reinstall this tool even if it is installed, to check for new version",
+    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "activated_env": "EMTEST_BROWSER=%actual_installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "custom_install_script": "download_firefox",
+    "custom_is_installed_script": "is_firefox_installed"
+  },
+  {
+    "id": "firefox",
+    "version": "latest-esr",
+    "bitness": 64,
+    "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
+    "git_branch": "dummy field, to instruct emsdk to attempt to reinstall this tool even if it is installed, to check for new version",
+    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "activated_env": "EMTEST_BROWSER=%actual_installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "custom_install_script": "download_firefox",
+    "custom_is_installed_script": "is_firefox_installed"
+  },
+  {
+    "id": "firefox",
+    "version": "latest-beta",
+    "bitness": 64,
+    "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
+    "git_branch": "dummy field, to instruct emsdk to attempt to reinstall this tool even if it is installed, to check for new version",
+    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "activated_env": "EMTEST_BROWSER=%actual_installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "custom_install_script": "download_firefox",
+    "custom_is_installed_script": "is_firefox_installed"
+  },
+  {
+    "id": "firefox",
+    "version": "nightly",
+    "bitness": 64,
+    "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
+    "git_branch": "dummy field, to instruct emsdk to attempt to reinstall this tool even if it is installed, to check for new version",
+    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "activated_env": "EMTEST_BROWSER=%actual_installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "custom_install_script": "download_firefox",
+    "custom_is_installed_script": "is_firefox_installed"
+  },
+
   {
     "id": "emscripten",
     "version": "tag-%tag%",
@@ -203,7 +504,7 @@
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%",
     "activated_env": "EMSCRIPTEN=%installation_dir%",
-    "custom_install_script": "emscripten_npm_install"
+    "custom_install_script": "emscripten_install"
   },
   {
     "id": "emscripten",
@@ -215,7 +516,7 @@
     "activated_cfg": "EMSCRIPTEN_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%",
     "activated_env": "EMSCRIPTEN=%installation_dir%",
-    "custom_install_script": "emscripten_npm_install"
+    "custom_install_script": "emscripten_install"
   },
   {
     "id": "emscripten",
@@ -269,7 +570,7 @@
     "activated_path": "%installation_dir%",
     "activated_env": "EMSCRIPTEN=%installation_dir%",
     "cmake_build_type": "Release",
-    "custom_install_script": "emscripten_npm_install"
+    "custom_install_script": "emscripten_install"
   },
   {
     "id": "emscripten",
@@ -282,7 +583,7 @@
     "activated_path": "%installation_dir%",
     "activated_env": "EMSCRIPTEN=%installation_dir%",
     "cmake_build_type": "Release",
-    "custom_install_script": "emscripten_npm_install"
+    "custom_install_script": "emscripten_install"
   },
   {
     "id": "binaryen",
@@ -324,6 +625,27 @@
   },
   {
     "id": "ninja",
+    "version": "1.13.2",
+    "bitness": 64,
+    "windows_url": "ninja-1.13.2-win-x64.zip",
+    "linux_url": "ninja-1.13.2-linux-x64.zip",
+    "macos_url": "ninja-1.13.2-mac.zip",
+    "arch": "x86_64",
+    "activated_cfg": "NINJA_ROOT='%installation_dir%'",
+    "activated_path": "%installation_dir%"
+  },
+  {
+    "id": "ninja",
+    "version": "1.13.2",
+    "bitness": 64,
+    "macos_url": "ninja-1.13.2-mac.zip",
+    "os": "macos",
+    "arch": "arm64",
+    "activated_cfg": "NINJA_ROOT='%installation_dir%'",
+    "activated_path": "%installation_dir%"
+  },
+  {
+    "id": "ninja",
     "version": "git-release",
     "bitness": 64,
     "url": "https://github.com/ninja-build/ninja.git",
@@ -350,19 +672,19 @@
   {
     "version": "main",
     "bitness": 64,
-    "uses": ["python-3.9.2-nuget-64bit", "llvm-git-main-64bit", "node-20.18.0-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
+    "uses": ["python-3.13.3-64bit", "llvm-git-main-64bit", "node-22.16.0-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
     "os": "win"
   },
   {
     "version": "main",
     "bitness": 64,
-    "uses": ["python-3.9.2-64bit", "llvm-git-main-64bit", "node-20.18.0-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
+    "uses": ["python-3.13.3-64bit", "llvm-git-main-64bit", "node-22.16.0-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
     "os": "macos"
   },
   {
     "version": "main",
     "bitness": 64,
-    "uses": ["llvm-git-main-64bit", "node-20.18.0-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
+    "uses": ["llvm-git-main-64bit", "node-22.16.0-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
     "os": "linux"
   },
   {
@@ -374,32 +696,32 @@
   {
     "version": "releases-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-20.18.0-64bit", "releases-%releases-tag%-64bit"],
+    "uses": ["node-22.16.0-64bit", "releases-%releases-tag%-64bit"],
     "os": "linux",
-    "custom_install_script": "emscripten_npm_install"
+    "custom_install_script": "sdk_post_install"
   },
   {
     "version": "releases-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-20.18.0-64bit", "python-3.9.2-64bit", "releases-%releases-tag%-64bit"],
+    "uses": ["node-22.16.0-64bit", "python-3.13.3-64bit", "releases-%releases-tag%-64bit"],
     "os": "macos",
     "arch": "x86_64",
-    "custom_install_script": "emscripten_npm_install"
+    "custom_install_script": "sdk_post_install"
   },
   {
     "version": "releases-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-20.18.0-64bit", "python-3.9.2-64bit", "releases-%releases-tag%-64bit"],
+    "uses": ["node-22.16.0-64bit", "python-3.13.3-64bit", "releases-%releases-tag%-64bit"],
     "os": "macos",
     "arch": "arm64",
-    "custom_install_script": "emscripten_npm_install"
+    "custom_install_script": "sdk_post_install"
   },
   {
     "version": "releases-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-20.18.0-64bit", "python-3.9.2-nuget-64bit", "releases-%releases-tag%-64bit"],
+    "uses": ["node-22.16.0-64bit", "python-3.13.3-64bit", "releases-%releases-tag%-64bit"],
     "os": "win",
-    "custom_install_script": "emscripten_npm_install"
+    "custom_install_script": "sdk_post_install"
   }
   ]
 }

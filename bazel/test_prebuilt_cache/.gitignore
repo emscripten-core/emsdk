@@ -1,0 +1,4 @@
+bazel-bin
+bazel-out
+bazel-test_prebuilt_cache
+bazel-testlogs

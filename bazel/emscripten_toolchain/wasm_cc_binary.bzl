@@ -17,13 +17,10 @@ def _wasm_transition_impl(settings, attr):
     if attr.exit_runtime == True:
         features.append("exit_runtime")
 
-    if attr.backend == "llvm":
-        features.append("llvm_backend")
-    elif attr.backend == "emscripten":
-        features.append("-llvm_backend")
-
-    if attr.simd:
+    if attr.simd != "off":
         features.append("wasm_simd")
+        if attr.simd == "relaxed_simd":
+            features.append("wasm_relaxed_simd")
 
     platform = "@emsdk//:platform_wasm"
     if attr.standalone:
@@ -63,21 +60,15 @@ _ALLOW_OUTPUT_EXTNAMES = [
     ".js",
     ".wasm",
     ".wasm.map",
-    ".worker.js",
-    ".js.mem",
     ".data",
-    ".fetch.js",
     ".js.symbols",
     ".wasm.debug.wasm",
     ".html",
-    ".aw.js",
+    ".ts",
+    ".d.ts",
 ]
 
 _WASM_BINARY_COMMON_ATTRS = {
-    "backend": attr.string(
-        default = "_default",
-        values = ["_default", "emscripten", "llvm"],
-    ),
     "cc_target": attr.label(
         cfg = _wasm_transition,
         mandatory = True,
@@ -89,8 +80,10 @@ _WASM_BINARY_COMMON_ATTRS = {
         default = "_default",
         values = ["_default", "emscripten", "off"],
     ),
-    "simd": attr.bool(
-        default = False,
+    "simd": attr.string(
+        default = "off",
+        values = ["off", "simd128", "relaxed_simd"],
+        doc = "Enable SIMD support via emscripten.",
     ),
     "standalone": attr.bool(
         default = False,
@@ -145,14 +138,10 @@ def _wasm_cc_binary_legacy_impl(ctx):
         ctx.outputs.loader,
         ctx.outputs.wasm,
         ctx.outputs.map,
-        ctx.outputs.mem,
-        ctx.outputs.fetch,
-        ctx.outputs.worker,
         ctx.outputs.data,
         ctx.outputs.symbols,
         ctx.outputs.dwarf,
         ctx.outputs.html,
-        ctx.outputs.audio_worklet,
     ]
 
     args = ctx.actions.args()
@@ -196,14 +185,10 @@ def _wasm_binary_legacy_outputs(name, cc_target):
         "loader": "{}/{}.js".format(name, basename),
         "wasm": "{}/{}.wasm".format(name, basename),
         "map": "{}/{}.wasm.map".format(name, basename),
-        "mem": "{}/{}.js.mem".format(name, basename),
-        "fetch": "{}/{}.fetch.js".format(name, basename),
-        "worker": "{}/{}.worker.js".format(name, basename),
         "data": "{}/{}.data".format(name, basename),
         "symbols": "{}/{}.js.symbols".format(name, basename),
         "dwarf": "{}/{}.wasm.debug.wasm".format(name, basename),
         "html": "{}/{}.html".format(name, basename),
-        "audio_worklet": "{}/{}.aw.js".format(name, basename)
     }
 
     return outputs
