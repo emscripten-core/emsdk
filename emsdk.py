@@ -2328,34 +2328,27 @@ def get_emscripten_releases_tot():
   recent_releases = git_recent_commits(sdk_path('releases'))
   # The recent releases are the latest hashes in the git repo. There
   # may not be a build for the most recent ones yet; find the last
-  # that does.
-  arch = ''
-  if ARCH == 'arm64':
-    arch = '-arm64'
+  # that has uploaded binaries for all TOT platforms.
+  all_platforms = [
+    ('linux', '', 'tar.xz'),
+    ('mac', '', 'tar.xz'),
+    ('mac', '-arm64', 'tar.xz'),
+    ('win', '', 'zip'),
+  ]
 
-  def make_url(ext):
-   return emscripten_releases_download_url_template % (
-      os_name_short(),
-      release,
-      arch,
-      ext,
-    )
+  def check_binary(release, os_name, arch, ext):
+    url = emscripten_releases_download_url_template % (os_name, release, arch, ext)
+    try:
+      urlopen(url)
+      return True
+    except Exception:
+      return False
 
   for release in recent_releases:
-    make_url('tar.xz' if not WINDOWS else 'zip')
-    try:
-      urlopen(make_url('tar.xz' if not WINDOWS else 'zip'))
-    except Exception:
-      if not WINDOWS:
-        # Try the old `.tbz2` name
-        # TODO:remove this once tot builds are all using xz
-        try:
-          urlopen(make_url('tbz2'))
-        except Exception:
-          continue
-      else:
-        continue
-    return release
+    if all(check_binary(release, os_name, arch, ext) for os_name, arch, ext in all_platforms):
+      return release
+
+  # No recent release has binaries for all platforms
   exit_with_error('failed to find build of any recent emsdk revision')
 
 
