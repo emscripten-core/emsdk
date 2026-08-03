@@ -1828,7 +1828,6 @@ class Tool:
   git_branch = None
   url = None
   macos_url = None
-  unix_url = None
   linux_url = None
   windows_url = None
 
@@ -1943,11 +1942,11 @@ class Tool:
       assert self.os in {'all', 'linux', 'win', 'macos'}
       if self.os == 'all':
         return True
-      if (WINDOWS and self.os == 'win') or (LINUX and (self.os in {'linux', 'unix'})) or (MACOS and (self.os in {'macos', 'unix'})):
+      if (WINDOWS and self.os == 'win') or (LINUX and self.os == 'linux') or (MACOS and self.os == 'macos'):
         return True
       return False
 
-    if not any((self.macos_url, self.windows_url, self.unix_url, self.linux_url)):
+    if not any((self.macos_url, self.windows_url, self.linux_url)):
       return True
 
     if MACOS and self.macos_url:
@@ -1957,9 +1956,6 @@ class Tool:
       return True
 
     if WINDOWS and self.windows_url:
-      return True
-
-    if UNIX and self.unix_url:
       return True
 
     return self.url is not None
@@ -2083,8 +2079,6 @@ class Tool:
       return self.macos_url
     elif LINUX and self.linux_url:
       return self.linux_url
-    elif UNIX and self.unix_url:
-      return self.unix_url
     return self.url
 
   def install(self):
