@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
 import os
+import platform
 import shutil
 import subprocess
 import sys
@@ -9,14 +10,12 @@ import unittest
 
 WINDOWS = sys.platform.startswith('win')
 MACOS = sys.platform == 'darwin'
+MACOS_ARM64 = MACOS and platform.machine() == 'arm64'
 
 emconfig = os.path.abspath('.emscripten')
 assert os.path.exists(emconfig)
 
-upstream_emcc = os.path.join('upstream', 'emscripten', 'emcc')
-emsdk = './emsdk'
 if WINDOWS:
-  upstream_emcc += '.bat'
   emsdk = 'emsdk.bat'
 else:
   emsdk = './emsdk'
@@ -25,24 +24,29 @@ else:
 
 
 def listify(x):
-  if type(x) == list or type(x) == tuple:
+  if type(x) in {list, tuple}:
     return x
   return [x]
 
 
-def check_call(cmd, **args):
-  if type(cmd) != list:
+def copy_emsdk_to(targetdir):
+  for filename in os.listdir('.'):
+    if not filename.startswith('.') and not os.path.isdir(filename):
+      shutil.copy2(filename, os.path.join(targetdir, filename))
+
+
+def check_call(cmd, **kwargs):
+  if type(cmd) is not list:
     cmd = cmd.split()
   print('running: %s' % cmd)
-  args['universal_newlines'] = True
-  subprocess.check_call(cmd, **args)
+  subprocess.run(cmd, check=True, text=True, **kwargs)
 
 
 def checked_call_with_output(cmd, expected=None, unexpected=None, stderr=None, env=None):
   cmd = cmd.split(' ')
   print('running: %s' % cmd)
   try:
-    stdout = subprocess.check_output(cmd, stderr=stderr, universal_newlines=True, env=env)
+    stdout = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=stderr, check=True, text=True, env=env).stdout
   except subprocess.CalledProcessError as e:
     print(e.stderr)
     print(e.stdout)
@@ -57,8 +61,9 @@ def checked_call_with_output(cmd, expected=None, unexpected=None, stderr=None, e
 
 
 def failing_call_with_output(cmd, expected, env=None):
-  proc = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, env=env)
-  stdout, stderr = proc.communicate()
+  proc = subprocess.run(cmd.split(' '), capture_output=True, text=True, env=env)
+  stdout = proc.stdout
+  stderr = proc.stderr
   if WINDOWS:
     print('warning: skipping part of failing_call_with_output() due to error codes not being propagated (see #592)')
   else:
@@ -75,6 +80,16 @@ def hack_emsdk(marker, replacement):
   with open(name, 'w') as f:
     f.write(src)
   return name
+
+
+def get_longest_path_in_dir(dirname):
+  longest = ''
+  for root, _dirs, files in os.walk(dirname):
+    for f in files:
+      fullname = os.path.join(root, f)
+      if len(fullname) > len(longest):
+        longest = fullname
+  return longest
 
 
 # Set up
@@ -113,9 +128,19 @@ def do_lib_building(emcc):
 
 
 def run_emsdk(cmd):
-  if type(cmd) != list:
+  if type(cmd) is not list:
     cmd = cmd.split()
-  check_call([emsdk] + cmd)
+  check_call([emsdk, *cmd])
+
+
+def upstream_emcc(root='.'):
+  emcc = os.path.join(root, 'upstream', 'emscripten', 'emcc')
+  if WINDOWS:
+    if os.path.exists(emcc + '.exe'):
+      return emcc + '.exe'
+    else:
+      return emcc + '.bat'
+  return emcc
 
 
 class Emsdk(unittest.TestCase):
@@ -134,6 +159,44 @@ int main() {
   def setUp(self):
     run_emsdk('install latest')
     run_emsdk('activate latest')
+
+  def test_extrememly_long_filenames(self):
+    # We have special support for filenames longer than 256 on windows. This
+    # test installs emsdk in path that exceeds this limit in order to test
+    # this handling.
+    longpath = os.path.abspath('very_long_filename_indeed')
+
+    additional = 140 - len(longpath)
+    longpath += 'x' * additional
+    if os.path.exists(longpath):
+      # shutil.rmtree requires the special long path prefix
+      longpath_with_prefix = '\\\\?\\' + longpath
+      assert os.path.exists(longpath_with_prefix)
+      shutil.rmtree(longpath_with_prefix)
+
+    os.makedirs(longpath)
+    copy_emsdk_to(longpath)
+
+    emsdk = os.path.join(longpath, 'emsdk')
+    if WINDOWS:
+      emsdk += '.bat'
+    self.assertTrue(os.path.exists(emsdk))
+
+    check_call([emsdk, 'install', 'latest'])
+    check_call([emsdk, 'activate', 'latest'])
+
+    # Check that emcc exists in the expected location
+    emcc = upstream_emcc(longpath)
+    print(emcc)
+    self.assertTrue(os.path.exists(emcc))
+
+    # Find the longest installed path and assert this is longer than 256
+    longest_path = get_longest_path_in_dir(longpath)
+    print(f'longest ({len(longest_path)}: {longest_path})')
+    self.assertGreater(len(longest_path), 256)
+
+    # Finally make sure we can actaully compile something
+    check_call([emcc, 'hello_world.c'])
 
   def test_unknown_arch(self):
     env = os.environ.copy()
@@ -160,13 +223,41 @@ int main() {
 
   def test_config_contents(self):
     print('test .emscripten contents')
+    run_emsdk('install 6.0.3')
+    run_emsdk('activate 6.0.3')
     with open(emconfig) as f:
       config = f.read()
-    assert 'upstream' in config
+    self.assertIn('upstream', config)
+
+    # Older version of emscripten (prior to 6.0.3) don't support $CFGDIR
+    self.assertIn('import os', config)
+    self.assertIn('emsdk_path + ', config)
+    self.assertNotIn('$CFGDIR', config)
+
+    # For newer versions we use $CFGDIR
+    version_file = os.path.join('upstream', 'emscripten', 'emscripten-version.txt')
+    with open(version_file) as f:
+      old_ver = f.read()
+    try:
+      # Hack the version file to contain 6.0.4
+      with open(version_file, 'w') as f:
+        f.write('6.0.4\n')
+      # Re-activate 6.0.3 but with the hacked version file which makes it
+      # appear to contain 6.0.4.
+      run_emsdk('activate 6.0.3')
+      with open(emconfig) as f:
+        config = f.read()
+      self.assertNotIn('import os', config)
+      self.assertNotIn('emsdk_path', config)
+      self.assertIn('$CFGDIR', config)
+    finally:
+      with open(version_file, 'w') as f:
+        f.write(old_ver)
+      run_emsdk('activate 6.0.3')
 
   def test_lib_building(self):
     print('building proper system libraries')
-    do_lib_building(upstream_emcc)
+    do_lib_building(upstream_emcc())
 
   def test_redownload(self):
     print('go back to using upstream')
@@ -174,9 +265,9 @@ int main() {
 
     # Test the normal tools like node don't re-download on re-install
     print('another install must re-download')
-    checked_call_with_output(emsdk + ' uninstall node-14.18.2-64bit')
-    checked_call_with_output(emsdk + ' install node-14.18.2-64bit', expected='Downloading:', unexpected='already installed')
-    checked_call_with_output(emsdk + ' install node-14.18.2-64bit', unexpected='Downloading:', expected='already installed')
+    checked_call_with_output(emsdk + ' uninstall node-22.16.0-64bit')
+    checked_call_with_output(emsdk + ' install node-22.16.0-64bit', expected='Downloading:', unexpected='already installed')
+    checked_call_with_output(emsdk + ' install node-22.16.0-64bit', unexpected='Downloading:', expected='already installed')
 
   def test_tot_upstream(self):
     print('test update-tags')
@@ -190,13 +281,15 @@ int main() {
       old_config = f.read()
     self.assertEqual(config, old_config)
     # TODO; test on latest as well
-    check_call(upstream_emcc + ' hello_world.c')
+    check_call(upstream_emcc() + ' hello_world.c')
 
   def test_closure(self):
-    # Specificlly test with `--closure` so we know that node_modules is working
-    check_call(upstream_emcc + ' hello_world.c --closure=1')
+    # Specifically test with `--closure` so we know that node_modules is working
+    check_call(upstream_emcc() + ' hello_world.c --closure=1')
 
   def test_specific_version(self):
+    if MACOS_ARM64:
+      self.skipTest('Old sdk versions do not have ARM64 binaries')
     print('test specific release (new, short name)')
     run_emsdk('install 1.38.33')
     print('another install, but no need for re-download')
@@ -204,6 +297,8 @@ int main() {
     run_emsdk('activate 1.38.33')
 
   def test_specific_version_full(self):
+    if MACOS_ARM64:
+      self.skipTest('Old sdk versions do not have ARM64 binaries')
     print('test specific release (new, full name)')
     run_emsdk('install sdk-1.38.33-64bit')
     run_emsdk('activate sdk-1.38.33-64bit')
@@ -212,24 +307,23 @@ int main() {
     run_emsdk('activate sdk-tag-1.38.33-64bit')
 
   def test_binaryen_from_source(self):
-    if MACOS:
-      self.skipTest("https://github.com/WebAssembly/binaryen/issues/4299")
-    print('test binaryen source build')
-    run_emsdk(['install', '--build=Release', '--generator=Unix Makefiles', 'binaryen-main-64bit'])
+    if WINDOWS:
+      # It takes over 30 mins to build binaryen using Visual Studio in CI
+      self.skipTest('test is too slow under windows')
+    run_emsdk(['install', '--build=Release', 'binaryen-main-64bit'])
 
   def test_no_32bit(self):
     print('test 32-bit error')
     emsdk_hacked = hack_emsdk('not is_os_64bit()', 'True')
-    failing_call_with_output('python %s install latest' % emsdk_hacked, 'this tool is only provided for 64-bit OSes')
+    failing_call_with_output('%s %s install latest' % (sys.executable, emsdk_hacked),
+                             'this tool is only provided for 64-bit OSes')
     os.remove(emsdk_hacked)
 
   def test_update_no_git(self):
     print('test non-git update')
 
     temp_dir = tempfile.mkdtemp()
-    for filename in os.listdir('.'):
-      if not filename.startswith('.') and not os.path.isdir(filename):
-        shutil.copy2(filename, os.path.join(temp_dir, filename))
+    copy_emsdk_to(temp_dir)
 
     olddir = os.getcwd()
     try:
@@ -243,10 +337,10 @@ int main() {
 
   def test_install_arbitrary(self):
     # Test that its possible to install arbrary emscripten-releases SDKs
-    run_emsdk('install 5c776e6a91c0cb8edafca16a652ee1ee48f4f6d2')
+    run_emsdk('install 1b7f7bc6002a3ca73647f41fc10e1fac7f06f804')
 
     # Check that its not re-downloaded
-    checked_call_with_output(emsdk + ' install 5c776e6a91c0cb8edafca16a652ee1ee48f4f6d2', expected='Skipped', unexpected='Downloading:')
+    checked_call_with_output(emsdk + ' install 1b7f7bc6002a3ca73647f41fc10e1fac7f06f804', expected='Skipped', unexpected='Downloading:')
 
   def test_install_tool(self):
     # Test that its possible to install emscripten as tool instead of SDK
@@ -262,10 +356,10 @@ int main() {
     # With EMSDK_KEEP_DOWNLOADS the downloading should happen on the first
     # install of 2.0.28, and again when we install 2.0.29, but not on the
     # second install of 2.0.28 because the zip should already be local.
-    shutil.rmtree('zips')
-    checked_call_with_output(emsdk + ' install 2.0.28', expected='Downloading:', env=env)
-    checked_call_with_output(emsdk + ' install 2.0.29', expected='Downloading:', env=env)
-    checked_call_with_output(emsdk + ' install 2.0.28', expected='already downloaded, skipping', unexpected='Downloading:', env=env)
+    shutil.rmtree('downloads')
+    checked_call_with_output(emsdk + ' install 3.1.54', expected='Downloading:', env=env)
+    checked_call_with_output(emsdk + ' install 3.1.55', expected='Downloading:', env=env)
+    checked_call_with_output(emsdk + ' install 3.1.54', expected='already downloaded, skipping', unexpected='Downloading:', env=env)
 
 
 if __name__ == '__main__':

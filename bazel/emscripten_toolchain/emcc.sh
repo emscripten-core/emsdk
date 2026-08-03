@@ -2,4 +2,4 @@
 
 source $(dirname $0)/env.sh
 
-exec python3 $EMSCRIPTEN/emcc.py "$@"
+exec $EMSDK_PYTHON $EMSCRIPTEN/emcc.py "$@"

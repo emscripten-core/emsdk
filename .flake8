@@ -1,23 +1,24 @@
 [flake8]
-ignore =
-   E111, # Indentation is not a multiple of four
-   E114, # Indentation is not a multiple of four (comment)
-   E501, # Line too long
-   E121, # Continuation line under-indented for hanging indent
-   E722  # bare excepts
-exclude =
-  ./llvm
-  ./gnu
-  ./upstream
-  ./fastcomp
-  ./fastcomp-clang
-  ./releases
-  ./clang
-  ./emscripten
-  ./binaryen
-  ./git
-  ./node
-  ./python
-  ./temp
-  ./zips
-  ./crunch
+extend-exclude =
+  ./.*,
+  ./binaryen,
+  ./clang,
+  ./crunch,
+  ./downloads,
+  ./emscripten,
+  ./fastcomp-clang,
+  ./fastcomp,
+  ./git,
+  ./gnu,
+  ./llvm,
+  ./node,
+  ./python,
+  ./releases,
+  ./temp,
+  ./upstream,
+
+# E111: Indentation is not a multiple of four
+# E114: Indentation is not a multiple of four (comment)
+extend-ignore = E111, E114
+
+max-line-length = 326

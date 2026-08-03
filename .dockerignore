@@ -1,7 +1,8 @@
 # Ignore everything
 *
 
-# Allow to run the test script inside the Docker container
+# Allow the entrypoint/test script inside the Docker container
+!/docker/entrypoint.sh
 !/docker/test_dockerimage.sh
 
 # Allow license file

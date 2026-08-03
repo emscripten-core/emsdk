@@ -1,7 +1,7 @@
-FROM ubuntu:jammy AS stage_build
+FROM ubuntu:noble AS stage_build
 
 ARG EMSCRIPTEN_VERSION=tot
-ENV EMSDK /emsdk
+ENV EMSDK=/emsdk
 
 # ------------------------------------------------------------------------------
 
@@ -46,8 +46,6 @@ RUN echo "## Aggressive optimization: Remove debug symbols" \
     && strip -s `which node` \
     # Tests consume ~80MB disc space
     && rm -fr ${EMSDK}/upstream/emscripten/tests \
-    # Fastcomp is not supported
-    && rm -fr ${EMSDK}/upstream/fastcomp \
     # strip out symbols from clang (~extra 50MB disc space)
     && find ${EMSDK}/upstream/bin -type f -exec strip -s {} + || true \
     && echo "## Done"
@@ -56,31 +54,16 @@ RUN echo "## Aggressive optimization: Remove debug symbols" \
 # -------------------------------- STAGE DEPLOY --------------------------------
 # ------------------------------------------------------------------------------
 
-FROM ubuntu:jammy AS stage_deploy
+FROM ubuntu:noble AS stage_deploy
 
 COPY --from=stage_build /emsdk /emsdk
 
-# Fallback in case Emscripten isn't activated.
-# This will let use tools offered by this image inside other Docker images
-# (sub-stages) or with custom / no entrypoint
-ENV EMSDK=/emsdk \
-    EMSDK_NODE=/emsdk/node/14.18.2_64bit/bin/node \
-    PATH="/emsdk:/emsdk/upstream/emscripten:/emsdk/upstream/bin:/emsdk/node/14.18.2_64bit/bin:${PATH}"
-
-# ------------------------------------------------------------------------------
-# Create a 'standard` 1000:1000 user
-# Thanks to that this image can be executed as non-root user and created files
-# will not require root access level on host machine Please note that this
-# solution even if widely spread (i.e. Node.js uses it) is far from perfect as
-# user 1000:1000 might not exist on host machine, and in this case running any
-# docker image will cause other random problems (mostly due `$HOME` pointing to
-# `/`)
-RUN echo "## Create emscripten user (1000:1000)" \
-    && groupadd --gid 1000 emscripten \
-    && useradd --uid 1000 --gid emscripten --shell /bin/bash --create-home emscripten \
-    && echo "umask 0000" >> /etc/bash.bashrc \
-    && echo ". /emsdk/emsdk_env.sh" >> /etc/bash.bashrc \
-    && echo "## Done"
+# These fallback environment variables are intended for situations where the
+# entrypoint is not utilized (as in a derived image) or overridden (e.g. when
+# using `--entrypoint /bin/bash` in CLI).
+# This corresponds to the env variables set during: `source ./emsdk_env.sh`
+ENV EMSDK=/emsdk
+ENV PATH="/emsdk:/emsdk/upstream/emscripten:/emsdk/node/22.16.0_64bit/bin:${PATH}"
 
 # ------------------------------------------------------------------------------
 
@@ -88,7 +71,7 @@ RUN echo "## Update and install packages" \
     && apt-get -qq -y update \
     # Somewhere in here apt sets up tzdata which asks for your time zone and blocks
     # waiting for the answer which you can't give as docker build doesn't read from
-    # the terninal. The env vars set here avoid the interactive prompt and set the TZ.
+    # the terminal. The env vars set here avoid the interactive prompt and set the TZ.
     && DEBIAN_FRONTEND="noninteractive" TZ="America/San_Francisco" apt-get -qq install -y --no-install-recommends \
         sudo \
         libxml2 \
@@ -122,6 +105,8 @@ RUN echo "## Update and install packages" \
 # ------------------------------------------------------------------------------
 # Use commonly used /src as working directory
 WORKDIR /src
+
+ENTRYPOINT ["/emsdk/docker/entrypoint.sh"]
 
 LABEL maintainer="kontakt@trzeci.eu" \
       org.label-schema.name="emscripten" \

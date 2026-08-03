@@ -1,7 +1,8 @@
 """This module encapsulates logic to create emscripten_cc_toolchain_config rule."""
 
+load("@rules_cc//cc:action_names.bzl", "ACTION_NAMES")
 load(
-    "@bazel_tools//tools/cpp:cc_toolchain_config_lib.bzl",
+    "@rules_cc//cc:cc_toolchain_config_lib.bzl",
     "action_config",
     "env_entry",
     "env_set",
@@ -14,7 +15,8 @@ load(
     "with_feature_set",
     _flag_set = "flag_set",
 )
-load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
+load("@rules_cc//cc:defs.bzl", "CcToolchainConfigInfo", "cc_common")
+load(":platform_info.bzl", "PlatformInfo", "platform_info")
 
 def flag_set(flags = None, features = None, not_features = None, **kwargs):
     """Extension to flag_set which allows for a "simple" form.
@@ -55,6 +57,8 @@ CROSSTOOL_DEFAULT_WARNINGS = [
 ]
 
 def _impl(ctx):
+    platform_info = ctx.attr._exec_platform_info[PlatformInfo]
+
     target_cpu = ctx.attr.cpu
     toolchain_identifier = "emscripten-" + target_cpu
     target_system_name = target_cpu + "-unknown-emscripten"
@@ -72,11 +76,19 @@ def _impl(ctx):
 
     emscripten_dir = ctx.attr.emscripten_binaries.label.workspace_root
 
+    nodeinfo = ctx.toolchains["@rules_nodejs//nodejs:toolchain_type"].nodeinfo
+    nodejs_path = nodeinfo.node.path
+
+    python_exec_runtime = (
+        ctx.toolchains["@rules_python//python:exec_tools_toolchain_type"].
+            exec_tools.exec_interpreter[platform_common.ToolchainInfo].py3_runtime
+        )
+
     builtin_sysroot = emscripten_dir + "/emscripten/cache/sysroot"
 
-    emcc_script = "emcc.%s" % ctx.attr.script_extension
-    emcc_link_script = "emcc_link.%s" % ctx.attr.script_extension
-    emar_script = "emar.%s" % ctx.attr.script_extension
+    emcc_script = "emcc" + platform_info.script_extension
+    emcc_link_script = "emcc_link" + platform_info.script_extension
+    emar_script = "emar" + platform_info.script_extension
 
     ################################################################
     # Tools
@@ -306,6 +318,7 @@ def _impl(ctx):
         # Blaze requests this feature by default.
         # Blaze also tests if this feature is supported before setting includes. (...but why?)
         feature(name = "include_paths"),
+        feature(name = "external_include_paths"),
 
         # Blaze tests if this feature is enabled in order to create implicit
         # "nodeps" .so outputs from cc_library rules.
@@ -346,10 +359,23 @@ def _impl(ctx):
             provides = ["variant:crosstool_build_mode"],
         ),
 
+        # Feature to prevent 'command line too long' issues
+        feature(
+            name = "archive_param_file",
+            enabled = True,
+        ),
+        feature(
+            name = "compiler_param_file",
+            enabled = True,
+        ),
+
         #### User-settable features
 
         # Set if enabling exceptions.
         feature(name = "exceptions"),
+
+        # Set if enabling wasm_exceptions.
+        feature(name = "wasm_exceptions"),
 
         # This feature overrides the default optimization to prefer execution speed
         # over binary size (like clang -O3).
@@ -393,7 +419,7 @@ def _impl(ctx):
             implies = ["profiling"],
         ),
 
-        # Turns on full debug info (-g4).
+        # Turns on full debug info (-g3).
         feature(name = "full_debug_info"),
 
         # Enables the use of "Emscripten" Pthread implementation.
@@ -407,11 +433,6 @@ def _impl(ctx):
         # Primarily for toolchain maintainers:
         feature(name = "emcc_debug"),
         feature(name = "emcc_debug_link"),
-        feature(
-            name = "llvm_backend",
-            requires = [feature_set(features = ["crosstool_cpu_wasm"])],
-            enabled = True,
-        ),
 
         # Remove once flag is flipped.
         # See https://github.com/bazelbuild/bazel/issues/7687
@@ -419,10 +440,14 @@ def _impl(ctx):
             name = "do_not_split_linking_cmdline",
         ),
 
-        # Adds simd support, only available with the llvm backend.
+        # Adds simd support
         feature(
             name = "wasm_simd",
-            requires = [feature_set(features = ["llvm_backend"])],
+        ),
+        # Adds relaxed-simd support
+        feature(
+            name = "wasm_relaxed_simd",
+            implies = ["wasm_simd"],
         ),
         feature(
             name = "precise_long_double_printf",
@@ -430,7 +455,7 @@ def _impl(ctx):
         ),
         feature(
             name = "wasm_warnings_as_errors",
-            enabled = True,
+            enabled = False,
         ),
 
         # ASan and UBSan. See also:
@@ -498,7 +523,7 @@ def _impl(ctx):
             flags = [
                 "-fno-exceptions",
             ],
-            not_features = ["exceptions"],
+            not_features = ["exceptions", "wasm_exceptions"],
         ),
         flag_set(
             actions = all_cpp_compile_actions,
@@ -506,6 +531,14 @@ def _impl(ctx):
                 "-fexceptions",
             ],
             features = ["exceptions"],
+        ),
+        flag_set(
+            actions = all_cpp_compile_actions +
+                      all_link_actions,
+            flags = [
+                "-fwasm-exceptions",
+            ],
+            features = ["wasm_exceptions"],
         ),
         # All compiles (and implicitly link)
         flag_set(
@@ -526,24 +559,18 @@ def _impl(ctx):
         # Emscripten-specific settings:
         flag_set(
             actions = all_compile_actions + all_link_actions,
-            flags = ["-s", "WASM=0"],
+            flags = ["-sWASM=0"],
             features = ["crosstool_cpu_asmjs"],
         ),
         flag_set(
-            actions = all_compile_actions +
-                      all_link_actions,
-            flags = ["-s", "USE_PTHREADS=1"],
-            features = ["use_pthreads"],
-        ),
-        flag_set(
             actions = all_link_actions,
-            flags = ["-s", "EXIT_RUNTIME=1"],
+            flags = ["-sEXIT_RUNTIME"],
             features = ["exit_runtime"],
         ),
         flag_set(
             actions = all_compile_actions + all_link_actions,
             flags = ["-pthread"],
-            features = ["llvm_backend", "use_pthreads"],
+            features = ["use_pthreads"],
         ),
         flag_set(
             actions = all_compile_actions + all_link_actions,
@@ -551,8 +578,13 @@ def _impl(ctx):
             features = ["wasm_simd"],
         ),
         flag_set(
+            actions = all_compile_actions + all_link_actions,
+            flags = ["-msimd128", "-mrelaxed-simd"],
+            features = ["wasm_relaxed_simd"],
+        ),
+        flag_set(
             actions = all_link_actions,
-            flags = ["-s", "PRINTF_LONG_DOUBLE=1"],
+            flags = ["-sPRINTF_LONG_DOUBLE"],
             features = ["precise_long_double_printf"],
         ),
         flag_set(
@@ -634,7 +666,7 @@ def _impl(ctx):
             actions = all_compile_actions +
                       all_link_actions,
             flags = [
-                "-g4",
+                "-g3",
                 "-fsanitize=undefined",
                 "-O1",
                 "-DUNDEFINED_BEHAVIOR_SANITIZER=1",
@@ -659,7 +691,7 @@ def _impl(ctx):
         flag_set(
             actions = all_compile_actions +
                       all_link_actions,
-            flags = ["-g4"],
+            flags = ["-g3"],
             features = ["full_debug_info"],
         ),
         flag_set(
@@ -704,6 +736,17 @@ def _impl(ctx):
                     expand_if_available = "includes",
                 ),
             ],
+        ),
+        flag_set(
+            actions = preprocessor_compile_actions,
+            flag_groups = [
+                flag_group(
+                    flags = ["-isystem", "%{external_include_paths}"],
+                    iterate_over = "external_include_paths",
+                    expand_if_available = "external_include_paths",
+                ),
+            ],
+            features = ["external_include_paths"],
         ),
         flag_set(
             actions = preprocessor_compile_actions,
@@ -914,7 +957,7 @@ def _impl(ctx):
                 "-iwithsysroot" + "/include/compat",
                 "-iwithsysroot" + "/include",
                 "-isystem",
-                emscripten_dir + "/lib/clang/17/include",
+                emscripten_dir + "/lib/clang/24/include",
             ],
         ),
         # Inputs and outputs
@@ -1040,15 +1083,15 @@ def _impl(ctx):
                     key = "EM_CONFIG_PATH",
                     value = ctx.file.em_config.path,
                 ),
+                env_entry(
+                    key = "NODE_JS_PATH",
+                    value = nodejs_path,
+                ),
+                env_entry(
+                    key = "BAZEL_PYTHON_RELPATH",
+                    value = python_exec_runtime.interpreter.path,
+                ),
             ],
-        ),
-        # Use llvm backend.  Off by default, enabled via --features=llvm_backend
-        env_set(
-            actions = all_compile_actions +
-                      all_link_actions +
-                      [ACTION_NAMES.cpp_link_static_library],
-            env_entries = [env_entry(key = "EMCC_WASM_BACKEND", value = "1")],
-            with_features = [with_feature_set(features = ["llvm_backend"])],
         ),
         # Debug compile and link. Off by default, enabled via --features=emcc_debug
         env_set(
@@ -1081,7 +1124,7 @@ def _impl(ctx):
         emscripten_dir + "/emscripten/cache/sysroot/include/c++/v1",
         emscripten_dir + "/emscripten/cache/sysroot/include/compat",
         emscripten_dir + "/emscripten/cache/sysroot/include",
-        emscripten_dir + "/lib/clang/17/include",
+        emscripten_dir + "/lib/clang/21/include",
     ]
 
     artifact_name_patterns = []
@@ -1114,7 +1157,30 @@ emscripten_cc_toolchain_config_rule = rule(
         "cpu": attr.string(mandatory = True, values = ["asmjs", "wasm"]),
         "em_config": attr.label(mandatory = True, allow_single_file = True),
         "emscripten_binaries": attr.label(mandatory = True, cfg = "exec"),
-        "script_extension": attr.string(mandatory = True, values = ["sh", "bat"]),
+        "_exec_platform_info": attr.label(
+            providers = [PlatformInfo],
+            default = Label(":platform_info"),
+            cfg = "exec",
+        ),
     },
     provides = [CcToolchainConfigInfo],
+    toolchains = [
+        "@rules_python//python:exec_tools_toolchain_type",
+        "@rules_nodejs//nodejs:toolchain_type",
+    ]
+)
+
+def _python_interpreter_files_impl(ctx):
+    python_exec_runtime = (
+        ctx.toolchains["@rules_python//python:exec_tools_toolchain_type"].
+            exec_tools.exec_interpreter[platform_common.ToolchainInfo].py3_runtime
+        )
+
+    return DefaultInfo(files = python_exec_runtime.files)
+
+emscripten_python_interpreter_files = rule(
+    implementation = _python_interpreter_files_impl,
+    toolchains = [
+        "@rules_python//python:exec_tools_toolchain_type",
+    ]
 )

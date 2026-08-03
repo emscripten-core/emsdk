@@ -1,0 +1,44 @@
+name: Create Release PR
+
+on:
+  workflow_dispatch:
+    inputs:
+      lto-sha:
+        required: true
+        type: string
+      nonlto-sha:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+
+jobs:
+  create-release-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Run create_release.py
+        run: |
+          python3 scripts/create_release.py -r ${{ inputs.lto-sha }} -a ${{ inputs.nonlto-sha }} --gh-action -v ${{ inputs.version }}
+      - name: Create PR
+        id: cpr
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          token: ${{ secrets.EMSCRIPTEN_BOT_TOKEN }}
+          title: Release ${{ env.RELEASE_VERSION }}
+          commit-message: |
+            Release ${{ env.RELEASE_VERSION }}
+          team-reviewers: release-reviewers
+          labels: release
+          body: |
+            With emscripten-releases revisions:
+              https://chromium.googlesource.com/emscripten-releases/+/${{ inputs.lto-sha }} (LTO)
+              https://chromium.googlesource.com/emscripten-releases/+/${{ inputs.nonlto-sha }} (asserts)
+          branch: release_${{ env.RELEASE_VERSION }}
+          delete-branch: true
+      - name: Enable auto-merge
+        run: gh pr merge --squash --auto "${{ steps.cpr.outputs.pull-request-number }}"
+        env:
+          GH_TOKEN: ${{ secrets.EMSCRIPTEN_BOT_TOKEN }}
