@@ -2207,17 +2207,17 @@ class Tool:
 
     for dep in self.deps:
       tool = find_tool(dep)
-      if tool:
-        deps += [tool]
+      assert tool, f"dependency '{dep}' of '{self}' not found"
+      deps += [tool]
     return deps
 
   def recursive_dependencies(self):
     deps = []
     for dep in self.deps:
       tool = find_tool(dep)
-      if tool:
-        deps += [tool]
-        deps += tool.recursive_dependencies()
+      assert tool, f"dependency '{dep}' of '{self}' not found"
+      deps += [tool]
+      deps += tool.recursive_dependencies()
     return deps
 
 
