@@ -69,7 +69,7 @@ COPY --from=stage_build /emsdk /emsdk
 # using `--entrypoint /bin/bash` in CLI).
 # This corresponds to the env variables set during: `source ./emsdk_env.sh`
 ENV EMSDK=/emsdk
-ENV PATH="/emsdk:/emsdk/upstream/emscripten:/emsdk/node/22.16.0_64bit/bin:${PATH}"
+ENV PATH="/emsdk:/emsdk/upstream/emscripten:/emsdk/node/24.19.0_64bit/bin:${PATH}"
 
 # ------------------------------------------------------------------------------
 

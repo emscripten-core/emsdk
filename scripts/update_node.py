@@ -6,24 +6,18 @@
 
 """Updates the node binaries that we cache store at
 http://storage.google.com/webassembly.
-
-For the windows version we also alter the directory layout to add the 'bin'
-directory.
 """
 
+import argparse
 import os
-import shutil
 import subprocess
-import sys
 import urllib.request
-
-from zip import unzip_cmd, zip_cmd
 
 # When adjusting this version, visit
 # https://github.com/nodejs/node/blob/v24.x/BUILDING.md#platform-list
 # to verify minimum supported OS versions. Replace "v24.x" in the URL
 # with the version field.
-version = '24.7.0'
+version = '24.19.0'
 base = f'https://nodejs.org/dist/v{version}/'
 upload_base = 'gs://webassembly/emscripten-releases-builds/deps/'
 
@@ -37,26 +31,26 @@ suffixes = [
     '-linux-s390x.tar.gz',
 ]
 
-for suffix in suffixes:
+
+def main():
+  parser = argparse.ArgumentParser(description=__doc__)
+  parser.add_argument('--upload', action='store_true', help='Upload binaries to Google Cloud Storage')
+  args = parser.parse_args()
+
+  for suffix in suffixes:
     filename = 'node-v%s%s' % (version, suffix)
     download_url = base + filename
     print('Downloading: ' + download_url)
     urllib.request.urlretrieve(download_url, filename)
 
-    if '-win-' in suffix:
-      subprocess.check_call([*unzip_cmd(), filename])
-      dirname = os.path.splitext(os.path.basename(filename))[0]
-      shutil.move(dirname, 'bin')
-      os.mkdir(dirname)
-      shutil.move('bin', dirname)
-      os.remove(filename)
-      subprocess.check_call([*zip_cmd(), filename, dirname])
-      shutil.rmtree(dirname)
-
-    if '--upload' in sys.argv:
+    if args.upload:
       upload_url = upload_base + filename
       print('Uploading: ' + upload_url)
       cmd = ['gsutil', 'cp', '-n', filename, upload_url]
       print(' '.join(cmd))
       subprocess.check_call(cmd)
       os.remove(filename)
+
+
+if __name__ == '__main__':
+  main()
