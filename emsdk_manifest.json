@@ -280,16 +280,10 @@
     "arch": "x86_64",
     "activated_cfg": "EMSDK_CMAKE='%installation_dir%/bin/cmake%.exe%'",
     "activated_path": "%installation_dir%/bin",
+    "activated_cfg_macos": "EMSDK_CMAKE='%installation_dir%/CMake.app/Contents/bin/cmake%.exe%'",
+    "activated_path_macos": "%installation_dir%/CMake.app/Contents/bin",
     "url_windows": "https://github.com/Kitware/CMake/releases/download/v4.2.0-rc3/cmake-4.2.0-rc3-windows-x86_64.zip",
-    "url_linux": "https://github.com/Kitware/CMake/releases/download/v4.2.0-rc3/cmake-4.2.0-rc3-linux-x86_64.tar.gz"
-  },
-  {
-    "id": "cmake",
-    "version": "4.2.0-rc3",
-    "bitness": 64,
-    "arch": "x86_64",
-    "activated_cfg": "EMSDK_CMAKE='%installation_dir%/CMake.app/Contents/bin/cmake%.exe%'",
-    "activated_path": "%installation_dir%/CMake.app/Contents/bin",
+    "url_linux": "https://github.com/Kitware/CMake/releases/download/v4.2.0-rc3/cmake-4.2.0-rc3-linux-x86_64.tar.gz",
     "url_macos": "https://github.com/Kitware/CMake/releases/download/v4.2.0-rc3/cmake-4.2.0-rc3-macos-universal.tar.gz"
   },
   {
@@ -299,16 +293,10 @@
     "arch": "arm64",
     "activated_cfg": "EMSDK_CMAKE='%installation_dir%/bin/cmake%.exe%'",
     "activated_path": "%installation_dir%/bin",
+    "activated_cfg_macos": "EMSDK_CMAKE='%installation_dir%/CMake.app/Contents/bin/cmake%.exe%'",
+    "activated_path_macos": "%installation_dir%/CMake.app/Contents/bin",
     "url_windows": "https://github.com/Kitware/CMake/releases/download/v4.2.0-rc3/cmake-4.2.0-rc3-windows-arm64.zip",
-    "url_linux": "https://github.com/Kitware/CMake/releases/download/v4.2.0-rc3/cmake-4.2.0-rc3-linux-aarch64.tar.gz"
-  },
-  {
-    "id": "cmake",
-    "version": "4.2.0-rc3",
-    "bitness": 64,
-    "arch": "arm64",
-    "activated_cfg": "EMSDK_CMAKE='%installation_dir%/CMake.app/Contents/bin/cmake%.exe%'",
-    "activated_path": "%installation_dir%/CMake.app/Contents/bin",
+    "url_linux": "https://github.com/Kitware/CMake/releases/download/v4.2.0-rc3/cmake-4.2.0-rc3-linux-aarch64.tar.gz",
     "url_macos": "https://github.com/Kitware/CMake/releases/download/v4.2.0-rc3/cmake-4.2.0-rc3-macos-universal.tar.gz"
   },
 
@@ -327,17 +315,11 @@
     "bitness": 64,
     "arch": "x86_64",
     "url_windows": "python-3.9.2-1-embed-amd64+pywin32.zip",
-    "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
-  },
-  {
-    "id": "python",
-    "version": "3.9.2",
-    "bitness": 64,
-    "arch": "x86_64",
     "url_macos": "python-3.9.2-3-macos-x86_64.tar.gz",
-    "activated_cfg": "PYTHON='%installation_dir%/bin/python3'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.9/site-packages/certifi/cacert.pem"
+    "activated_cfg_windows": "PYTHON='%installation_dir%/python.exe'",
+    "activated_env_windows": "EMSDK_PYTHON=%installation_dir%/python.exe",
+    "activated_cfg_macos": "PYTHON='%installation_dir%/bin/python3'",
+    "activated_env_macos": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.9/site-packages/certifi/cacert.pem"
   },
   {
     "id": "python",
@@ -355,8 +337,11 @@
     "bitness": 64,
     "arch": "x86_64",
     "url_windows": "python-3.13.3-0-win-amd64.zip",
-    "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
+    "url_macos": "python-3.13.3-0-macos-x86_64.tar.gz",
+    "activated_cfg_windows": "PYTHON='%installation_dir%/python.exe'",
+    "activated_env_windows": "EMSDK_PYTHON=%installation_dir%/python.exe",
+    "activated_cfg_macos": "PYTHON='%installation_dir%/bin/python3'",
+    "activated_env_macos": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.13/site-packages/certifi/cacert.pem"
   },
   {
     "id": "python",
@@ -364,26 +349,11 @@
     "bitness": 64,
     "arch": "arm64",
     "url_windows": "python-3.13.3-0-win-arm64.zip",
-    "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
-  },
-  {
-    "id": "python",
-    "version": "3.13.3",
-    "bitness": 64,
-    "arch": "x86_64",
-    "url_macos": "python-3.13.3-0-macos-x86_64.tar.gz",
-    "activated_cfg": "PYTHON='%installation_dir%/bin/python3'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.13/site-packages/certifi/cacert.pem"
-  },
-  {
-    "id": "python",
-    "version": "3.13.3",
-    "bitness": 64,
-    "arch": "arm64",
     "url_macos": "python-3.13.3-0-macos-arm64.tar.gz",
-    "activated_cfg": "PYTHON='%installation_dir%/bin/python3'",
-    "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.13/site-packages/certifi/cacert.pem"
+    "activated_cfg_windows": "PYTHON='%installation_dir%/python.exe'",
+    "activated_env_windows": "EMSDK_PYTHON=%installation_dir%/python.exe",
+    "activated_cfg_macos": "PYTHON='%installation_dir%/bin/python3'",
+    "activated_env_macos": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.13/site-packages/certifi/cacert.pem"
   },
 
   {
@@ -680,19 +650,7 @@
     "version": "main",
     "bitness": 64,
     "deps": ["python-3.13.3-64bit", "llvm-git-main-64bit", "node-24.19.0-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
-    "os": "windows"
-  },
-  {
-    "version": "main",
-    "bitness": 64,
-    "deps": ["python-3.13.3-64bit", "llvm-git-main-64bit", "node-24.19.0-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
-    "os": "macos"
-  },
-  {
-    "version": "main",
-    "bitness": 64,
-    "deps": ["llvm-git-main-64bit", "node-24.19.0-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
-    "os": "linux"
+    "deps_linux": ["llvm-git-main-64bit", "node-24.19.0-64bit", "emscripten-main-64bit", "binaryen-main-64bit"]
   },
   {
     "version": "main",
@@ -703,31 +661,8 @@
   {
     "version": "releases-%releases-tag%",
     "bitness": 64,
-    "deps": ["node-24.19.0-64bit", "releases-%releases-tag%-64bit"],
-    "os": "linux",
-    "custom_install_script": "sdk_post_install"
-  },
-  {
-    "version": "releases-%releases-tag%",
-    "bitness": 64,
     "deps": ["node-24.19.0-64bit", "python-3.13.3-64bit", "releases-%releases-tag%-64bit"],
-    "os": "macos",
-    "arch": "x86_64",
-    "custom_install_script": "sdk_post_install"
-  },
-  {
-    "version": "releases-%releases-tag%",
-    "bitness": 64,
-    "deps": ["node-24.19.0-64bit", "python-3.13.3-64bit", "releases-%releases-tag%-64bit"],
-    "os": "macos",
-    "arch": "arm64",
-    "custom_install_script": "sdk_post_install"
-  },
-  {
-    "version": "releases-%releases-tag%",
-    "bitness": 64,
-    "deps": ["node-24.19.0-64bit", "python-3.13.3-64bit", "releases-%releases-tag%-64bit"],
-    "os": "windows",
+    "deps_linux": ["node-24.19.0-64bit", "releases-%releases-tag%-64bit"],
     "custom_install_script": "sdk_post_install"
   }
   ]
