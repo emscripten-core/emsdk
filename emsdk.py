@@ -174,15 +174,24 @@ ENABLE_LLVM_ASSERTIONS = 'auto'
 KEEP_DOWNLOADS = get_env_boolean('EMSDK_KEEP_DOWNLOADS')
 
 
-def os_name():
+def os_name_short():
   if WINDOWS:
     return 'win'
   elif LINUX:
     return 'linux'
   elif MACOS:
     return 'mac'
-  else:
-    raise Exception('unknown OS')
+  assert False, 'unknown OS'
+
+
+def os_name():
+  if WINDOWS:
+    return 'windows'
+  if LINUX:
+    return 'linux'
+  if MACOS:
+    return 'macos'
+  assert False, 'unknown OS'
 
 
 def debug_print(msg):
@@ -1090,7 +1099,7 @@ def build_llvm(tool):
   debug_print(f'build_llvm({tool})')
   llvm_root = tool.installation_path()
   llvm_src_root = os.path.join(llvm_root, 'src')
-  success = git_clone_checkout_and_pull(tool.download_url(), llvm_src_root, tool.git_branch)
+  success = git_clone_checkout_and_pull(tool.url, llvm_src_root, tool.git_branch)
   if not success:
     return False
 
@@ -1150,7 +1159,7 @@ def build_ninja(tool):
   debug_print(f'build_ninja({tool})')
   root = os.path.normpath(tool.installation_path())
   src_root = os.path.join(root, 'src')
-  success = git_clone_checkout_and_pull(tool.download_url(), src_root, tool.git_branch)
+  success = git_clone_checkout_and_pull(tool.url, src_root, tool.git_branch)
   if not success:
     return False
 
@@ -1185,7 +1194,7 @@ def build_ccache(tool):
   debug_print(f'build_ccache({tool})')
   root = os.path.normpath(tool.installation_path())
   src_root = os.path.join(root, 'src')
-  success = git_clone_checkout_and_pull(tool.download_url(), src_root, tool.git_branch)
+  success = git_clone_checkout_and_pull(tool.url, src_root, tool.git_branch)
   if not success:
     return False
 
@@ -1827,17 +1836,28 @@ class Tool:
   emscripten_releases_hash = None
   git_branch = None
   url = None
-  macos_url = None
-  linux_url = None
-  windows_url = None
 
   def __init__(self, data):
     self.uses = []
 
     # Convert the dictionary representation of the tool in 'data' to members of
-    # this class for convenience.
+    # this class. Base attributes are assigned first, then host OS-matching suffixed
+    # attributes (e.g. url_windows, activated_path_windows) are applied on top as overrides.
+    # Foreign OS keys are ignored.
+    os_overrides = {}
+    all_os_names = {'windows', 'macos', 'linux'}
+
     for key, value in data.items():
+      if '_' in key:
+        prefix, suffix = key.rsplit('_', 1)
+        if suffix in all_os_names:
+          if suffix == os_name():
+            os_overrides[prefix] = value
+          continue
       setattr(self, key, value)
+
+    for prefix, value in os_overrides.items():
+      setattr(self, prefix, value)
 
     # Cache the name ID of this Tool (these are read very often)
     self.name = self.id
@@ -1939,24 +1959,8 @@ class Tool:
       return False
 
     if self.os:
-      assert self.os in {'all', 'linux', 'win', 'macos'}
-      if self.os == 'all':
-        return True
-      if (WINDOWS and self.os == 'win') or (LINUX and self.os == 'linux') or (MACOS and self.os == 'macos'):
-        return True
-      return False
-
-    if not any((self.macos_url, self.windows_url, self.linux_url)):
-      return True
-
-    if MACOS and self.macos_url:
-      return True
-
-    if LINUX and self.linux_url:
-      return True
-
-    if WINDOWS and self.windows_url:
-      return True
+      assert self.os in {'linux', 'windows', 'macos'}
+      return self.os == os_name()
 
     return self.url is not None
 
@@ -1990,7 +1994,7 @@ class Tool:
         if not tool.is_installed():
           return False
 
-    if self.download_url() is None:
+    if self.url is None:
       debug_print(f'{self} has no files to download, so is installed by default.')
       return True
 
@@ -2072,15 +2076,6 @@ class Tool:
         return "this tool is only provided for 64-bit OSes"
     return True
 
-  def download_url(self):
-    if WINDOWS and self.windows_url:
-      return self.windows_url
-    elif MACOS and self.macos_url:
-      return self.macos_url
-    elif LINUX and self.linux_url:
-      return self.linux_url
-    return self.url
-
   def install(self):
     """Returns True if the Tool was installed of False if was skipped due to
     already being installed.
@@ -2130,7 +2125,6 @@ class Tool:
       return False
 
     print(f"Installing tool '{self}'..")
-    url = self.download_url()
 
     custom_install_scripts = {
       'build_llvm': build_llvm,
@@ -2142,12 +2136,12 @@ class Tool:
     if self.custom_install_script in custom_install_scripts:
       success = custom_install_scripts[self.custom_install_script](self)
     elif self.git_branch:
-      success = git_clone_checkout_and_pull(url, self.installation_path(), self.git_branch, getattr(self, 'remote_name', 'origin'))
-    elif url.endswith(ARCHIVE_SUFFIXES):
-      success = download_and_extract(url, self.installation_path(),
+      success = git_clone_checkout_and_pull(self.url, self.installation_path(), self.git_branch, getattr(self, 'remote_name', 'origin'))
+    elif self.url.endswith(ARCHIVE_SUFFIXES):
+      success = download_and_extract(self.url, self.installation_path(),
                                      filename_prefix=getattr(self, 'download_prefix', ''))
     else:
-      assert False, 'unhandled url type: ' + url
+      assert False, 'unhandled url type: ' + self.url
 
     if not success:
       exit_with_error("installation failed!")
@@ -2190,9 +2184,8 @@ class Tool:
   def cleanup_temp_install_files(self):
     if KEEP_DOWNLOADS:
       return
-    url = self.download_url()
-    if url.endswith(ARCHIVE_SUFFIXES):
-      download_target = get_download_target(url, download_dir, getattr(self, 'download_prefix', ''))
+    if self.url.endswith(ARCHIVE_SUFFIXES):
+      download_target = get_download_target(self.url, download_dir, getattr(self, 'download_prefix', ''))
       debug_print(f"Deleting temporary download: {download_target}")
       rmfile(download_target)
 
@@ -2342,7 +2335,7 @@ def get_emscripten_releases_tot():
 
   def make_url(ext):
    return emscripten_releases_download_url_template % (
-      os_name(),
+      os_name_short(),
       release,
       arch,
       ext,
