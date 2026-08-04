@@ -1985,14 +1985,13 @@ class Tool:
   def is_installed(self, skip_version_check=False):
     # If this tool/sdk depends on other tools, require that all dependencies are
     # installed for this tool to count as being installed.
-    if self.uses:
-      for tool_name in self.uses:
-        tool = find_tool(tool_name)
-        if tool is None:
-          errlog(f"Manifest error: No tool by name '{tool_name}' found! This may indicate an internal SDK error!")
-          return False
-        if not tool.is_installed():
-          return False
+    for tool_name in self.uses:
+      tool = find_tool(tool_name)
+      if tool is None:
+        errlog(f"Manifest error: No tool by name '{tool_name}' found! This may indicate an internal SDK error!")
+        return False
+      if not tool.is_installed():
+        return False
 
     if self.url is None:
       debug_print(f'{self} has no files to download, so is installed by default.')
