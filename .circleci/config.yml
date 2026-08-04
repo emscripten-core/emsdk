@@ -24,6 +24,13 @@ executors:
     resource_class: arm.medium
 
 commands:
+  check-clean:
+    steps:
+      - run:
+          name: Check working directory is clean
+          command: |
+            git status
+            test -z "$(git status --porcelain)"
   setup-macos:
     steps:
       - checkout
@@ -40,6 +47,7 @@ commands:
           command: |
             source emsdk_env.sh
             test/test.py
+      - check-clean
   setup-docker:
     steps:
       - run:
@@ -141,6 +149,7 @@ jobs:
           command: |
             source emsdk_env.sh
             test/test.py
+      - check-clean
   test-linux-arm64:
     executor: linux_arm64
     steps:
@@ -149,6 +158,7 @@ jobs:
           name: Install debian packages
           command: sudo apt-get update -q && sudo apt-get install -q cmake build-essential openjdk-8-jre-headless
       - run: test/test.sh
+      - check-clean
   test-mac-arm64:
     executor: mac_arm64
     steps:
@@ -221,6 +231,8 @@ jobs:
           command: |
             $env:SYSTEM_FLAG="--system"
             test/test_path_preservation.ps1
+
+      - check-clean
 
   build-docker-image-x64:
     executor: ubuntu

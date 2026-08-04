@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
+import glob
 import json
 import os
 import platform
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -92,6 +94,24 @@ def get_longest_path_in_dir(dirname):
   return longest
 
 
+def remove_file(filename):
+  if os.path.exists(filename):
+    os.remove(filename)
+
+
+def remove_tree(path):
+  if not os.path.exists(path):
+    return
+  if WINDOWS:
+    path = '\\\\?\\' + path
+
+  def remove_readonly(func, path2, _):
+    os.chmod(path2, stat.S_IRWXU)
+    func(path2)
+
+  shutil.rmtree(path, onerror=remove_readonly)
+
+
 # Set up
 
 TAGS = json.loads(open('emscripten-releases-tags.json').read())
@@ -144,8 +164,9 @@ def upstream_emcc(root='.'):
 
 
 class Emsdk(unittest.TestCase):
-  @classmethod
-  def setUpClass(cls):
+  def setUp(self):
+    run_emsdk('install latest')
+    run_emsdk('activate latest')
     with open('hello_world.c', 'w') as f:
       f.write('''\
 #include <stdio.h>
@@ -155,10 +176,11 @@ int main() {
    return 0;
 }
 ''')
+    self.addCleanup(remove_file, 'hello_world.c')
 
-  def setUp(self):
-    run_emsdk('install latest')
-    run_emsdk('activate latest')
+  def tearDown(self):
+    for f in glob.glob('a.out*'):
+      os.remove(f)
 
   def test_extrememly_long_filenames(self):
     # We have special support for filenames longer than 256 on windows. This
@@ -168,11 +190,9 @@ int main() {
 
     additional = 140 - len(longpath)
     longpath += 'x' * additional
-    if os.path.exists(longpath):
-      # shutil.rmtree requires the special long path prefix
-      longpath_with_prefix = '\\\\?\\' + longpath
-      assert os.path.exists(longpath_with_prefix)
-      shutil.rmtree(longpath_with_prefix)
+
+    remove_tree(longpath)
+    self.addCleanup(remove_tree, longpath)
 
     os.makedirs(longpath)
     copy_emsdk_to(longpath)
@@ -270,13 +290,12 @@ int main() {
     checked_call_with_output(emsdk + ' install node-24.19.0-64bit', unexpected='Downloading:', expected='already installed')
 
   def test_tot_upstream(self):
-    print('test update-tags')
-    run_emsdk('update-tags')
     print('test tot-upstream')
     run_emsdk('install tot-upstream')
     with open(emconfig) as f:
       config = f.read()
     run_emsdk('activate tot-upstream')
+    self.addCleanup(remove_file, emconfig + '.old')
     with open(emconfig + '.old') as f:
       old_config = f.read()
     self.assertEqual(config, old_config)
@@ -315,14 +334,15 @@ int main() {
   def test_no_32bit(self):
     print('test 32-bit error')
     emsdk_hacked = hack_emsdk('not is_os_64bit()', 'True')
+    self.addCleanup(remove_file, emsdk_hacked)
     failing_call_with_output('%s %s install latest' % (sys.executable, emsdk_hacked),
                              'this tool is only provided for 64-bit OSes')
-    os.remove(emsdk_hacked)
 
   def test_update_no_git(self):
     print('test non-git update')
 
     temp_dir = tempfile.mkdtemp()
+    self.addCleanup(remove_tree, temp_dir)
     copy_emsdk_to(temp_dir)
 
     olddir = os.getcwd()
