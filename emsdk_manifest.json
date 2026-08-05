@@ -644,8 +644,9 @@
     "id": "ninja",
     "version": "1.13.2",
     "bitness": 64,
+    "url_windows": "ninja-1.13.2-winarm64.zip",
+    "url_linux": "ninja-1.13.2-linux-aarch64.zip",
     "url_macos": "ninja-1.13.2-mac.zip",
-    "os": "macos",
     "arch": "arm64",
     "activated_cfg": "NINJA_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%"
