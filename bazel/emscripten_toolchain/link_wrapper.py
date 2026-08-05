@@ -37,8 +37,8 @@ if any(' ' in a for a in param_file_args):
       f.write('\n')
   sys.argv[1] = '@' + new_param_filename
 
-emcc_py = os.path.join(os.environ['EMSCRIPTEN'], 'emcc.py')
-rtn = subprocess.call([sys.executable, emcc_py, *sys.argv[1:]])
+emxx_py = os.path.join(os.environ['EMSCRIPTEN'], 'em++.py')
+rtn = subprocess.call([sys.executable, emxx_py, *sys.argv[1:]])
 if rtn != 0:
   sys.exit(1)
 
@@ -153,7 +153,7 @@ if os.path.exists(wasm_base + '.debug.wasm') and os.path.exists(wasm_base):
 
 # Make sure we have at least one output file.
 if not files:
-  print('emcc.py did not appear to output any known files!')
+  print('em++.py did not appear to output any known files!')
   sys.exit(1)
 
 # cc_binary must output exactly one file; put all the output files in a tarball.
