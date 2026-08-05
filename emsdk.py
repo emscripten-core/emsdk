@@ -1838,7 +1838,7 @@ class Tool:
   url = None
 
   def __init__(self, data):
-    self.uses = []
+    self.deps = []
 
     # Convert the dictionary representation of the tool in 'data' to members of
     # this class. Base attributes are assigned first, then host OS-matching suffixed
@@ -1901,10 +1901,10 @@ class Tool:
     if self.cmake_build_type:
       return True
 
-    for tool_name in self.uses:
-      tool = find_tool(tool_name)
+    for dep in self.deps:
+      tool = find_tool(dep)
       if not tool:
-        debug_print(f'Tool {self} depends on {tool_name} which does not exist!')
+        debug_print(f'Tool {self} depends on {dep} which does not exist!')
         continue
       if tool.needs_compilation():
         return True
@@ -1985,10 +1985,10 @@ class Tool:
   def is_installed(self, skip_version_check=False):
     # If this tool/sdk depends on other tools, require that all dependencies are
     # installed for this tool to count as being installed.
-    for tool_name in self.uses:
-      tool = find_tool(tool_name)
+    for dep in self.deps:
+      tool = find_tool(dep)
       if tool is None:
-        errlog(f"Manifest error: No tool by name '{tool_name}' found! This may indicate an internal SDK error!")
+        errlog(f"Manifest error: No tool by name '{dep}' found! This may indicate an internal SDK error!")
         return False
       if not tool.is_installed():
         return False
@@ -2094,10 +2094,10 @@ class Tool:
     print(f"Installing SDK '{self}'..")
     installed = False
 
-    for tool_name in self.uses:
-      tool = find_tool(tool_name)
+    for dep in self.deps:
+      tool = find_tool(dep)
       if tool is None:
-        exit_with_error(f"manifest error: No tool by name '{tool_name}' found! This may indicate an internal SDK error!")
+        exit_with_error(f"manifest error: No tool by name '{dep}' found! This may indicate an internal SDK error!")
       installed |= tool.install()
 
     if not installed:
@@ -2205,16 +2205,16 @@ class Tool:
   def dependencies(self):
     deps = []
 
-    for tool_name in self.uses:
-      tool = find_tool(tool_name)
+    for dep in self.deps:
+      tool = find_tool(dep)
       if tool:
         deps += [tool]
     return deps
 
   def recursive_dependencies(self):
     deps = []
-    for tool_name in self.uses:
-      tool = find_tool(tool_name)
+    for dep in self.deps:
+      tool = find_tool(dep)
       if tool:
         deps += [tool]
         deps += tool.recursive_dependencies()
@@ -2471,10 +2471,10 @@ def load_sdk_manifest():
   releases_tags = load_releases_tags()
 
   def dependencies_exist(sdk):
-    for tool_name in sdk.uses:
-      tool = find_tool(tool_name)
+    for dep in sdk.deps:
+      tool = find_tool(dep)
       if not tool:
-        debug_print('missing dependency: ' + tool_name)
+        debug_print('missing dependency: ' + dep)
         return False
     return True
 
@@ -2515,7 +2515,7 @@ def load_sdk_manifest():
       if not found_param:
         continue
       t2.is_old = i < len(category_list) - 2
-      t2.uses = [x.replace(param, ver) for x in t2.uses]
+      t2.deps = [x.replace(param, ver) for x in t2.deps]
 
       if is_sdk:
         if dependencies_exist(t2):
@@ -2912,10 +2912,10 @@ def main(args):  # ruff: ignore[complex-structure, too-many-return-statements, t
     print(' emsdk: Available commands:')
 
     print('''
-   emsdk list [--old] [--uses]  - Lists all available SDKs and tools and their
+   emsdk list [--old] [--deps]  - Lists all available SDKs and tools and their
                                   current installation status. With the --old
                                   parameter, also historical versions are
-                                  shown. If --uses is passed, displays the
+                                  shown. If --deps is passed, displays the
                                   composition of different SDK packages and
                                   dependencies.
 
@@ -3051,7 +3051,7 @@ def main(args):  # ruff: ignore[complex-structure, too-many-return-statements, t
         return value
 
   arg_old = extract_bool_arg('--old')
-  arg_uses = extract_bool_arg('--uses')
+  arg_deps = extract_bool_arg('--deps')
   arg_permanent = extract_bool_arg('--permanent')
   arg_global = extract_bool_arg('--global')
   arg_system = extract_bool_arg('--system')
@@ -3169,8 +3169,8 @@ def main(args):  # ruff: ignore[complex-structure, too-many-return-statements, t
           installed = '\tINSTALLED' if sdk.is_installed() else ''
           active = '*' if sdk.is_active() else ' '
           print('    ' + active + '    {0: <25}'.format(str(sdk)) + installed)
-          if arg_uses:
-            for dep in sdk.uses:
+          if arg_deps:
+            for dep in sdk.deps:
               print('          - {0: <25}'.format(dep))
         print('')
       print('The additional following precompiled SDKs are also available for download:')
