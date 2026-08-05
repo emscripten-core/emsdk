@@ -29,6 +29,7 @@ filegroup(
     name = "emcc_common",
     srcs = [
         "emscripten/emcc.py",
+        "emscripten/em++.py",
         "emscripten/embuilder.py",
         "emscripten/emscripten-version.txt",
         "emscripten/cache/sysroot_install.stamp",
