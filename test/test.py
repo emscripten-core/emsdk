@@ -381,6 +381,19 @@ int main() {
     checked_call_with_output(emsdk + ' install 3.1.55', expected='Downloading:', env=env)
     checked_call_with_output(emsdk + ' install 3.1.54', expected='already downloaded, skipping', unexpected='Downloading:', env=env)
 
+  def test_unicode_path(self):
+    temp_dir = tempfile.mkdtemp(prefix='test_työpöytä_')
+    self.addCleanup(remove_tree, temp_dir)
+    copy_emsdk_to(temp_dir)
+
+    olddir = os.getcwd()
+    try:
+      os.chdir(temp_dir)
+      run_emsdk('list')
+      run_emsdk('construct_env')
+    finally:
+      os.chdir(olddir)
+
 
 if __name__ == '__main__':
   unittest.main(verbosity=2)
