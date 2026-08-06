@@ -626,17 +626,9 @@ def path_points_to_directory(path):
 
 def get_content_length(download):
   try:
-    meta = download.info()
-    if hasattr(meta, "getheaders") and hasattr(meta.getheaders, "Content-Length"):
-      return int(meta.getheaders("Content-Length")[0])
-    elif hasattr(download, "getheader") and download.getheader('Content-Length'):
-      return int(download.getheader('Content-Length'))
-    elif hasattr(meta, "getheader") and meta.getheader('Content-Length'):
-      return int(meta.getheader('Content-Length'))
-  except Exception:
-    pass
-
-  return 0
+    return int(download.headers.get('Content-Length', 0))
+  except ValueError:
+    return 0
 
 
 def get_download_target(url, dstpath, filename_prefix=''):
