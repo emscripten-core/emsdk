@@ -2206,9 +2206,10 @@ tools_map = {}
 
 def add_tool(tool):
   tool.is_sdk = False
+  existing = find_tool(str(tool))
+  if existing:
+    raise Exception(f'Duplicate tool {tool}! Existing:\n{vars(existing)}, New:\n{vars(tool)}')
   tools.append(tool)
-  if find_tool(str(tool)):
-    raise Exception('Duplicate tool ' + str(tool) + '! Existing:\n{' + ', '.join("%s: %s" % item for item in vars(find_tool(str(tool))).items()) + '}, New:\n{' + ', '.join("%s: %s" % item for item in vars(tool).items()) + '}')
   tools_map[str(tool)] = tool
 
 
@@ -2219,9 +2220,10 @@ sdks_map = {}
 
 def add_sdk(sdk):
   sdk.is_sdk = True
+  existing = find_sdk(str(sdk))
+  if existing:
+    raise Exception(f'Duplicate sdk {sdk}! Existing:\n{vars(existing)}, New:\n{vars(sdk)}')
   sdks.append(sdk)
-  if find_sdk(str(sdk)):
-    raise Exception('Duplicate sdk ' + str(sdk) + '! Existing:\n{' + ', '.join("%s: %s" % item for item in vars(find_sdk(str(sdk))).items()) + '}, New:\n{' + ', '.join("%s: %s" % item for item in vars(sdk).items()) + '}')
   sdks_map[str(sdk)] = sdk
 
 
@@ -2436,10 +2438,9 @@ def load_releases_versions():
 def load_sdk_manifest():
   try:
     manifest = json.loads(read_file(sdk_path('emsdk_manifest.json')))
-  except Exception as e:
-    print('Error parsing emsdk_manifest.json!')
-    print(str(e))
-    return
+  except Exception:
+    errlog('Error parsing emsdk_manifest.json!')
+    raise
 
   emscripten_tags = load_legacy_emscripten_tags()
   llvm_precompiled_tags_32bit = []
