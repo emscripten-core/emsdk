@@ -1955,7 +1955,10 @@ class Tool:
       assert self.os in {'linux', 'windows', 'macos'}
       return self.os == os_name()
 
-    return self.url is not None
+    # Tools without an explicit 'os' are compatible with the current
+    # OS if they have URL for the current OS *or* a set of dependencies
+    # for the current OS.
+    return self.url is not None or bool(self.deps)
 
   def get_version_file_path(self):
     """the "version file" is a file inside install dirs that indicates the
