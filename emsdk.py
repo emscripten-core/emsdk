@@ -255,7 +255,7 @@ def vswhere(version):
   try:
     # The "-products *" allows detection of Build Tools, the "-prerelease" allows detection of Preview version
     # of Visual Studio and Build Tools.
-    stdout = subprocess.check_output([vswhere_path, '-latest', '-products', '*', '-prerelease', '-version', '[%s.0,%s.0)' % (version, version + 1), '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.' + tools_arch, '-property', 'installationPath', '-format', 'json'])
+    stdout = run_get_output([vswhere_path, '-latest', '-products', '*', '-prerelease', '-version', '[%s.0,%s.0)' % (version, version + 1), '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.' + tools_arch, '-property', 'installationPath', '-format', 'json'])
     json_output = json.loads(stdout)
     return str(json_output[0]['installationPath'])
   except Exception:
@@ -762,7 +762,7 @@ def git_recent_commits(repo_path, n=20):
 
 def get_git_remotes(repo_path):
   remotes = []
-  output = subprocess.check_output([GIT(), 'remote', '-v'], stderr=subprocess.STDOUT, text=True, cwd=repo_path)
+  output = run_get_output([GIT(), 'remote', '-v'], cwd=repo_path)
   for line in output.splitlines():
     remotes += [line.split()[0]]
   return remotes
@@ -1024,7 +1024,7 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
 
 def xcode_sdk_version():
   try:
-    output = subprocess.check_output(['xcrun', '--show-sdk-version'], text=True)
+    output = run_get_output(['xcrun', '--show-sdk-version'])
     return output.strip().split('.')
   except Exception:
     return subprocess.checkplatform.mac_ver()[0].split('.')
@@ -1431,11 +1431,9 @@ def emscripten_npm_setup(directory):
   npm = os.path.join(node_path, 'npm' + ('.cmd' if WINDOWS else ''))
   print('Running post-install step: npm ci ...')
   try:
-    subprocess.check_output(
-        [npm, 'ci', '--production'],
-        cwd=directory, stderr=subprocess.STDOUT, env=env, text=True)
+    subprocess.check_call([npm, 'ci', '--production'], cwd=directory, env=env)
   except subprocess.CalledProcessError as e:
-    errlog('Error running %s:\n%s' % (e.cmd, e.output))
+    errlog(f'Error running {e.cmd}')
     return False
 
   print('Done running: npm ci')
