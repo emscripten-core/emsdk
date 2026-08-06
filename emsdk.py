@@ -1862,9 +1862,6 @@ class Tool:
   def __str__(self):
     return self.name
 
-  def __repr__(self):
-    return self.name
-
   def expand_vars(self, str):
     if '%installation_dir%' in str:
       str = str.replace('%installation_dir%', sdk_path(self.installation_dir()))
