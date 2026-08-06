@@ -34,3 +34,4 @@ __pycache__
 /spidermonkey
 /binaryen
 /firefox
+/cmake
