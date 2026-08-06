@@ -246,17 +246,18 @@ ARCHIVE_SUFFIXES = ('zip', '.tar', '.gz', '.xz', '.tbz2', '.bz2')
 
 
 def vswhere(version):
+  program_files = os.getenv('ProgramFiles(x86)')
+  if not program_files:
+    program_files = os.environ['ProgramFiles']
+  vswhere_path = os.path.join(program_files, 'Microsoft Visual Studio', 'Installer', 'vswhere.exe')
+  # Source: https://learn.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-build-tools?view=vs-2022
+  tools_arch = 'ARM64' if ARCH == 'arm64' else 'x86.x64'
   try:
-    program_files = os.getenv('ProgramFiles(x86)')
-    if not program_files:
-      program_files = os.environ['ProgramFiles']
-    vswhere_path = os.path.join(program_files, 'Microsoft Visual Studio', 'Installer', 'vswhere.exe')
-    # Source: https://learn.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-build-tools?view=vs-2022
-    tools_arch = 'ARM64' if ARCH == 'arm64' else 'x86.x64'
     # The "-products *" allows detection of Build Tools, the "-prerelease" allows detection of Preview version
     # of Visual Studio and Build Tools.
-    output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-products', '*', '-prerelease', '-version', '[%s.0,%s.0)' % (version, version + 1), '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.' + tools_arch, '-property', 'installationPath', '-format', 'json']))
-    return str(output[0]['installationPath'])
+    stdout = subprocess.check_output([vswhere_path, '-latest', '-products', '*', '-prerelease', '-version', '[%s.0,%s.0)' % (version, version + 1), '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.' + tools_arch, '-property', 'installationPath', '-format', 'json'])
+    json_output = json.loads(stdout)
+    return str(json_output[0]['installationPath'])
   except Exception:
     return ''
 
@@ -270,9 +271,9 @@ if WINDOWS:
     CMAKE_GENERATOR = 'Visual Studio 17'
   elif '--vs2019' in sys.argv:
     CMAKE_GENERATOR = 'Visual Studio 16'
-  elif len(vswhere(17)) > 0:
+  elif vswhere(17):
     CMAKE_GENERATOR = 'Visual Studio 17'
-  elif len(vswhere(16)) > 0:
+  elif vswhere(16):
     CMAKE_GENERATOR = 'Visual Studio 16'
   elif shutil.which('mingw32-make') is not None and shutil.which('g++') is not None:
     CMAKE_GENERATOR = 'MinGW Makefiles'
