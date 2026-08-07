@@ -1894,15 +1894,7 @@ class Tool:
     if self.cmake_build_type:
       return True
 
-    for dep in self.deps:
-      tool = find_tool(dep)
-      if not tool:
-        debug_print(f'Tool {self} depends on {dep} which does not exist!')
-        continue
-      if tool.needs_compilation():
-        return True
-
-    return False
+    return any(dep.needs_compilation() for dep in self.dependencies())
 
   def installation_path(self):
     """Specifies the target path where this tool will be installed to. This could
@@ -1981,12 +1973,8 @@ class Tool:
   def is_installed(self, skip_version_check=False):
     # If this tool/sdk depends on other tools, require that all dependencies are
     # installed for this tool to count as being installed.
-    for dep in self.deps:
-      tool = find_tool(dep)
-      if tool is None:
-        errlog(f"Manifest error: No tool by name '{dep}' found! This may indicate an internal SDK error!")
-        return False
-      if not tool.is_installed():
+    for dep in self.dependencies():
+      if not dep.is_installed():
         return False
 
     if self.url is None:
@@ -2090,11 +2078,8 @@ class Tool:
     print(f"Installing SDK '{self}'..")
     installed = False
 
-    for dep in self.deps:
-      tool = find_tool(dep)
-      if tool is None:
-        exit_with_error(f"manifest error: No tool by name '{dep}' found! This may indicate an internal SDK error!")
-      installed |= tool.install()
+    for dep in self.dependencies():
+      installed |= dep.install()
 
     if not installed:
       print(f"All SDK components already installed: '{self}'.")
