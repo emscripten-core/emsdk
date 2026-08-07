@@ -1597,7 +1597,94 @@ def get_required_path(active_tools):
 # Returns the absolute path to the file '.emscripten' for the current user on
 # this system.
 EM_CONFIG_PATH = os.path.join(EMSDK_PATH, ".emscripten")
-EM_CONFIG_DICT = {}
+ACTIVATED_JSON_PATH = os.path.join(EMSDK_PATH, "activated.json")
+ACTIVATED_TOOLS = set()
+
+
+def get_active_legacy():
+  """Legacy support for users without existing `activated.json` files.
+
+  Older versions of emsdk would imply active status purely based on the
+  emscripten config file.  This function uses that old method to generate
+  an initial `activated.json` state.
+  """
+  if not os.path.exists(EM_CONFIG_PATH):
+    return []
+
+  def load_em_config():
+    em_config_dict = {}
+    try:
+      lines = read_file(EM_CONFIG_PATH).splitlines()
+      for line in lines:
+        try:
+          key, value = parse_key_value(line)
+          if value:
+            em_config_dict[key] = value
+        except Exception:
+          pass
+    except Exception:
+      pass
+    return em_config_dict
+
+  em_config_dict = load_em_config()
+
+  def is_active_legacy(tool):
+    if not tool.is_installed():
+      return False
+
+    deps = tool.dependencies()
+    for dep in deps:
+      if not is_active_legacy(dep):
+        return False
+
+    activated_cfg = tool.activated_config()
+    if tool.legacy_cfg:
+      name, value = to_unix_path(tool.expand_vars(tool.legacy_cfg)).split('=')
+      activated_cfg[name] = value.strip("'")
+
+    if not activated_cfg:
+      return len(deps) > 0
+
+    for key, value in activated_cfg.items():
+      if key not in em_config_dict:
+        return False
+      config_value = em_config_dict[key].replace("emsdk_path + '", "'" + EMSDK_PATH).replace("$CFGDIR", EMSDK_PATH).strip("'")
+      if config_value != value:
+        return False
+
+    return True
+
+  active = []
+  for sdk in sdks:
+    if is_active_legacy(sdk):
+      active.append(sdk)
+  for tool in tools:
+    if is_active_legacy(tool):
+      active.append(tool)
+
+  return active
+
+
+def load_activated_json():
+  ACTIVATED_TOOLS.clear()
+  if not os.path.exists(ACTIVATED_JSON_PATH):
+    save_activated_json(get_active_legacy())
+    return
+
+  try:
+    data = json.loads(read_file(ACTIVATED_JSON_PATH))
+    assert isinstance(data, dict), f'Expected dict in {ACTIVATED_JSON_PATH}'
+    ACTIVATED_TOOLS.update(data.get('active_tools', []))
+  except Exception as e:
+    errlog(f'warning: failed to parse {ACTIVATED_JSON_PATH}: {e}')
+
+
+def save_activated_json(active_tools):
+  names = sorted(unique_items([str(t) for t in active_tools]))
+  data = {'active_tools': names}
+  write_file(ACTIVATED_JSON_PATH, json.dumps(data, indent=2) + '\n')
+  # Now re-load the newly generated file to update the `ACTIVATED_TOOLS` global state.
+  load_activated_json()
 
 
 def parse_key_value(line):
@@ -1610,22 +1697,6 @@ def parse_key_value(line):
     return (key, value)
   else:
     return (key, '')
-
-
-def load_em_config():
-  EM_CONFIG_DICT.clear()
-  lines = []
-  try:
-    lines = read_file(EM_CONFIG_PATH).splitlines()
-  except Exception:
-    pass
-  for line in lines:
-    try:
-      key, value = parse_key_value(line)
-      if value:
-        EM_CONFIG_DICT[key] = value
-    except Exception:
-      pass
 
 
 def find_emscripten_root(active_tools):
@@ -1820,6 +1891,7 @@ class Tool:
   cmake_build_type = None
   install_path = None
   activated_path_skip = False
+  legacy_cfg = None
   activated_cfg = None
   activated_env = None
   arch = None
@@ -2011,23 +2083,7 @@ class Tool:
       if not tool.is_active():
         return False
 
-    activated_cfg = self.activated_config()
-    if not activated_cfg:
-      return len(deps) > 0
-
-    for key, value in activated_cfg.items():
-      if key not in EM_CONFIG_DICT:
-        debug_print(f'{self} is not active, because key="{key}" does not exist in .emscripten')
-        return False
-
-      # all paths are stored dynamically relative to the emsdk root, so
-      # normalize those first.
-      config_value = EM_CONFIG_DICT[key].replace("emsdk_path + '", "'" + EMSDK_PATH).replace("$CFGDIR", EMSDK_PATH)
-      config_value = config_value.strip("'")
-      if config_value != value:
-        debug_print(f'{self} is not active, because key="{key}" has value "{config_value}" but should have value "{value}"')
-        return False
-    return True
+    return str(self) in ACTIVATED_TOOLS
 
   def is_env_active(self):
     """Returns true if the system environment variables requires by this tool are currently active."""
@@ -2606,6 +2662,7 @@ def set_active_tools(tools_to_activate, permanently_activate, system):
     print('')
 
   generate_em_config(tools_to_activate, permanently_activate, system)
+  save_activated_json(tools_to_activate)
 
   # Construct a .bat or .ps1 script that will be invoked to set env. vars and PATH
   # We only do this on cmd or powershell since emsdk.bat/ps1 is able to modify the
@@ -3055,8 +3112,8 @@ def main(args):  # ruff: ignore[complex-structure, too-many-return-statements, t
     activating = cmd == 'activate'
     args = [expand_sdk_name(a, activating=activating) for a in args]
 
-  load_em_config()
   load_sdk_manifest()
+  load_activated_json()
 
   # Apply any overrides to git branch names to clone from.
   forked_url = extract_string_arg('--override-repository')
