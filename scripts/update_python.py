@@ -86,7 +86,7 @@ def make_python_patch():
     if '--upload' in sys.argv:
       upload_url = upload_base + out_filename
       print('Uploading: ' + upload_url)
-      cmd = ['gsutil', 'cp', '-n', out_filename, upload_url]
+      cmd = ['gcloud', 'storage', 'cp', '-n', out_filename, upload_url]
       print(' '.join(cmd))
       check_call(cmd)
 
@@ -169,7 +169,7 @@ def build_python():
     print('Created: %s' % tarball)
     if '--upload' in sys.argv:
       print('Uploading: ' + upload_base + tarball)
-      check_call(['gsutil', 'cp', '-n', tarball, upload_base + tarball])
+      check_call(['gcloud', 'storage', 'cp', '-n', tarball, upload_base + tarball])
 
 
 def main():
