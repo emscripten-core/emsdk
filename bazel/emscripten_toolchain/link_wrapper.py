@@ -84,7 +84,7 @@ extensions = [
     '.wasm',
     '.wasm.map',
     '.data',
-    '.js.symbols',
+    '.symbols',
     '.wasm.debug.wasm',
     '.html',
     '.ts',

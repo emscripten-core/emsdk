@@ -26,6 +26,7 @@ bazel build //hello-world:hello-world-wasm-relaxed-simd
 
 pushd test_external
 bazel build //:hello-world-wasm
+test -f bazel-bin/hello-world.symbols
 bazel build //long_command_line:long_command_line_wasm
 bazel build //:hello-embind-wasm --compilation_mode dbg # debug
 

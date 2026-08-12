@@ -4,6 +4,7 @@ load("@rules_cc//cc:defs.bzl", "cc_binary")
 cc_binary(
     name = "hello-world",
     srcs = ["hello-world.cc"],
+    linkopts = ["--emit-symbol-map"],
 )
 
 wasm_cc_binary(
@@ -12,6 +13,7 @@ wasm_cc_binary(
     outputs = [
         "hello-world.js",
         "hello-world.wasm",
+        "hello-world.symbols",
     ],
 )
 

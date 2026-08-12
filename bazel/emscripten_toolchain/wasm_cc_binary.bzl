@@ -61,7 +61,7 @@ _ALLOW_OUTPUT_EXTNAMES = [
     ".wasm",
     ".wasm.map",
     ".data",
-    ".js.symbols",
+    ".symbols",
     ".wasm.debug.wasm",
     ".html",
     ".ts",
@@ -186,7 +186,7 @@ def _wasm_binary_legacy_outputs(name, cc_target):
         "wasm": "{}/{}.wasm".format(name, basename),
         "map": "{}/{}.wasm.map".format(name, basename),
         "data": "{}/{}.data".format(name, basename),
-        "symbols": "{}/{}.js.symbols".format(name, basename),
+        "symbols": "{}/{}.symbols".format(name, basename),
         "dwarf": "{}/{}.wasm.debug.wasm".format(name, basename),
         "html": "{}/{}.html".format(name, basename),
     }
