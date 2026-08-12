@@ -181,39 +181,35 @@ the `activate` command to register the environment permanently for the current u
 
 ### How do I track the latest Emscripten development with the SDK?
 
-A common and supported use case of the Emscripten SDK is to enable the workflow
-where you directly interact with the GitHub repositories. This allows you to
-obtain new features and latest fixes immediately as they are pushed to the
-GitHub repository, without having to wait for release to be tagged. You do not
-need a GitHub account or a fork of Emscripten to do this. To switch to using the
-latest git development branch `main`, run the following:
+To try the latest changes with emsdk you can install and activate a special
+version called `tot` (Tip-Of-Tree) which is continuously built and usually
+contains Emscripten and LLVM changes just a few hours after they are committed:
 
-    emsdk install git-1.9.4 # Install git. Skip if the system already has it.
-    emsdk install sdk-main-64bit # Clone+pull the latest emscripten-core/emscripten/main.
-    emsdk activate sdk-main-64bit # Set the main SDK as the currently active one.
+    ./emsdk install tot
+    ./emsdk activate tot
+
+If you want to build everything yourself from the very latest sources you can
+use `sdk-main-64bit`:
+
+    ./emsdk install sdk-main-64bit
+    ./emsdk activate sdk-main-64bit
 
 ### How do I use my own Emscripten fork with the SDK?
 
 It is also possible to use your own fork of the Emscripten repository via the
-SDK. This is achieved with standard git machinery, so if you are already
-acquainted with working on multiple remotes in a git clone, these steps should
-be familiar to you. This is useful in the case when you want to make your own
-modifications to the Emscripten toolchain, but still keep using the SDK
-environment and tools. To set up your own fork as the currently active
-Emscripten toolchain, first install the `sdk-main` SDK like shown in the
-previous section, and then run the following commands in the emsdk directory:
+SDK. This is useful when you want to make your own modifications to the
+Emscripten toolchain, but still keep using the SDK environment and tools.
 
-    cd emscripten/main
-    # Add a git remote link to your own repository.
-    git remote add myremote https://github.com/mygituseraccount/emscripten.git
-    # Obtain the changes in your link.
-    git fetch myremote
-    # Switch the emscripten-main tool to use your fork.
-    git checkout -b mymain --track myremote/main
+To do this, set the `EM_CONFIG` environment variable to point to the emsdk
+Emscripten config (`.emscripten` in the emsdk directory) and then put your own
+checkout of Emscripten first in `PATH`:
 
-In this way you can utilize the Emscripten SDK tools while using your own git
-fork. You can switch back and forth between remotes via the `git checkout`
-command as usual.
+    cd my_emscripten/
+    # Tell emscripten to use the emsdk config file
+    export EM_CONFIG=/path/to/emsdk/.emscripten
+    # Now your version of emscripten will use LLVM and binaryen binaries from
+    # the currently active version of emsdk.
+    ./emcc
 
 ### How do I use Emscripten SDK with a custom version of python, java, node.js or some other tool?
 
