@@ -2305,9 +2305,10 @@ def get_emscripten_releases_tot():
   recent_releases = git_recent_commits(sdk_path('releases'))
   # The recent releases are the latest hashes in the git repo. There
   # may not be a build for the most recent ones yet; find the last
-  # that has uploaded binaries for all TOT platforms.
+  # that has uploaded binaries for all platforms.
   all_platforms = [
     ('linux', '', 'tar.xz'),
+    ('linux', '-arm64', 'tar.xz'),
     ('mac', '', 'tar.xz'),
     ('mac', '-arm64', 'tar.xz'),
     ('win', '', 'zip'),
