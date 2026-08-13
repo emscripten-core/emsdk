@@ -1,4 +1,8 @@
+Set-StrictMode -Version 3.0
+
 $ScriptDirectory = Split-Path -parent $PSCommandPath
+
+$EMSDK_PY = $null
 
 $PythonLocations = $(
     "python\3.13.3_64bit\python.exe",
@@ -32,9 +36,9 @@ $ExitCode = $LASTEXITCODE
 # to set up the environment variables
 if ($ExitCode -eq 0 -and (Test-Path $ScriptDirectory/emsdk_set_env.ps1)) {
     & $ScriptDirectory/emsdk_set_env.ps1
-    Remove-Item $ScriptDirectory/emsdk_set_env.ps1
+    Remove-Item $ScriptDirectory/emsdk_set_env.ps1 -ErrorAction SilentlyContinue
 }
 
-Remove-Item Env:\EMSDK_POWERSHELL
+Remove-Item Env:\EMSDK_POWERSHELL -ErrorAction SilentlyContinue
 
 exit $ExitCode

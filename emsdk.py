@@ -2764,7 +2764,7 @@ def construct_env(tools_to_activate, system, user):
 
 def unset_env(key):
   if POWERSHELL:
-    return 'Remove-Item env:%s\n' % key
+    return 'Remove-Item env:%s -ErrorAction SilentlyContinue\n' % key
   if CMD:
     return 'set %s=\n' % key
   if CSH:

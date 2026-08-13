@@ -2,6 +2,8 @@
 # and checks if parts of PATH are lost or overwritten. Set $env:SYSTEM_FLAG and $env:PERMANENT_FLAG to test each.
 # If no flag is provided the process/shell values are tested. See the CI file for an example.
 
+Set-StrictMode -Version 3.0
+
 refreshenv
 
 $repo_root = [System.IO.Path]::GetDirectoryName((resolve-path "$PSScriptRoot"))
