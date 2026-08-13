@@ -1,4 +1,4 @@
-Set-StrictMode -Version latest
+Set-StrictMode -Version 3.0
 
 $ScriptDirectory = Split-Path -parent $PSCommandPath
 

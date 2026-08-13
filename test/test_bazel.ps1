@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-Set-StrictMode -Version latest
+Set-StrictMode -Version 3.0
 
 Set-Location bazel
 
