@@ -695,6 +695,12 @@ def download_with_urllib(url, file_name):
     print(']')
     sys.stdout.flush()
 
+  if file_size_dl == 0:
+    raise RuntimeError('download failed: received 0 bytes')
+
+  if file_size > 0 and file_size_dl != file_size:
+    raise RuntimeError(f'download size mismatch: received {file_size_dl} bytes, expected {file_size} bytes')
+
   debug_print('finished downloading (%d bytes)' % file_size_dl)
 
 
@@ -722,6 +728,7 @@ def download_file(url, dstpath, filename_prefix=''):
       download_with_urllib(url, file_name)
   except Exception as e:
     errlog(f"Error: Downloading URL '{url}': {e}")
+    rmfile(file_name)
     return None
   except KeyboardInterrupt:
     rmfile(file_name)
