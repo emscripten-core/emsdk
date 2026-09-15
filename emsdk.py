@@ -770,7 +770,7 @@ def get_git_remotes(repo_path):
 
 def git_clone(url, dstpath, branch, remote_name='origin'):
   debug_print(f'git_clone(url={url}, dstpath={dstpath})')
-  if os.path.isdir(os.path.join(dstpath, '.git')):
+  if os.path.exists(os.path.join(dstpath, '.git')):
     remotes = get_git_remotes(dstpath)
     if remote_name in remotes:
       debug_print(f'Repository {url} with remote "{remote_name}" already cloned to directory {dstpath}, skipping.')
