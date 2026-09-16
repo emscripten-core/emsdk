@@ -78,7 +78,7 @@ def make_python_patch():
     check_call([python_exe, '-m', 'pip', 'install', PSUTIL])
 
     check_call([*zip_cmd(), os.path.join('..', '..', out_filename), '.'], cwd=src_dir)
-    print('Created: %s' % out_filename)
+    print(f'Created: {out_filename}')
 
     # cleanup if everything went fine
     shutil.rmtree('python-nuget')
@@ -154,19 +154,19 @@ def build_python():
     # process quits.
     check_call([pybin, pip, 'install', PSUTIL])
 
-    dirname = 'python-%s-%s' % (version, revision)
+    dirname = f'python-{version}-{revision}'
     if os.path.isdir(dirname):
         print('Erasing old build directory ' + dirname)
         shutil.rmtree(dirname)
     os.rename(os.path.join(install_dir, 'usr', 'local'), dirname)
-    tarball = 'python-%s-%s-%s.tar.gz' % (version, revision, osname)
+    tarball = f'python-{version}-{revision}-{osname}.tar.gz'
     shutil.rmtree(os.path.join(dirname, 'lib', 'python' + major_minor_version, 'test'))
     shutil.rmtree(os.path.join(dirname, 'include'))
     for lib in glob.glob(os.path.join(dirname, 'lib', 'lib*.a')):
         os.remove(lib)
     check_call(['tar', 'zcvf', tarball, dirname])
 
-    print('Created: %s' % tarball)
+    print(f'Created: {tarball}')
     if '--upload' in sys.argv:
       print('Uploading: ' + upload_base + tarball)
       check_call(['gsutil', 'cp', '-n', tarball, upload_base + tarball])

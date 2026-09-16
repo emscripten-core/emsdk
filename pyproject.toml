@@ -47,16 +47,8 @@ lint.ignore = [
   "subprocess-run-without-check",
   "unspecified-encoding",
   "unraw-re-pattern", # https://docs.astral.sh/ruff/rules/unraw-re-pattern/
-  "format-literals", # TODO
-  "printf-string-formatting", # TODO
-  "f-string", # TODO
   "too-many-statements-in-try-clause",
 ]
 lint.mccabe.max-complexity = 41 # Recommended: 10
-lint.pylint.allow-magic-value-types = [
-  "bytes",
-  "float",
-  "int",
-  "str",
-]
+lint.pylint.allow-magic-value-types = [ "int", "str" ]
 lint.pylint.max-branches = 29 # Recommended: 12

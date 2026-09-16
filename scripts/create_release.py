@@ -48,7 +48,7 @@ def main():
   else:
     new_hash = emsdk.get_emscripten_releases_tot()
 
-  print('Creating new release: %s -> %s' % (new_version, new_hash))
+  print(f'Creating new release: {new_version} -> {new_hash}')
   release_info['releases'][new_version] = new_hash
   if asserts_hash:
     asserts_name = new_version + '-asserts'
@@ -80,7 +80,7 @@ def main():
     # Create auto-generated changes to the new git branch
     subprocess.check_call(['git', 'add', '-u', '.'], cwd=root_dir)
     subprocess.check_call(['git', 'commit', '-m', new_version], cwd=root_dir)
-    print('New release created in branch: `%s`' % branch_name)
+    print(f'New release created in branch: `{branch_name}`')
 
     # Push new branch to origin
     subprocess.check_call(['git', 'push', 'origin', branch_name], cwd=root_dir)
