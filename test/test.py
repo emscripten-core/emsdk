@@ -275,6 +275,29 @@ int main() {
         f.write(old_ver)
       run_emsdk('activate 6.0.3')
 
+  def test_activated_migration(self):
+    print('test migration from .emscripten to activated.json')
+    activated_json = os.path.abspath('activated.json')
+    if os.path.exists(activated_json):
+      os.remove(activated_json)
+
+    run_emsdk('install 6.0.3')
+    run_emsdk('activate 6.0.3')
+
+    # Remove activated.json to force migration from .emscripten
+    self.assertTrue(os.path.exists(activated_json))
+    os.remove(activated_json)
+
+    # Re-running emsdk list should populate activated.json from .emscripten
+    checked_call_with_output(emsdk + ' list', expected='INSTALLED')
+    self.assertTrue(os.path.exists(activated_json))
+    with open(activated_json) as f:
+      data = json.load(f)
+    self.assertIn('active_tools', data)
+    for t in data['active_tools']:
+      print('active:', t)
+    self.assertIn('node-24.19.0-64bit', data['active_tools'])
+
   def test_lib_building(self):
     print('building proper system libraries')
     do_lib_building(upstream_emcc())
