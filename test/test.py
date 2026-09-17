@@ -40,13 +40,13 @@ def copy_emsdk_to(targetdir):
 def check_call(cmd, **kwargs):
   if type(cmd) is not list:
     cmd = cmd.split()
-  print('running: %s' % cmd)
+  print(f'running: {cmd}')
   subprocess.run(cmd, check=True, text=True, **kwargs)
 
 
 def checked_call_with_output(cmd, expected=None, unexpected=None, stderr=None, env=None):
   cmd = cmd.split(' ')
-  print('running: %s' % cmd)
+  print(f'running: {cmd}')
   try:
     stdout = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=stderr, check=True, text=True, env=env).stdout
   except subprocess.CalledProcessError as e:
@@ -70,7 +70,7 @@ def failing_call_with_output(cmd, expected, env=None):
     print('warning: skipping part of failing_call_with_output() due to error codes not being propagated (see #592)')
   else:
     assert proc.returncode, 'call must have failed: ' + str([stdout, '\n========\n', stderr])
-  assert expected in stdout or expected in stderr, 'call did not have the expected output: %s: %s' % (expected, str([stdout, '\n========\n', stderr]))
+  assert expected in stdout or expected in stderr, 'call did not have the expected output: {}: {}'.format(expected, str([stdout, '\n========\n', stderr]))
 
 
 def hack_emsdk(marker, replacement):
@@ -335,7 +335,7 @@ int main() {
     print('test 32-bit error')
     emsdk_hacked = hack_emsdk('not is_os_64bit()', 'True')
     self.addCleanup(remove_file, emsdk_hacked)
-    failing_call_with_output('%s %s install latest' % (sys.executable, emsdk_hacked),
+    failing_call_with_output(f'{sys.executable} {emsdk_hacked} install latest',
                              'this tool is only provided for 64-bit OSes')
 
   def test_update_no_git(self):

@@ -31,7 +31,7 @@ if any(' ' in a for a in param_file_args):
   with open(new_param_filename, 'w') as f:
     for param in param_file_args:
       if ' ' in param:
-        f.write('"%s"' % param)
+        f.write(f'"{param}"')
       else:
         f.write(param)
       f.write('\n')
@@ -116,7 +116,7 @@ if os.path.exists(wasm_base + '.debug.wasm') and os.path.exists(wasm_base):
 
     # Next we need to convert length of the filename to LEB128.
     # Start by converting the length of the filename to a bit string.
-    bit_string = '{0:b}'.format(len(base_name + '.wasm.debug.wasm'))
+    bit_string = f"{len(base_name + '.wasm.debug.wasm'):b}"
 
     # Pad the bit string with 0s so that its length is a multiple of 7.
     while len(bit_string) % 7 != 0:

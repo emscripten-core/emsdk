@@ -49,7 +49,7 @@ def main():
     if args.allow_empty_outputs:
       ensure(output)
     else:
-      print("[ERROR] Archive does not contain file with extname: %s" % extname)
+      print(f"[ERROR] Archive does not contain file with extname: {extname}")
 
 
 if __name__ == '__main__':

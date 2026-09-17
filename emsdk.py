@@ -72,7 +72,7 @@ def errlog(msg):
 
 
 def exit_with_error(msg):
-  errlog('error: %s' % msg)
+  errlog(f'error: {msg}')
   sys.exit(1)
 
 
@@ -255,7 +255,7 @@ def vswhere(version):
   try:
     # The "-products *" allows detection of Build Tools, the "-prerelease" allows detection of Preview version
     # of Visual Studio and Build Tools.
-    stdout = run_get_output([vswhere_path, '-latest', '-products', '*', '-prerelease', '-version', '[%s.0,%s.0)' % (version, version + 1), '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.' + tools_arch, '-property', 'installationPath', '-format', 'json'])
+    stdout = run_get_output([vswhere_path, '-latest', '-products', '*', '-prerelease', '-version', f'[{version}.0,{version + 1}.0)', '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.' + tools_arch, '-property', 'installationPath', '-format', 'json'])
     json_output = json.loads(stdout)
     return str(json_output[0]['installationPath'])
   except Exception:
@@ -647,7 +647,7 @@ def get_download_target(url, dstpath, filename_prefix=''):
 
 
 def download_with_curl(url, file_name):
-  print("Downloading: %s from %s" % (file_name, url))
+  print(f"Downloading: {file_name} from {url}")
   if not shutil.which('curl'):
     exit_with_error('curl not found in PATH')
   # -#: show progress bar
@@ -660,9 +660,9 @@ def download_with_urllib(url, file_name):
   u = urlopen(url)
   file_size = get_content_length(u)
   if file_size > 0:
-    print("Downloading: %s from %s, %s Bytes" % (file_name, url, file_size))
+    print(f"Downloading: {file_name} from {url}, {file_size} Bytes")
   else:
-    print("Downloading: %s from %s" % (file_name, url))
+    print(f"Downloading: {file_name} from {url}")
 
   file_size_dl = 0
   # Draw a progress bar 80 chars wide (in non-TTY mode)
@@ -683,7 +683,7 @@ def download_with_urllib(url, file_name):
         if file_size:
             percent = file_size_dl * 100.0 / file_size
             if TTY_OUTPUT:
-                status = r" %10d  [%3.02f%%]" % (file_size_dl, percent)
+                status = f' {file_size_dl:10d}  [{percent:3.02f}%]'
                 print(status, end='\r')
             else:
                 while progress_shown < progress_max * percent / 100:
@@ -695,7 +695,7 @@ def download_with_urllib(url, file_name):
     print(']')
     sys.stdout.flush()
 
-  debug_print('finished downloading (%d bytes)' % file_size_dl)
+  debug_print(f'finished downloading ({file_size_dl} bytes)')
 
 
 def download_file(url, dstpath, filename_prefix=''):
@@ -1217,11 +1217,11 @@ def build_ccache(tool):
           os.chmod(dst, os.stat(dst).st_mode | stat.S_IEXEC)
 
     cache_dir = os.path.join(root, 'cache')
-    write_file(os.path.join(root, 'emcc_ccache.conf'), '''\
+    write_file(os.path.join(root, 'emcc_ccache.conf'), f'''\
 # Set maximum cache size to 10 GB:
 max_size = 10G
-cache_dir = %s
-''' % cache_dir)
+cache_dir = {cache_dir}
+''')
     mkdir_p(cache_dir)
 
   return success
@@ -1464,7 +1464,7 @@ def emscripten_install(tool):
       subprocess.check_call([sys.executable, os.path.join(directory, 'bootstrap.py')],
                             cwd=directory, stdin=subprocess.DEVNULL, env=env, text=True)
     except subprocess.CalledProcessError as e:
-      errlog('Error running %s' % str(e))
+      errlog(f'Error running {e!s}')
       return False
 
     print('Done running: Emscripten bootstrap')
@@ -1803,9 +1803,9 @@ def generate_em_config(active_tools, permanently_activate, system):
       print('    ' + p)
     print('- This can be done for the current shell by running:')
     emsdk_env, shell_config_file = get_emsdk_shell_env_configs()
-    print('    source "%s"' % emsdk_env)
+    print(f'    source "{emsdk_env}"')
     print('- Configure emsdk in your shell startup scripts by running:')
-    print('    echo \'source "%s"\' >> %s' % (emsdk_env, shell_config_file))
+    print(f'    echo \'source "{emsdk_env}"\' >> {shell_config_file}')
 
 
 class Tool:
@@ -2254,20 +2254,20 @@ def resolve_sdk_aliases(name, verbose=False):
   releases_info = load_releases_info()
   while name in releases_info['aliases']:
     if verbose:
-      print("Resolving SDK alias '%s' to '%s'" % (name, releases_info['aliases'][name]))
+      print(f"Resolving SDK alias '{name}' to '{releases_info['aliases'][name]}'")
     name = releases_info['aliases'][name]
   return name
 
 
 def find_latest_sdk():
-  return 'sdk-releases-%s-64bit' % (find_latest_hash())
+  return f'sdk-releases-{find_latest_hash()}-64bit'
 
 
 def find_tot_sdk():
   debug_print('Fetching emscripten-releases repository...')
   global extra_release_tag
   extra_release_tag = get_emscripten_releases_tot()
-  return 'sdk-releases-%s-64bit' % (extra_release_tag)
+  return f'sdk-releases-{extra_release_tag}-64bit'
 
 
 def parse_emscripten_version(emscripten_root):
@@ -2567,7 +2567,7 @@ def process_tool_list(tools_to_activate):
 
   for tool in tools_to_activate:
     if not tool.is_installed():
-      exit_with_error("error: tool is not installed and therefore cannot be activated: '%s'" % tool)
+      exit_with_error(f"error: tool is not installed and therefore cannot be activated: '{tool}'")
 
   # Remove conflicting tools
   i = 0
@@ -2765,15 +2765,15 @@ def construct_env(tools_to_activate, system, user):
 
 def unset_env(key):
   if POWERSHELL:
-    return 'Remove-Item env:%s -ErrorAction SilentlyContinue\n' % key
+    return f'Remove-Item env:{key} -ErrorAction SilentlyContinue\n'
   if CMD:
-    return 'set %s=\n' % key
+    return f'set {key}=\n'
   if CSH:
-    return 'unsetenv %s;\n' % key
+    return f'unsetenv {key};\n'
   if FISH:
-    return 'set -e %s;\n' % key
+    return f'set -e {key};\n'
   if BASH:
-    return 'unset %s;\n' % key
+    return f'unset {key};\n'
   assert False
 
 
@@ -2818,7 +2818,7 @@ def construct_env_with_vars(env_vars_to_add):
   for key in os.environ:
     if key.startswith('EMSDK_') or key in {'EM_CACHE', 'EM_CONFIG'}:
       if key not in env_keys_to_add and key not in ignore_keys:
-        info('Clearing existing environment variable: %s' % key)
+        info(f'Clearing existing environment variable: {key}')
         env_string += unset_env(key)
 
   return env_string
@@ -2826,9 +2826,9 @@ def construct_env_with_vars(env_vars_to_add):
 
 def error_on_missing_tool(name):
   if name.endswith('-64bit') and not is_os_64bit():
-    exit_with_error("'%s' is only provided for 64-bit OSes" % name)
+    exit_with_error(f"'{name}' is only provided for 64-bit OSes")
   else:
-    exit_with_error("tool or SDK not found: '%s'" % name)
+    exit_with_error(f"tool or SDK not found: '{name}'")
 
 
 def expand_sdk_name(name, activating):
@@ -2846,7 +2846,7 @@ def expand_sdk_name(name, activating):
       installed = get_installed_sdk_version()
       if installed:
         debug_print('activating currently installed SDK; not updating tot version')
-        return 'sdk-releases-%s-64bit' % installed
+        return f'sdk-releases-{installed}-64bit'
     return find_tot_sdk()
 
   if '-upstream' in name:
@@ -2866,14 +2866,14 @@ def expand_sdk_name(name, activating):
   release_hash = get_release_hash(version, releases_info)
   if release_hash:
     # Known release hash
-    full_name = '%sreleases-%s-64bit' % (sdk, release_hash)
-    print("Resolving SDK version '%s' to '%s'" % (version, full_name))
+    full_name = f'{sdk}releases-{release_hash}-64bit'
+    print(f"Resolving SDK version '{version}' to '{full_name}'")
     return full_name
 
   if len(version) == 40:
     global extra_release_tag
     extra_release_tag = version
-    return '%sreleases-%s-64bit' % (sdk, version)
+    return f'{sdk}releases-{version}-64bit'
 
   return name
 
@@ -2883,7 +2883,7 @@ def main(args):  # ruff: ignore[complex-structure, too-many-return-statements, t
     errlog("Missing command; Type 'emsdk help' to get a list of commands.")
     return 1
 
-  debug_print('emsdk.py running under `%s`' % sys.executable)
+  debug_print(f'emsdk.py running under `{sys.executable}`')
   cmd = args.pop(0)
 
   if cmd in {'help', '--help', '-h'}:
@@ -3108,13 +3108,13 @@ def main(args):  # ruff: ignore[complex-structure, too-many-return-statements, t
       return 'INSTALLED' if sdk and sdk.is_installed() else ''
 
     if (LINUX or MACOS or WINDOWS) and ARCH in {'x86', 'x86_64'}:
-      print('The *recommended* precompiled SDK download is %s (%s).' % (find_latest_version(), find_latest_hash()))
+      print(f'The *recommended* precompiled SDK download is {find_latest_version()} ({find_latest_hash()}).')
       print()
       print('To install/activate it use:')
       print('         latest')
       print('')
       print('This is equivalent to installing/activating:')
-      print('         %s             %s' % (find_latest_version(), installed_sdk_text(find_latest_sdk())))
+      print(f'         {find_latest_version()}             {installed_sdk_text(find_latest_sdk())}')
       print('')
     else:
       print('Warning: your platform does not have precompiled SDKs available.')
@@ -3125,7 +3125,8 @@ def main(args):  # ruff: ignore[complex-structure, too-many-return-statements, t
     releases_versions = sorted(load_releases_versions(), key=version_key, reverse=True)
     releases_info = load_releases_info()['releases']
     for ver in releases_versions:
-      print('         %s    %s' % (ver, installed_sdk_text('sdk-releases-%s-64bit' % get_release_hash(ver, releases_info))))
+      sdk_name = f'sdk-releases-{get_release_hash(ver, releases_info)}-64bit'
+      print(f'         {ver}    {installed_sdk_text(sdk_name)}')
     print()
 
     # Use array to work around the lack of being able to mutate from enclosing
@@ -3146,10 +3147,10 @@ def main(args):  # ruff: ignore[complex-structure, too-many-return-statements, t
         for sdk in s:
           installed = '\tINSTALLED' if sdk.is_installed() else ''
           active = '*' if sdk.is_active() else ' '
-          print('    ' + active + '    {0: <25}'.format(str(sdk)) + installed)
+          print(f'    {active}    {sdk!s: <25}{installed}')
           if arg_deps:
             for dep in sdk.deps:
-              print('          - {0: <25}'.format(dep))
+              print(f'          - {dep: <25}')
         print('')
       print('The additional following precompiled SDKs are also available for download:')
       print_sdks(find_sdks(False))
@@ -3185,7 +3186,7 @@ def main(args):  # ruff: ignore[complex-structure, too-many-return-statements, t
             has_partially_active_tools[0] = has_partially_active_tools[0] or True
           else:
             active = '   '
-          print('    ' + active + '    {0: <25}'.format(str(tool)) + installed)
+          print(f'    {active}    {tool!s: <25}{installed}')
         print('')
 
       print('The following precompiled tool packages are available for download:')

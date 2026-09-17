@@ -38,7 +38,7 @@ def main():
   args = parser.parse_args()
 
   for suffix in suffixes:
-    filename = 'node-v%s%s' % (version, suffix)
+    filename = f'node-v{version}{suffix}'
     download_url = base + filename
     print('Downloading: ' + download_url)
     urllib.request.urlretrieve(download_url, filename)
