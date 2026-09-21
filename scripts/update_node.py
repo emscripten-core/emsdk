@@ -33,24 +33,24 @@ suffixes = [
 
 
 def main():
-  parser = argparse.ArgumentParser(description=__doc__)
-  parser.add_argument('--upload', action='store_true', help='Upload binaries to Google Cloud Storage')
-  args = parser.parse_args()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--upload', action='store_true', help='Upload binaries to Google Cloud Storage')
+    args = parser.parse_args()
 
-  for suffix in suffixes:
-    filename = f'node-v{version}{suffix}'
-    download_url = base + filename
-    print('Downloading: ' + download_url)
-    urllib.request.urlretrieve(download_url, filename)
+    for suffix in suffixes:
+        filename = f'node-v{version}{suffix}'
+        download_url = base + filename
+        print('Downloading: ' + download_url)
+        urllib.request.urlretrieve(download_url, filename)
 
-    if args.upload:
-      upload_url = upload_base + filename
-      print('Uploading: ' + upload_url)
-      cmd = ['gsutil', 'cp', '-n', filename, upload_url]
-      print(' '.join(cmd))
-      subprocess.check_call(cmd)
-      os.remove(filename)
+        if args.upload:
+            upload_url = upload_base + filename
+            print('Uploading: ' + upload_url)
+            cmd = ['gsutil', 'cp', '-n', filename, upload_url]
+            print(' '.join(cmd))
+            subprocess.check_call(cmd)
+            os.remove(filename)
 
 
 if __name__ == '__main__':
-  main()
+    main()
