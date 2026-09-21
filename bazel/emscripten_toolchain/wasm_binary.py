@@ -17,43 +17,43 @@ import tarfile
 
 
 def ensure(f):
-  if not os.path.exists(f):
-    with open(f, 'w'):
-      pass
+    if not os.path.exists(f):
+        with open(f, 'w'):
+            pass
 
 
 def main():
-  parser = argparse.ArgumentParser()
-  parser.add_argument('--archive', help='The archive to extract from.')
-  parser.add_argument('--outputs',
-                      help='Comma separated list of files that should be extracted '
-                           'from the archive. Only the extname has to match a file in the archive.')
-  parser.add_argument('--allow_empty_outputs',
-                      help='If an output listed in --outputs does not exist, create it anyways.', action='store_true')
-  args = parser.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--archive', help='The archive to extract from.')
+    parser.add_argument('--outputs',
+                        help='Comma separated list of files that should be extracted '
+                             'from the archive. Only the extname has to match a file in the archive.')
+    parser.add_argument('--allow_empty_outputs',
+                        help='If an output listed in --outputs does not exist, create it anyways.', action='store_true')
+    args = parser.parse_args()
 
-  args.archive = os.path.normpath(args.archive)
-  args.outputs = args.outputs.split(",")
+    args.archive = os.path.normpath(args.archive)
+    args.outputs = args.outputs.split(",")
 
-  tar = tarfile.open(args.archive)
+    tar = tarfile.open(args.archive)
 
-  for member in tar.getmembers():
-    extname = '.' + member.name.split('.', 1)[1]
-    for idx, output in enumerate(args.outputs):
-      if output.endswith(extname):
-        member_file = tar.extractfile(member)
-        with open(output, "wb") as output_file:
-          output_file.write(member_file.read())
-        args.outputs.pop(idx)
-        break
+    for member in tar.getmembers():
+        extname = '.' + member.name.split('.', 1)[1]
+        for idx, output in enumerate(args.outputs):
+            if output.endswith(extname):
+                member_file = tar.extractfile(member)
+                with open(output, "wb") as output_file:
+                    output_file.write(member_file.read())
+                args.outputs.pop(idx)
+                break
 
-  for output in args.outputs:
-    extname = '.' + output.split('.', 1)[1]
-    if args.allow_empty_outputs:
-      ensure(output)
-    else:
-      print(f"[ERROR] Archive does not contain file with extname: {extname}")
+    for output in args.outputs:
+        extname = '.' + output.split('.', 1)[1]
+        if args.allow_empty_outputs:
+            ensure(output)
+        else:
+            print(f"[ERROR] Archive does not contain file with extname: {extname}")
 
 
 if __name__ == '__main__':
-  main()
+    main()
