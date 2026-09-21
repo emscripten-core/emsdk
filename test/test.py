@@ -368,7 +368,8 @@ int main() {
 
   def test_activate_missing(self):
     run_emsdk('install latest')
-    failing_call_with_output(emsdk + ' activate 2.0.1', expected="error: tool is not installed and therefore cannot be activated: 'releases-13e29bd55185e3c12802bc090b4507901856b2ba-64bit'")
+    expected = "error: tool is not installed and therefore cannot be activated: 'releases-13e29bd55185e3c12802bc090b4507901856b2ba-64bit'"
+    failing_call_with_output(emsdk + ' activate 2.0.1', expected=expected)
 
   def test_keep_downloads(self):
     env = os.environ.copy()

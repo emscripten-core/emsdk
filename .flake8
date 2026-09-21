@@ -2,6 +2,7 @@
 extend-exclude =
   ./.*,
   ./binaryen,
+  ./ccache,
   ./clang,
   ./crunch,
   ./downloads,
@@ -21,4 +22,4 @@ extend-exclude =
 # E114: Indentation is not a multiple of four (comment)
 extend-ignore = E111, E114
 
-max-line-length = 326
+max-line-length = 160

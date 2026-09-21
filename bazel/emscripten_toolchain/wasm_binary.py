@@ -25,8 +25,11 @@ def ensure(f):
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--archive', help='The archive to extract from.')
-  parser.add_argument('--outputs', help='Comma separated list of files that should be extracted from the archive. Only the extname has to match a file in the archive.')
-  parser.add_argument('--allow_empty_outputs', help='If an output listed in --outputs does not exist, create it anyways.', action='store_true')
+  parser.add_argument('--outputs',
+                      help='Comma separated list of files that should be extracted '
+                           'from the archive. Only the extname has to match a file in the archive.')
+  parser.add_argument('--allow_empty_outputs',
+                      help='If an output listed in --outputs does not exist, create it anyways.', action='store_true')
   args = parser.parse_args()
 
   args.archive = os.path.normpath(args.archive)
