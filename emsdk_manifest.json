@@ -256,6 +256,16 @@
       "activated_cfg": "NODE_JS_TEST=['qemu-s390x', '-L', '/usr/s390x-linux-gnu/', '%installation_dir%/bin/node']"
     },
     {
+      "id": "node-big-endian-crosscompile",
+      "version": "22.16.0",
+      "arch": "s390x",
+      "bitness": 64,
+      "url_linux": "https://nodejs.org/download/release/v22.16.0/node-v22.16.0-linux-s390x.tar.gz",
+      "activated_path": "%installation_dir%/bin",
+      "activated_path_skip": "node",
+      "activated_cfg": "NODE_JS_TEST=['qemu-s390x', '-L', '/usr/s390x-linux-gnu/', '%installation_dir%/bin/node']"
+    },
+    {
       "id": "node",
       "version": "24.19.0",
       "bitness": 64,
@@ -288,9 +298,33 @@
       "activated_env_windows": "EMSDK_NODE=%installation_dir%/node.exe"
     },
     {
+      "id": "node",
+      "version": "24.19.0",
+      "arch": "s390x",
+      "bitness": 64,
+      "url_linux": "node-v24.19.0-linux-s390x.tar.xz",
+      "activated_path": "%installation_dir%/bin",
+      "activated_path_windows": "%installation_dir%",
+      "activated_path_skip": "node",
+      "activated_cfg": "NODE_JS='%installation_dir%/bin/node'",
+      "activated_cfg_windows": "NODE_JS='%installation_dir%/node.exe'",
+      "activated_env": "EMSDK_NODE=%installation_dir%/bin/node",
+      "activated_env_windows": "EMSDK_NODE=%installation_dir%/node.exe"
+    },
+    {
       "id": "node-big-endian-crosscompile",
       "version": "24.19.0",
       "arch": "x86_64",
+      "bitness": 64,
+      "url_linux": "node-v24.19.0-linux-s390x.tar.gz",
+      "activated_path": "%installation_dir%/bin",
+      "activated_path_skip": "node",
+      "activated_cfg": "NODE_JS_TEST=['qemu-s390x', '-L', '/usr/s390x-linux-gnu/', '%installation_dir%/bin/node']"
+    },
+    {
+      "id": "node-big-endian-crosscompile",
+      "version": "24.19.0",
+      "arch": "s390x",
       "bitness": 64,
       "url_linux": "node-v24.19.0-linux-s390x.tar.gz",
       "activated_path": "%installation_dir%/bin",
@@ -337,6 +371,17 @@
       "url_macos": "https://github.com/Kitware/CMake/releases/download/v4.2.0-rc3/cmake-4.2.0-rc3-macos-universal.tar.gz"
     },
     {
+      "id": "cmake",
+      "version": "4.2.0-rc3",
+      "bitness": 64,
+      "arch": "s390x",
+      "activated_cfg": "EMSDK_CMAKE='%installation_dir%/bin/cmake%.exe%'",
+      "activated_path": "%installation_dir%/bin",
+      "activated_cfg_macos": "EMSDK_CMAKE='%installation_dir%/CMake.app/Contents/bin/cmake%.exe%'",
+      "activated_path_macos": "%installation_dir%/CMake.app/Contents/bin",
+      "url_linux": "https://github.com/Kitware/CMake/releases/download/v4.2.0-rc3/cmake-4.2.0-rc3-linux-s390x.tar.gz"
+    },
+    {
       "id": "python",
       "version": "3.9.2-nuget",
       "bitness": 64,
@@ -368,6 +413,14 @@
     },
     {
       "id": "python",
+      "version": "3.9.2",
+      "bitness": 64,
+      "arch": "s390x",
+      "activated_cfg": "PYTHON='%installation_dir%/bin/python3'",
+      "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.9/site-packages/certifi/cacert.pem"
+    },
+    {
+      "id": "python",
       "version": "3.13.3",
       "bitness": 64,
       "arch": "x86_64",
@@ -385,6 +438,16 @@
       "arch": "arm64",
       "url_windows": "python-3.13.3-0-win-arm64.zip",
       "url_macos": "python-3.13.3-0-macos-arm64.tar.gz",
+      "activated_cfg_windows": "PYTHON='%installation_dir%/python.exe'",
+      "activated_env_windows": "EMSDK_PYTHON=%installation_dir%/python.exe",
+      "activated_cfg_macos": "PYTHON='%installation_dir%/bin/python3'",
+      "activated_env_macos": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.13/site-packages/certifi/cacert.pem"
+    },
+    {
+      "id": "python",
+      "version": "3.13.3",
+      "bitness": 64,
+      "arch": "s390x",
       "activated_cfg_windows": "PYTHON='%installation_dir%/python.exe'",
       "activated_env_windows": "EMSDK_PYTHON=%installation_dir%/python.exe",
       "activated_cfg_macos": "PYTHON='%installation_dir%/bin/python3'",
@@ -651,6 +714,15 @@
       "url_linux": "ninja-1.13.2-linux-aarch64.zip",
       "url_macos": "ninja-1.13.2-mac.zip",
       "arch": "arm64",
+      "activated_cfg": "NINJA_ROOT='%installation_dir%'",
+      "activated_path": "%installation_dir%"
+    },
+    {
+      "id": "ninja",
+      "version": "1.13.2",
+      "bitness": 64,
+      "url_linux": "ninja-1.13.2-linux-s390x.zip",
+      "arch": "s390x",
       "activated_cfg": "NINJA_ROOT='%installation_dir%'",
       "activated_path": "%installation_dir%"
     },
