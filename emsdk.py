@@ -145,6 +145,8 @@ if machine.startswith(('x64', 'amd64', 'x86_64')):
   ARCH = 'x86_64'
 elif machine.endswith('86'):
   ARCH = 'x86'
+elif machine.startswith('s390x'):
+  ARCH = 's390x'
 elif machine.startswith('aarch64') or machine.lower().startswith('arm64'):
   ARCH = 'arm64'
 elif machine.startswith('arm'):
