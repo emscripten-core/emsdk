@@ -84,11 +84,11 @@ def make_python_patch():
     shutil.rmtree('python-nuget')
 
     if '--upload' in sys.argv:
-      upload_url = upload_base + out_filename
-      print('Uploading: ' + upload_url)
-      cmd = ['gsutil', 'cp', '-n', out_filename, upload_url]
-      print(' '.join(cmd))
-      check_call(cmd)
+        upload_url = upload_base + out_filename
+        print('Uploading: ' + upload_url)
+        cmd = ['gsutil', 'cp', '-n', out_filename, upload_url]
+        print(' '.join(cmd))
+        check_call(cmd)
 
 
 def build_python():
@@ -121,22 +121,22 @@ def build_python():
 
     src_dir = 'cpython'
     if os.path.exists(src_dir):
-      check_call(['git', 'fetch'], cwd=src_dir)
+        check_call(['git', 'fetch'], cwd=src_dir)
     else:
-      check_call(['git', 'clone', 'https://github.com/python/cpython'])
+        check_call(['git', 'clone', 'https://github.com/python/cpython'])
     check_call(['git', 'checkout', 'v' + version], cwd=src_dir)
 
     env = os.environ
     if sys.platform.startswith('darwin'):
-      # Specify the min OS version we want the build to work on
-      min_macos_version_line = '-mmacosx-version-min=' + min_macos_version
-      build_flags = min_macos_version_line + ' -Werror=partial-availability'
-      # Build against latest SDK, but issue an error if using any API that would not work on the min OS version
-      env = env.copy()
-      env['MACOSX_DEPLOYMENT_TARGET'] = min_macos_version
-      configure_args = ['CFLAGS=' + build_flags, 'CXXFLAGS=' + build_flags, 'LDFLAGS=' + min_macos_version_line]
+        # Specify the min OS version we want the build to work on
+        min_macos_version_line = '-mmacosx-version-min=' + min_macos_version
+        build_flags = min_macos_version_line + ' -Werror=partial-availability'
+        # Build against latest SDK, but issue an error if using any API that would not work on the min OS version
+        env = env.copy()
+        env['MACOSX_DEPLOYMENT_TARGET'] = min_macos_version
+        configure_args = ['CFLAGS=' + build_flags, 'CXXFLAGS=' + build_flags, 'LDFLAGS=' + min_macos_version_line]
     else:
-      configure_args = []
+        configure_args = []
     check_call(['./configure', *configure_args], cwd=src_dir, env=env)
     check_call(['make', '-j', str(multiprocessing.cpu_count())], cwd=src_dir, env=env)
     check_call(['make', 'install', 'DESTDIR=install'], cwd=src_dir, env=env)
@@ -168,8 +168,8 @@ def build_python():
 
     print(f'Created: {tarball}')
     if '--upload' in sys.argv:
-      print('Uploading: ' + upload_base + tarball)
-      check_call(['gsutil', 'cp', '-n', tarball, upload_base + tarball])
+        print('Uploading: ' + upload_base + tarball)
+        check_call(['gsutil', 'cp', '-n', tarball, upload_base + tarball])
 
 
 def main():
@@ -181,4 +181,4 @@ def main():
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+    sys.exit(main())
