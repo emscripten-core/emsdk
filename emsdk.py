@@ -106,7 +106,8 @@ else:
       MINGW = True
     if msystem not in {'MSYS', 'MINGW64'}:
       # https://stackoverflow.com/questions/37460073/msys-vs-mingw-internal-environment-variables
-      errlog(f'Warning: MSYSTEM environment variable is present, and is set to "{msystem}". This shell has not been tested with emsdk and may not work.')
+      errlog(f'Warning: MSYSTEM environment variable is present, and is set to "{msystem}". '
+             'This shell has not been tested with emsdk and may not work.')
 
   if platform.mac_ver()[0]:
     MACOS = True
@@ -255,7 +256,10 @@ def vswhere(version):
   try:
     # The "-products *" allows detection of Build Tools, the "-prerelease" allows detection of Preview version
     # of Visual Studio and Build Tools.
-    stdout = run_get_output([vswhere_path, '-latest', '-products', '*', '-prerelease', '-version', f'[{version}.0,{version + 1}.0)', '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.' + tools_arch, '-property', 'installationPath', '-format', 'json'])
+    stdout = run_get_output([vswhere_path, '-latest', '-products', '*',
+                             '-prerelease', '-version', f'[{version}.0,{version + 1}.0)',
+                             '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.' + tools_arch,
+                             '-property', 'installationPath', '-format', 'json'])
     json_output = json.loads(stdout)
     return str(json_output[0]['installationPath'])
   except Exception:
@@ -331,7 +335,11 @@ def win_set_environment_variable_direct(key, value, system=True):
   except Exception as e:
     # 'Access is denied.'
     if e.args[3] == 5:
-      exit_with_error(f'failed to set the environment variable \'{key}\'! Setting environment variables permanently requires administrator access. Please rerun this command with administrative privileges. This can be done for example by holding down the Ctrl and Shift keys while opening a command prompt in start menu.')
+      exit_with_error(f"failed to set the environment variable '{key}'! "
+                      'Setting environment variables permanently requires administrator access. '
+                      'Please rerun this command with administrative privileges. '
+                      'This can be done for example by holding down the Ctrl and Shift keys '
+                      'while opening a command prompt in start menu.')
     errlog(f'Failed to write environment variable {key}:')
     errlog(str(e))
     return False
@@ -402,7 +410,9 @@ def win_set_environment_variable(key, value, system, user):
     # Escape % signs so that we don't expand references to environment variables.
     value = value.replace('%', '^%')
     if len(value) >= 1024:
-      exit_with_error(f'the new environment variable {key} is more than 1024 characters long! A value this long cannot be set via command line: please add the environment variable specified above to system environment manually via Control Panel.')
+      exit_with_error(f'the new environment variable {key} is more than 1024 characters long! '
+                      'A value this long cannot be set via command line: please add the environment variable '
+                      'specified above to system environment manually via Control Panel.')
     cmd = ['SETX', key, value]
     debug_print(str(cmd))
     retcode = subprocess.call(cmd, stdout=subprocess.PIPE)
@@ -514,7 +524,8 @@ def fix_potentially_long_windows_pathname(pathname):
   # Test if emsdk calls fix_potentially_long_windows_pathname() with long
   # relative paths (which is problematic)
   if not os.path.isabs(pathname) and len(pathname) > 200:
-    errlog(f'Warning: Seeing a relative path "{pathname}" which is dangerously long for being referenced as a short Windows path name. Refactor emsdk to be able to handle this!')
+    errlog(f'Warning: Seeing a relative path "{pathname}" which is dangerously long '
+           'for being referenced as a short Windows path name. Refactor emsdk to be able to handle this!')
   if pathname.startswith('\\\\?\\'):
     return pathname
   pathname = os.path.normpath(pathname.replace('/', '\\'))
@@ -742,7 +753,7 @@ def GIT():
     if WINDOWS:
       msg += "This can be done from http://git-scm.com/"
     elif MACOS:
-      msg += "This can be done from http://git-scm.com/, or by installing XCode and then the XCode Command Line Tools (see http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools )"
+      msg += "This can be done from http://git-scm.com/, or by installing XCode and then the XCode Command Line Tools"
     elif LINUX:
       msg += "This can be probably be done using your package manager, see http://git-scm.com/book/en/Getting-Started-Installing-Git"
     exit_with_error(msg)
@@ -982,7 +993,8 @@ def read_file(filename):
 
 
 def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_args):
-  debug_print(f'cmake_configure(generator={generator}, build_root={build_root}, src_root={src_root}, build_type={build_type}, extra_cmake_args={extra_cmake_args})')
+  debug_print(f'cmake_configure(generator={generator}, build_root={build_root}, '
+              f'src_root={src_root}, build_type={build_type}, extra_cmake_args={extra_cmake_args})')
   # Configure
   if not os.path.isdir(build_root):
     # Create build output directory if it doesn't yet exist.
@@ -1104,7 +1116,7 @@ def build_llvm(tool):
   # Configure
   tests_arg = 'ON' if BUILD_FOR_TESTING else 'OFF'
 
-  enable_assertions = ENABLE_LLVM_ASSERTIONS.lower() == 'on' or (ENABLE_LLVM_ASSERTIONS == 'auto' and build_type.lower() != 'release' and build_type.lower() != 'minsizerel')
+  enable_assertions = ENABLE_LLVM_ASSERTIONS.lower() == 'on' or (ENABLE_LLVM_ASSERTIONS == 'auto' and build_type.lower() not in {'release', 'minsizerel'})
 
   if ARCH in {'x86', 'x86_64'}:
     targets_to_build = 'WebAssembly;X86'
@@ -2150,7 +2162,8 @@ class Tool:
     # Sanity check that the installation succeeded, and if so, remove unneeded
     # leftover installation files.
     if not self.is_installed(skip_version_check=True):
-      exit_with_error(f"installation of '{self}' failed, but no error was detected. Either something went wrong with the installation, or this may indicate an internal emsdk error.")
+      exit_with_error(f"installation of '{self}' failed, but no error was detected. "
+                      "Either something went wrong with the installation, or this may indicate an internal emsdk error.")
 
     self.cleanup_temp_install_files()
     self.update_installed_version()
@@ -2344,7 +2357,9 @@ def is_emsdk_sourced_from_github():
 
 def update_emsdk():
   if is_emsdk_sourced_from_github():
-    errlog('You seem to have bootstrapped Emscripten SDK by cloning from GitHub. In this case, use "git pull" instead of "emsdk update" to update emsdk. (Not doing that automatically in case you have local changes)')
+    errlog('You seem to have bootstrapped Emscripten SDK by cloning from GitHub. '
+           'In this case, use "git pull" instead of "emsdk update" to update emsdk. '
+           '(Not doing that automatically in case you have local changes)')
     sys.exit(1)
   if not download_and_extract(emsdk_zip_download_url, EMSDK_PATH, clobber=False):
     sys.exit(1)
@@ -2836,7 +2851,9 @@ def expand_sdk_name(name, activating):
     errlog('upstream-master SDK has been renamed main')
     name = name.replace('upstream-master', 'main')
   if 'fastcomp' in name:
-    exit_with_error('the fastcomp backend is no longer supported.  Please use an older version of emsdk (for example 3.1.29) if you want to install the old fastcomp-based SDK')
+    exit_with_error('the fastcomp backend is no longer supported. '
+                    'Please use an older version of emsdk (for example 3.1.29) '
+                    'if you want to install the old fastcomp-based SDK')
   if name in {'tot', 'sdk-tot', 'tot-upstream'}:
     if activating:
       # When we are activating a tot release, assume that the currently
@@ -3203,7 +3220,10 @@ def main(args):  # ruff: ignore[complex-structure, too-many-return-statements, t
     print('Items marked with * are activated for the current user.')
     if has_partially_active_tools[0]:
       env_cmd = 'emsdk_env.bat' if WINDOWS else 'source ./emsdk_env.sh'
-      print(f'Items marked with (*) are selected for use, but your current shell environment is not configured to use them. Type "{env_cmd}" to set up your current shell to use them' + (', or call "emsdk activate --permanent <name_of_sdk>" to permanently activate them.' if WINDOWS else '.'))
+      print('Items marked with (*) are selected for use, '
+            'but your current shell environment is not configured to use them. '
+            f'Type "{env_cmd}" to set up your current shell to use them' +
+            (', or call "emsdk activate --permanent <name_of_sdk>" to permanently activate them.' if WINDOWS else '.'))
     if not arg_old:
       print('')
       print("To access the historical archived versions, type 'emsdk list --old'")
@@ -3264,7 +3284,9 @@ def main(args):  # ruff: ignore[complex-structure, too-many-return-statements, t
       errlog('No tools/SDKs found to activate! Usage:\n   emsdk activate tool/sdk1 [tool/sdk2] [...]')
       return 1
     if WINDOWS and not arg_permanent:
-      errlog('The changes made to environment variables only apply to the currently running shell instance. Use the \'emsdk_env.bat\' to re-enter this environment later, or if you\'d like to register this environment permanently, rerun this command with the option --permanent.')
+      errlog('The changes made to environment variables only apply to the currently running shell instance. '
+             'Use the \'emsdk_env.bat\' to re-enter this environment later, '
+             'or if you\'d like to register this environment permanently, rerun this command with the option --permanent.')
     return 0
   elif cmd == 'install':
     global BUILD_FOR_TESTING, ENABLE_LLVM_ASSERTIONS, CPU_CORES, GIT_CLONE_SHALLOW
@@ -3293,7 +3315,9 @@ def main(args):  # ruff: ignore[complex-structure, too-many-return-statements, t
         args[i] = ''
     args = [x for x in args if x]
     if not args:
-      errlog("Missing parameter. Type 'emsdk install <tool name>' to install a tool or an SDK. Type 'emsdk list' to obtain a list of available tools. Type 'emsdk install latest' to automatically install the newest version of the SDK.")
+      errlog("Missing parameter. Type 'emsdk install <tool name>' to install a tool or an SDK. "
+             "Type 'emsdk list' to obtain a list of available tools. "
+             "Type 'emsdk install latest' to automatically install the newest version of the SDK.")
       return 1
 
     if LINUX and ARCH == 'arm64' and args != ['latest']:
