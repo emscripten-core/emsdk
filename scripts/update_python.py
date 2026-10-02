@@ -99,10 +99,8 @@ def build_python():
         check_call(['brew', 'install', 'openssl', 'xz', 'pkg-config'])
         if platform.machine() == 'x86_64':
             prefix = '/usr/local'
-            min_macos_version = '11.0'
         elif platform.machine() == 'arm64':
             prefix = '/opt/homebrew'
-            min_macos_version = '11.0'
 
         # Append '-x86_64' or '-arm64' depending on current arch. (TODO: Do
         # this for Linux too, move this below?)
@@ -129,6 +127,7 @@ def build_python():
     env = os.environ
     if sys.platform.startswith('darwin'):
       # Specify the min OS version we want the build to work on
+      min_macos_version = '11.0'
       min_macos_version_line = '-mmacosx-version-min=' + min_macos_version
       build_flags = min_macos_version_line + ' -Werror=partial-availability'
       # Build against latest SDK, but issue an error if using any API that would not work on the min OS version
