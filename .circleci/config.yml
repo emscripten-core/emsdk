@@ -16,6 +16,8 @@ executors:
     macos:
       # Corresponds to macOS 14.3.1
       # See https://circleci.com/docs/guides/execution-managed/using-macos/#supported-xcode-versions
+      # Note that we still build our binaries targeting an older version (currently MacOS 11) but
+      # CI providers do not support OS versions that old.
       xcode: "15.4.0"
     resource_class: m4pro.medium
   linux_arm64:
