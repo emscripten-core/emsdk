@@ -336,10 +336,6 @@ def _impl(ctx):
             implies = ["crosstool_cpu_" + target_cpu],
         ),
         feature(
-            name = "crosstool_cpu_asmjs",
-            provides = ["variant:crosstool_cpu"],
-        ),
-        feature(
             name = "crosstool_cpu_wasm",
             provides = ["variant:crosstool_cpu"],
         ),
@@ -557,11 +553,6 @@ def _impl(ctx):
         ),
 
         # Emscripten-specific settings:
-        flag_set(
-            actions = all_compile_actions + all_link_actions,
-            flags = ["-sWASM=0"],
-            features = ["crosstool_cpu_asmjs"],
-        ),
         flag_set(
             actions = all_link_actions,
             flags = ["-sEXIT_RUNTIME"],
@@ -1154,7 +1145,7 @@ def _impl(ctx):
 emscripten_cc_toolchain_config_rule = rule(
     implementation = _impl,
     attrs = {
-        "cpu": attr.string(mandatory = True, values = ["asmjs", "wasm"]),
+        "cpu": attr.string(mandatory = True, values = ["wasm"]),
         "em_config": attr.label(mandatory = True, allow_single_file = True),
         "emscripten_binaries": attr.label(mandatory = True, cfg = "exec"),
         "_exec_platform_info": attr.label(
