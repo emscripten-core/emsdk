@@ -1660,7 +1660,7 @@ def fetch_nightly_node_versions():
         debug_print('Unable to download Nightly Node.js versions!')
         return []
     try:
-        with open(nightly_index_file, 'r', encoding='utf-8') as f:
+        with open(nightly_index_file, encoding='utf-8') as f:
             html = f.read()
     finally:
         rmfile(nightly_index_file)
