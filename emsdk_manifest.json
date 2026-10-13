@@ -278,9 +278,9 @@
     "version": "4.2.0-rc3",
     "bitness": 64,
     "arch": "x86_64",
-    "activated_cfg": "EMSDK_CMAKE='%installation_dir%/bin/cmake%.exe%'",
+    "legacy_cfg": "EMSDK_CMAKE='%installation_dir%/bin/cmake%.exe%'",
     "activated_path": "%installation_dir%/bin",
-    "activated_cfg_macos": "EMSDK_CMAKE='%installation_dir%/CMake.app/Contents/bin/cmake%.exe%'",
+    "legacy_cfg_macos": "EMSDK_CMAKE='%installation_dir%/CMake.app/Contents/bin/cmake%.exe%'",
     "activated_path_macos": "%installation_dir%/CMake.app/Contents/bin",
     "url_windows": "https://github.com/Kitware/CMake/releases/download/v4.2.0-rc3/cmake-4.2.0-rc3-windows-x86_64.zip",
     "url_linux": "https://github.com/Kitware/CMake/releases/download/v4.2.0-rc3/cmake-4.2.0-rc3-linux-x86_64.tar.gz",
@@ -291,9 +291,9 @@
     "version": "4.2.0-rc3",
     "bitness": 64,
     "arch": "arm64",
-    "activated_cfg": "EMSDK_CMAKE='%installation_dir%/bin/cmake%.exe%'",
+    "legacy_cfg": "EMSDK_CMAKE='%installation_dir%/bin/cmake%.exe%'",
     "activated_path": "%installation_dir%/bin",
-    "activated_cfg_macos": "EMSDK_CMAKE='%installation_dir%/CMake.app/Contents/bin/cmake%.exe%'",
+    "legacy_cfg_macos": "EMSDK_CMAKE='%installation_dir%/CMake.app/Contents/bin/cmake%.exe%'",
     "activated_path_macos": "%installation_dir%/CMake.app/Contents/bin",
     "url_windows": "https://github.com/Kitware/CMake/releases/download/v4.2.0-rc3/cmake-4.2.0-rc3-windows-arm64.zip",
     "url_linux": "https://github.com/Kitware/CMake/releases/download/v4.2.0-rc3/cmake-4.2.0-rc3-linux-aarch64.tar.gz",
@@ -306,7 +306,7 @@
     "bitness": 64,
     "arch": "x86_64",
     "url_windows": "python-3.9.2-4-amd64+pywin32.zip",
-    "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
+    "legacy_cfg": "PYTHON='%installation_dir%/python.exe'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
   },
   {
@@ -316,9 +316,9 @@
     "arch": "x86_64",
     "url_windows": "python-3.9.2-1-embed-amd64+pywin32.zip",
     "url_macos": "python-3.9.2-3-macos-x86_64.tar.gz",
-    "activated_cfg_windows": "PYTHON='%installation_dir%/python.exe'",
+    "legacy_cfg_windows": "PYTHON='%installation_dir%/python.exe'",
     "activated_env_windows": "EMSDK_PYTHON=%installation_dir%/python.exe",
-    "activated_cfg_macos": "PYTHON='%installation_dir%/bin/python3'",
+    "legacy_cfg_macos": "PYTHON='%installation_dir%/bin/python3'",
     "activated_env_macos": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.9/site-packages/certifi/cacert.pem"
   },
   {
@@ -327,7 +327,7 @@
     "bitness": 64,
     "arch": "arm64",
     "url_macos": "python-3.9.2-1-macos-arm64.tar.gz",
-    "activated_cfg": "PYTHON='%installation_dir%/bin/python3'",
+    "legacy_cfg": "PYTHON='%installation_dir%/bin/python3'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.9/site-packages/certifi/cacert.pem"
   },
 
@@ -338,9 +338,9 @@
     "arch": "x86_64",
     "url_windows": "python-3.13.3-0-win-amd64.zip",
     "url_macos": "python-3.13.3-0-macos-x86_64.tar.gz",
-    "activated_cfg_windows": "PYTHON='%installation_dir%/python.exe'",
+    "legacy_cfg_windows": "PYTHON='%installation_dir%/python.exe'",
     "activated_env_windows": "EMSDK_PYTHON=%installation_dir%/python.exe",
-    "activated_cfg_macos": "PYTHON='%installation_dir%/bin/python3'",
+    "legacy_cfg_macos": "PYTHON='%installation_dir%/bin/python3'",
     "activated_env_macos": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.13/site-packages/certifi/cacert.pem"
   },
   {
@@ -350,9 +350,9 @@
     "arch": "arm64",
     "url_windows": "python-3.13.3-0-win-arm64.zip",
     "url_macos": "python-3.13.3-0-macos-arm64.tar.gz",
-    "activated_cfg_windows": "PYTHON='%installation_dir%/python.exe'",
+    "legacy_cfg_windows": "PYTHON='%installation_dir%/python.exe'",
     "activated_env_windows": "EMSDK_PYTHON=%installation_dir%/python.exe",
-    "activated_cfg_macos": "PYTHON='%installation_dir%/bin/python3'",
+    "legacy_cfg_macos": "PYTHON='%installation_dir%/bin/python3'",
     "activated_env_macos": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.13/site-packages/certifi/cacert.pem"
   },
 
@@ -361,7 +361,7 @@
     "version": "68.12.0esr",
     "bitness": 64,
     "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
-    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "legacy_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
     "activated_env": "EMTEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
     "custom_install_script": "download_firefox",
     "is_old": true
@@ -371,7 +371,7 @@
     "version": "78.15.0esr",
     "bitness": 64,
     "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
-    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "legacy_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
     "activated_env": "EMTEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
     "custom_install_script": "download_firefox",
     "is_old": true
@@ -381,7 +381,7 @@
     "version": "91.13.0esr",
     "bitness": 64,
     "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
-    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "legacy_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
     "activated_env": "EMTEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
     "custom_install_script": "download_firefox",
     "is_old": true
@@ -391,7 +391,7 @@
     "version": "102.15.1esr",
     "bitness": 64,
     "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
-    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "legacy_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
     "activated_env": "EMTEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
     "custom_install_script": "download_firefox",
     "is_old": true
@@ -401,7 +401,7 @@
     "version": "115.28.0esr",
     "bitness": 64,
     "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
-    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "legacy_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
     "activated_env": "EMTEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
     "custom_install_script": "download_firefox",
     "is_old": true
@@ -411,7 +411,7 @@
     "version": "128.14.0esr",
     "bitness": 64,
     "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
-    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "legacy_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
     "activated_env": "EMTEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
     "custom_install_script": "download_firefox"
   },
@@ -420,7 +420,7 @@
     "version": "140.3.1esr",
     "bitness": 64,
     "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
-    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "legacy_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
     "activated_env": "EMTEST_BROWSER=%installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
     "custom_install_script": "download_firefox"
   },
@@ -430,7 +430,7 @@
     "bitness": 64,
     "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
     "git_branch": "dummy field, to instruct emsdk to attempt to reinstall this tool even if it is installed, to check for new version",
-    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "legacy_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
     "activated_env": "EMTEST_BROWSER=%actual_installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
     "custom_install_script": "download_firefox",
     "custom_is_installed_script": "is_firefox_installed"
@@ -441,7 +441,7 @@
     "bitness": 64,
     "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
     "git_branch": "dummy field, to instruct emsdk to attempt to reinstall this tool even if it is installed, to check for new version",
-    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "legacy_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
     "activated_env": "EMTEST_BROWSER=%actual_installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
     "custom_install_script": "download_firefox",
     "custom_is_installed_script": "is_firefox_installed"
@@ -452,7 +452,7 @@
     "bitness": 64,
     "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
     "git_branch": "dummy field, to instruct emsdk to attempt to reinstall this tool even if it is installed, to check for new version",
-    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "legacy_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
     "activated_env": "EMTEST_BROWSER=%actual_installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
     "custom_install_script": "download_firefox",
     "custom_is_installed_script": "is_firefox_installed"
@@ -463,7 +463,7 @@
     "bitness": 64,
     "url": "downloaded via mozdownload script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
     "git_branch": "dummy field, to instruct emsdk to attempt to reinstall this tool even if it is installed, to check for new version",
-    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
+    "legacy_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
     "activated_env": "EMTEST_BROWSER=%actual_installation_dir%/%macos_app_bundle_prefix%firefox%.exe%",
     "custom_install_script": "download_firefox",
     "custom_is_installed_script": "is_firefox_installed"
@@ -596,7 +596,7 @@
     "version": "7.1.0",
     "bitness": 64,
     "url_windows": "mingw_7.1.0_64bit.zip",
-    "activated_cfg": "MINGW_ROOT='%installation_dir%'",
+    "legacy_cfg": "MINGW_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%/bin"
   },
   {
@@ -607,7 +607,7 @@
     "url_linux": "ninja-1.13.2-linux-x64.zip",
     "url_macos": "ninja-1.13.2-mac.zip",
     "arch": "x86_64",
-    "activated_cfg": "NINJA_ROOT='%installation_dir%'",
+    "legacy_cfg": "NINJA_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%"
   },
   {
@@ -618,7 +618,7 @@
     "url_linux": "ninja-1.13.2-linux-aarch64.zip",
     "url_macos": "ninja-1.13.2-mac.zip",
     "arch": "arm64",
-    "activated_cfg": "NINJA_ROOT='%installation_dir%'",
+    "legacy_cfg": "NINJA_ROOT='%installation_dir%'",
     "activated_path": "%installation_dir%"
   },
   {
@@ -627,7 +627,7 @@
     "bitness": 64,
     "url": "https://github.com/ninja-build/ninja.git",
     "git_branch": "release",
-    "activated_cfg": "NINJA=%installation_dir%/bin",
+    "legacy_cfg": "NINJA=%installation_dir%/bin",
     "activated_path": "%installation_dir%/bin",
     "cmake_build_type": "Release",
     "custom_install_script": "build_ninja"

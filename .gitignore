@@ -1,6 +1,9 @@
 *.pyc
 __pycache__
 
+# Track which tools are currently active
+/activated.json
+
 # Support for --embedded configs
 /.emscripten
 /.emscripten.old
