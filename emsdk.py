@@ -1655,8 +1655,15 @@ def find_emscripten_root(active_tools):
 
 def fetch_nightly_node_versions():
     url = "https://nodejs.org/download/nightly/"
-    with urlopen(url) as response:
-        html = response.read().decode("utf-8")
+    nightly_index_file = download_file(url, download_dir, filename_prefix='tmp_nodejs_nightly_index.html')
+    if not nightly_index_file:
+        debug_print('Unable to download Nightly Node.js versions!')
+        return []
+    try:
+        with open(nightly_index_file, 'r', encoding='utf-8') as f:
+            html = f.read()
+    finally:
+        rmfile(nightly_index_file)
 
     # Regex to capture href values like v7.0.0-nightly2016080175c6d9dd95/
     pattern = re.compile(r'<a href="(v[0-9]+\.[0-9]+\.[0-9]+-nightly[0-9a-f]+)/">')
