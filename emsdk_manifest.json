@@ -30,6 +30,21 @@
   },
 
   {
+    "id": "llvm-git",
+    "version": "16.0.6",
+    "bitness": 64,
+    "install_path": "llvm/16.0.6",
+    "git_branch": "llvmorg-16.0.6",
+    "url": "https://github.com/llvm/llvm-project.git",
+    "custom_install_script": "build_llvm",
+    "only_supports_wasm": true,
+    "activated_path": "%installation_dir%/%llvm_build_bin_dir%",
+    "activated_cfg": "LLVM_ROOT='%installation_dir%/%llvm_build_bin_dir%'",
+    "activated_env": "LLVM_ROOT=%installation_dir%/%llvm_build_bin_dir%;EMCC_WASM_BACKEND=1",
+    "cmake_build_type": "Release"
+  },
+
+  {
     "id": "releases",
     "version": "%releases-tag%",
     "bitness": 64,
