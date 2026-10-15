@@ -1013,7 +1013,7 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
     bs_clang = os.path.join(bootstrap_compiler_path, 'clang')
     bs_clangxx = os.path.join(bootstrap_compiler_path, 'clang++')
     if os.path.isfile(bs_clang) and 'llvm/16.0.6' not in build_root:
-        debug_print(f'using bootstrap clang from {bs_clang} in CMake configure!')
+        info(f'Using bootstrap clang from {bs_clang} in CMake configure')
         cmdline += [f'-DCMAKE_C_COMPILER={bs_clang}', f'-DCMAKE_CXX_COMPILER={bs_clangxx}']
 
     print(f'Running CMake: {cmdline}')
