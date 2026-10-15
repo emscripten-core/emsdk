@@ -1239,6 +1239,34 @@ def build_ccache(tool):
     return success
 
 
+def download_chrome(tool):
+    debug_print(f'download_chrome({tool})')
+
+    # Is already downloaded?
+    if tool.version not in ('stable', 'canary') and is_chrome_installed(tool):
+        print(f'Chrome {tool.version} already downloaded. Skipping.')
+        return True
+
+    # Use NPM puppeteer/browsers to install chrome.
+
+    _, node_path = get_node_env()
+    npx = os.path.join(os.path.abspath(node_path), 'npx' + ('.cmd' if WINDOWS else ''))
+    print(f'Node: {npx}')
+    cmd = [npx, '@puppeteer/browsers', 'install', f'chrome@{tool.version}']
+    print(str(cmd))
+    output = subprocess.check_output(cmd).decode('utf-8')
+    chrome_path = output.split(' ')[1].strip()
+    print(f'Chrome: {chrome_path}')
+
+    # Create a pretend alias which maps the emsdk path to the actually installed version.
+    pretend_version_dir = os.path.normpath(tool.installation_path())
+    actual_file = os.path.join(pretend_version_dir, 'actual.txt')
+    os.makedirs(pretend_version_dir, exist_ok=True)
+    write_file(actual_file, os.path.relpath(chrome_path, EMSDK_PATH))
+
+    return True
+
+
 def download_firefox(tool):
     debug_print(f'download_firefox({tool})')
 
@@ -1399,6 +1427,15 @@ def download_firefox(tool):
 
     # If we didn't get a Firefox executable, then installation failed.
     return os.path.isfile(firefox_exe)
+
+
+def is_chrome_installed(tool):
+    actual_file = os.path.join(tool.installation_dir(), 'actual.txt')
+    if not os.path.isfile(actual_file):
+        return False
+
+    chrome_exe = sdk_path(read_file(actual_file))
+    return os.path.isfile(chrome_exe)
 
 
 def is_firefox_installed(tool):
@@ -2013,6 +2050,8 @@ class Tool:
                 return is_binaryen_installed(self)
             elif self.custom_is_installed_script == 'is_firefox_installed':
                 return is_firefox_installed(self)
+            elif self.custom_is_installed_script == 'is_chrome_installed':
+                return is_chrome_installed(self)
             else:
                 raise Exception(f'Unknown custom_is_installed_script: "{self.custom_is_installed_script}"')
 
@@ -2126,6 +2165,7 @@ class Tool:
           'build_ccache': build_ccache,
           'download_node_nightly': download_node_nightly,
           'download_firefox': download_firefox,
+          'download_chrome': download_chrome,
         }
         if self.custom_install_script in custom_install_scripts:
             success = custom_install_scripts[self.custom_install_script](self)
@@ -2143,7 +2183,7 @@ class Tool:
         if self.custom_install_script:
             if self.custom_install_script == 'emscripten_install':
                 success = emscripten_install(self)
-            elif self.custom_install_script in {'build_llvm', 'build_ninja', 'build_ccache', 'download_node_nightly', 'download_firefox'}:
+            elif self.custom_install_script in {'build_llvm', 'build_ninja', 'build_ccache', 'download_node_nightly', 'download_firefox', 'download_chrome'}:
                 # 'build_llvm' is a special one that does the download on its
                 # own, others do the download manually.
                 pass

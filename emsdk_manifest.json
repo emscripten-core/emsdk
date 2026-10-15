@@ -470,6 +470,106 @@
   },
 
   {
+    "id": "chrome",
+    "version": "113",
+    "bitness": 64,
+    "url": "downloaded via @puppeteers/browsers script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
+    "git_branch": "dummy field, to instruct emsdk to attempt to reinstall this tool even if it is installed, to check for new version",
+    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%",
+    "activated_env": "EMTEST_BROWSER=%actual_installation_dir%",
+    "custom_install_script": "download_chrome",
+    "custom_is_installed_script": "is_chrome_installed",
+    "comment": "this is the oldest Chrome version provided by chrome-for-testing, and also first Chrome version that ships with WebGPU"
+  },
+
+  {
+    "id": "chrome",
+    "version": "123",
+    "bitness": 64,
+    "url": "downloaded via @puppeteers/browsers script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
+    "git_branch": "dummy field, to instruct emsdk to attempt to reinstall this tool even if it is installed, to check for new version",
+    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%",
+    "activated_env": "EMTEST_BROWSER=%actual_installation_dir%",
+    "custom_install_script": "download_chrome",
+    "custom_is_installed_script": "is_chrome_installed"
+  },
+
+  {
+    "id": "chrome",
+    "version": "133",
+    "bitness": 64,
+    "url": "downloaded via @puppeteers/browsers script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
+    "git_branch": "dummy field, to instruct emsdk to attempt to reinstall this tool even if it is installed, to check for new version",
+    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%",
+    "activated_env": "EMTEST_BROWSER=%actual_installation_dir%",
+    "custom_install_script": "download_chrome",
+    "custom_is_installed_script": "is_chrome_installed",
+    "comment": "this is the first Chrome version that supports Wasm Memory64"
+  },
+
+  {
+    "id": "chrome",
+    "version": "137",
+    "bitness": 64,
+    "url": "downloaded via @puppeteers/browsers script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
+    "git_branch": "dummy field, to instruct emsdk to attempt to reinstall this tool even if it is installed, to check for new version",
+    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%",
+    "activated_env": "EMTEST_BROWSER=%actual_installation_dir%",
+    "custom_install_script": "download_chrome",
+    "custom_is_installed_script": "is_chrome_installed",
+    "comment": "this is the first Chrome version that supports Wasm Exceptions"
+  },
+
+  {
+    "id": "chrome",
+    "version": "144",
+    "bitness": 64,
+    "url": "downloaded via @puppeteers/browsers script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
+    "git_branch": "dummy field, to instruct emsdk to attempt to reinstall this tool even if it is installed, to check for new version",
+    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%",
+    "activated_env": "EMTEST_BROWSER=%actual_installation_dir%",
+    "custom_install_script": "download_chrome",
+    "custom_is_installed_script": "is_chrome_installed",
+    "comment": "this is the first Chrome version that supports Growable ArrayBuffers"
+  },
+
+  {
+    "id": "chrome",
+    "version": "150",
+    "bitness": 64,
+    "url": "downloaded via @puppeteers/browsers script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
+    "git_branch": "dummy field, to instruct emsdk to attempt to reinstall this tool even if it is installed, to check for new version",
+    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%",
+    "activated_env": "EMTEST_BROWSER=%actual_installation_dir%",
+    "custom_install_script": "download_chrome",
+    "custom_is_installed_script": "is_chrome_installed"
+  },
+
+  {
+    "id": "chrome",
+    "version": "stable",
+    "bitness": 64,
+    "url": "downloaded via @puppeteers/browsers script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
+    "git_branch": "dummy field, to instruct emsdk to attempt to reinstall this tool even if it is installed, to check for new version",
+    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%",
+    "activated_env": "EMTEST_BROWSER=%actual_installation_dir%",
+    "custom_install_script": "download_chrome",
+    "custom_is_installed_script": "is_chrome_installed"
+  },
+
+  {
+    "id": "chrome",
+    "version": "canary",
+    "bitness": 64,
+    "url": "downloaded via @puppeteers/browsers script, but a dummy directive is placed here so emsdk understands this Tool to be downloaded from the web",
+    "git_branch": "dummy field, to instruct emsdk to attempt to reinstall this tool even if it is installed, to check for new version",
+    "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%",
+    "activated_env": "EMTEST_BROWSER=%actual_installation_dir%",
+    "custom_install_script": "download_chrome",
+    "custom_is_installed_script": "is_chrome_installed"
+  },
+
+  {
     "id": "emscripten",
     "version": "tag-%tag%",
     "bitness": 32,
