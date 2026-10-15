@@ -1009,7 +1009,7 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
 
     # If we have a bootstrap compiler package installed, then use that compiler
     # in the cmake build.
-    for ver in ['16.0.6', '15.0.7']
+    for ver in ['16.0.6', '15.0.7']:
         bootstrap_compiler_path = os.path.abspath(f'llvm/{ver}/build_llvmorg-{ver}_64/bin')
         bs_clang = os.path.join(bootstrap_compiler_path, 'clang')
         bs_clangxx = os.path.join(bootstrap_compiler_path, 'clang++')
