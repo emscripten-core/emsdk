@@ -1243,7 +1243,7 @@ def download_chrome(tool):
     debug_print(f'download_chrome({tool})')
 
     # Is already downloaded?
-    if tool.version not in ('stable', 'canary') and is_chrome_installed(tool):
+    if tool.version not in {'stable', 'canary'} and is_chrome_installed(tool):
         print(f'Chrome {tool.version} already downloaded. Skipping.')
         return True
 
