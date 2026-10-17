@@ -1255,7 +1255,7 @@ def download_chrome(tool):
     cmd = [npx, '@puppeteer/browsers', 'install', f'chrome@{tool.version}']
     print(str(cmd))
     output = subprocess.check_output(cmd, env=node_env).decode('utf-8')
-    chrome_path = output[output.find(' ')+1:].strip()
+    chrome_path = output[output.find(' ') + 1:].strip()
     print(f'Chrome: {chrome_path}')
 
     # Create a pretend alias which maps the emsdk path to the actually installed version.
