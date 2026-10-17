@@ -1249,12 +1249,12 @@ def download_chrome(tool):
 
     # Use NPM puppeteer/browsers to install chrome.
 
-    _, node_path = get_node_env()
+    node_env, node_path = get_node_env()
     npx = os.path.join(os.path.abspath(node_path), 'npx' + ('.cmd' if WINDOWS else ''))
     print(f'Node: {npx}')
     cmd = [npx, '@puppeteer/browsers', 'install', f'chrome@{tool.version}']
     print(str(cmd))
-    output = subprocess.check_output(cmd).decode('utf-8')
+    output = subprocess.check_output(cmd, env=node_env).decode('utf-8')
     chrome_path = output.split(' ')[1].strip()
     print(f'Chrome: {chrome_path}')
 
