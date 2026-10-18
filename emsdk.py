@@ -1007,6 +1007,17 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
     cmdline += ['-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0']
     cmdline += [*extra_cmake_args, src_root]
 
+    # If we have a bootstrap compiler package installed, then use that compiler
+    # in the cmake build.
+    for ver in ['16.0.6', '15.0.7']:
+        bootstrap_compiler_path = os.path.abspath(f'llvm/{ver}/build_llvmorg-{ver}_64/bin')
+        bs_clang = os.path.join(bootstrap_compiler_path, 'clang')
+        bs_clangxx = os.path.join(bootstrap_compiler_path, 'clang++')
+        if os.path.isfile(bs_clang) and f'llvm/{ver}' not in build_root:
+            info(f'Using bootstrap compiler from {bs_clang} in CMake configure')
+            cmdline += [f'-DCMAKE_C_COMPILER={bs_clang}', f'-DCMAKE_CXX_COMPILER={bs_clangxx}']
+            break
+
     print(f'Running CMake: {cmdline}')
 
     # Specify the deployment target also as an env. var, since some Xcode versions
