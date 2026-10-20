@@ -766,8 +766,11 @@ def git_repo_version(repo_path):
     return stdout.strip()
 
 
-def git_recent_commits(repo_path, n=20):
-    stdout = run_get_output([GIT(), 'log', '-n', str(n), '--pretty="%H"'], cwd=repo_path)
+def git_recent_commits(repo_path, n=20, exclude=None):
+    cmd = [GIT(), 'log', '-n', str(n), '--pretty="%H"']
+    if exclude:
+        cmd += ['--', '.', f':(exclude){exclude}']
+    stdout = run_get_output(cmd, cwd=repo_path)
     return stdout.strip().replace('\r', '').replace('"', '').split('\n')
 
 
@@ -2362,7 +2365,7 @@ def get_emscripten_releases_tot():
     success = git_clone_checkout_and_pull(emscripten_releases_repo, sdk_path('releases'), 'main')
     if not success:
         exit_with_error('error checking out emscripten-releases repo')
-    recent_releases = git_recent_commits(sdk_path('releases'))
+    recent_releases = git_recent_commits(sdk_path('releases'), exclude='DEPS.tagged-release')
     # The recent releases are the latest hashes in the git repo. There
     # may not be a build for the most recent ones yet; find the last
     # that has uploaded binaries for all platforms.
