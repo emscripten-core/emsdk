@@ -79,6 +79,7 @@ emscripten_cache.targets(targets = [
     "libnoexit",
     "libc-debug",
     "libdlmalloc",
+    "libemcc",
     "libclang_rt.builtins",
     "libc++-noexcept",
     "libc++abi-debug-noexcept",
