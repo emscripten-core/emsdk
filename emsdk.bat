@@ -33,8 +33,8 @@ if exist "%~dp0python\3.9.2-nuget_64bit\python.exe" (
 where uv >nul 2>nul
 if %ERRORLEVEL% equ 0 (
   for /f "delims=" %%i in ('uv python find 2^>nul') do (
-    if exist "%%i" (
-      set EMSDK_PY="%%i"
+    if exist "%%~i" (
+      set EMSDK_PY="%%~i"
       goto end
     )
   )
