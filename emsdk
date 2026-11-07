@@ -31,6 +31,15 @@ if [ -z "$EMSDK_PYTHON" ]; then
   fi
 fi
 
+# Check for uv and use uv's python path
+if [ -z "$EMSDK_PYTHON" ]; then
+  if command -v uv >/dev/null 2>&1; then
+    if UV_PYTHON="$(uv python find 2>/dev/null)" && [ -x "$UV_PYTHON" ]; then
+      EMSDK_PYTHON=$UV_PYTHON
+    fi
+  fi
+fi
+
 # Finally fall back to just looking for `python` in PATH
 if [ -z "$EMSDK_PYTHON" ]; then
   EMSDK_PYTHON=python
