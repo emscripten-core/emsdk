@@ -1,0 +1,8 @@
+# See https://github.com/bazel-contrib/publish-to-bcr#a-note-on-release-automation
+
+fixedReleaser:
+  login: sbc100
+  email: sbc@chromium.org
+
+moduleRoots:
+  - bazel
