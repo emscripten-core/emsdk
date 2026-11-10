@@ -19,14 +19,6 @@ foreach ($Location in $PythonLocations) {
     }
 }
 
-# Check for uv and use uv's python path
-if (-Not $EMSDK_PY -and (Get-Command uv -ErrorAction SilentlyContinue)) {
-    $uvPython = & uv python find 2>$null
-    if ($LASTEXITCODE -eq 0 -and $uvPython -and (Test-Path -LiteralPath $uvPython)) {
-        $EMSDK_PY = $uvPython
-    }
-}
-
 # As a last resort, access from PATH.
 if (-Not $EMSDK_PY) {
     $EMSDK_PY = "python"
