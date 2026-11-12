@@ -30,11 +30,13 @@ if sys.version_info < (3, 10):  # ruff: ignore[outdated-version-block]
     print(f'error: emsdk requires python 3.10 or above ({sys.executable} {sys.version})', file=sys.stderr)
     sys.exit(1)
 
-emsdk_packages_url = 'https://storage.googleapis.com/webassembly/emscripten-releases-builds/deps/'
+emscripten_releases_builds_url = 'https://storage.googleapis.com/webassembly/emscripten-releases-builds/'
+
+emsdk_packages_url = emscripten_releases_builds_url + 'deps/'
 
 emscripten_releases_repo = 'https://chromium.googlesource.com/emscripten-releases'
 
-emscripten_releases_download_url_template = "https://storage.googleapis.com/webassembly/emscripten-releases-builds/%s/%s/wasm-binaries%s.%s"
+emscripten_releases_download_url_template = emscripten_releases_builds_url + "%s/%s/wasm-binaries%s.%s"
 
 # This was previously `master.zip` but we are transitioning to `main` and
 # `HEAD.zip` works for both cases.  In future we could switch this to
@@ -709,6 +711,24 @@ def download_with_urllib(url, file_name):
     debug_print(f'finished downloading ({file_size_dl} bytes)')
 
 
+def apply_mirror_url(url):
+    """If EMSDK_MIRROR_URL is set, redirect downloads from the default
+    emscripten-releases-builds storage bucket to the given mirror.
+    """
+    mirror = os.environ.get('EMSDK_MIRROR_URL')
+
+    if not mirror or not url.startswith(emscripten_releases_builds_url):
+        return url
+
+    if not mirror.endswith('/'):
+        mirror += '/'
+
+    mirror_url = mirror + url[len(emscripten_releases_builds_url):]
+    debug_print(f'using mirror: {url} -> {mirror_url}')
+
+    return mirror_url
+
+
 def download_file(url, dstpath, filename_prefix=''):
     """On success, returns the filename on the disk pointing to the destination file that was produced
     On failure, returns None.
@@ -721,6 +741,8 @@ def download_file(url, dstpath, filename_prefix=''):
         return file_name
 
     mkdir_p(os.path.dirname(file_name))
+
+    url = apply_mirror_url(url)
 
     try:
         # Use curl on macOS or when EMSDK_USE_CURL is set to avoid
@@ -2878,7 +2900,7 @@ def construct_env_with_vars(env_vars_to_add):
     # if no such tool is active.
     # Ignore certain keys that are inputs to emsdk itself.
     ignore_keys = {'EMSDK_POWERSHELL', 'EMSDK_CSH', 'EMSDK_CMD', 'EMSDK_BASH', 'EMSDK_FISH',
-                   'EMSDK_NUM_CORES', 'EMSDK_NOTTY', 'EMSDK_KEEP_DOWNLOADS'}
+                   'EMSDK_NUM_CORES', 'EMSDK_NOTTY', 'EMSDK_KEEP_DOWNLOADS', 'EMSDK_MIRROR_URL'}
     env_keys_to_add = {pair[0] for pair in env_vars_to_add}
     for key in os.environ:
         if key.startswith('EMSDK_') or key in {'EM_CACHE', 'EM_CONFIG'}:
@@ -3074,6 +3096,7 @@ def main(args):  # ruff: ignore[complex-structure, too-many-return-statements, t
 
        Environment:
           EMSDK_KEEP_DOWNLOADS=1     - if you want to keep the downloaded archives.
+          EMSDK_MIRROR_URL=url       - download prebuilt binaries from this mirror instead of `storage.googleapis.com`
           EMSDK_NOTTY=1              - override isatty() result (mainly to log progress).
           EMSDK_NUM_CORES=n          - limit parallelism to n cores.
           EMSDK_VERBOSE=1            - very verbose output, useful for debugging.
