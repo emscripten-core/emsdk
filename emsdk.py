@@ -374,6 +374,9 @@ def win_get_environment_variable(key, system=True, user=True, fallback=True):
             if folder is not None:
                 folder.Close()
 
+    except KeyError:
+        # The key is neither in the registry nor in os.environ.
+        return None
     except Exception as e:
         # this catch is if both the registry key threw an exception and the key is not in os.environ
         if e.args[0] != 2:
@@ -451,7 +454,9 @@ def win_set_environment_variables(env_vars_to_add, system, user):
         HWND_BROADCAST = ctypes.wintypes.HWND(0xFFFF)  # win32con.HWND_BROADCAST == 65535
         WM_SETTINGCHANGE = 0x001A  # win32con.WM_SETTINGCHANGE == 26
         SMTO_BLOCK = 0x0001  # win32con.SMTO_BLOCK == 1
-        ctypes.windll.user32.SendMessageTimeoutA(
+        # Use the W variant: Python str is passed by ctypes as a wide string, which
+        # the A variant would read as just 'E', so no process would notice the change.
+        ctypes.windll.user32.SendMessageTimeoutW(
           HWND_BROADCAST,    # hWnd: notify everyone
           WM_SETTINGCHANGE,  # Msg: registry changed
           0,                 # wParam: Must be 0 when setting changed is sent by users
@@ -2678,12 +2683,17 @@ def set_active_tools(tools_to_activate, permanently_activate, system):
     if CMD or POWERSHELL:
         # always set local environment variables since permanently activating will only set the registry settings and
         # will not affect the current session
-        env_vars_to_add = get_env_vars_to_add(tools_to_activate, system, user=permanently_activate)
+        # The current session's PATH must be derived from the session's own PATH,
+        # not from the registry. Otherwise, with --permanent, the PATH would be
+        # built from the user's registry PATH only, dropping all system PATH
+        # entries (e.g. git, System32) from the calling shell.
+        env_vars_to_add = get_env_vars_to_add(tools_to_activate, system=False, user=False)
         env_string = construct_env_with_vars(env_vars_to_add)
         write_set_env_script(env_string)
 
         if WINDOWS and permanently_activate:
-            win_set_environment_variables(env_vars_to_add, system, user=permanently_activate)
+            registry_env_vars_to_add = get_env_vars_to_add(tools_to_activate, system, user=permanently_activate)
+            win_set_environment_variables(registry_env_vars_to_add, system, user=permanently_activate)
 
     return tools_to_activate
 
