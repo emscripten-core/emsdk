@@ -664,7 +664,8 @@ def download_with_curl(url, file_name):
     # -#: show progress bar
     # -L: Follow HTTP 3XX redirections
     # -f: Fail on HTTP errors
-    subprocess.check_call(['curl', '-#', '-f', '-L', '-o', file_name, url])
+    # --netrc-optional: Use credentials from ~/.netrc if present
+    subprocess.check_call(['curl', '-#', '-f', '-L', '--netrc-optional', '-o', file_name, url])
 
 
 def download_with_urllib(url, file_name):
