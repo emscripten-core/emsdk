@@ -10,8 +10,8 @@
     "latest-releases-upstream": "latest"
   },
   "releases": {
-    "7.0.0": "6afbd83493d647051772d491124187d4e9a0cda9",
-    "7.0.0-asserts": "b1179df09e99ea8a5285af391810f7eb8bd964d5",
+    "7.0.0": "26475ff3ef74734690cdc66bfa051ecfe85d6c69",
+    "7.0.0-asserts": "74759924d64644b4f9bd005359de2de7e3d06571",
     "6.0.13": "eb132757325583b787fe9414b09afea9442b72ad",
     "6.0.13-asserts": "4556be0c266ee82fb57bebf88b825c216bbbf13f",
     "6.0.12": "6e9f6885cb17a3d6c8fd488a5cff730f50aba61d",
