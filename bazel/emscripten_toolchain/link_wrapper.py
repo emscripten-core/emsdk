@@ -19,6 +19,7 @@ import argparse
 import os
 import subprocess
 import sys
+import tarfile
 
 # Only argument should be @path/to/parameter/file
 assert sys.argv[1][0] == '@', sys.argv
@@ -157,8 +158,27 @@ if not files:
     sys.exit(1)
 
 # cc_binary must output exactly one file; put all the output files in a tarball.
-cmd = ['tar', 'cf', base_name + '.tar', *files]
-subprocess.check_call(cmd, cwd=outdir)
-os.replace(os.path.join(outdir, base_name + '.tar'), output_file)
+# Use fixed metadata (mtime, owner, mode) so the tarball depends only on the
+# names, contents and executable bit of the files and the link action stays
+# reproducible.
+tar_path = os.path.join(outdir, base_name + '.tar')
+# Pin GNU format: Python's default is PAX, which adds extended headers and
+# would let the bytes change with the Python version.
+with tarfile.open(tar_path, 'w', format=tarfile.GNU_FORMAT) as tar:
+    for filename in files:
+        path = os.path.join(outdir, filename)
+        st = os.stat(path)
+        info = tarfile.TarInfo(filename)
+        info.size = st.st_size
+        info.mtime = 0
+        # Keep the executable bit the link set (e.g. on the .js for -sEXECUTABLE).
+        info.mode = 0o755 if st.st_mode & 0o111 else 0o644
+        info.uid = 0
+        info.gid = 0
+        info.uname = ''
+        info.gname = ''
+        with open(path, 'rb') as f:
+            tar.addfile(info, f)
+os.replace(tar_path, output_file)
 
 sys.exit(0)
