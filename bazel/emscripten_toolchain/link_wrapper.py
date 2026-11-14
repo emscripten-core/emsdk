@@ -19,6 +19,7 @@ import argparse
 import os
 import subprocess
 import sys
+import tarfile
 
 # Only argument should be @path/to/parameter/file
 assert sys.argv[1][0] == '@', sys.argv
@@ -157,8 +158,18 @@ if not files:
     sys.exit(1)
 
 # cc_binary must output exactly one file; put all the output files in a tarball.
-cmd = ['tar', 'cf', base_name + '.tar', *files]
-subprocess.check_call(cmd, cwd=outdir)
-os.replace(os.path.join(outdir, base_name + '.tar'), output_file)
+# Use fixed metadata (mtime, owner, mode) so the tarball depends only on the
+# names and contents of the files and the link action stays reproducible.
+tar_path = os.path.join(outdir, base_name + '.tar')
+with tarfile.open(tar_path, 'w', format=tarfile.GNU_FORMAT) as tar:
+    for filename in files:
+        path = os.path.join(outdir, filename)
+        info = tarfile.TarInfo(filename)
+        info.size = os.path.getsize(path)
+        info.mtime = 0
+        info.mode = 0o644
+        with open(path, 'rb') as f:
+            tar.addfile(info, f)
+os.replace(tar_path, output_file)
 
 sys.exit(0)
