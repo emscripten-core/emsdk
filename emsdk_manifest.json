@@ -477,6 +477,7 @@
     "git_branch": "dummy field, to instruct emsdk to attempt to reinstall this tool even if it is installed, to check for new version",
     "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%",
     "activated_env": "EMTEST_BROWSER=%actual_installation_dir%",
+    "activated_env_macos": "EMTEST_BROWSER='%actual_installation_dir%'",
     "custom_install_script": "download_chrome",
     "custom_is_installed_script": "is_chrome_installed",
     "comment": "this is the oldest Chrome version provided by chrome-for-testing, and also first Chrome version that ships with WebGPU"
@@ -490,6 +491,7 @@
     "git_branch": "dummy field, to instruct emsdk to attempt to reinstall this tool even if it is installed, to check for new version",
     "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%",
     "activated_env": "EMTEST_BROWSER=%actual_installation_dir%",
+    "activated_env_macos": "EMTEST_BROWSER='%actual_installation_dir%'",
     "custom_install_script": "download_chrome",
     "custom_is_installed_script": "is_chrome_installed"
   },
@@ -502,6 +504,7 @@
     "git_branch": "dummy field, to instruct emsdk to attempt to reinstall this tool even if it is installed, to check for new version",
     "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%",
     "activated_env": "EMTEST_BROWSER=%actual_installation_dir%",
+    "activated_env_macos": "EMTEST_BROWSER='%actual_installation_dir%'",
     "custom_install_script": "download_chrome",
     "custom_is_installed_script": "is_chrome_installed",
     "comment": "this is the first Chrome version that supports Wasm Memory64"
@@ -515,6 +518,7 @@
     "git_branch": "dummy field, to instruct emsdk to attempt to reinstall this tool even if it is installed, to check for new version",
     "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%",
     "activated_env": "EMTEST_BROWSER=%actual_installation_dir%",
+    "activated_env_macos": "EMTEST_BROWSER='%actual_installation_dir%'",
     "custom_install_script": "download_chrome",
     "custom_is_installed_script": "is_chrome_installed",
     "comment": "this is the first Chrome version that supports Wasm Exceptions"
@@ -528,6 +532,7 @@
     "git_branch": "dummy field, to instruct emsdk to attempt to reinstall this tool even if it is installed, to check for new version",
     "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%",
     "activated_env": "EMTEST_BROWSER=%actual_installation_dir%",
+    "activated_env_macos": "EMTEST_BROWSER='%actual_installation_dir%'",
     "custom_install_script": "download_chrome",
     "custom_is_installed_script": "is_chrome_installed",
     "comment": "this is the first Chrome version that supports Growable ArrayBuffers"
@@ -541,6 +546,7 @@
     "git_branch": "dummy field, to instruct emsdk to attempt to reinstall this tool even if it is installed, to check for new version",
     "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%",
     "activated_env": "EMTEST_BROWSER=%actual_installation_dir%",
+    "activated_env_macos": "EMTEST_BROWSER='%actual_installation_dir%'",
     "custom_install_script": "download_chrome",
     "custom_is_installed_script": "is_chrome_installed"
   },
@@ -553,6 +559,7 @@
     "git_branch": "dummy field, to instruct emsdk to attempt to reinstall this tool even if it is installed, to check for new version",
     "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%",
     "activated_env": "EMTEST_BROWSER=%actual_installation_dir%",
+    "activated_env_macos": "EMTEST_BROWSER='%actual_installation_dir%'",
     "custom_install_script": "download_chrome",
     "custom_is_installed_script": "is_chrome_installed"
   },
@@ -565,6 +572,7 @@
     "git_branch": "dummy field, to instruct emsdk to attempt to reinstall this tool even if it is installed, to check for new version",
     "activated_cfg": "EMSDK_ACTIVATED_TEST_BROWSER=%actual_installation_dir%",
     "activated_env": "EMTEST_BROWSER=%actual_installation_dir%",
+    "activated_env_macos": "EMTEST_BROWSER='%actual_installation_dir%'",
     "custom_install_script": "download_chrome",
     "custom_is_installed_script": "is_chrome_installed"
   },
