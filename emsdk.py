@@ -5,6 +5,7 @@
 # found in the LICENSE file.
 
 import copy
+import glob
 import json
 import multiprocessing
 import os
@@ -1017,6 +1018,12 @@ def read_file(filename):
         return f.read()
 
 
+# The versions of LLVM that can be installed to be used as a bootstrap compiler
+# for building newer versions of LLVM, in the order of preference. These are
+# needed on systems where the system compiler is too old to build LLVM trunk.
+BOOTSTRAP_LLVM_VERSIONS = ['17.0.6', '16.0.6', '15.0.7']
+
+
 def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_args):
     debug_print(f'cmake_configure(generator={generator}, build_root={build_root}, '
                 f'src_root={src_root}, build_type={build_type}, extra_cmake_args={extra_cmake_args})')
@@ -1034,11 +1041,17 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
 
     # If we have a bootstrap compiler package installed, then use that compiler
     # in the cmake build.
-    for ver in ['17.0.6', '16.0.6', '15.0.7']:
-        bootstrap_compiler_path = os.path.abspath(f'llvm/{ver}/build_llvmorg-{ver}_64/bin')
+    for ver in BOOTSTRAP_LLVM_VERSIONS:
+        bootstrap_build_root = os.path.abspath(f'llvm/{ver}/build_llvmorg-{ver}_64')
+        bootstrap_compiler_path = os.path.join(bootstrap_build_root, 'bin')
         bs_clang = os.path.join(bootstrap_compiler_path, 'clang')
         bs_clangxx = os.path.join(bootstrap_compiler_path, 'clang++')
         if os.path.isfile(bs_clang) and f'llvm/{ver}' not in build_root:
+            if MACOS and not glob.glob(os.path.join(bootstrap_build_root, 'lib', 'clang', '*', 'lib', 'darwin', 'libclang_rt.osx.a')):
+                # A bootstrap compiler that was built before the compiler-rt
+                # builtins were built along with it (see build_llvm).
+                info(f'Not using bootstrap compiler from {bs_clang}, since it does not have the compiler-rt builtins library. Reinstall llvm-git-{ver}-64bit to build it.')
+                continue
             info(f'Using bootstrap compiler from {bs_clang} in CMake configure')
             cmdline += [f'-DCMAKE_C_COMPILER={bs_clang}', f'-DCMAKE_CXX_COMPILER={bs_clangxx}']
             break
@@ -1179,6 +1192,25 @@ def build_llvm(tool):
     # (there instead of $(Configuration), one would need ${CMAKE_BUILD_TYPE} ?)
     # It looks like compiler-rt is not compatible to build on Windows?
     args += ['-DLLVM_ENABLE_PROJECTS=clang;lld']
+    if MACOS and tool.version in BOOTSTRAP_LLVM_VERSIONS:
+        # A bootstrap compiler also needs the compiler-rt builtins library
+        # (libclang_rt.osx.a), since unlike the system compiler it does not
+        # come with one. Without it the programs that the bootstrap compiler
+        # builds fail to link if they need any of the builtins, e.g. LLVM trunk
+        # uses __builtin_cpu_supports() on x86, which needs __cpu_model:
+        #   Undefined symbols for architecture x86_64: "___cpu_model"
+        # Build only the builtins, and only for macOS.
+        args += ['-DLLVM_ENABLE_RUNTIMES=compiler-rt',
+                 '-DCOMPILER_RT_BUILD_BUILTINS=ON',
+                 '-DCOMPILER_RT_BUILD_SANITIZERS=OFF',
+                 '-DCOMPILER_RT_BUILD_XRAY=OFF',
+                 '-DCOMPILER_RT_BUILD_LIBFUZZER=OFF',
+                 '-DCOMPILER_RT_BUILD_PROFILE=OFF',
+                 '-DCOMPILER_RT_BUILD_MEMPROF=OFF',
+                 '-DCOMPILER_RT_BUILD_ORC=OFF',
+                 '-DCOMPILER_RT_ENABLE_IOS=OFF',
+                 '-DCOMPILER_RT_ENABLE_WATCHOS=OFF',
+                 '-DCOMPILER_RT_ENABLE_TVOS=OFF']
     # To enable widest possible chance of success for building, let the code
     # compile through with older toolchains that are about to be deprecated by
     # upstream LLVM.
