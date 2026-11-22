@@ -2943,7 +2943,9 @@ def construct_env_with_vars(env_vars_to_add):
     # if no such tool is active.
     # Ignore certain keys that are inputs to emsdk itself.
     ignore_keys = {'EMSDK_POWERSHELL', 'EMSDK_CSH', 'EMSDK_CMD', 'EMSDK_BASH', 'EMSDK_FISH',
-                   'EMSDK_NUM_CORES', 'EMSDK_NOTTY', 'EMSDK_KEEP_DOWNLOADS', 'EMSDK_MIRROR_URL'}
+                   'EMSDK_NUM_CORES', 'EMSDK_NOTTY', 'EMSDK_KEEP_DOWNLOADS', 'EMSDK_MIRROR_URL',
+                   'EMSDK_RETRY_CLEAN_BUILD', 'EMSDK_VERBOSE', 'EMSDK_QUIET', 'EMSDK_USE_CURL',
+                   'EMSDK_ARCH', 'EMSDK_OS'}
     env_keys_to_add = {pair[0] for pair in env_vars_to_add}
     for key in os.environ:
         if key.startswith('EMSDK_') or key in {'EM_CACHE', 'EM_CONFIG'}:
