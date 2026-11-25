@@ -78,6 +78,11 @@ filegroup(
             "emscripten/node_modules/**",
             "emscripten/src/**",
         ],
+    ) + glob(
+        # Bundled JS tools (compiler.mjs, acorn-optimizer.mjs, ...) used at
+        # link time. Only present in emscripten >= 7.0.1.
+        include = ["emscripten/dist/**"],
+        allow_empty = True,
     ),
 )
 
