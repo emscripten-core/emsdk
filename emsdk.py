@@ -5,6 +5,7 @@
 # found in the LICENSE file.
 
 import copy
+import glob
 import json
 import multiprocessing
 import os
@@ -1017,7 +1018,55 @@ def read_file(filename):
         return f.read()
 
 
-def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_args):
+# The versions of LLVM that can be installed to be used as a bootstrap compiler
+# for building newer versions of LLVM, in the order of preference. These are
+# needed on systems where the system compiler is too old to build LLVM trunk.
+BOOTSTRAP_LLVM_VERSIONS = ['17.0.6']
+
+
+def find_bootstrap_compiler():
+    """Returns the (C compiler, C++ compiler) pair of the bootstrap compiler to
+    build LLVM with, or None if no bootstrap compiler has been installed.
+    """
+    for ver in BOOTSTRAP_LLVM_VERSIONS:
+        bootstrap_build_root = sdk_path(f'llvm/{ver}/build_llvmorg-{ver}_64')
+        bs_clang = os.path.join(bootstrap_build_root, 'bin', 'clang')
+        bs_clangxx = os.path.join(bootstrap_build_root, 'bin', 'clang++')
+        if os.path.isfile(bs_clang):
+            if MACOS and not glob.glob(os.path.join(bootstrap_build_root, 'lib', 'clang', '*', 'lib', 'darwin', 'libclang_rt.osx.a')):
+                # A bootstrap compiler that was built before the compiler-rt
+                # builtins were built along with it (see build_llvm).
+                info(f'Not using bootstrap compiler from {bs_clang}, since it does not have the compiler-rt builtins library. '
+                     f'Reinstall llvm-git-{ver}-64bit to build it.')
+                continue
+            return (bs_clang, bs_clangxx)
+    return None
+
+
+def find_built_llvm_compiler():
+    """Returns the (C compiler, C++ compiler) pair of the LLVM that emsdk has
+    built from source with the bootstrap compiler, or None if there is no such
+    LLVM.
+
+    If a bootstrap compiler is installed, then the system compiler is too old,
+    so the other tools than LLVM are built with the LLVM that emsdk built. The
+    bootstrap compiler itself is only used to build LLVM.
+    """
+    if not find_bootstrap_compiler():
+        return None
+    for tool in tools:
+        if tool.id != 'llvm-git' or tool.version in BOOTSTRAP_LLVM_VERSIONS or tool.bitness != 64:
+            continue
+        bin_dir = os.path.join(tool.installation_path(), llvm_build_bin_dir(tool))
+        clang = os.path.join(bin_dir, exe_suffix('clang'))
+        clangxx = os.path.join(bin_dir, exe_suffix('clang++'))
+        if os.path.isfile(clang) and os.path.isfile(clangxx):
+            return (clang, clangxx)
+    return None
+
+
+# ruff: ignore[too-many-arguments, too-many-positional-arguments]
+def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_args, compiler=None):
     debug_print(f'cmake_configure(generator={generator}, build_root={build_root}, '
                 f'src_root={src_root}, build_type={build_type}, extra_cmake_args={extra_cmake_args})')
     # Configure
@@ -1031,6 +1080,10 @@ def cmake_configure(generator, build_root, src_root, build_type, extra_cmake_arg
     # See https://en.wikipedia.org/wiki/MacOS#Hardware_compatibility for min-spec details.
     cmdline += ['-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0']
     cmdline += [*extra_cmake_args, src_root]
+
+    if compiler:
+        info(f'Using compiler {compiler[0]} in CMake configure')
+        cmdline += [f'-DCMAKE_C_COMPILER={compiler[0]}', f'-DCMAKE_CXX_COMPILER={compiler[1]}']
 
     print(f'Running CMake: {cmdline}')
 
@@ -1108,8 +1161,12 @@ def get_generator_and_config_args(tool):
     return (cmake_generator, args)
 
 
-def cmake_configure_and_build(cmake_generator, build_root, cmakelists_dir, build_type, args):
-    success = cmake_configure(cmake_generator, build_root, cmakelists_dir, build_type, args)
+# ruff: ignore[too-many-arguments, too-many-positional-arguments]
+def cmake_configure_and_build(cmake_generator, build_root, cmakelists_dir, build_type, args, compiler=None):
+    """Configures and builds the given CMake project. compiler is an optional
+    (C compiler, C++ compiler) pair to use instead of the system compiler.
+    """
+    success = cmake_configure(cmake_generator, build_root, cmakelists_dir, build_type, args, compiler)
     if success:
         success = make_build(build_root, build_type)
 
@@ -1118,7 +1175,7 @@ def cmake_configure_and_build(cmake_generator, build_root, cmakelists_dir, build
         shutil.rmtree(build_root)
 
         # And re-try configure + build again.
-        success = cmake_configure(cmake_generator, build_root, cmakelists_dir, build_type, args)
+        success = cmake_configure(cmake_generator, build_root, cmakelists_dir, build_type, args, compiler)
         if success:
             success = make_build(build_root, build_type)
 
@@ -1168,6 +1225,20 @@ def build_llvm(tool):
     # (there instead of $(Configuration), one would need ${CMAKE_BUILD_TYPE} ?)
     # It looks like compiler-rt is not compatible to build on Windows?
     args += ['-DLLVM_ENABLE_PROJECTS=clang;lld']
+    if MACOS and tool.version in BOOTSTRAP_LLVM_VERSIONS:
+        # A bootstrap compiler also needs the compiler-rt builtins.
+        # Disable other features to speed up the build.
+        args += ['-DLLVM_ENABLE_RUNTIMES=compiler-rt',
+                 '-DCOMPILER_RT_BUILD_BUILTINS=ON',
+                 '-DCOMPILER_RT_BUILD_SANITIZERS=OFF',
+                 '-DCOMPILER_RT_BUILD_XRAY=OFF',
+                 '-DCOMPILER_RT_BUILD_LIBFUZZER=OFF',
+                 '-DCOMPILER_RT_BUILD_PROFILE=OFF',
+                 '-DCOMPILER_RT_BUILD_MEMPROF=OFF',
+                 '-DCOMPILER_RT_BUILD_ORC=OFF',
+                 '-DCOMPILER_RT_ENABLE_IOS=OFF',
+                 '-DCOMPILER_RT_ENABLE_WATCHOS=OFF',
+                 '-DCOMPILER_RT_ENABLE_TVOS=OFF']
     # To enable widest possible chance of success for building, let the code
     # compile through with older toolchains that are about to be deprecated by
     # upstream LLVM.
@@ -1180,7 +1251,11 @@ def build_llvm(tool):
 
     cmakelists_dir = os.path.join(llvm_src_root, 'llvm')
 
-    success = cmake_configure_and_build(cmake_generator, build_root, cmakelists_dir, build_type, args)
+    # Build LLVM with the bootstrap compiler, if one is installed. The bootstrap
+    # compilers themselves are built with the system compiler.
+    compiler = None if tool.version in BOOTSTRAP_LLVM_VERSIONS else find_bootstrap_compiler()
+
+    success = cmake_configure_and_build(cmake_generator, build_root, cmakelists_dir, build_type, args, compiler)
 
     return success
 
@@ -1203,7 +1278,7 @@ def build_ninja(tool):
 
     cmakelists_dir = os.path.join(src_root)
 
-    success = cmake_configure_and_build(cmake_generator, build_root, cmakelists_dir, build_type, args)
+    success = cmake_configure_and_build(cmake_generator, build_root, cmakelists_dir, build_type, args, find_built_llvm_compiler())
 
     if success:
         bin_dir = os.path.join(root, 'bin')
@@ -1239,7 +1314,7 @@ def build_ccache(tool):
 
     cmakelists_dir = os.path.join(src_root)
 
-    success = cmake_configure_and_build(cmake_generator, build_root, cmakelists_dir, build_type, args)
+    success = cmake_configure_and_build(cmake_generator, build_root, cmakelists_dir, build_type, args, find_built_llvm_compiler())
 
     if success:
         bin_dir = os.path.join(root, 'bin')
@@ -1585,7 +1660,7 @@ def build_binaryen_tool(tool):
         if BUILD_FOR_TESTING:
             args += ['-DRUN_STATIC_ANALYZER=1']
 
-    success = cmake_configure_and_build(cmake_generator, build_root, src_root, build_type, args)
+    success = cmake_configure_and_build(cmake_generator, build_root, src_root, build_type, args, find_built_llvm_compiler())
 
     if success:
         # Deploy scripts needed from source repository to build directory
