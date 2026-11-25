@@ -1484,7 +1484,7 @@ def find_latest_installed_tool(name):
 def get_node_env():
     node_tool = find_latest_installed_tool('node')
     if node_tool:
-        node_path = node_tool.expand_vars(node_tool.activated_path)
+        node_path = sdk_path(node_tool.expand_vars(node_tool.activated_path))
     else:
         npm_fallback = shutil.which('npm')
         if not npm_fallback:
@@ -1650,7 +1650,7 @@ def get_required_path(active_tools):
     path_add = [to_native_path(EMSDK_PATH)]
     for tool in active_tools:
         if tool.activated_path:
-            path = to_native_path(tool.expand_vars(tool.activated_path))
+            path = to_native_path(sdk_path(tool.expand_vars(tool.activated_path)))
             # If the tool has an activated_path_skip attribute then we don't add
             # the tools path to the users path if a program by that name is found
             # in the existing PATH.  This allows us to, for example, add our version
@@ -1734,7 +1734,7 @@ def fetch_nightly_node_versions():
 
 
 def dir_installed_nightly_node_versions():
-    path = os.path.abspath('node')
+    path = sdk_path('node')
     try:
         return [name for name in os.listdir(path) if os.path.isdir(os.path.join(path, name)) and name.startswith("nightly-")]
     except Exception:
@@ -1762,7 +1762,7 @@ def download_node_nightly(tool):
     latest_nightly = extract_newest_node_nightly_version(nightly_versions)
     print(f'Latest Node.js Nightly download available is "{latest_nightly}"')
 
-    output_dir = os.path.abspath('node/nightly-' + latest_nightly)
+    output_dir = sdk_path('node/nightly-' + latest_nightly)
     # Node.js zip structure quirk: Linux and macOS archives have a /bin,
     # Windows does not. Unify the file structures.
     if WINDOWS:
@@ -2067,7 +2067,7 @@ class Tool:
         # clang-main-64bit, clang-main-32bit and clang-main-64bit each
         # share the same git repo), require that in addition to the installation
         # directory, each item in the activated PATH must exist.
-        if self.activated_path and not os.path.exists(self.expand_vars(self.activated_path)):
+        if self.activated_path and not os.path.exists(sdk_path(self.expand_vars(self.activated_path))):
             content_exists = False
 
         if self.custom_is_installed_script:
