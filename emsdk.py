@@ -1715,22 +1715,44 @@ def find_emscripten_root(active_tools):
     return root
 
 
+def node_nightly_platform():
+    """Returns a tuple (os, arch, zip_suffix, index_key) that identifies the
+    Node.js Nightly download of the current platform. index_key is the name
+    that https://nodejs.org/download/nightly/index.json uses for that download.
+    """
+    arch = 'arm64' if ARCH == 'arm64' else 'x64'
+    if WINDOWS:
+        return 'win', arch, 'zip', f'win-{arch}-zip'
+    elif MACOS:
+        return 'darwin', arch, 'tar.gz', f'osx-{arch}-tar'
+    else:
+        return 'linux', arch, 'tar.gz', f'linux-{arch}'
+
+
 def fetch_nightly_node_versions():
-    url = "https://nodejs.org/download/nightly/"
-    nightly_index_file = download_file(url, download_dir, filename_prefix='tmp_nodejs_nightly_index.html')
+    """Returns the Node.js Nightly versions that can be downloaded for the
+    current platform.
+
+    Node.js does not publish a build for every platform each night, so the
+    newest Nightly version does not necessarily exist for the current platform.
+    """
+    url = "https://nodejs.org/download/nightly/index.json"
+    nightly_index_file = download_file(url, download_dir, filename_prefix='tmp_nodejs_nightly_')
     if not nightly_index_file:
         debug_print('Unable to download Nightly Node.js versions!')
         return []
     try:
-        with open(nightly_index_file, encoding='utf-8') as f:
-            html = f.read()
+        index = json.loads(read_file(nightly_index_file))
+    except Exception as e:
+        errlog(f'Error: Unable to parse Nightly Node.js versions from {url}: {e}')
+        return []
     finally:
         rmfile(nightly_index_file)
 
-    # Regex to capture href values like v7.0.0-nightly2016080175c6d9dd95/
-    pattern = re.compile(r'<a href="(v[0-9]+\.[0-9]+\.[0-9]+-nightly[0-9a-f]+)/">')
-    matches = pattern.findall(html)
-    return matches
+    # Each item looks like
+    # {"version": "v7.0.0-nightly2016080175c6d9dd95", "files": ["linux-x64", "osx-arm64-tar", "win-x64-zip", ...], ...}
+    index_key = node_nightly_platform()[3]
+    return [v['version'] for v in index if index_key in v.get('files', [])]
 
 
 def dir_installed_nightly_node_versions():
@@ -1760,6 +1782,9 @@ def extract_newest_node_nightly_version(versions):
 def download_node_nightly(tool):
     nightly_versions = fetch_nightly_node_versions()
     latest_nightly = extract_newest_node_nightly_version(nightly_versions)
+    if not latest_nightly:
+        errlog('Error: Unable to find a Node.js Nightly version to download for this platform!')
+        return False
     print(f'Latest Node.js Nightly download available is "{latest_nightly}"')
 
     output_dir = os.path.abspath('node/nightly-' + latest_nightly)
@@ -1771,27 +1796,13 @@ def download_node_nightly(tool):
     if os.path.isdir(output_dir):
         return True
 
+    os_, arch, zip_suffix, _ = node_nightly_platform()
     url = tool.url.replace('%version%', latest_nightly)
-    if WINDOWS:
-        os_ = 'win'
-    elif LINUX:
-        os_ = 'linux'
-    elif MACOS:
-        os_ = 'darwin'
-    else:
-        os_ = ''
-    if platform.machine().lower() in {'x86_64', 'amd64'}:
-        arch = 'x64'
-    elif platform.machine().lower() in {'arm64', 'aarch64'}:
-        arch = 'arm64'
-    if WINDOWS:
-        zip_suffix = 'zip'
-    else:
-        zip_suffix = 'tar.gz'
     url = url.replace('%os%', os_)
     url = url.replace('%arch%', arch)
     url = url.replace('%zip_suffix%', zip_suffix)
-    download_and_extract(url, output_dir)
+    if not download_and_extract(url, output_dir):
+        return False
     write_file(tool.get_version_file_path(), 'node-nightly-64bit')
     return True
 
