@@ -2146,6 +2146,10 @@ class Tool:
         """
         if self.bitness == 64 and not is_os_64bit():
             return "this tool is only provided for 64-bit OSes"
+        if self.custom_install_script == 'download_node_nightly' and MACOS and ARCH == 'x86_64':
+            # The last Node.js Nightly build for Intel macOS is
+            # v27.0.0-nightly202609233d85c94cfa. Do not install that as "nightly".
+            return "Node.js no longer publishes Nightly builds for Intel macOS"
         return True
 
     def install(self):

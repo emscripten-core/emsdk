@@ -268,22 +268,7 @@
     "activated_path_skip": "node",
     "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
     "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%",
-    "url_linux": "https://nodejs.org/download/nightly/%version%/node-%version%-%os%-%arch%.%zip_suffix%",
-    "url_windows": "https://nodejs.org/download/nightly/%version%/node-%version%-%os%-%arch%.%zip_suffix%",
-    "git_branch": "nightly"
-  },
-  {
-    "id": "node",
-    "version": "nightly",
-    "bitness": 64,
-    "arch": "arm64",
-    "install_path": "node/%latest_downloaded_node_nightly_dir%",
-    "custom_install_script": "download_node_nightly",
-    "activated_path": "node/%latest_downloaded_node_nightly_dir%/bin",
-    "activated_path_skip": "node",
-    "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
-    "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%",
-    "url_macos": "https://nodejs.org/download/nightly/%version%/node-%version%-%os%-%arch%.%zip_suffix%",
+    "url": "https://nodejs.org/download/nightly/%version%/node-%version%-%os%-%arch%.%zip_suffix%",
     "git_branch": "nightly"
   },
 
