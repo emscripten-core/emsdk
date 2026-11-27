@@ -152,6 +152,8 @@ elif machine.startswith('aarch64') or machine.lower().startswith('arm64'):
     ARCH = 'arm64'
 elif machine.startswith('arm'):
     ARCH = 'arm'
+elif machine.startswith('s390x'):
+    ARCH = 's390x'
 else:
     exit_with_error('unknown machine architecture: ' + machine)
 
@@ -2322,7 +2324,7 @@ def find_sdk(name):
 
 
 def is_os_64bit():
-    return ARCH.endswith('64')
+    return ARCH.endswith('64') or ARCH == 's390x'
 
 
 def find_latest_version():
